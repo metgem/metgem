@@ -1,0 +1,29 @@
+<RCC>
+  <qresource prefix="icons">
+    <file>images/cancel.svg</file>
+    <file>images/lock.svg</file>
+    <file>images/emblem-photos.svg</file>
+    <file>images/cy3logoOrange.svg</file>
+    <file>images/select-neighbors.svg</file>
+    <file>images/system-run.svg</file>
+    <file>images/eye.svg</file>
+    <file>images/eye-closed.svg</file>
+    <file>images/close.svg</file>
+    <file>images/document-open.svg</file>
+    <file>images/zoom-1.svg</file>
+    <file>images/zoom-target.svg</file>
+    <file>images/refresh.svg</file>
+    <file>images/fullscreen.svg</file>
+    <file>images/zoom-fit.svg</file>
+    <file>images/zoom-out.svg</file>
+    <file>images/zoom-in.svg</file>
+    <file>images/document-save.svg</file>
+    <file>images/document-save-as.svg</file>
+    <file>images/qt-logo.svg</file>
+    <file>images/system-search.svg</file>
+    <file>images/edge.svg</file>
+    <file>images/node.svg</file>
+    <file>images/folder-open.svg</file>
+    <file>images/main.svg</file>
+  </qresource>
+</RCC>

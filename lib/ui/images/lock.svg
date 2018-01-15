@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   id="svg2327"
+   sodipodi:docname="lock.svg"
+   viewBox="0 0 96 96"
+   sodipodi:version="0.32"
+   inkscape:output_extension="org.inkscape.output.svg.inkscape"
+   inkscape:version="0.92.2 (5c3e80d, 2017-08-06)"
+   version="1.1"
+   width="72pt"
+   height="72pt">
+  <defs
+     id="defs3">
+    <linearGradient
+       id="linearGradient12071"
+       inkscape:collect="always">
+      <stop
+         id="stop12073"
+         style="stop-color:#ffffff"
+         offset="0" />
+      <stop
+         id="stop12075"
+         style="stop-color:#ffffff;stop-opacity:0"
+         offset="1" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient2711">
+      <stop
+         id="stop2713"
+         style="stop-color:#909090"
+         offset="0" />
+      <stop
+         id="stop2715"
+         style="stop-color:#bebebe;stop-opacity:0"
+         offset="1" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient1886"
+       y2="18.414"
+       gradientUnits="userSpaceOnUse"
+       x2="20.087"
+       gradientTransform="matrix(0.48025,0,0,0.49732,29.227,23.012)"
+       y1="4.3603001"
+       x1="12.887"
+       inkscape:collect="always">
+      <stop
+         id="stop10593"
+         style="stop-color:#cad0c6"
+         offset="0" />
+      <stop
+         id="stop10599"
+         style="stop-color:#eaece9"
+         offset=".5" />
+      <stop
+         id="stop10595"
+         style="stop-color:#c5cbc0"
+         offset="1" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient1888"
+       y2="6.0397"
+       gradientUnits="userSpaceOnUse"
+       x2="16.198"
+       gradientTransform="matrix(0.48025,0,0,0.49732,29.227,23.012)"
+       y1="9.6636"
+       x1="19.250999"
+       inkscape:collect="always">
+      <stop
+         id="stop11337"
+         style="stop-color:#6f716d"
+         offset="0" />
+      <stop
+         id="stop11339"
+         style="stop-color:#9ea09c"
+         offset="1" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient1890"
+       y2="32.161999"
+       gradientUnits="userSpaceOnUse"
+       x2="40.938"
+       gradientTransform="matrix(0.49024,0,0,0.5343,29.283,21.676)"
+       y1="32.161999"
+       x1="6.7268"
+       inkscape:collect="always">
+      <stop
+         id="stop2094"
+         style="stop-color:#fff7b0"
+         offset="0" />
+      <stop
+         id="stop2098"
+         style="stop-color:#ffec41"
+         offset="0.21" />
+      <stop
+         id="stop2293"
+         style="stop-color:#e2cc00"
+         offset="0.84" />
+      <stop
+         id="stop2100"
+         style="stop-color:#c3af00"
+         offset="1" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient1892"
+       y2="25.794001"
+       gradientUnits="userSpaceOnUse"
+       x2="8.6714001"
+       gradientTransform="matrix(0.49024,0,0,0.5343,29.283,22.226)"
+       y1="41.792"
+       x1="31.629999"
+       inkscape:collect="always">
+      <stop
+         id="stop11329"
+         style="stop-color:#7d6400"
+         offset="0" />
+      <stop
+         id="stop11331"
+         style="stop-color:#be9700"
+         offset="1" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient1894"
+       y2="36.126999"
+       gradientUnits="userSpaceOnUse"
+       x2="30.875"
+       gradientTransform="matrix(0.45344,0,0,0.47003,30.172,24.389)"
+       y1="25.002001"
+       x1="10.907"
+       inkscape:collect="always">
+      <stop
+         id="stop9847"
+         style="stop-color:#ffffff"
+         offset="0" />
+      <stop
+         id="stop9849"
+         style="stop-color:#ffffff;stop-opacity:.49485"
+         offset="1" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient1896"
+       y2="3.9567001"
+       xlink:href="#linearGradient12071"
+       gradientUnits="userSpaceOnUse"
+       x2="17.858999"
+       gradientTransform="matrix(0.98047,0,0,0.46181,23.89,23.479)"
+       y1="6.8794999"
+       x1="14.218"
+       inkscape:collect="always" />
+    <linearGradient
+       id="linearGradient1898"
+       y2="14.26"
+       xlink:href="#linearGradient12071"
+       gradientUnits="userSpaceOnUse"
+       x2="11.779"
+       gradientTransform="matrix(0.98047,0,0,0.49024,34.675,22.834)"
+       y1="20.58"
+       x1="11.5"
+       inkscape:collect="always" />
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     bordercolor="#666666"
+     inkscape:pageshadow="2"
+     inkscape:window-y="-8"
+     pagecolor="#ffffff"
+     inkscape:window-height="1018"
+     inkscape:grid-bbox="true"
+     inkscape:zoom="2"
+     inkscape:window-x="-8"
+     showgrid="false"
+     borderopacity="0.12156863"
+     inkscape:current-layer="layer1"
+     inkscape:cx="-75.750854"
+     inkscape:cy="-2.1126116"
+     inkscape:showpageshadow="false"
+     inkscape:window-width="1920"
+     inkscape:pageopacity="0.0"
+     inkscape:document-units="px"
+     units="pt"
+     inkscape:window-maximized="1" />
+  <g
+     id="layer1"
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     transform="translate(0,48)">
+    <g
+       id="g1879"
+       transform="matrix(3.5972344,0,0,3.5972344,-99.652077,-127.18024)">
+      <path
+         id="path2086"
+         sodipodi:nodetypes="cczcccczccc"
+         style="fill:url(#linearGradient1886);fill-rule:evenodd;stroke:url(#linearGradient1888);stroke-width:1.18449998"
+         d="M 34.239,34.181 V 30.36 c 0,-3.914 2.623,-5.699 6.524,-5.65 3.922,0.049 6.511,1.752 6.511,5.712 l -0.006,3.759 h -2.393 v -2.775 c -0.065,-0.963 0.267,-4.19 -4.085,-4.19 -4.381,0 -4.124,3.239 -4.108,4.209 v 2.756 z"
+         inkscape:connector-curvature="0" />
+      <rect
+         id="rect1314"
+         style="fill:url(#linearGradient1890);fill-rule:evenodd;stroke:url(#linearGradient1892);stroke-width:1.18449998;stroke-linecap:round;stroke-linejoin:round"
+         rx="2.6473999"
+         ry="2.3034"
+         height="11.769"
+         width="17.156"
+         y="34.231998"
+         x="32.467999" />
+      <rect
+         id="rect6903"
+         style="fill:none;stroke:url(#linearGradient1894);stroke-width:1.18449998;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:0.60109002"
+         rx="1.4388"
+         ry="1.4388"
+         height="9.4392996"
+         width="14.978"
+         y="35.387001"
+         x="33.560001" />
+      <path
+         id="rect11343"
+         sodipodi:nodetypes="ccsccc"
+         style="fill:url(#linearGradient1896);fill-rule:evenodd"
+         d="m 34.675,30.572 c 0.13,-2.899 0.936,-5.081 6.31,-5.266 -3.48,0.49 -5.372,1.506 -5.372,4.536 l -0.087,3.756 h -0.851 z"
+         inkscape:connector-curvature="0" />
+      <rect
+         id="rect1345"
+         style="fill:url(#linearGradient1898);fill-rule:evenodd"
+         rx="0"
+         ry="0"
+         height="4.9024"
+         width="0.98047"
+         y="28.716999"
+         x="45.459999" />
+    </g>
+  </g>
+  <metadata
+     id="metadata84">
+    <rdf:RDF>
+      <cc:Work>
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <cc:license
+           rdf:resource="http://creativecommons.org/publicdomain/zero/1.0/" />
+        <dc:publisher>
+          <cc:Agent
+             rdf:about="http://openclipart.org/">
+            <dc:title>Openclipart</dc:title>
+          </cc:Agent>
+        </dc:publisher>
+        <dc:title>tango system lock screen</dc:title>
+        <dc:date>2010-03-26T15:33:16</dc:date>
+        <dc:description>&quot;Lock screen&quot; icon from &lt;a href=&quot;http://tango.freedesktop.org/Tango_Desktop_Project&quot;&gt; Tango Project &lt;/a&gt; \n&lt;br&gt;&lt;br&gt;\nSince version 0.8.90 Tango Project icons are Public Domain: &lt;a href=&quot;http://tango.freedesktop.org/Frequently_Asked_Questions#Terms_of_Use.3F&quot;&gt; Tango Project FAQ &lt;/a&gt;</dc:description>
+        <dc:source>https://openclipart.org/detail/34273/tango-system-lock-screen-by-warszawianka</dc:source>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>warszawianka</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:subject>
+          <rdf:Bag>
+            <rdf:li>computer</rdf:li>
+            <rdf:li>externalsource</rdf:li>
+            <rdf:li>icon</rdf:li>
+            <rdf:li>lock</rdf:li>
+            <rdf:li>screen</rdf:li>
+            <rdf:li>tango</rdf:li>
+          </rdf:Bag>
+        </dc:subject>
+      </cc:Work>
+      <cc:License
+         rdf:about="http://creativecommons.org/publicdomain/zero/1.0/">
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Reproduction" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Distribution" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#DerivativeWorks" />
+      </cc:License>
+    </rdf:RDF>
+  </metadata>
+</svg>

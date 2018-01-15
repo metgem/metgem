@@ -1,0 +1,718 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1355</width>
+    <height>941</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string/>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="ui.qrc">
+    <normaloff>:/icons/images/main.svg</normaloff>:/icons/images/main.svg</iconset>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="1" column="0">
+     <widget class="QSplitter" name="splitter_2">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <widget class="QSplitter" name="splitter">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <widget class="QWidget" name="verticalLayoutWidget">
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <item>
+          <widget class="QLabel" name="label">
+           <property name="text">
+            <string>Network</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="NetworkView" name="gvNetwork"/>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="verticalLayoutWidget_2">
+        <layout class="QVBoxLayout" name="verticalLayout_4">
+         <item>
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string>t-SNE</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="NetworkView" name="gvTSNE"/>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+      <widget class="QTabWidget" name="tabWidget">
+       <property name="currentIndex">
+        <number>0</number>
+       </property>
+       <widget class="QWidget" name="nodes">
+        <attribute name="icon">
+         <iconset resource="ui.qrc">
+          <normaloff>:/icons/images/node.svg</normaloff>:/icons/images/node.svg</iconset>
+        </attribute>
+        <attribute name="title">
+         <string>Nodes</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout">
+         <item>
+          <widget class="QTableView" name="tvNodes"/>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="edges">
+        <attribute name="icon">
+         <iconset resource="ui.qrc">
+          <normaloff>:/icons/images/edge.svg</normaloff>:/icons/images/edge.svg</iconset>
+        </attribute>
+        <attribute name="title">
+         <string>Edges</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout_3">
+         <item>
+          <widget class="QTableView" name="tvEdges"/>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+     </widget>
+    </item>
+    <item row="0" column="0">
+     <layout class="QHBoxLayout" name="layoutSearch">
+      <item>
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="leSearch">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>300</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="baseSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="placeholderText">
+         <string>Search</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btSearch">
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset resource="ui.qrc">
+          <normaloff>:/icons/images/system-search.svg</normaloff>:/icons/images/system-search.svg</iconset>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item row="3" column="0">
+     <layout class="QHBoxLayout" name="layoutProgress">
+      <item>
+       <widget class="QProgressBar" name="progressBar">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>300</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="value">
+         <number>0</number>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+        <property name="format">
+         <string>%p%</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QToolButton" name="btCancelProcess">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>Cancel current processing</string>
+        </property>
+        <property name="statusTip">
+         <string>Cancel current processing</string>
+        </property>
+        <property name="text">
+         <string>&amp;Cancel</string>
+        </property>
+        <property name="icon">
+         <iconset resource="ui.qrc">
+          <normaloff>:/icons/images/cancel.svg</normaloff>:/icons/images/cancel.svg</iconset>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1355</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionOpen"/>
+    <addaction name="actionProcessFile"/>
+    <addaction name="separator"/>
+    <addaction name="actionSave"/>
+    <addaction name="actionSaveAs"/>
+    <addaction name="separator"/>
+    <addaction name="actionQuit"/>
+   </widget>
+   <widget class="QMenu" name="menuAbout">
+    <property name="title">
+     <string>&amp;Help</string>
+    </property>
+    <addaction name="actionAbout"/>
+    <addaction name="actionAboutQt"/>
+   </widget>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>&amp;View</string>
+    </property>
+    <widget class="QMenu" name="menuToolbars">
+     <property name="title">
+      <string>&amp;Toolbars</string>
+     </property>
+     <addaction name="actionShowFileToolbar"/>
+     <addaction name="actionShowViewToolbar"/>
+     <addaction name="actionShowNetworkToolbar"/>
+     <addaction name="actionShowExportToolbar"/>
+     <addaction name="actionShowSearchToolbar"/>
+    </widget>
+    <addaction name="menuToolbars"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuView"/>
+   <addaction name="menuAbout"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QToolBar" name="tbFile">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionOpen"/>
+   <addaction name="actionSave"/>
+   <addaction name="actionSaveAs"/>
+   <addaction name="separator"/>
+   <addaction name="actionProcessFile"/>
+  </widget>
+  <widget class="QToolBar" name="tbView">
+   <property name="windowTitle">
+    <string>toolBar_2</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionZoomIn"/>
+   <addaction name="actionZoomOut"/>
+   <addaction name="actionZoomToFit"/>
+   <addaction name="actionZoomSelectedRegion"/>
+   <addaction name="separator"/>
+   <addaction name="actionFullScreen"/>
+  </widget>
+  <widget class="QToolBar" name="tbNetwork">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionLinkViews"/>
+   <addaction name="actionNeighbors"/>
+   <addaction name="separator"/>
+   <addaction name="actionHideSelected"/>
+   <addaction name="actionShowAll"/>
+  </widget>
+  <widget class="QToolBar" name="tbExport">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionExportToCytoscape"/>
+   <addaction name="actionExportAsImage"/>
+  </widget>
+  <widget class="QToolBar" name="tbSearch">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <property name="layoutDirection">
+    <enum>Qt::LeftToRight</enum>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+  <action name="actionProcessFile">
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/system-run.svg</normaloff>:/icons/images/system-run.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Process New MGF File...</string>
+   </property>
+   <property name="toolTip">
+    <string>Open and procress a new MGF file</string>
+   </property>
+   <property name="statusTip">
+    <string>Open and procress a new MGF file</string>
+   </property>
+  </action>
+  <action name="actionQuit">
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/close.svg</normaloff>:/icons/images/close.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Quit</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/main.svg</normaloff>:/icons/images/main.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;About</string>
+   </property>
+   <property name="shortcut">
+    <string>F1</string>
+   </property>
+  </action>
+  <action name="actionAboutQt">
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/qt-logo.svg</normaloff>:/icons/images/qt-logo.svg</iconset>
+   </property>
+   <property name="text">
+    <string>About &amp;Qt</string>
+   </property>
+  </action>
+  <action name="actionOpen">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/document-open.svg</normaloff>:/icons/images/document-open.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Open...</string>
+   </property>
+   <property name="toolTip">
+    <string>Open project</string>
+   </property>
+   <property name="statusTip">
+    <string>Open project</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="actionSave">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/document-save.svg</normaloff>:/icons/images/document-save.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Save</string>
+   </property>
+   <property name="iconText">
+    <string>Save</string>
+   </property>
+   <property name="toolTip">
+    <string>Save project</string>
+   </property>
+   <property name="statusTip">
+    <string>Save project</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="actionSaveAs">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/document-save-as.svg</normaloff>:/icons/images/document-save-as.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Sa&amp;ve as</string>
+   </property>
+   <property name="toolTip">
+    <string>Save project as</string>
+   </property>
+   <property name="statusTip">
+    <string>Save project as</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+S</string>
+   </property>
+  </action>
+  <action name="actionZoomIn">
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/zoom-in.svg</normaloff>:/icons/images/zoom-in.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Zoom &amp;in</string>
+   </property>
+   <property name="statusTip">
+    <string>Zoom in</string>
+   </property>
+   <property name="shortcut">
+    <string>+</string>
+   </property>
+  </action>
+  <action name="actionZoomOut">
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/zoom-out.svg</normaloff>:/icons/images/zoom-out.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Zoom &amp;out</string>
+   </property>
+   <property name="statusTip">
+    <string>Zoom out</string>
+   </property>
+   <property name="shortcut">
+    <string>-</string>
+   </property>
+  </action>
+  <action name="actionZoomToFit">
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/zoom-fit.svg</normaloff>:/icons/images/zoom-fit.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Zoom to &amp;fit</string>
+   </property>
+   <property name="toolTip">
+    <string>Zoom to fit entire network in the view</string>
+   </property>
+   <property name="statusTip">
+    <string>Zoom to fit entire network in the view</string>
+   </property>
+   <property name="shortcut">
+    <string>*</string>
+   </property>
+  </action>
+  <action name="actionZoomSelectedRegion">
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/zoom-target.svg</normaloff>:/icons/images/zoom-target.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Zoom to &amp;selected region</string>
+   </property>
+   <property name="toolTip">
+    <string>Zoom to the selected region</string>
+   </property>
+   <property name="statusTip">
+    <string>Zoom to the selected region</string>
+   </property>
+   <property name="shortcut">
+    <string>/</string>
+   </property>
+  </action>
+  <action name="actionFullScreen">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/fullscreen.svg</normaloff>:/icons/images/fullscreen.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;FullScreen</string>
+   </property>
+   <property name="toolTip">
+    <string>Switch to fullscreen/normal</string>
+   </property>
+   <property name="statusTip">
+    <string>Switch to fullscreen/normal</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+Return</string>
+   </property>
+  </action>
+  <action name="actionZoomReset">
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/zoom-1.svg</normaloff>:/icons/images/zoom-1.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Reset Zoom </string>
+   </property>
+   <property name="shortcut">
+    <string>0</string>
+   </property>
+  </action>
+  <action name="actionShowAll">
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/eye.svg</normaloff>:/icons/images/eye.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Show all</string>
+   </property>
+   <property name="toolTip">
+    <string>Show all nodes and edges</string>
+   </property>
+   <property name="statusTip">
+    <string>Show all nodes and edges in the current network</string>
+   </property>
+  </action>
+  <action name="actionHideSelected">
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/eye-closed.svg</normaloff>:/icons/images/eye-closed.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Hide selected nodes and edges</string>
+   </property>
+   <property name="toolTip">
+    <string>Hide selected nodes and edges of the current network</string>
+   </property>
+   <property name="statusTip">
+    <string>Hide selected nodes and edges of the current network</string>
+   </property>
+  </action>
+  <action name="actionNeighbors">
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/select-neighbors.svg</normaloff>:/icons/images/select-neighbors.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Neighbors</string>
+   </property>
+   <property name="toolTip">
+    <string>Select first neighbors of currently selected nodes</string>
+   </property>
+   <property name="statusTip">
+    <string>Select first neighbors of currently selected nodes</string>
+   </property>
+  </action>
+  <action name="actionExportToCytoscape">
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/cy3logoOrange.svg</normaloff>:/icons/images/cy3logoOrange.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Export to &amp;Cytoscape</string>
+   </property>
+   <property name="toolTip">
+    <string>Export current network to cytoscape</string>
+   </property>
+   <property name="statusTip">
+    <string>Export current network to cytoscape</string>
+   </property>
+  </action>
+  <action name="actionExportAsImage">
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/emblem-photos.svg</normaloff>:/icons/images/emblem-photos.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Export As &amp;Image</string>
+   </property>
+   <property name="toolTip">
+    <string>Export current network as image</string>
+   </property>
+   <property name="statusTip">
+    <string>Export current network as image</string>
+   </property>
+  </action>
+  <action name="actionLinkViews">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/lock.svg</normaloff>:/icons/images/lock.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Link views</string>
+   </property>
+   <property name="toolTip">
+    <string>Link selection between views</string>
+   </property>
+   <property name="statusTip">
+    <string>Link selection between views</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+L</string>
+   </property>
+  </action>
+  <action name="actionShowFileToolbar">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;File</string>
+   </property>
+  </action>
+  <action name="actionShowViewToolbar">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;View</string>
+   </property>
+  </action>
+  <action name="actionShowNetworkToolbar">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Network</string>
+   </property>
+  </action>
+  <action name="actionShowExportToolbar">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Export</string>
+   </property>
+  </action>
+  <action name="actionShowSearchToolbar">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Search</string>
+   </property>
+  </action>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>NetworkView</class>
+   <extends>QGraphicsView</extends>
+   <header>lib/ui.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="ui.qrc"/>
+ </resources>
+ <connections/>
+</ui>
