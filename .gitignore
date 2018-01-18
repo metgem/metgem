@@ -68,3 +68,4 @@ target/
 clusterinfosummarygroup_attributes*
 networkedges_*
 test_*.py
+lib/ui/ui_rc.py
