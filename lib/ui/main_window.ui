@@ -19,7 +19,7 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="1" column="0">
+    <item row="2" column="0">
      <widget class="QSplitter" name="splitter_2">
       <property name="orientation">
        <enum>Qt::Vertical</enum>
@@ -151,8 +151,11 @@
       </item>
      </layout>
     </item>
-    <item row="3" column="0">
+    <item row="1" column="0">
      <layout class="QHBoxLayout" name="layoutProgress">
+      <property name="spacing">
+       <number>0</number>
+      </property>
       <item>
        <widget class="QProgressBar" name="progressBar">
         <property name="sizePolicy">
@@ -166,6 +169,11 @@
           <width>300</width>
           <height>0</height>
          </size>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>6</pointsize>
+         </font>
         </property>
         <property name="value">
          <number>0</number>
@@ -192,6 +200,11 @@
           <height>0</height>
          </size>
         </property>
+        <property name="font">
+         <font>
+          <pointsize>8</pointsize>
+         </font>
+        </property>
         <property name="toolTip">
          <string>Cancel current processing</string>
         </property>
@@ -204,6 +217,12 @@
         <property name="icon">
          <iconset resource="ui.qrc">
           <normaloff>:/icons/images/cancel.svg</normaloff>:/icons/images/cancel.svg</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>12</width>
+          <height>12</height>
+         </size>
         </property>
        </widget>
       </item>

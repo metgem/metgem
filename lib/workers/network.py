@@ -1,8 +1,6 @@
 import numpy as np
 import igraph as ig
 
-from PyQt5.QtCore import pyqtSignal
-
 from .base_worker import BaseWorker
 from ..ui import RADIUS
 
@@ -11,14 +9,13 @@ class UserRequestedStopError(Exception):
     
     
 class NetworkWorker(BaseWorker):
-    updated = pyqtSignal(int)
     
     def __init__(self, graph):
         super().__init__()
         self.graph = graph
 
 
-    def start(self):
+    def run(self):
         layout = np.zeros((self.graph.vcount(), 2))
         
         clusters = sorted(self.graph.clusters(), key=len, reverse=True)
@@ -49,7 +46,6 @@ class NetworkWorker(BaseWorker):
         
             for coord, node in zip(l, graph.vs):
                 layout[node['__network_gobj'].index] = coord
-                # node['__network_gobj'].setPos(QPointF(*coord))
                 
             if max_width == 0:
                 max_width = bb.width*2

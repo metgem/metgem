@@ -1,9 +1,10 @@
-from PyQt5.QtCore import QThread, pyqtSignal, QObject
+from PyQt5.QtCore import QObject, pyqtSignal
 
 class BaseWorker(QObject):
     
     finished = pyqtSignal()
     canceled = pyqtSignal()
+    updated = pyqtSignal(int)
     error = pyqtSignal(Exception)
     
     def __init__(self):
@@ -12,15 +13,7 @@ class BaseWorker(QObject):
         self._should_stop = False
         self._result = None
         
-        self._thread = QThread()
-        
-        
-    def start(self):
-        self.moveToThread(self._thread)
-        self._thread.started.connect(self.run)
-        self._thread.start()
-        
-        
+    
     def run(self):
         pass
     

@@ -1,6 +1,5 @@
 import sys
 
-from PyQt5.QtCore import pyqtSignal
 from sklearn.manifold import TSNE
 
 from .base_worker import BaseWorker
@@ -11,14 +10,13 @@ class UserRequestedStopError(Exception):
     
     
 class TSNEWorker(BaseWorker):
-    updated = pyqtSignal(int)
     
     def __init__(self, scores):
         super().__init__()
         self._scores = scores
 
 
-    def start(self):
+    def run(self):
         sys.stdout = self
         try:
             self._result = TSNE(learning_rate=200, early_exaggeration=12, perplexity=6, verbose=2, random_state=0, metric='precomputed', method='exact').fit_transform(self._scores)

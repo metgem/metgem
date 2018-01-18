@@ -8,14 +8,14 @@ import igraph as ig
 
 from PyQt5.QtWidgets import (QTableWidgetItem, QDialog, QMessageBox, QWidget, 
     QGraphicsRectItem)
-from PyQt5.QtCore import QSettings, Qt, QPointF
+from PyQt5.QtCore import QThread, QSettings, Qt, QPointF
 from PyQt5 import uic
 
-from sklearn.manifold import TSNE
-from tqdm import tqdm
+# from tqdm import tqdm
 
-from lib import (ui, compute_scores_from_spectra, read_mgf, generate_network)
-from lib.workers import TSNEWorker, NetworkWorker
+from lib import ui
+from lib.workers.network_generation import read_mgf, generate_network #TODO
+from lib.workers import TSNEWorker, NetworkWorker, ComputeScoresWorker
 
 MAIN_UI_FILE = os.path.join('lib', 'ui', 'main_window.ui')
 APP_NAME = 'We have to find a name...'
@@ -24,22 +24,25 @@ DEBUG = True
 
 MainWindowUI, MainWindowBase = uic.loadUiType(MAIN_UI_FILE, from_imports='lib.ui', import_from='lib.ui')
 
-class tqdm_qt(tqdm):
+# class tqdm_qt(tqdm):
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    # def __init__(self, *args, **kwargs):
+        # super().__init__(*args, **kwargs)
 
         
-    def update(self, n=1):
-        #TODO
-        # print('update', n)
-        super().update(n)
+    # def update(self, n=1):
+        # # TODO
+        # # print('update', n)
+        # super().update(n)
         
 
 class MainWindow(MainWindowBase, MainWindowUI):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        
+        # Workers' references
+        self._workers = {}
         
         # Create graph
         self.graph = ig.Graph()
@@ -66,6 +69,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         # Move progressbar to the statusbar
         self.widgetProgress = QWidget()
         self.layoutProgress.setParent(None)
+        self.layoutProgress.setContentsMargins(0, 0, 0, 0)
         self.widgetProgress.setLayout(self.layoutProgress)
         self.statusBar().addPermanentWidget(self.widgetProgress)
         self.widgetProgress.setVisible(False)
@@ -230,21 +234,30 @@ class MainWindow(MainWindowBase, MainWindowUI):
             view.minimap.zoomToFit()
             
         def update_progress(i):
-            self.progressBar.setFormat('TSNE: Iteration {:d} of {:d}'.format(i, self.progressBar.maximum()))
+            self.progressBar.setFormat('Computing layout: {s}%'.format(i))
             self.progressBar.setValue(i)
             
         def process_finished():
-            layout = self._worker.result()
-            self.widgetProgress.setVisible(False)
-            apply_layout(layout)
+            layout = worker.result()
+            del self._workers[worker]
+            if not self._workers:
+                self.widgetProgress.setVisible(False)
+            if layout is not None:
+                apply_layout(layout)
     
         self.widgetProgress.setVisible(True)
         self.progressBar.setMaximum(100)
-        self._worker = NetworkWorker(self.graph)
-        self._worker.updated.connect(update_progress)
-        self._worker.finished.connect(process_finished)
-        self.btCancelProcess.pressed.connect(self._worker.stop)
-        self._worker.start()
+        thread = QThread(self)
+        worker = NetworkWorker(self.graph)
+        worker.moveToThread(thread)
+        worker.updated.connect(update_progress)
+        worker.finished.connect(process_finished)
+        self.btCancelProcess.pressed.connect(lambda: worker.stop)
+        thread.started.connect(worker.run)
+        thread.start()
+        self._workers[worker] = thread # Keep a reference to both thread and worker to prevent them to be garbage collected
+        
+        return worker, thread
         
         
     def drawTSNE(self, view, scores):
@@ -284,26 +297,62 @@ class MainWindow(MainWindowBase, MainWindowUI):
             view.zoomToFit()
             view.minimap.zoomToFit()
         
-        if np.any(mask):
-            self.widgetProgress.setVisible(True)
-            
+        if np.any(mask):           
             def update_progress(i):
                 self.progressBar.setFormat('TSNE: Iteration {:d} of {:d}'.format(i, self.progressBar.maximum()))
                 self.progressBar.setValue(i)
                 
             def process_finished():
-                layout[mask] = self._worker.result()
-                self.widgetProgress.setVisible(False)
+                layout[mask] = worker.result()
+                del self._workers[worker]
+                if not self._workers:
+                    self.widgetProgress.setVisible(False)
                 apply_layout(layout)
-        
+            
+            self.widgetProgress.setVisible(True)
             self.progressBar.setMaximum(1000) #TODO
-            self._worker = TSNEWorker(1 - scores[mask][:,mask])
-            self._worker.updated.connect(update_progress)
-            self._worker.finished.connect(process_finished)
-            self.btCancelProcess.pressed.connect(self._worker.stop)
-            self._worker.start()
+            thread = QThread(self)
+            worker = TSNEWorker(1 - scores[mask][:,mask])
+            worker.moveToThread(thread)
+            worker.updated.connect(update_progress)
+            worker.finished.connect(process_finished)
+            self.btCancelProcess.pressed.connect(lambda: worker.stop)
+            thread.started.connect(worker.run)
+            thread.start()
+            self._workers[worker] = thread # Keep a reference to both thread and worker to prevent them to be garbage collected
+            return worker, thread
         else:
             apply_layout(layout)
+            return None, None
+            
+            
+    def computeScoresFromSpectra(self, spectra, use_multiprocessing):
+        def update_progress(i):
+            # print(self.progressBar.value() + i, self.progressBar.maximum())
+            self.progressBar.setFormat('Computing scores...')
+            self.progressBar.setValue(self.progressBar.value() + i)
+                
+        def process_finished():
+            scores_matrix = worker.result()
+            del self._workers[worker]
+            if not self._workers:
+                self.widgetProgress.setVisible(False)
+    
+        num_spectra = len(spectra)
+        num_scores_to_compute = num_spectra * (num_spectra-1) // 2
+    
+        self.widgetProgress.setVisible(True)
+        self.progressBar.setMaximum(num_scores_to_compute)
+        thread = QThread(self)
+        worker = ComputeScoresWorker(spectra, use_multiprocessing)
+        worker.moveToThread(thread)
+        worker.updated.connect(update_progress)
+        worker.finished.connect(process_finished)
+        self.btCancelProcess.pressed.connect(lambda: worker.stop)
+        thread.started.connect(worker.run)
+        thread.start()
+        self._workers[worker] = thread # Keep a reference to both thread and worker to prevent them to be garbage collected
+        return worker, thread
         
             
     def showOpenFileDialog(self):
@@ -313,15 +362,22 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 
             multiprocess = False
             spectra = list(read_mgf(process_file, use_multiprocessing=multiprocess))
-            scores_matrix = compute_scores_from_spectra(spectra, use_multiprocessing=multiprocess, tqdm=tqdm_qt) #, network_options)
-            interactions = generate_network(scores_matrix, spectra, use_self_loops=True)
-
-            infos = np.array([(spectrum.mz_parent,) for spectrum in spectra], dtype=[('m/z parent', np.float32)])
-
-            nodes_idx = np.arange(scores_matrix.shape[0])
-            self.createGraph(nodes_idx, infos, interactions, labels=None)
+            # scores_matrix = compute_scores_from_spectra(spectra, use_multiprocessing=multiprocess, tqdm=tqdm_qt) #, network_options)
+            worker, thread = self.computeScoresFromSpectra(spectra, multiprocess)
             
-            self.draw(scores_matrix, interactions, infos, labels=None)
+            def scores_computed():
+                scores_matrix = worker.result()
+                interactions = generate_network(scores_matrix, spectra, use_self_loops=True)
+
+                infos = np.array([(spectrum.mz_parent,) for spectrum in spectra], dtype=[('m/z parent', np.float32)])
+
+                nodes_idx = np.arange(scores_matrix.shape[0])
+                self.createGraph(nodes_idx, infos, interactions, labels=None)
+                
+                self.draw(scores_matrix, interactions, infos, labels=None)
+                
+            worker.finished.connect(scores_computed)
+            
             
             
     def createGraph(self, nodes_idx, infos, interactions, labels=None):
@@ -349,10 +405,13 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def draw(self, scores, interactions, infos=None, labels=None):
         self.tvNodes.model().sourceModel().beginResetModel()
         self.tvEdges.model().sourceModel().beginResetModel()
-            
-        self.drawNetwork(self.gvNetwork, interactions)
-        self.drawTSNE(self.gvTSNE, scores)
-                
+
+        worker, thread = self.drawNetwork(self.gvNetwork, interactions)
+        if worker is not None:
+            worker.finished.connect(lambda: self.drawTSNE(self.gvTSNE, scores))
+        else:
+            self.drawTSNE(self.gvTSNE, scores)
+        
         self.tvNodes.model().sourceModel().endResetModel()
         self.tvEdges.model().sourceModel().endResetModel()      
         
