@@ -7,7 +7,7 @@ import numpy as np
 import igraph as ig
 
 from PyQt5.QtWidgets import (QTableWidgetItem, QDialog, QMessageBox, QWidget, 
-    QGraphicsRectItem, QMenu, QToolButton)
+    QGraphicsRectItem, QMenu, QToolButton, QActionGroup, QAction)
 from PyQt5.QtCore import QThread, QSettings, Qt, QPointF
 from PyQt5 import uic
 
@@ -111,8 +111,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
             # self.database = self._settings.value('database')
 
         # Build research bar
-        self.updateResearchBar()
+        self.updateSearchBar()
             
+
     @property
     def currentView(self):
         for view in (self.gvNetwork, self.gvTSNE):
@@ -237,11 +238,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
                     
             view.zoomToFit()
             view.minimap.zoomToFit()
-            
+
         def update_progress(i):
             self.progressBar.setFormat('Computing layout: {s}%'.format(i))
             self.progressBar.setValue(i)
-            
+
         def process_finished():
             layout = worker.result()
             del self._workers[worker]
@@ -419,7 +420,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         
         self.tvNodes.model().sourceModel().endResetModel()
         self.tvEdges.model().sourceModel().endResetModel()
-        self.updateResearchBar()      
+        self.updateSearchBar()      
         
         
     def onSelectionChanged(self):
@@ -473,39 +474,34 @@ class MainWindow(MainWindowBase, MainWindowUI):
         # self._tables[0].model().setFilterKeyColumn(0)
         # print('Filtered {} node(s) and {} edge(s) in {:.1f}ms'.format(num_nodes, num_edges, (time.time()-t0)*1000))
 
-    def updateResearchBar(self):
-        self.columnResearchDict = {}
-        self.menuActionItemList = []
-        self.researchMenu = QMenu(self)
-        searchList = ["All"]
-        header_size = self.tvNodes.model().columnCount()
-        for column in range(header_size):
-            searchList.append(self.tvNodes.model().headerData(column, Qt.Horizontal, Qt.DisplayRole))
 
-        for i, column in enumerate(searchList):
+    def updateSearchBar(self):
+        self.__columnResearchDict = {}
+        self.__menuActionItemList = []
+        self.menuSearch = QMenu(self)
+        self.__menuActionGroup = QActionGroup(self.menuSearch, exclusive=True)
+        
+        model = self.tvNodes.model()
+        self.search_list = ["All"] + [model.headerData(i, Qt.Horizontal, Qt.DisplayRole) for i in range(model.columnCount())]
 
-            self.columnResearchDict[column] = i
-            self.menuActionItemList.append(self.researchMenu.addAction(str(column)))
-            self.menuActionItemList[i].setCheckable(True)
-            if i == 0:
-                self.menuActionItemList[i].setChecked(True)
+        for column in self.search_list:
+            action = self.__menuActionGroup.addAction(QAction(str(column), checkable=True))
+            if column == "All":
+                action.setChecked(True)
+            self.menuSearch.addAction(action)
 
-        self.btSearch.setMenu(self.researchMenu)
+        self.btSearch.setMenu(self.menuSearch)
         self.btSearch.setPopupMode(QToolButton.InstantPopup)
-        self.researchMenu.triggered.connect(self.updateResearchMenu)
+        self.menuSearch.triggered.connect(self.updateSearchMenu)
 
-    def updateResearchMenu(self, column):
-        self.btSearch.setMenu(self.researchMenu)
+
+    def updateSearchMenu(self, column):
         key = column.text()
-        i = self.columnResearchDict[key]
+        i = self.search_list.index(key)
         if i == 0:
             self.tvNodes.model().setFilterKeyColumn(-1)
         else:
-            self.tvNodes.model().setFilterKeyColumn(i-1)
-
-        for x in range(len(self.menuActionItemList)):
-            if x != i:
-                self.menuActionItemList[x].setChecked(False)
+            self.tvNodes.model().setFilterKeyColumn(i-1) 
 
 
     def exportToCytoscape(self):
