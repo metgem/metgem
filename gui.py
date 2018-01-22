@@ -7,7 +7,7 @@ import numpy as np
 import igraph as ig
 
 from PyQt5.QtWidgets import (QTableWidgetItem, QDialog, QMessageBox, QWidget, 
-    QGraphicsRectItem)
+    QGraphicsRectItem, QMenu, QToolButton, QActionGroup, QAction)
 from PyQt5.QtCore import QThread, QSettings, Qt, QPointF
 from PyQt5 import uic
 
@@ -86,8 +86,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.actionZoomToFit.triggered.connect(self.currentView.zoomToFit)
         self.actionZoomSelectedRegion.triggered.connect(
             lambda: self.currentView.fitInView(self.currentView.scene().selectionArea().boundingRect(), Qt.KeepAspectRatio))
-        self.leSearch.returnPressed.connect(self.doSearch)
-        self.btSearch.pressed.connect(self.doSearch)       
+        #self.leSearch.returnPressed.connect(self.doSearch)
+        self.leSearch.textChanged.connect(self.doSearch)
+        #self.btSearch.pressed.connect(self.doSearch)
+
+
         self.actionFullScreen.triggered.connect(self.switchFullScreen)
         self.actionHideSelected.triggered.connect(lambda: self.hideItems(self.currentView.scene().selectedItems()))
         self.actionShowAll.triggered.connect(lambda: self.showItems(self.currentView.scene().items()))
@@ -107,7 +110,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
         # if database is not None and not os.path.exists(database):
             # self.database = self._settings.value('database')
 
+        # Build research bar
+        self.updateSearchBar()
             
+
     @property
     def currentView(self):
         for view in (self.gvNetwork, self.gvTSNE):
@@ -232,11 +238,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
                     
             view.zoomToFit()
             view.minimap.zoomToFit()
-            
+
         def update_progress(i):
             self.progressBar.setFormat('Computing layout: {s}%'.format(i))
             self.progressBar.setValue(i)
-            
+
         def process_finished():
             layout = worker.result()
             del self._workers[worker]
@@ -413,7 +419,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.drawTSNE(self.gvTSNE, scores)
         
         self.tvNodes.model().sourceModel().endResetModel()
-        self.tvEdges.model().sourceModel().endResetModel()      
+        self.tvEdges.model().sourceModel().endResetModel()
+        self.updateSearchBar()      
         
         
     def onSelectionChanged(self):
@@ -445,7 +452,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 self.gvNetwork.scene().selectionChanged.connect(self.onSelectionChanged)
                 
         
-    def doSearch(self):
+    def doSearch(self, value):
         # t0 = time.time()
         
         # num_nodes = 0
@@ -463,11 +470,40 @@ class MainWindow(MainWindowBase, MainWindowUI):
         # print('Selected {} node(s) and {} edge(s) in {:.1f}ms'.format(num_nodes, num_edges, (time.time()-t0)*1000))
         
         # t0 = time.time()
-        self.tvNodes.model().setFilterRegExp(self.leSearch.text())
+        self.tvNodes.model().setFilterRegExp(str(value))
         # self._tables[0].model().setFilterKeyColumn(0)
         # print('Filtered {} node(s) and {} edge(s) in {:.1f}ms'.format(num_nodes, num_edges, (time.time()-t0)*1000))
 
+
+    def updateSearchBar(self):
+        self.__columnResearchDict = {}
+        self.__menuActionItemList = []
+        self.menuSearch = QMenu(self)
+        self.__menuActionGroup = QActionGroup(self.menuSearch, exclusive=True)
         
+        model = self.tvNodes.model()
+        self.search_list = ["All"] + [model.headerData(i, Qt.Horizontal, Qt.DisplayRole) for i in range(model.columnCount())]
+
+        for column in self.search_list:
+            action = self.__menuActionGroup.addAction(QAction(str(column), checkable=True))
+            if column == "All":
+                action.setChecked(True)
+            self.menuSearch.addAction(action)
+
+        self.btSearch.setMenu(self.menuSearch)
+        self.btSearch.setPopupMode(QToolButton.InstantPopup)
+        self.menuSearch.triggered.connect(self.updateSearchMenu)
+
+
+    def updateSearchMenu(self, column):
+        key = column.text()
+        i = self.search_list.index(key)
+        if i == 0:
+            self.tvNodes.model().setFilterKeyColumn(-1)
+        else:
+            self.tvNodes.model().setFilterKeyColumn(i-1) 
+
+
     def exportToCytoscape(self):
         try:
             from py2cytoscape.data.cyrest_client import CyRestClient
