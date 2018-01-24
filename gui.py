@@ -24,17 +24,6 @@ DEBUG = True
 
 MainWindowUI, MainWindowBase = uic.loadUiType(MAIN_UI_FILE, from_imports='lib.ui', import_from='lib.ui')
 
-# class tqdm_qt(tqdm):
-
-    # def __init__(self, *args, **kwargs):
-        # super().__init__(*args, **kwargs)
-
-        
-    # def update(self, n=1):
-        # # TODO
-        # # print('update', n)
-        # super().update(n)
-        
 
 class MainWindow(MainWindowBase, MainWindowUI):
 
@@ -86,9 +75,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.actionZoomToFit.triggered.connect(self.currentView.zoomToFit)
         self.actionZoomSelectedRegion.triggered.connect(
             lambda: self.currentView.fitInView(self.currentView.scene().selectionArea().boundingRect(), Qt.KeepAspectRatio))
-        #self.leSearch.returnPressed.connect(self.doSearch)
         self.leSearch.textChanged.connect(self.doSearch)
-        #self.btSearch.pressed.connect(self.doSearch)
 
 
         self.actionFullScreen.triggered.connect(self.switchFullScreen)
@@ -453,55 +440,32 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 
         
     def doSearch(self, value):
-        # t0 = time.time()
-        
-        # num_nodes = 0
-        # num_edges = 0
-        # search = self.leSearch.text()
-        # for item in self.gvNetwork.scene().items():
-            # if item.Type == ui.Node.Type:
-                # if search in item.label:
-                    # num_nodes += 1
-                    # item.setSelected(True)
-                # else:
-                    # item.setSelected(False)
-            # elif item.Type == ui.Edge.Type:
-                # pass
-        # print('Selected {} node(s) and {} edge(s) in {:.1f}ms'.format(num_nodes, num_edges, (time.time()-t0)*1000))
-        
-        # t0 = time.time()
         self.tvNodes.model().setFilterRegExp(str(value))
-        # self._tables[0].model().setFilterKeyColumn(0)
-        # print('Filtered {} node(s) and {} edge(s) in {:.1f}ms'.format(num_nodes, num_edges, (time.time()-t0)*1000))
 
 
     def updateSearchBar(self):
-        self.__columnResearchDict = {}
-        self.__menuActionItemList = []
-        self.menuSearch = QMenu(self)
-        self.__menuActionGroup = QActionGroup(self.menuSearch, exclusive=True)
+        menu = QMenu(self)
+        group = QActionGroup(menu, exclusive=True)
         
         model = self.tvNodes.model()
-        self.search_list = ["All"] + [model.headerData(i, Qt.Horizontal, Qt.DisplayRole) for i in range(model.columnCount())]
 
-        for column in self.search_list:
-            action = self.__menuActionGroup.addAction(QAction(str(column), checkable=True))
-            if column == "All":
+        for index in range(model.columnCount()+1):
+            text = "All" if index == 0 else model.headerData(index-1, Qt.Horizontal, Qt.DisplayRole)
+            action = group.addAction(QAction(str(text), checkable=True))
+            action.setData(index)
+            menu.addAction(action)
+            if index == 0:
                 action.setChecked(True)
-            self.menuSearch.addAction(action)
+                menu.addSeparator()
 
-        self.btSearch.setMenu(self.menuSearch)
+        self.btSearch.setMenu(menu)
         self.btSearch.setPopupMode(QToolButton.InstantPopup)
-        self.menuSearch.triggered.connect(self.updateSearchMenu)
+        group.triggered.connect(self.updateSearchMenu)
+        self.tvNodes.model().setFilterKeyColumn(-1)
 
 
-    def updateSearchMenu(self, column):
-        key = column.text()
-        i = self.search_list.index(key)
-        if i == 0:
-            self.tvNodes.model().setFilterKeyColumn(-1)
-        else:
-            self.tvNodes.model().setFilterKeyColumn(i-1) 
+    def updateSearchMenu(self, action):
+        self.tvNodes.model().setFilterKeyColumn(action.data()-1)
 
 
     def exportToCytoscape(self):
