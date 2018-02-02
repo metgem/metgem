@@ -1,8 +1,10 @@
 import os
 import glob
 
-from PyQt5.QtWidgets import QFileDialog, QDialog
+from PyQt5.QtWidgets import QFileDialog, QDialog, QHBoxLayout
 from qtpy import uic
+
+from .widgets.options_widgets import tsne_option_widget, network_option_widget
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'open_file_dialog.ui')
 
@@ -33,10 +35,35 @@ class OpenFileDialog(OpenFileDialogBase, OpenFileDialogUI):
         
         self.setupUi(self)
         
+        # Add options widgets
+        tsne_widget = TsneOptionWidget()
+        network_widget = NetworkOptionWidget()
+        hGrid = QHBoxLayout()
+        hGrid.addWidget(network_widget)
+        hGrid.addWidget(tsne_widget)
+
+        self.advancedOptionsFrame.setLayout(hGrid)   
+
+        self.display_advanced_options = False
+        self.toggle_advanced_options()
+
         # Connect events
         self.btBrowseProcessFile.clicked.connect(lambda: self.browse('process'))
         self.btBrowseMetadataFile.clicked.connect(lambda: self.browse('metadata'))        
-        
+        self.btToggleAdvancedOptions.clicked.connect(self.toggle_advanced_options)
+
+    
+    def toggle_advanced_options(self):
+         if self.display_advanced_options == False:
+             self.advancedOptionsFrame.hide()
+             self.display_advanced_options = True
+             self.btToggleAdvancedOptions.setText("Show Advanced Options...")
+         else:
+             self.advancedOptionsFrame.show()
+             self.display_advanced_options = False
+             self.btToggleAdvancedOptions.setText("Hide Advanced Options...")
+         self.adjustSize()  
+
         
     def browse(self, type='process'):
         dialog = QFileDialog(self)
