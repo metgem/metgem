@@ -14,8 +14,10 @@ from PyQt5 import uic
 # from tqdm import tqdm
 
 from lib import ui
-from lib.workers.network_generation import read_mgf, generate_network #TODO
+from lib.workers.network_generation import (read_mgf, generate_network, CosineComputationOptions, 
+    NetworkVisualizationOptions, TSNEVisualizationOptions) #TODO
 from lib.workers import TSNEWorker, NetworkWorker, ComputeScoresWorker
+
 
 MAIN_UI_FILE = os.path.join('lib', 'ui', 'main_window.ui')
 APP_NAME = 'We have to find a name...'
@@ -39,6 +41,12 @@ class MainWindow(MainWindowBase, MainWindowUI):
         # Setup User interface
         self.setupUi(self)
         self.setWindowTitle(APP_NAME)
+
+        # Assigning cosine computation and visualization default options
+        self.cosine_computation_options = CosineComputationOptions()
+        self.network_visual_options = NetworkVisualizationOptions()
+        self.tsne_visual_options = TSNEVisualizationOptions()
+
 
         # Add model to table views
         for table, Model, name in ((self.tvNodes, ui.widgets.network_view.NodesModel, "Nodes"), 
@@ -77,7 +85,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
             lambda: self.currentView.fitInView(self.currentView.scene().selectionArea().boundingRect(), Qt.KeepAspectRatio))
         self.leSearch.textChanged.connect(self.doSearch)
 
-
         self.actionFullScreen.triggered.connect(self.switchFullScreen)
         self.actionHideSelected.triggered.connect(lambda: self.hideItems(self.currentView.scene().selectedItems()))
         self.actionShowAll.triggered.connect(lambda: self.showItems(self.currentView.scene().items()))
@@ -90,6 +97,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.actionShowExportToolbar.triggered.connect(lambda checked: self.tbExport.setVisible(checked))
         self.actionShowSearchToolbar.triggered.connect(lambda checked: self.tbSearch.setVisible(checked))
         
+        self.btNetworkOptions.clicked.connect(self.openVisualizationDialog)
+        self.btTSNEOptions.clicked.connect(self.openVisualizationDialog)
+
         # Load settings
         # TODO
         # self._settings = QSettings('CNRS', 'spectrum_similarity')
@@ -100,6 +110,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         # Build research bar
         self.updateSearchBar()
             
+
 
     @property
     def currentView(self):
@@ -337,7 +348,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.widgetProgress.setVisible(True)
         self.progressBar.setMaximum(num_scores_to_compute)
         thread = QThread(self)
-        worker = ComputeScoresWorker(spectra, use_multiprocessing)
+        worker = ComputeScoresWorker(spectra, use_multiprocessing, self.cosine_computation_options)
         worker.moveToThread(thread)
         worker.updated.connect(update_progress)
         worker.finished.connect(process_finished)
@@ -351,16 +362,16 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def showOpenFileDialog(self):
         dialog = ui.OpenFileDialog(self)
         if dialog.exec_() == QDialog.Accepted:
-            process_file, metadata_file, tsne_options, network_options = dialog.getValues()
+            process_file, metadata_file = dialog.getValues()
                 
             multiprocess = False
-            spectra = list(read_mgf(process_file, use_multiprocessing=multiprocess))
+            spectra = list(read_mgf(self.cosine_computation_options, process_file, use_multiprocessing=multiprocess))
             # scores_matrix = compute_scores_from_spectra(spectra, use_multiprocessing=multiprocess, tqdm=tqdm_qt) #, network_options)
             worker, thread = self.computeScoresFromSpectra(spectra, multiprocess)
             
             def scores_computed():
                 scores_matrix = worker.result()
-                interactions = generate_network(scores_matrix, spectra, use_self_loops=True)
+                interactions = generate_network(self.network_visual_options, scores_matrix, spectra, use_self_loops=True)
 
                 infos = np.array([(spectrum.mz_parent,) for spectrum in spectra], dtype=[('m/z parent', np.float32)])
 
@@ -372,6 +383,17 @@ class MainWindow(MainWindowBase, MainWindowUI):
             worker.finished.connect(scores_computed)
             
             
+    def openVisualizationDialog(self):
+        sender = self.sender()
+        if sender.objectName() == "btNetworkOptions":
+            dialog = ui.EditNetworkOptionDialog(self)
+            if dialog.exec_() == QDialog.Accepted:
+                print(sender.objectName())
+        else:
+            dialog = ui.EditTSNEOptionDialog(self)
+            if dialog.exec_() == QDialog.Accepted: 
+                print(sender.objectName())
+
             
     def createGraph(self, nodes_idx, infos, interactions, labels=None):
         # Delete all previously created edges and nodes

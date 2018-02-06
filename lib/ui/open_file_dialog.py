@@ -4,7 +4,7 @@ import glob
 from PyQt5.QtWidgets import QFileDialog, QDialog, QHBoxLayout
 from qtpy import uic
 
-from .widgets.options_widgets import tsne_option_widget, network_option_widget
+from .widgets.options_widgets import tsneOptionWidget, networkOptionWidget
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'open_file_dialog.ui')
 
@@ -36,8 +36,8 @@ class OpenFileDialog(OpenFileDialogBase, OpenFileDialogUI):
         self.setupUi(self)
         
         # Add options widgets
-        tsne_widget = TsneOptionWidget()
-        network_widget = NetworkOptionWidget()
+        tsne_widget = tsneOptionWidget()
+        network_widget = networkOptionWidget()
         hGrid = QHBoxLayout()
         hGrid.addWidget(network_widget)
         hGrid.addWidget(tsne_widget)
@@ -78,17 +78,16 @@ class OpenFileDialog(OpenFileDialogBase, OpenFileDialogUI):
         
     def getValues(self):
         tsne_options = TSNEOptions()
-        tsne_options.min_score = self.spinTSNEMinScore.value()
+        """tsne_options.min_score = self.spinTSNEMinScore.value()
         
         network_options = NetworkOptions()
         network_options.min_matching_peaks = self.spinNetworkMinMatchingPeaks.value()
         network_options.min_score = self.spinNetworkMinScore.value()
         network_options.mz_tolerance = self.spinNetworkMzTolerance.value()
         network_options.noise_reduction = self.spinNoiseReduction.value()
-        network_options.perform_library_search = self.chkLibrarySearch.isChecked()
+        network_options.perform_library_search = self.chkLibrarySearch.isChecked()"""
         
-        return (self.editProcessFile.text(), self.editMetadataFile.text(),
-                tsne_options, network_options)
+        return (self.editProcessFile.text(), self.editMetadataFile.text())
             
             
 if __name__ == "__main__":
