@@ -14,22 +14,97 @@ from .base_worker import BaseWorker
 
 
 class CosineComputationOptions:
-    MZ_TOLERANCE = 0.02 # Da
-    MIN_INTENSITY = 0 # relative minimum intensity in percentage
-    PARENT_FILTER_TOLERANCE = 17 # Da
-    MIN_MATCHED_PEAKS = 4 # Minimum number of common peaks between two spectra
-    MIN_MATCHED_PEAKS_SEARCH = 6 # Window rank filter's parameters: for each peak in the spectrum, it is kept only if it is in top MIN_MATCHED_PEAKS_SEARCH in the +/-MATCHED_PEAKS_WINDOW window
-    MATCHED_PEAKS_WINDOW = 50 # Da
+    """Class containing spectra cosine scores options.
+
+    Attributes:
+        MZ_TOLERANCE (float): in Da. Default value = 0.02
+        MIN_INTENSITY (int): relative minimum intensity in percentage Default value = 0
+        PARENT_FILTER_TOLERANCE (int): in Da. Default value = 17
+        MIN_MATCHED_PEAKS (int): Minimum number of common peaks between two spectra. Default value = 4
+        MIN_MATCHED_PEAKS_SEARCH (int): Window rank filter's parameters: for each peak in the spectrum, 
+            it is kept only if it is in top MIN_MATCHED_PEAKS_SEARCH in the +/-MATCHED_PEAKS_WINDOW window
+            Default value = 6
+        MATCHED_PEAKS_WINDOW (int): in Da. Default value = 50
+
+    """
+
+    def __init__(self):
+        self.MZ_TOLERANCE = 0.02 # Da
+        self.MIN_INTENSITY = 0 # relative minimum intensity in percentage
+        self.PARENT_FILTER_TOLERANCE = 17 # Da
+        self.MIN_MATCHED_PEAKS = 4 # Minimum number of common peaks between two spectra
+        self.MIN_MATCHED_PEAKS_SEARCH = 6 # Window rank filter's parameters: for each peak in the spectrum, it is kept only if it is in top MIN_MATCHED_PEAKS_SEARCH in the +/-MATCHED_PEAKS_WINDOW window
+        self.MATCHED_PEAKS_WINDOW = 50 # Da
+
+    def setValues(self, options):
+        """Set the values passed in arguments
+
+        Args :
+            options (tulpe): list of options values in the following order
+                option[0] = mz_tolerance
+                option[1] = min_intensity
+                option[2] = parent_filter_tolerance
+                option[3] = min_matched_peaks
+
+        """
+        self.MZ_TOLERANCE = options[0]
+        self.MIN_INTENSITY = options[1]
+        self.PARENT_FILTER_TOLERANCE = options[2]
+        self.MIN_MATCHED_PEAKS = options[3]
 
     
 class NetworkVisualizationOptions:
-    TOPK = 10 # Maximum numbers of edges for each nodes in the network
-    PAIRS_MIN_COSINE = 0.65 # Minimum cosine score for network generation
+    """Class containing Network visualization options.
+
+    Attributes:
+        TOPK (int): Maximum numbers of edges for each nodes in the network. Default value = 10
+        PAIRS_MIN_COSINE (float): Minimum cosine score for network generation. Default value = 0.65
+        MAXIMUM_CONNECTED_NODES (int): Maximum size of a Network cluster. Default value = 1000
+
+    """
+    def __init__(self):
+        self.TOPK = 10 # Maximum numbers of edges for each nodes in the network
+        self.PAIRS_MIN_COSINE = 0.65 # Minimum cosine score for network generation
+        self.MAXIMUM_CONNECTED_NODES = 1000
+
+    def setValues(self, options):
+        """Set the values passed in arguments
+
+        Args :
+            options (tulpe): list of options values in the following order
+                option[0] = topK
+                option[1] = pairs_min_cosine
+                option[2] = maximum_connected_nodes
+
+        """
+        self.TOPK = options[0]
+        self.PAIRS_MIN_COSINE = options[1]
+        self.MAXIMUM_CONNECTED_NODES = options[2]
 
 
 class TSNEVisualizationOptions:
-    PERPLEXITY = 6
-    LEARNING_RATE = 200
+    """Class containing TSNE visualization options.
+
+    Attributes:
+        PERPLEXITY (int): See TSNE documentation. Default value = 6 
+        LEARNING_RATE (int): See TSNE documentation. Default value = 200
+
+    """
+    def __init__(self):
+        self.PERPLEXITY = 6
+        self.LEARNING_RATE = 200
+
+    def setValues(self, options):
+        """Set the values passed in arguments
+
+        Args :
+            options (tulpe): list of options values in the following order
+                option[0] = PERPLEXITY
+                option[1] = LEARNING_RATE
+
+        """
+        self.PERPLEXITY = options[0]
+        self.LEARNING_RATE = options[1]
 
 
 # Helper functions

@@ -59,7 +59,7 @@
         <item row="0" column="1">
          <widget class="QSpinBox" name="spinNetworkMaxNeighbor">
           <property name="enabled">
-           <bool>false</bool>
+           <bool>true</bool>
           </property>
           <property name="minimum">
            <number>1</number>
@@ -83,7 +83,7 @@ Component Size: </string>
         <item row="2" column="1">
          <widget class="QSpinBox" name="spinNetworkMaxConnectedComponentSize">
           <property name="enabled">
-           <bool>false</bool>
+           <bool>true</bool>
           </property>
           <property name="minimum">
            <number>1</number>
@@ -106,7 +106,7 @@ Component Size: </string>
         <item row="1" column="1">
          <widget class="QDoubleSpinBox" name="spinNetworkMinScore">
           <property name="enabled">
-           <bool>false</bool>
+           <bool>true</bool>
           </property>
           <property name="decimals">
            <number>1</number>

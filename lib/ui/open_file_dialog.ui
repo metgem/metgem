@@ -137,9 +137,9 @@
         </property>
         <layout class="QGridLayout" name="gridLayout">
          <item row="3" column="1">
-          <widget class="QSpinBox" name="spinBox_2">
+          <widget class="QSpinBox" name="spinMinIntensity">
            <property name="enabled">
-            <bool>false</bool>
+            <bool>true</bool>
            </property>
           </widget>
          </item>
@@ -163,9 +163,9 @@
           </widget>
          </item>
          <item row="5" column="1" rowspan="2">
-          <widget class="QSpinBox" name="spinBox">
+          <widget class="QSpinBox" name="spinMinMatchedPeaks">
            <property name="enabled">
-            <bool>false</bool>
+            <bool>true</bool>
            </property>
            <property name="value">
             <number>4</number>
@@ -187,9 +187,9 @@
           </widget>
          </item>
          <item row="4" column="1">
-          <widget class="QSpinBox" name="spinBox_3">
+          <widget class="QSpinBox" name="spinParentFilterTolerance">
            <property name="enabled">
-            <bool>false</bool>
+            <bool>true</bool>
            </property>
            <property name="value">
             <number>17</number>
@@ -197,9 +197,9 @@
           </widget>
          </item>
          <item row="2" column="1">
-          <widget class="QDoubleSpinBox" name="doubleSpinBox">
+          <widget class="QDoubleSpinBox" name="spinMZTolerance">
            <property name="enabled">
-            <bool>false</bool>
+            <bool>true</bool>
            </property>
            <property name="singleStep">
             <double>0.010000000000000</double>

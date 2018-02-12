@@ -47,7 +47,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.network_visual_options = NetworkVisualizationOptions()
         self.tsne_visual_options = TSNEVisualizationOptions()
 
-
         # Add model to table views
         for table, Model, name in ((self.tvNodes, ui.widgets.network_view.NodesModel, "Nodes"), 
                             (self.tvEdges, ui.widgets.network_view.EdgesModel, "Edges")):
@@ -362,7 +361,12 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def showOpenFileDialog(self):
         dialog = ui.OpenFileDialog(self)
         if dialog.exec_() == QDialog.Accepted:
-            process_file, metadata_file = dialog.getValues()
+            process_file, metadata_file, compute_options = dialog.getValues()
+            tsne_options = dialog.tsne_widget.getValues()
+            network_options = dialog.network_widget.getValues()
+            self.cosine_computation_options.setValues(compute_options)
+            self.tsne_visual_options.setValues(tsne_options)
+            self.network_visual_options.setValues(network_options)
                 
             multiprocess = False
             spectra = list(read_mgf(self.cosine_computation_options, process_file, use_multiprocessing=multiprocess))
@@ -388,11 +392,15 @@ class MainWindow(MainWindowBase, MainWindowUI):
         if sender.objectName() == "btNetworkOptions":
             dialog = ui.EditNetworkOptionDialog(self)
             if dialog.exec_() == QDialog.Accepted:
-                print(sender.objectName())
-        else:
+                options = dialog.network_widget.getValues()
+                self.network_visual_options.setValues(options)
+                # To-Do restart Network graphics
+        else:  # if not "btNetworkOption" the it is "btTsneOption"
             dialog = ui.EditTSNEOptionDialog(self)
             if dialog.exec_() == QDialog.Accepted: 
-                print(sender.objectName())
+                options = dialog.tsne_widget.getValues()
+                self.tsne_visual_options.setValues(options)
+                # To-Do restart TSNE graphics
 
             
     def createGraph(self, nodes_idx, infos, interactions, labels=None):
