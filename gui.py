@@ -374,15 +374,15 @@ class MainWindow(MainWindowBase, MainWindowUI):
             worker, thread = self.computeScoresFromSpectra(spectra, multiprocess)
             
             def scores_computed():
-                scores_matrix = worker.result()
-                interactions = generate_network(self.network_visual_options, scores_matrix, spectra, use_self_loops=True)
+                self.scores_matrix = worker.result()
+                interactions = generate_network(self.network_visual_options, self.scores_matrix, spectra, use_self_loops=True)
 
                 infos = np.array([(spectrum.mz_parent,) for spectrum in spectra], dtype=[('m/z parent', np.float32)])
 
-                nodes_idx = np.arange(scores_matrix.shape[0])
+                nodes_idx = np.arange(self.scores_matrix.shape[0])
                 self.createGraph(nodes_idx, infos, interactions, labels=None)
                 
-                self.draw(scores_matrix, interactions, infos, labels=None)
+                self.draw(self.scores_matrix, interactions, infos, labels=None)
                 
             worker.finished.connect(scores_computed)
             

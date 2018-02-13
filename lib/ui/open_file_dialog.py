@@ -74,15 +74,15 @@ class OpenFileDialog(OpenFileDialogBase, OpenFileDialogUI):
     
     def toggle_advanced_options(self):
         """Toggle the Network and TSNE parameters widgets"""
-         if self.display_advanced_options == False:
+        if self.display_advanced_options == False:
              self.advancedOptionsFrame.hide()
              self.display_advanced_options = True
              self.btToggleAdvancedOptions.setText("Show Advanced Options...")
-         else:
+        else:
              self.advancedOptionsFrame.show()
              self.display_advanced_options = False
              self.btToggleAdvancedOptions.setText("Hide Advanced Options...")
-         self.adjustSize()  
+        self.adjustSize()  
 
         
     def browse(self, type='process'):
