@@ -16,7 +16,7 @@ from lib.workers.network_generation import read_mgf, generate_network
 from lib.workers import TSNEWorker, NetworkWorker, ComputeScoresWorker
 
 MAIN_UI_FILE = os.path.join('lib', 'ui', 'main_window.ui')
-DEBUG = True
+DEBUG = os.getenv('DEBUG_MODE', 'false').lower() in ('true', '1')
 
 MainWindowUI, MainWindowBase = uic.loadUiType(MAIN_UI_FILE, from_imports='lib.ui', import_from='lib.ui')
 
@@ -183,14 +183,14 @@ class MainWindow(MainWindowBase, MainWindowUI):
         
         
     def closeEvent(self, event):
-        if DEBUG:
-            reply = QMessageBox.Yes
-        else:
+        if not DEBUG and self._workers:
             reply = QMessageBox.question(self, None, 
-                         "Do you really want to exit?",
-                         QMessageBox.Yes, QMessageBox.No)
-    
-        if reply == QMessageBox.Yes:
+                         "There is process running. Do you really want to exit?",
+                         QMessageBox.Close, QMessageBox.Cancel)
+        else:
+            reply = QMessageBox.Close
+            
+        if reply == QMessageBox.Close:
             event.accept()
             self.saveSettings()
         else:
