@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import sys
 import os
 import time
@@ -549,6 +551,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
     
     
     def exportAsImage(self):
+        1/0
         filename, filter = QFileDialog.getSaveFileName(self, "Save image", filter="SVG Files (*.svg);;BMP Files (*.bmp);;JPEG (*.JPEG);;PNG (*.png)")
         if filename:
             if filter == 'SVG Files (*.svg)':
@@ -583,7 +586,7 @@ if __name__ == '__main__':
         
         from PyQt5.QtWidgets import QApplication, QMainWindow
         from PyQt5.QtCore import QCoreApplication
-        
+
         def exceptionHandler(exctype, value, trace):
             """
             This exception handler prevents quitting to the command line when there is
@@ -609,11 +612,8 @@ if __name__ == '__main__':
             msg.addButton(QMessageBox.Ignore)
             msg.raise_()
             msg.exec_()
-            if msg.clickedButton() == btRestart:
-                if sys.platform == 'win32':
-                    os.execv(sys.executable, ['python'] + sys.argv)
-                else:
-                    os.execv(sys.argv[0], sys.argv)
+            if msg.clickedButton() == btRestart: # Restart application
+                os.execv(sys.executable, [sys.executable] + sys.argv)
 
         
         # Create logger
