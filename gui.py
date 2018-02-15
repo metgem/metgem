@@ -18,8 +18,6 @@ from lib.workers.network_generation import read_mgf, generate_network #TODO
 from lib.workers import TSNEWorker, NetworkWorker, ComputeScoresWorker
 
 MAIN_UI_FILE = os.path.join('lib', 'ui', 'main_window.ui')
-APP_NAME = 'We have to find a name...'
-APP_VERSION = 0.1
 DEBUG = True
 
 MainWindowUI, MainWindowBase = uic.loadUiType(MAIN_UI_FILE, from_imports='lib.ui', import_from='lib.ui')
@@ -38,7 +36,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
         
         # Setup User interface
         self.setupUi(self)
-        self.setWindowTitle(APP_NAME)
 
         # Add model to table views
         for table, Model, name in ((self.tvNodes, ui.widgets.network_view.NodesModel, "Nodes"), 
@@ -85,17 +82,15 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.actionExportToCytoscape.triggered.connect(self.exportToCytoscape)
         self.actionExportAsImage.triggered.connect(self.exportAsImage)
         self.actionShowFileToolbar.triggered.connect(lambda checked: self.tbFile.setVisible(checked))
+        self.tbFile.visibilityChanged.connect(lambda visible: self.actionShowFileToolbar.setChecked(visible))
         self.actionShowViewToolbar.triggered.connect(lambda checked: self.tbView.setVisible(checked))
+        self.tbView.visibilityChanged.connect(lambda visible: self.actionShowViewToolbar.setChecked(visible))
         self.actionShowNetworkToolbar.triggered.connect(lambda checked: self.tbNetwork.setVisible(checked))
+        self.tbNetwork.visibilityChanged.connect(lambda visible: self.actionShowNetworkToolbar.setChecked(visible))
         self.actionShowExportToolbar.triggered.connect(lambda checked: self.tbExport.setVisible(checked))
+        self.tbExport.visibilityChanged.connect(lambda visible: self.actionShowExportToolbar.setChecked(visible))
         self.actionShowSearchToolbar.triggered.connect(lambda checked: self.tbSearch.setVisible(checked))
-        
-        # Load settings
-        # TODO
-        # self._settings = QSettings('CNRS', 'spectrum_similarity')
-        # database = self._settings.value('database')
-        # if database is not None and not os.path.exists(database):
-            # self.database = self._settings.value('database')
+        self.tbSearch.visibilityChanged.connect(lambda visible: self.actionShowSearchToolbar.setChecked(visible))
 
         # Build research bar
         self.updateSearchBar()
@@ -115,6 +110,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
         if key == Qt.Key_M: #Show/hide minimap
             view = self.currentView
             view.minimap.setVisible(not view.minimap.isVisible())
+        elif key == Qt.Key_F2:
+            print(self.tbFile.isVisible())
             
             
     def selectFirstNeighbors(self, items):
@@ -149,10 +146,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
         
     def showAbout(self):
         dialog = QMessageBox(self)
-        message = ['Version: {0}'.format(APP_VERSION),
+        message = ['Version: {0}'.format(QCoreApplication.applicationVersion()),
                    '',
                    'Should say something here.']
-        dialog.about(self, 'About {0}'.format(APP_NAME),
+        dialog.about(self, 'About {0}'.format(QCoreApplication.applicationName()),
                     '\n'.join(message))
 
         
@@ -160,12 +157,23 @@ class MainWindow(MainWindowBase, MainWindowUI):
         dialog = QMessageBox(self)
         dialog.aboutQt(self)
         
+
+    def showEvent(self, event):
+        # Load settings
+        settings = QSettings()
+        geom = settings.value('MainWindow.Geometry')
+        if geom is not None:
+            self.restoreGeometry(geom)
+        state = settings.value('MainWindow.State')
+        if state is not None:
+            self.restoreState(state)
+        
         
     def closeEvent(self, event):
         if DEBUG:
             reply = QMessageBox.Yes
         else:
-            reply = QMessageBox.question(self, APP_NAME, 
+            reply = QMessageBox.question(self, None, 
                          "Do you really want to exit?",
                          QMessageBox.Yes, QMessageBox.No)
     
@@ -177,8 +185,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
             
     def saveSettings(self):
-        pass
-        #TODO
+        settings = QSettings()
+        settings.setValue('MainWindow.Geometry', self.saveGeometry())
+        settings.setValue('MainWindow.State', self.saveState())
         # self._settings.setValue('database', self.database)
         # del self._settings
     
@@ -545,8 +554,13 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
 if __name__ == '__main__':
         from PyQt5.QtWidgets import QApplication, QMainWindow
+        from PyQt5.QtCore import QCoreApplication
         
         app = QApplication(sys.argv)
+        QCoreApplication.setOrganizationDomain("CNRS")
+        QCoreApplication.setOrganizationName("ICSN")
+        QCoreApplication.setApplicationName("tsne-network")
+        QCoreApplication.setApplicationVersion("0.1")
         window = MainWindow()
         window.show()
         sys.exit(app.exec_())
