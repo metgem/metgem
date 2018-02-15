@@ -9,8 +9,9 @@ import traceback
 import numpy as np
 import igraph as ig
 
-from PyQt5.QtWidgets import (QTableWidgetItem, QDialog, QMessageBox, QWidget, 
-    QGraphicsRectItem, QMenu, QToolButton, QActionGroup, QAction, QDockWidget)
+from PyQt5.QtWidgets import (QTableWidgetItem, QDialog, QFileDialog, 
+    QMessageBox, QWidget, QGraphicsRectItem, QMenu, QToolButton, QActionGroup,
+    QAction, QDockWidget)
 from PyQt5.QtCore import QThread, QSettings, Qt, QPointF
 from PyQt5 import uic
 
