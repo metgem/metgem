@@ -635,7 +635,6 @@ if __name__ == '__main__':
         else:
             logger.setLevel(logging.WARN)
             file_handler.setLevel(logging.WARN)
-            stream_handler.setLevel(logging.WARN)
         
         app = QApplication(sys.argv)
         
