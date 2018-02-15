@@ -23,13 +23,34 @@ DEBUG = True
 MainWindowUI, MainWindowBase = uic.loadUiType(MAIN_UI_FILE, from_imports='lib.ui', import_from='lib.ui')
 
 
+class WorkerDict(dict):
+    '''A dict that manages itself visibility of it's parent's progressbar'''
+    def __init__(self, parent, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.parent = parent
+        
+        
+    def __setitem__(self, key, item):
+        if not self: # dict is empty, so we are going to create the first entry. Show the progress bar
+            self.parent.statusBar().addPermanentWidget(self.parent.widgetProgress)
+            self.parent.widgetProgress.setVisible(True)
+        super().__setitem__(key, item)
+        
+        
+    def __delitem__(self, key):
+        super().__delitem__(key)
+        if not self: # dict is now empty, hide the progress bar
+            self.parent.widgetProgress.setVisible(False)
+            self.parent.statusBar().removeWidget(self.parent.widgetProgress)
+
+            
 class MainWindow(MainWindowBase, MainWindowUI):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
         # Workers' references
-        self._workers = {}
+        self._workers = WorkerDict(self)
         
         # Create graph
         self.graph = ig.Graph()
@@ -57,7 +78,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.layoutProgress.setParent(None)
         self.layoutProgress.setContentsMargins(0, 0, 0, 0)
         self.widgetProgress.setLayout(self.layoutProgress)
-        self.statusBar().addPermanentWidget(self.widgetProgress)
         self.widgetProgress.setVisible(False)
         
         # Connect events
@@ -186,6 +206,12 @@ class MainWindow(MainWindowBase, MainWindowUI):
         # self._settings.setValue('database', self.database)
         # del self._settings
     
+    
+    def deleteWorker(self, worker):
+        del self._workers[worker]
+        if not self._workers:
+            self.widgetProgress.setVisible(False)
+            
 
     def drawNetwork(self, view, interactions):    
         view.scene().clear()
@@ -237,19 +263,21 @@ class MainWindow(MainWindowBase, MainWindowUI):
         def process_finished():
             layout = worker.result()
             del self._workers[worker]
-            if not self._workers:
-                self.widgetProgress.setVisible(False)
             if layout is not None:
                 apply_layout(layout)
+                
+        def process_canceled():
+            del self._workers[worker]
     
-        self.widgetProgress.setVisible(True)
+        # self.widgetProgress.setVisible(True)
         self.progressBar.setMaximum(100)
         thread = QThread(self)
         worker = NetworkWorker(self.graph)
         worker.moveToThread(thread)
         worker.updated.connect(update_progress)
         worker.finished.connect(process_finished)
-        self.btCancelProcess.pressed.connect(lambda: worker.stop)
+        worker.canceled.connect(process_canceled)
+        self.btCancelProcess.pressed.connect(lambda: worker.stop())
         thread.started.connect(worker.run)
         thread.start()
         self._workers[worker] = thread # Keep a reference to both thread and worker to prevent them to be garbage collected
@@ -302,18 +330,20 @@ class MainWindow(MainWindowBase, MainWindowUI):
             def process_finished():
                 layout[mask] = worker.result()
                 del self._workers[worker]
-                if not self._workers:
-                    self.widgetProgress.setVisible(False)
                 apply_layout(layout)
+                
+            def process_canceled():
+                del self._workers[worker]
             
-            self.widgetProgress.setVisible(True)
+            # self.widgetProgress.setVisible(True)
             self.progressBar.setMaximum(1000) #TODO
             thread = QThread(self)
             worker = TSNEWorker(1 - scores[mask][:,mask])
             worker.moveToThread(thread)
             worker.updated.connect(update_progress)
             worker.finished.connect(process_finished)
-            self.btCancelProcess.pressed.connect(lambda: worker.stop)
+            worker.canceled.connect(process_canceled)
+            self.btCancelProcess.pressed.connect(lambda: worker.stop())
             thread.started.connect(worker.run)
             thread.start()
             self._workers[worker] = thread # Keep a reference to both thread and worker to prevent them to be garbage collected
@@ -325,27 +355,28 @@ class MainWindow(MainWindowBase, MainWindowUI):
             
     def computeScoresFromSpectra(self, spectra, use_multiprocessing):
         def update_progress(i):
-            # print(self.progressBar.value() + i, self.progressBar.maximum())
             self.progressBar.setFormat('Computing scores...')
             self.progressBar.setValue(self.progressBar.value() + i)
                 
         def process_finished():
             scores_matrix = worker.result()
             del self._workers[worker]
-            if not self._workers:
-                self.widgetProgress.setVisible(False)
+            
+        def process_canceled():
+            del self._workers[worker]
     
         num_spectra = len(spectra)
         num_scores_to_compute = num_spectra * (num_spectra-1) // 2
     
-        self.widgetProgress.setVisible(True)
+        # self.widgetProgress.setVisible(True)
         self.progressBar.setMaximum(num_scores_to_compute)
         thread = QThread(self)
         worker = ComputeScoresWorker(spectra, use_multiprocessing)
         worker.moveToThread(thread)
         worker.updated.connect(update_progress)
         worker.finished.connect(process_finished)
-        self.btCancelProcess.pressed.connect(lambda: worker.stop)
+        worker.canceled.connect(process_canceled)
+        self.btCancelProcess.pressed.connect(lambda: worker.stop())
         thread.started.connect(worker.run)
         thread.start()
         self._workers[worker] = thread # Keep a reference to both thread and worker to prevent them to be garbage collected
