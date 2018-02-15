@@ -11,10 +11,8 @@ from PyQt5.QtWidgets import (QTableWidgetItem, QDialog, QMessageBox, QWidget,
 from PyQt5.QtCore import QThread, QSettings, Qt, QPointF
 from PyQt5 import uic
 
-# from tqdm import tqdm
-
 from lib import ui
-from lib.workers.network_generation import read_mgf, generate_network #TODO
+from lib.workers.network_generation import read_mgf, generate_network
 from lib.workers import TSNEWorker, NetworkWorker, ComputeScoresWorker
 
 MAIN_UI_FILE = os.path.join('lib', 'ui', 'main_window.ui')
@@ -203,8 +201,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
         settings = QSettings()
         settings.setValue('MainWindow.Geometry', self.saveGeometry())
         settings.setValue('MainWindow.State', self.saveState())
-        # self._settings.setValue('database', self.database)
-        # del self._settings
     
     
     def deleteWorker(self, worker):
