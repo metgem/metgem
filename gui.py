@@ -10,7 +10,7 @@ import numpy as np
 import igraph as ig
 
 from PyQt5.QtWidgets import (QTableWidgetItem, QDialog, QMessageBox, QWidget, 
-    QGraphicsRectItem, QMenu, QToolButton, QActionGroup, QAction)
+    QGraphicsRectItem, QMenu, QToolButton, QActionGroup, QAction, QDockWidget)
 from PyQt5.QtCore import QThread, QSettings, Qt, QPointF
 from PyQt5 import uic
 
@@ -20,6 +20,7 @@ from lib.workers import TSNEWorker, NetworkWorker, ComputeScoresWorker
 
 MAIN_UI_FILE = os.path.join('lib', 'ui', 'main_window.ui')
 DEBUG = os.getenv('DEBUG_MODE', 'false').lower() in ('true', '1')
+EMBED_JUPYTER = os.getenv('EMBED_JUPYTER', 'false').lower() in ('true', '1')
 
 MainWindowUI, MainWindowBase = uic.loadUiType(MAIN_UI_FILE, from_imports='lib.ui', import_from='lib.ui')
 
@@ -82,6 +83,36 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.widgetProgress.setLayout(self.layoutProgress)
         self.widgetProgress.setVisible(False)
         
+        # Add a Jupyter widget
+        if EMBED_JUPYTER:
+            from qtconsole.rich_jupyter_widget import RichJupyterWidget
+            from qtconsole.inprocess import QtInProcessKernelManager
+            
+            kernel_manager = QtInProcessKernelManager()
+            kernel_manager.start_kernel()
+            
+            kernel_client = kernel_manager.client()
+            kernel_client.start_channels()
+
+            self.jupyter_widget = RichJupyterWidget()
+            self.jupyter_widget.kernel_manager = kernel_manager
+            self.jupyter_widget.kernel_client = kernel_client
+            
+            def stop():
+                kernel_client.stop_channels()
+                kernel_manager.shutdown_kernel()
+            
+            self.jupyter_widget.exit_requested.connect(stop)
+            app.aboutToQuit.connect(stop)
+            
+            dock_widget = QDockWidget()
+            dock_widget.setObjectName('jupyter')
+            dock_widget.setWindowTitle('Jupyter Console')
+            dock_widget.setWidget(self.jupyter_widget)
+            
+            self.addDockWidget(Qt.BottomDockWidgetArea, dock_widget)
+            kernel_manager.kernel.shell.push({'app': app, 'win': self})
+            
         # Connect events
         self.gvNetwork.scene().selectionChanged.connect(self.onSelectionChanged)
         self.gvTSNE.scene().selectionChanged.connect(self.onSelectionChanged)
@@ -335,7 +366,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
             def process_canceled():
                 del self._workers[worker]
             
-            # self.widgetProgress.setVisible(True)
             self.progressBar.setMaximum(1000) #TODO
             thread = QThread(self)
             worker = TSNEWorker(1 - scores[mask][:,mask])
@@ -368,7 +398,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
         num_spectra = len(spectra)
         num_scores_to_compute = num_spectra * (num_spectra-1) // 2
     
-        # self.widgetProgress.setVisible(True)
         self.progressBar.setMaximum(num_scores_to_compute)
         thread = QThread(self)
         worker = ComputeScoresWorker(spectra, use_multiprocessing)
@@ -390,7 +419,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 
             multiprocess = False
             spectra = list(read_mgf(process_file, use_multiprocessing=multiprocess))
-            # scores_matrix = compute_scores_from_spectra(spectra, use_multiprocessing=multiprocess, tqdm=tqdm_qt) #, network_options)
             worker, thread = self.computeScoresFromSpectra(spectra, multiprocess)
             
             def scores_computed():
@@ -551,7 +579,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
     
     
     def exportAsImage(self):
-        1/0
         filename, filter = QFileDialog.getSaveFileName(self, "Save image", filter="SVG Files (*.svg);;BMP Files (*.bmp);;JPEG (*.JPEG);;PNG (*.png)")
         if filename:
             if filter == 'SVG Files (*.svg)':
