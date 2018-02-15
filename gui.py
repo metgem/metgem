@@ -81,17 +81,12 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.actionNeighbors.triggered.connect(lambda: self.selectFirstNeighbors(self.currentView.scene().selectedItems()))
         self.actionExportToCytoscape.triggered.connect(self.exportToCytoscape)
         self.actionExportAsImage.triggered.connect(self.exportAsImage)
-        self.actionShowFileToolbar.triggered.connect(lambda checked: self.tbFile.setVisible(checked))
-        self.tbFile.visibilityChanged.connect(lambda visible: self.actionShowFileToolbar.setChecked(visible))
-        self.actionShowViewToolbar.triggered.connect(lambda checked: self.tbView.setVisible(checked))
-        self.tbView.visibilityChanged.connect(lambda visible: self.actionShowViewToolbar.setChecked(visible))
-        self.actionShowNetworkToolbar.triggered.connect(lambda checked: self.tbNetwork.setVisible(checked))
-        self.tbNetwork.visibilityChanged.connect(lambda visible: self.actionShowNetworkToolbar.setChecked(visible))
-        self.actionShowExportToolbar.triggered.connect(lambda checked: self.tbExport.setVisible(checked))
-        self.tbExport.visibilityChanged.connect(lambda visible: self.actionShowExportToolbar.setChecked(visible))
-        self.actionShowSearchToolbar.triggered.connect(lambda checked: self.tbSearch.setVisible(checked))
-        self.tbSearch.visibilityChanged.connect(lambda visible: self.actionShowSearchToolbar.setChecked(visible))
 
+        # Add a menu to show/hide toolbars
+        popup_menu = self.createPopupMenu()
+        popup_menu.setTitle("Toolbars")
+        self.menuView.addMenu(popup_menu)
+        
         # Build research bar
         self.updateSearchBar()
             
