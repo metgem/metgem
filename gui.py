@@ -2,6 +2,7 @@ import sys
 import os
 import time
 import json
+import traceback
 
 import numpy as np
 import igraph as ig
@@ -23,6 +24,7 @@ MainWindowUI, MainWindowBase = uic.loadUiType(MAIN_UI_FILE, from_imports='lib.ui
 
 class WorkerDict(dict):
     '''A dict that manages itself visibility of it's parent's progressbar'''
+    
     def __init__(self, parent, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.parent = parent
@@ -573,12 +575,72 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 painter = QPainter(image)
                 self.currentView.scene().render(painter);
                 image.save(filename)
+        
 
 if __name__ == '__main__':
+        import logging
+        from logging.handlers import RotatingFileHandler
+        
         from PyQt5.QtWidgets import QApplication, QMainWindow
         from PyQt5.QtCore import QCoreApplication
         
+        def exceptionHandler(exctype, value, trace):
+            """
+            This exception handler prevents quitting to the command line when there is
+            an unhandled exception while processing a Qt signal.
+
+            The script/application willing to use it should implement code similar to:
+
+            .. code-block:: python
+            
+                if __name__ == "__main__":
+                    sys.excepthook = exceptionHandler
+            
+            """
+            logger.error('{} in {}'.format(exctype.__name__, trace.tb_frame.f_code.co_name), exc_info=(exctype, value, trace))
+            msg = QMessageBox(window)
+            msg.setWindowTitle("Unhandled exception")
+            msg.setIcon(QMessageBox.Warning)
+            msg.setText(("It seems you have found a bug in {}. Please report details.\n"
+                        "You should restart the application now.").format(QCoreApplication.applicationName()))
+            msg.setInformativeText(str(value))
+            msg.setDetailedText(''.join(traceback.format_exception(exctype, value, trace)))
+            btRestart = msg.addButton("Restart now", QMessageBox.ResetRole)
+            msg.addButton(QMessageBox.Ignore)
+            msg.raise_()
+            msg.exec_()
+            if msg.clickedButton() == btRestart:
+                if sys.platform == 'win32':
+                    os.execv(sys.executable, ['python'] + sys.argv)
+                else:
+                    os.execv(sys.argv[0], sys.argv)
+
+        
+        # Create logger
+        if not os.path.exists('log'):
+            os.makedirs('log')
+        logger = logging.getLogger()
+        formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
+        file_handler = RotatingFileHandler('log/{}.log'.format(__file__), 'a', 1000000, 1)
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+              
+        if DEBUG:
+            stream_handler = logging.StreamHandler()
+            logger.addHandler(stream_handler)
+            
+            logger.setLevel(logging.DEBUG)
+            file_handler.setLevel(logging.DEBUG)
+            stream_handler.setLevel(logging.DEBUG)
+        else:
+            logger.setLevel(logging.WARN)
+            file_handler.setLevel(logging.WARN)
+            stream_handler.setLevel(logging.WARN)
+        
         app = QApplication(sys.argv)
+        
+        sys.excepthook = exceptionHandler
+        
         QCoreApplication.setOrganizationDomain("CNRS")
         QCoreApplication.setOrganizationName("ICSN")
         QCoreApplication.setApplicationName("tsne-network")
