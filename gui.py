@@ -16,8 +16,10 @@ from PyQt5.QtCore import QThread, QSettings, Qt, QPointF
 from PyQt5 import uic
 
 from lib import ui
-from lib.workers.network_generation import read_mgf, generate_network
+from lib.workers.network_generation import (read_mgf, generate_network, CosineComputationOptions, 
+    NetworkVisualizationOptions, TSNEVisualizationOptions) #TODO
 from lib.workers import TSNEWorker, NetworkWorker, ComputeScoresWorker
+
 
 MAIN_UI_FILE = os.path.join('lib', 'ui', 'main_window.ui')
 DEBUG = os.getenv('DEBUG_MODE', 'false').lower() in ('true', '1')
@@ -61,6 +63,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
         
         # Setup User interface
         self.setupUi(self)
+
+        # Assigning cosine computation and visualization default options
+        self.cosine_computation_options = CosineComputationOptions()
+        self.network_visual_options = NetworkVisualizationOptions()
+        self.tsne_visual_options = TSNEVisualizationOptions()
 
         # Add model to table views
         for table, Model, name in ((self.tvNodes, ui.widgets.network_view.NodesModel, "Nodes"), 
@@ -128,13 +135,15 @@ class MainWindow(MainWindowBase, MainWindowUI):
             lambda: self.currentView.fitInView(self.currentView.scene().selectionArea().boundingRect(), Qt.KeepAspectRatio))
         self.leSearch.textChanged.connect(self.doSearch)
 
-
         self.actionFullScreen.triggered.connect(self.switchFullScreen)
         self.actionHideSelected.triggered.connect(lambda: self.hideItems(self.currentView.scene().selectedItems()))
         self.actionShowAll.triggered.connect(lambda: self.showItems(self.currentView.scene().items()))
         self.actionNeighbors.triggered.connect(lambda: self.selectFirstNeighbors(self.currentView.scene().selectedItems()))
         self.actionExportToCytoscape.triggered.connect(self.exportToCytoscape)
         self.actionExportAsImage.triggered.connect(self.exportAsImage)
+        
+        self.btNetworkOptions.clicked.connect(self.openVisualizationDialog)
+        self.btTSNEOptions.clicked.connect(self.openVisualizationDialog)
 
         # Add a menu to show/hide toolbars
         popup_menu = self.createPopupMenu()
@@ -144,6 +153,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         # Build research bar
         self.updateSearchBar()
             
+
 
     @property
     def currentView(self):
@@ -401,7 +411,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
     
         self.progressBar.setMaximum(num_scores_to_compute)
         thread = QThread(self)
-        worker = ComputeScoresWorker(spectra, use_multiprocessing)
+        worker = ComputeScoresWorker(spectra, use_multiprocessing, self.cosine_computation_options)
         worker.moveToThread(thread)
         worker.updated.connect(update_progress)
         worker.finished.connect(process_finished)
@@ -416,26 +426,46 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def showOpenFileDialog(self):
         dialog = ui.OpenFileDialog(self)
         if dialog.exec_() == QDialog.Accepted:
-            process_file, metadata_file, tsne_options, network_options = dialog.getValues()
+            process_file, metadata_file, compute_options = dialog.getValues()
+            tsne_options = dialog.tsne_widget.getValues()
+            network_options = dialog.network_widget.getValues()
+            self.cosine_computation_options.setValues(compute_options)
+            self.tsne_visual_options.setValues(tsne_options)
+            self.network_visual_options.setValues(network_options)
                 
             multiprocess = False
-            spectra = list(read_mgf(process_file, use_multiprocessing=multiprocess))
+            spectra = list(read_mgf(self.cosine_computation_options, process_file, use_multiprocessing=multiprocess))
             worker, thread = self.computeScoresFromSpectra(spectra, multiprocess)
             
             def scores_computed():
-                scores_matrix = worker.result()
-                interactions = generate_network(scores_matrix, spectra, use_self_loops=True)
+                self.scores_matrix = worker.result()
+                interactions = generate_network(self.network_visual_options, self.scores_matrix, spectra, use_self_loops=True)
 
                 infos = np.array([(spectrum.mz_parent,) for spectrum in spectra], dtype=[('m/z parent', np.float32)])
 
-                nodes_idx = np.arange(scores_matrix.shape[0])
+                nodes_idx = np.arange(self.scores_matrix.shape[0])
                 self.createGraph(nodes_idx, infos, interactions, labels=None)
                 
-                self.draw(scores_matrix, interactions, infos, labels=None)
+                self.draw(self.scores_matrix, interactions, infos, labels=None)
                 
             worker.finished.connect(scores_computed)
             
             
+    def openVisualizationDialog(self):
+        sender = self.sender()
+        if sender.objectName() == "btNetworkOptions":
+            dialog = ui.EditNetworkOptionDialog(self)
+            if dialog.exec_() == QDialog.Accepted:
+                options = dialog.network_widget.getValues()
+                self.network_visual_options.setValues(options)
+                # To-Do restart Network graphics
+        else:  # if not "btNetworkOption" the it is "btTsneOption"
+            dialog = ui.EditTSNEOptionDialog(self)
+            if dialog.exec_() == QDialog.Accepted: 
+                options = dialog.tsne_widget.getValues()
+                self.tsne_visual_options.setValues(options)
+                # To-Do restart TSNE graphics
+
             
     def createGraph(self, nodes_idx, infos, interactions, labels=None):
         # Delete all previously created edges and nodes

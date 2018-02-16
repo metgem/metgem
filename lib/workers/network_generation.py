@@ -12,14 +12,99 @@ from pyteomics import mgf
 
 from .base_worker import BaseWorker
 
-PARENT_FILTER_TOLERANCE = 17 # Da
-PAIRS_MIN_COSINE = 0.65 # Minimum cosine score for network generation
-MZ_TOLERANCE = 0.02 # Da
-MIN_MATCHED_PEAKS = 4 # Minimum number of common peaks between two spectra
-TOPK = 10 # Maximum numbers of edges for each nodes in the network
-MIN_INTENSITY = 0 # relative minimum intensity in percentage
-MIN_MATCHED_PEAKS_SEARCH = 6 # Window rank filter's parameters: for each peak in the spectrum, it is kept only if it is in top MIN_MATCHED_PEAKS_SEARCH in the +/-MATCHED_PEAKS_WINDOW window
-MATCHED_PEAKS_WINDOW = 50 # Da
+
+class CosineComputationOptions:
+    """Class containing spectra cosine scores options.
+
+    Attributes:
+        MZ_TOLERANCE (float): in Da. Default value = 0.02
+        MIN_INTENSITY (int): relative minimum intensity in percentage Default value = 0
+        PARENT_FILTER_TOLERANCE (int): in Da. Default value = 17
+        MIN_MATCHED_PEAKS (int): Minimum number of common peaks between two spectra. Default value = 4
+        MIN_MATCHED_PEAKS_SEARCH (int): Window rank filter's parameters: for each peak in the spectrum, 
+            it is kept only if it is in top MIN_MATCHED_PEAKS_SEARCH in the +/-MATCHED_PEAKS_WINDOW window
+            Default value = 6
+        MATCHED_PEAKS_WINDOW (int): in Da. Default value = 50
+
+    """
+
+    def __init__(self):
+        self.MZ_TOLERANCE = 0.02 # Da
+        self.MIN_INTENSITY = 0 # relative minimum intensity in percentage
+        self.PARENT_FILTER_TOLERANCE = 17 # Da
+        self.MIN_MATCHED_PEAKS = 4 # Minimum number of common peaks between two spectra
+        self.MIN_MATCHED_PEAKS_SEARCH = 6 # Window rank filter's parameters: for each peak in the spectrum, it is kept only if it is in top MIN_MATCHED_PEAKS_SEARCH in the +/-MATCHED_PEAKS_WINDOW window
+        self.MATCHED_PEAKS_WINDOW = 50 # Da
+
+    def setValues(self, options):
+        """Set the values passed in arguments
+
+        Args :
+            options (tulpe): list of options values in the following order
+                option[0] = mz_tolerance
+                option[1] = min_intensity
+                option[2] = parent_filter_tolerance
+                option[3] = min_matched_peaks
+
+        """
+        self.MZ_TOLERANCE = options[0]
+        self.MIN_INTENSITY = options[1]
+        self.PARENT_FILTER_TOLERANCE = options[2]
+        self.MIN_MATCHED_PEAKS = options[3]
+
+    
+class NetworkVisualizationOptions:
+    """Class containing Network visualization options.
+
+    Attributes:
+        TOPK (int): Maximum numbers of edges for each nodes in the network. Default value = 10
+        PAIRS_MIN_COSINE (float): Minimum cosine score for network generation. Default value = 0.65
+        MAXIMUM_CONNECTED_NODES (int): Maximum size of a Network cluster. Default value = 1000
+
+    """
+    def __init__(self):
+        self.TOPK = 10 # Maximum numbers of edges for each nodes in the network
+        self.PAIRS_MIN_COSINE = 0.65 # Minimum cosine score for network generation
+        self.MAXIMUM_CONNECTED_NODES = 1000
+
+    def setValues(self, options):
+        """Set the values passed in arguments
+
+        Args :
+            options (tulpe): list of options values in the following order
+                option[0] = topK
+                option[1] = pairs_min_cosine
+                option[2] = maximum_connected_nodes
+
+        """
+        self.TOPK = options[0]
+        self.PAIRS_MIN_COSINE = options[1]
+        self.MAXIMUM_CONNECTED_NODES = options[2]
+
+
+class TSNEVisualizationOptions:
+    """Class containing TSNE visualization options.
+
+    Attributes:
+        PERPLEXITY (int): See TSNE documentation. Default value = 6 
+        LEARNING_RATE (int): See TSNE documentation. Default value = 200
+
+    """
+    def __init__(self):
+        self.PERPLEXITY = 6
+        self.LEARNING_RATE = 200
+
+    def setValues(self, options):
+        """Set the values passed in arguments
+
+        Args :
+            options (tulpe): list of options values in the following order
+                option[0] = PERPLEXITY
+                option[1] = LEARNING_RATE
+
+        """
+        self.PERPLEXITY = options[0]
+        self.LEARNING_RATE = options[1]
 
 
 # Helper functions
@@ -38,13 +123,13 @@ def pretty_time_delta(seconds):
         return '{:.1f}s'.format(seconds,)
         
 
-def read_mgf(filename, use_multiprocessing=False):
+def read_mgf(options, filename, use_multiprocessing=False):
     '''Read a file in Mascot Generic Format an return Spectrum objects'''
     for id, entry in enumerate(mgf.read(filename, convert_arrays=1, read_charges=False, dtype=np.float32)):
         mz_parent = entry['params']['pepmass']
         mz_parent = mz_parent[0] if type(mz_parent) is tuple else mz_parent #Parent ion mass is read as a tuple
         data = np.column_stack((entry['m/z array'], entry['intensity array']))
-        yield Spectrum(id, mz_parent, data, min_intensity=MIN_INTENSITY, use_multiprocessing=use_multiprocessing)
+        yield Spectrum(id, mz_parent, data, compute_options=options, use_multiprocessing=use_multiprocessing)
 
         
 def grouper(iterable, n, fillvalue=None):
@@ -74,7 +159,7 @@ class Spectrum:
     MZ = 0
     INTENSITY = 1
     
-    def __init__(self, id, mz_parent, data, min_intensity=5, use_multiprocessing=False):
+    def __init__(self, id, mz_parent, data, compute_options, use_multiprocessing=False):
         self.id = id
         self.mz_parent = mz_parent
         
@@ -82,16 +167,16 @@ class Spectrum:
         data = data[data[:,Spectrum.MZ]>=50]
         
         # Filter peaks close to the parent ion's m/z
-        data = data[np.logical_or(data[:,Spectrum.MZ]<=mz_parent-PARENT_FILTER_TOLERANCE, data[:,Spectrum.MZ]>=mz_parent+PARENT_FILTER_TOLERANCE)]
+        data = data[np.logical_or(data[:,Spectrum.MZ]<=mz_parent-compute_options.PARENT_FILTER_TOLERANCE, data[:,Spectrum.MZ]>=mz_parent+compute_options.PARENT_FILTER_TOLERANCE)]
         
         # Keep only peaks higher than threshold
-        data = data[data[:,Spectrum.INTENSITY] >= min_intensity * data[:,Spectrum.INTENSITY].max() / 100]
+        data = data[data[:,Spectrum.INTENSITY] >= compute_options.MIN_INTENSITY * data[:,Spectrum.INTENSITY].max() / 100]
         
         # Window rank filter
         data = data[np.argsort(data[:,Spectrum.INTENSITY])]
         mz_ratios = data[:,Spectrum.MZ]
-        mask = np.logical_and(mz_ratios>=mz_ratios[:,None]-MATCHED_PEAKS_WINDOW, mz_ratios<=mz_ratios[:,None]+MATCHED_PEAKS_WINDOW)
-        data = data[np.array([mz_ratios[i] in mz_ratios[mask[i]][-MIN_MATCHED_PEAKS_SEARCH:] for i in range(mask.shape[0])])]
+        mask = np.logical_and(mz_ratios>=mz_ratios[:,None]-compute_options.MATCHED_PEAKS_WINDOW, mz_ratios<=mz_ratios[:,None]+compute_options.MATCHED_PEAKS_WINDOW)
+        data = data[np.array([mz_ratios[i] in mz_ratios[mask[i]][-compute_options.MIN_MATCHED_PEAKS_SEARCH:] for i in range(mask.shape[0])])]
         
         # Use square root of intensities to minimize/maximize effects of high/low intensity peaks
         data[:,Spectrum.INTENSITY] = np.sqrt(data[:,Spectrum.INTENSITY]) * 10
@@ -136,7 +221,7 @@ def batch_cosine_scores(ids, tolerance):
     return counter
 
     
-def cosine_score(spectrum1, spectrum2, tolerance):
+def cosine_score(spectrum1, spectrum2, tolerance, min_matched_peaks):
     '''Compute cosine score from two spectra and a given m/z tolerance.
     
     Args:
@@ -179,7 +264,7 @@ def cosine_score(spectrum1, spectrum2, tolerance):
             peakUsed2[peakMatches[i][1]] = True
             numMatchedPeaks += 1
             
-    if numMatchedPeaks < MIN_MATCHED_PEAKS:
+    if numMatchedPeaks < min_matched_peaks:
         return 0.
         
     return score
@@ -189,10 +274,11 @@ class ComputeScoresWorker(BaseWorker):
     '''Generate a network from a MGF file.
     '''
     
-    def __init__(self, spectra, use_multiprocessing):
+    def __init__(self, spectra, use_multiprocessing, compute_options):
         super().__init__()
         self._spectra = spectra
         self.use_multiprocessing = use_multiprocessing
+        self.compute_options = compute_options
 
 
     def run(self):
@@ -213,7 +299,7 @@ class ComputeScoresWorker(BaseWorker):
             groups = grouper(combinations, 
                             min(10000, num_scores_to_compute//max_workers),
                             fillvalue=(None, None))
-            compute = partial(batch_cosine_scores, tolerance=MZ_TOLERANCE)
+            compute = partial(batch_cosine_scores, self.compute_options.MZ_TOLERANCE, self.MIN_MATCHED_PEAKS)
             for result in pool.imap_unordered(compute, groups):
                 if self._should_stop:
                     self.canceled.emit()
@@ -228,7 +314,7 @@ class ComputeScoresWorker(BaseWorker):
                     self.canceled.emit()
                     return False
                     
-                score = cosine_score(spectrum1, spectrum2, MZ_TOLERANCE)
+                score = cosine_score(spectrum1, spectrum2, self.compute_options.MZ_TOLERANCE, self.compute_options.MIN_MATCHED_PEAKS)
                     
                 scores_matrix[spectrum1.id, spectrum2.id] = score
                 self.updated.emit(1)
@@ -249,17 +335,17 @@ class ComputeScoresWorker(BaseWorker):
         self.finished.emit()
     
     
-def generate_network(scores_matrix, spectra, use_self_loops=True):
+def generate_network(compute_options, scores_matrix, spectra, use_self_loops=True):
     interactions = []
     
     num_spectra = len(spectra)
     
     np.fill_diagonal(scores_matrix, 0)
     triu = np.triu(scores_matrix)
-    triu[triu<=PAIRS_MIN_COSINE] = 0
+    triu[triu<=compute_options.PAIRS_MIN_COSINE] = 0
     for i in range(num_spectra):
         # indexes = np.argpartition(triu[i,], -TOPK)[-TOPK:] # Should be faster and give the same results
-        indexes = np.argsort(triu[i,])[-TOPK:]
+        indexes = np.argsort(triu[i,])[-compute_options.TOPK:]
         indexes = indexes[triu[i, indexes] > 0]
             
         for index in indexes:
@@ -272,8 +358,8 @@ def generate_network(scores_matrix, spectra, use_self_loops=True):
     # Top K algorithm, keep only edges between two nodes if and only if each of the node appeared in each other’s respective top k most similar nodes
     mask = np.zeros(interactions.shape[0], dtype=bool)
     for i, (x, y, _, _) in enumerate(interactions):
-        x_ind = np.where(np.logical_or(interactions['Source']==x, interactions['Target']==x))[0][:TOPK]
-        y_ind = np.where(np.logical_or(interactions['Source']==y, interactions['Target']==y))[0][:TOPK]
+        x_ind = np.where(np.logical_or(interactions['Source']==x, interactions['Target']==x))[0][:compute_options.TOPK]
+        y_ind = np.where(np.logical_or(interactions['Source']==y, interactions['Target']==y))[0][:compute_options.TOPK]
         if (x in interactions[y_ind]['Source'] or x in interactions[y_ind]['Target']) \
           and (y in interactions[x_ind]['Source'] or y in interactions[x_ind]['Target']):
             mask[i] = True
