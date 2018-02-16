@@ -48,7 +48,7 @@ class OpenFileDialog(OpenFileDialogBase, OpenFileDialogUI):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.network_widget)
         layout.addWidget(self.tsne_widget)
-        print(self.parent())
+
         if self.parent():
             tsne_options = self.parent().tsne_visual_options
             self.tsne_widget.setValues(tsne_options)
@@ -57,7 +57,6 @@ class OpenFileDialog(OpenFileDialogBase, OpenFileDialogUI):
             self.network_widget.setValues(network_options)
 
         self.wgAdvancedOptions.setLayout(layout)
-        self.wgAdvancedOptions.setVisible(False)
 
         # Connect events
         self.btBrowseProcessFile.clicked.connect(lambda: self.browse('process'))
@@ -66,8 +65,8 @@ class OpenFileDialog(OpenFileDialogBase, OpenFileDialogUI):
         
         
     def showEvent(self, event):
-        self.wgAdvancedOptions.show()
-        self.toggle_advanced_options()
+        self.wgAdvancedOptions.hide()
+        self.adjustSize()
 
     
     def toggle_advanced_options(self):
@@ -75,10 +74,10 @@ class OpenFileDialog(OpenFileDialogBase, OpenFileDialogUI):
         
         if self.wgAdvancedOptions.isVisible():
              self.wgAdvancedOptions.hide()
-             self.btMore.setText("More")
+             self.btMore.setText("&More")
         else:
              self.wgAdvancedOptions.show()
-             self.btMore.setText("Less")
+             self.btMore.setText("&Less")
              
         self.adjustSize()  
 
