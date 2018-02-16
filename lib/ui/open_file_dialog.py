@@ -40,7 +40,7 @@ class OpenFileDialog(OpenFileDialogBase, OpenFileDialogUI):
         
     def browse(self, type='process'):
         dialog = QFileDialog(self)
-        dialog.setOption(QFileDialog.ShowDirsOnly)
+        #dialog.setOption(QFileDialog.ShowDirsOnly)
         if type == 'process':
             dialog.setNameFilters(["MGF Files (*.mgf)", "All files (*.*)"])
         if dialog.exec_() == QDialog.Accepted:
