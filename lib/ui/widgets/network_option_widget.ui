@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>264</width>
+    <width>288</width>
     <height>154</height>
    </rect>
   </property>
@@ -17,7 +17,7 @@
    <item row="0" column="0">
     <widget class="QLabel" name="label_3">
      <property name="text">
-      <string>Maximum Neighbor Number:</string>
+      <string>Maximum Neighbor Number</string>
      </property>
     </widget>
    </item>
@@ -40,8 +40,7 @@
    <item row="2" column="0">
     <widget class="QLabel" name="label_4">
      <property name="text">
-      <string>Maximum Connected 
-Component Size: </string>
+      <string>Max. Connected Component Size </string>
      </property>
     </widget>
    </item>
@@ -64,7 +63,7 @@ Component Size: </string>
    <item row="1" column="0">
     <widget class="QLabel" name="label_7">
      <property name="text">
-      <string>Minimal Cosine Score Value:</string>
+      <string>Minimal Cosine Score Value</string>
      </property>
     </widget>
    </item>

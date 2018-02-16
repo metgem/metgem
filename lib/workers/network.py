@@ -4,6 +4,7 @@ import igraph as ig
 from .base_worker import BaseWorker
 from ..ui import RADIUS
 
+
 class UserRequestedStopError(Exception):
     '''Raised if user request to stop a worker's process'''
     

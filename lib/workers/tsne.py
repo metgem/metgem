@@ -6,6 +6,30 @@ from sklearn.manifold import TSNE
 from .base_worker import BaseWorker
 
 
+class TSNEVisualizationOptions:
+    """Class containing TSNE visualization options.
+
+    Attributes:
+        perplexity (int): See TSNE documentation. Default value = 6 
+        learning_rate (int): See TSNE documentation. Default value = 200
+
+    """
+    perplexity = 6
+    learning_rate = 200
+
+    def setValues(self, options):
+        """Set the values passed in arguments
+
+        Args :
+            options (tulpe): list of options values in the following order
+                option[0] = perplexity
+                option[1] = learning_rate
+
+        """
+        self.perplexity = options[0]
+        self.learning_rate = options[1]
+
+
 class UserRequestedStopError(Exception):
     '''Raised if user request to stop a worker's process'''
     

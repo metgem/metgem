@@ -16,9 +16,12 @@ from PyQt5.QtCore import QThread, QSettings, Qt, QPointF
 from PyQt5 import uic
 
 from lib import ui
-from lib.workers.network_generation import (read_mgf, generate_network, CosineComputationOptions, 
-    NetworkVisualizationOptions, TSNEVisualizationOptions) #TODO
-from lib.workers import TSNEWorker, NetworkWorker, ComputeScoresWorker
+from lib.workers import read_mgf #TODO
+from lib.workers.network_generation import generate_network #TODO
+from lib.workers import (ReadMGFWorker,
+                        TSNEWorker, TSNEVisualizationOptions,
+                         NetworkWorker, NetworkVisualizationOptions,
+                         ComputeScoresWorker, CosineComputationOptions)
 
 
 MAIN_UI_FILE = os.path.join('lib', 'ui', 'main_window.ui')
@@ -49,6 +52,18 @@ class WorkerDict(dict):
             self.parent.widgetProgress.setVisible(False)
             self.parent.statusBar().removeWidget(self.parent.widgetProgress)
 
+
+class Options:
+    cosine = CosineComputationOptions()
+    network = NetworkVisualizationOptions()
+    tsne = TSNEVisualizationOptions()
+    
+    
+class Network:
+    spectra = None
+    scores = None
+    infos = None
+    
             
 class MainWindow(MainWindowBase, MainWindowUI):
 
@@ -65,9 +80,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.setupUi(self)
 
         # Assigning cosine computation and visualization default options
-        self.cosine_computation_options = CosineComputationOptions()
-        self.network_visual_options = NetworkVisualizationOptions()
-        self.tsne_visual_options = TSNEVisualizationOptions()
+        self.options = Options()
+        
+        # Create an object to store all computed objects
+        self.network = Network()
 
         # Add model to table views
         for table, Model, name in ((self.tvNodes, ui.widgets.network_view.NodesModel, "Nodes"), 
@@ -400,7 +416,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.progressBar.setValue(self.progressBar.value() + i)
                 
         def process_finished():
-            scores_matrix = worker.result()
             del self._workers[worker]
             
         def process_canceled():
@@ -411,7 +426,34 @@ class MainWindow(MainWindowBase, MainWindowUI):
     
         self.progressBar.setMaximum(num_scores_to_compute)
         thread = QThread(self)
-        worker = ComputeScoresWorker(spectra, use_multiprocessing, self.cosine_computation_options)
+        worker = ComputeScoresWorker(spectra, use_multiprocessing, self.options.cosine)
+        worker.moveToThread(thread)
+        worker.updated.connect(update_progress)
+        worker.finished.connect(process_finished)
+        worker.canceled.connect(process_canceled)
+        self.btCancelProcess.pressed.connect(lambda: worker.stop())
+        thread.started.connect(worker.run)
+        thread.start()
+        self._workers[worker] = thread # Keep a reference to both thread and worker to prevent them to be garbage collected
+        return worker, thread
+    
+    
+    def readMGF(self, filename, use_multiprocessing):
+        def update_progress(i):
+            self.progressBar.setFormat('Reading MGF...')
+            self.progressBar.setValue(self.progressBar.value() + i)
+                
+        def process_finished():
+            del self._workers[worker]
+            
+        def process_canceled():
+            del self._workers[worker]
+    
+        self.progressBar.setMinimum(0)
+        self.progressBar.setMaximum(0)
+        
+        thread = QThread(self)
+        worker = ReadMGFWorker(filename, self.options.cosine, use_multiprocessing)
         worker.moveToThread(thread)
         worker.updated.connect(update_progress)
         worker.finished.connect(process_finished)
@@ -424,46 +466,50 @@ class MainWindow(MainWindowBase, MainWindowUI):
         
             
     def showOpenFileDialog(self):
-        dialog = ui.OpenFileDialog(self)
+        dialog = ui.OpenFileDialog(self, options=self.options)
         if dialog.exec_() == QDialog.Accepted:
-            process_file, metadata_file, compute_options = dialog.getValues()
-            tsne_options = dialog.tsne_widget.getValues()
-            network_options = dialog.network_widget.getValues()
-            self.cosine_computation_options.setValues(compute_options)
-            self.tsne_visual_options.setValues(tsne_options)
-            self.network_visual_options.setValues(network_options)
+            process_file, metadata_file, compute_options, tsne_options, network_options = dialog.getValues()
+            self.options.cosine.setValues(compute_options)
+            self.options.tsne.setValues(tsne_options)
+            self.options.network.setValues(network_options)
                 
             multiprocess = False
-            spectra = list(read_mgf(self.cosine_computation_options, process_file, use_multiprocessing=multiprocess))
-            worker, thread = self.computeScoresFromSpectra(spectra, multiprocess)
             
+            def file_read():
+                nonlocal worker
+                self.network.spectra = worker.result()
+                worker, thread = self.computeScoresFromSpectra(self.network.spectra, multiprocess)
+                worker.finished.connect(scores_computed)
+
             def scores_computed():
-                self.scores_matrix = worker.result()
-                interactions = generate_network(self.network_visual_options, self.scores_matrix, spectra, use_self_loops=True)
+                self.network.scores = worker.result()
+                interactions = generate_network(self.network.scores, self.network.spectra, self.options.network, use_self_loops=True)
 
-                infos = np.array([(spectrum.mz_parent,) for spectrum in spectra], dtype=[('m/z parent', np.float32)])
+                self.network.infos = np.array([(spectrum.mz_parent,) for spectrum in self.network.spectra], dtype=[('m/z parent', np.float32)])
 
-                nodes_idx = np.arange(self.scores_matrix.shape[0])
-                self.createGraph(nodes_idx, infos, interactions, labels=None)
+                nodes_idx = np.arange(self.network.scores.shape[0])
+                self.createGraph(nodes_idx, self.network.infos, interactions, labels=None)
                 
-                self.draw(self.scores_matrix, interactions, infos, labels=None)
+                self.draw(self.network.scores, interactions, self.network.infos, labels=None)
                 
-            worker.finished.connect(scores_computed)
-            
+            worker, thread = self.readMGF(process_file, use_multiprocessing=multiprocess)
+            worker.finished.connect(file_read)
+
             
     def openVisualizationDialog(self):
         sender = self.sender()
         if sender.objectName() == "btNetworkOptions":
-            dialog = ui.EditNetworkOptionDialog(self)
+            dialog = ui.EditNetworkOptionDialog(self, options=self.options)
             if dialog.exec_() == QDialog.Accepted:
-                options = dialog.network_widget.getValues()
-                self.network_visual_options.setValues(options)
+                options = dialog.getValues()
+                print(options)
+                self.options.network.setValues(options)
                 # To-Do restart Network graphics
         else:  # if not "btNetworkOption" the it is "btTsneOption"
-            dialog = ui.EditTSNEOptionDialog(self)
+            dialog = ui.EditTSNEOptionDialog(self, options=self.options)
             if dialog.exec_() == QDialog.Accepted: 
-                options = dialog.tsne_widget.getValues()
-                self.tsne_visual_options.setValues(options)
+                options = dialog.getValues()
+                self.options.tsne.setValues(options)
                 # To-Do restart TSNE graphics
 
             
@@ -696,7 +742,7 @@ if __name__ == '__main__':
         
         app = QApplication(sys.argv)
         
-        sys.excepthook = exceptionHandler
+        #sys.excepthook = exceptionHandler
         
         QCoreApplication.setOrganizationDomain("CNRS")
         QCoreApplication.setOrganizationName("ICSN")

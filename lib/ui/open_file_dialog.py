@@ -32,7 +32,7 @@ class OpenFileDialog(OpenFileDialogBase, OpenFileDialogUI):
 
     """
 
-    def __init__(self, *args, folder=None, **kwargs):
+    def __init__(self, *args, folder=None, options=None, **kwargs):
         super().__init__(*args, **kwargs)
         
         self.setupUi(self)
@@ -49,12 +49,9 @@ class OpenFileDialog(OpenFileDialogBase, OpenFileDialogUI):
         layout.addWidget(self.network_widget)
         layout.addWidget(self.tsne_widget)
 
-        if self.parent():
-            tsne_options = self.parent().tsne_visual_options
-            self.tsne_widget.setValues(tsne_options)
-
-            network_options = self.parent().network_visual_options
-            self.network_widget.setValues(network_options)
+        if options:
+            self.tsne_widget.setValues(options.tsne)
+            self.network_widget.setValues(options.network)
 
         self.wgAdvancedOptions.setLayout(layout)
 
@@ -98,18 +95,23 @@ class OpenFileDialog(OpenFileDialogBase, OpenFileDialogUI):
         
         
     def getValues(self):
-        """Returns Cosine Computation parameters and files to process"""
+        """Returns files to process and options"""
+        
         cosine_computation_options = self.getComputeOptions()
-        return self.editProcessFile.text(), self.editMetadataFile.text(), cosine_computation_options
+        return self.editProcessFile.text(), self.editMetadataFile.text(), \
+                cosine_computation_options, self.tsne_widget.getValues(), \
+                self.network_widget.getValues()
         
 
     def getComputeOptions(self):
         """Returns cosine computation options values from the widget"""
+        
         mz_tolerance = self.spinMZTolerance.value()
         min_intensity = self.spinMinIntensity.value()
         parent_filter_tolerance = self.spinParentFilterTolerance.value()
         min_matched_peaks = self.spinMinMatchedPeaks.value()
         return mz_tolerance, min_intensity, parent_filter_tolerance, min_matched_peaks
+            
             
 if __name__ == "__main__":
     import sys
