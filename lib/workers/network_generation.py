@@ -243,7 +243,7 @@ class ComputeScoresWorker(BaseWorker):
         
         scores_matrix = scores_matrix + scores_matrix.T
         np.fill_diagonal(scores_matrix, 1)
-        
+        scores_matrix[scores_matrix>1] = 1
 
         self._result = scores_matrix
         self.finished.emit()
