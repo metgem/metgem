@@ -2,58 +2,56 @@ import os
 import glob
 
 from PyQt5.QtWidgets import QFileDialog, QDialog, QHBoxLayout
-from qtpy import uic
-
-from .widgets.options_widgets import tsneOptionWidget, networkOptionWidget
-
-UI_FILE = os.path.join(os.path.dirname(__file__), 'edit_option_dialog.ui')
+from PyQt5 import uic
 
 if __name__ == '__main__':
-    import sys
-    sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-    EditOptionDialogUi, EditOptionDialogBase = uic.loadUiType(UI_FILE)
+    from widgets.options_widgets import TSNEOptionWidget, NetworkOptionWidget
 else:
-    EditOptionDialogUi, EditOptionDialogBase = uic.loadUiType(UI_FILE, from_imports='lib.ui', import_from='lib.ui')
+    from .widgets.options_widgets import TSNEOptionWidget, NetworkOptionWidget
          
 
+class BaseOptionDialog(QDialog):
+    def __init__(self, folder=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        if self.__class__.__name__.startswith('EditTSNE'):
+            self.option_widget = TSNEOptionWidget()
+            layout = QHBoxLayout()
+            layout.addWidget(self.option_widget)
+
+            self.setLayout(layout) 
+            self.resize(self.option_widget.sizeHint())
+
+            # Set options values
+            if self.parent():
+                options = self.parent().tsne_visual_options
+                self.option_widget.setValues(options)
+                
+        elif self.__class__.__name__.startswith('EditNetwork'):
+            self.option_widget = TSNEOptionWidget()
+            layout = QHBoxLayout()
+            layout.addWidget(self.option_widget)
+
+            self.setLayout(layout) 
+            self.resize(self.option_widget.sizeHint())
+
+            # Set options values
+            if self.parent():
+                options = self.parent().tsne_visual_options
+                self.option_widget.setValues(options)
             
-class EditTSNEOptionDialog(EditOptionDialogBase, EditOptionDialogUi):
-    """Creates a dialog to modify the TSNE options"""
-    def __init__(self, *args, folder=None, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.setupUi(self)
-        
-        # Add options widgets
-        self.tsne_widget = tsneOptionWidget()
-        hGrid = QHBoxLayout()
-        hGrid.addWidget(self.tsne_widget)
 
-        self.frameCentral.setLayout(hGrid) 
-        self.resize(self.tsne_widget.sizeHint())
+            
+class EditTSNEOptionDialog(BaseOptionDialog):
+    """Dialog to modify the TSNE options"""
+    
+    pass
 
-        # Set options values
-        options = self.parent().tsne_visual_options
-        self.tsne_widget.setValue(options)
-        
 
-class EditNetworkOptionDialog(EditOptionDialogBase, EditOptionDialogUi):
-    """Creates a dialog to modify the Network options"""
-    def __init__(self, *args, folder=None, **kwargs):
-        super().__init__(*args, **kwargs)
-        
-        self.setupUi(self)
-
-        # Add options widgets
-        self.network_widget = networkOptionWidget()
-        hGrid = QHBoxLayout()
-        hGrid.addWidget(self.network_widget)
-
-        self.frameCentral.setLayout(hGrid)   
-        self.resize(self.network_widget.sizeHint()) 
-
-        # Set options values
-        options = self.parent().network_visual_options
-        self.network_widget.setValue(options)  
+class EditNetworkOptionDialog(BaseOptionDialog):
+    """Dialog to modify the Network options"""
+    
+    pass
         
             
 if __name__ == "__main__":
@@ -63,6 +61,6 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     dialog = EditTSNEOptionDialog(folder=os.path.realpath(os.path.dirname(__file__)))
     
-    if dialog.exec_() == QtWidgets.QDialog.Accepted:
+    if dialog.exec_() == QDialog.Accepted:
         print('You chose these files:', dialog.getValues())
         

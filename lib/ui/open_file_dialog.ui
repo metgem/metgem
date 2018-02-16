@@ -2,12 +2,15 @@
 <ui version="4.0">
  <class>OpenFileDialog</class>
  <widget class="QDialog" name="OpenFileDialog">
+  <property name="windowModality">
+   <enum>Qt::ApplicationModal</enum>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>465</width>
-    <height>227</height>
+    <width>501</width>
+    <height>404</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -19,251 +22,175 @@
   <property name="windowTitle">
    <string>Open File</string>
   </property>
-  <property name="windowIcon">
-   <iconset resource="ui.qrc">
-    <normaloff>:/icons/images/system-run.svg</normaloff>:/icons/images/system-run.svg</iconset>
-  </property>
-  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0">
-   <item>
-    <widget class="QFrame" name="frame_3">
-     <property name="frameShape">
-      <enum>QFrame::StyledPanel</enum>
+  <layout class="QGridLayout" name="gridLayout_2">
+   <item row="1" column="0">
+    <widget class="QGroupBox" name="groupBox_4">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
      </property>
-     <property name="frameShadow">
-      <enum>QFrame::Raised</enum>
+     <property name="title">
+      <string>Cosine Score Computing</string>
      </property>
-     <layout class="QHBoxLayout" name="horizontalLayout_2">
-      <property name="spacing">
-       <number>2</number>
-      </property>
-      <property name="leftMargin">
-       <number>0</number>
-      </property>
-      <property name="topMargin">
-       <number>0</number>
-      </property>
-      <property name="rightMargin">
-       <number>0</number>
-      </property>
-      <property name="bottomMargin">
-       <number>0</number>
-      </property>
-      <item>
-       <widget class="QFrame" name="frame">
-        <property name="frameShape">
-         <enum>QFrame::StyledPanel</enum>
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="3" column="1">
+       <widget class="QSpinBox" name="spinMinIntensity">
+        <property name="enabled">
+         <bool>true</bool>
         </property>
-        <property name="frameShadow">
-         <enum>QFrame::Raised</enum>
-        </property>
-        <layout class="QVBoxLayout" name="verticalLayout_2">
-         <item>
-          <widget class="QLabel" name="label">
-           <property name="text">
-            <string>File to process</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_3">
-           <item>
-            <widget class="QLineEdit" name="editProcessFile">
-             <property name="placeholderText">
-              <string>Choose a file to process</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="btBrowseProcessFile">
-             <property name="text">
-              <string>&amp;Browse...</string>
-             </property>
-             <property name="icon">
-              <iconset resource="ui.qrc">
-               <normaloff>:/icons/images/folder-open.svg</normaloff>:/icons/images/folder-open.svg</iconset>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_2">
-           <property name="text">
-            <string>Metadata</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_4">
-           <item>
-            <widget class="QLineEdit" name="editMetadataFile">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="placeholderText">
-              <string>Choose a metadata file</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="btBrowseMetadataFile">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="text">
-              <string>&amp;Browse...</string>
-             </property>
-             <property name="icon">
-              <iconset resource="ui.qrc">
-               <normaloff>:/icons/images/folder-open.svg</normaloff>:/icons/images/folder-open.svg</iconset>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-        </layout>
        </widget>
       </item>
-      <item>
-       <widget class="QGroupBox" name="groupBox_4">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="title">
-         <string>Cosine Score Computing</string>
-        </property>
-        <layout class="QGridLayout" name="gridLayout">
-         <item row="3" column="1">
-          <widget class="QSpinBox" name="spinMinIntensity">
-           <property name="enabled">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="5" column="0" rowspan="2">
-          <widget class="QLabel" name="label_6">
-           <property name="text">
-            <string>Minimal Matched Peaks:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="0">
-          <widget class="QLabel" name="label_3">
-           <property name="font">
-            <font>
-             <italic>false</italic>
-            </font>
-           </property>
-           <property name="text">
-            <string>m/z Tolerance:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="5" column="1" rowspan="2">
-          <widget class="QSpinBox" name="spinMinMatchedPeaks">
-           <property name="enabled">
-            <bool>true</bool>
-           </property>
-           <property name="value">
-            <number>4</number>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="0">
-          <widget class="QLabel" name="label_4">
-           <property name="text">
-            <string>Minimal Intensity:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="0">
-          <widget class="QLabel" name="label_5">
-           <property name="text">
-            <string>Parent Filter Tolerance:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="1">
-          <widget class="QSpinBox" name="spinParentFilterTolerance">
-           <property name="enabled">
-            <bool>true</bool>
-           </property>
-           <property name="value">
-            <number>17</number>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="1">
-          <widget class="QDoubleSpinBox" name="spinMZTolerance">
-           <property name="enabled">
-            <bool>true</bool>
-           </property>
-           <property name="singleStep">
-            <double>0.010000000000000</double>
-           </property>
-           <property name="value">
-            <double>0.020000000000000</double>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
-    <widget class="QFrame" name="frame_2">
-     <property name="frameShape">
-      <enum>QFrame::StyledPanel</enum>
-     </property>
-     <property name="frameShadow">
-      <enum>QFrame::Raised</enum>
-     </property>
-     <layout class="QHBoxLayout" name="horizontalLayout">
-      <property name="topMargin">
-       <number>0</number>
-      </property>
-      <property name="bottomMargin">
-       <number>0</number>
-      </property>
-      <item>
-       <widget class="QPushButton" name="btToggleAdvancedOptions">
+      <item row="5" column="0" rowspan="2">
+       <widget class="QLabel" name="label_6">
         <property name="text">
-         <string>Show Advanced Options...</string>
+         <string>Minimal Matched Peaks:</string>
         </property>
        </widget>
       </item>
-      <item>
-       <spacer name="horizontalSpacer">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_3">
+        <property name="font">
+         <font>
+          <italic>false</italic>
+         </font>
         </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>284</width>
-          <height>20</height>
-         </size>
+        <property name="text">
+         <string>m/z Tolerance:</string>
         </property>
-       </spacer>
+       </widget>
+      </item>
+      <item row="5" column="1" rowspan="2">
+       <widget class="QSpinBox" name="spinMinMatchedPeaks">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="value">
+         <number>4</number>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string>Minimal Intensity:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>Parent Filter Tolerance:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QSpinBox" name="spinParentFilterTolerance">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="value">
+         <number>17</number>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QDoubleSpinBox" name="spinMZTolerance">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="singleStep">
+         <double>0.010000000000000</double>
+        </property>
+        <property name="value">
+         <double>0.020000000000000</double>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
    </item>
-   <item>
-    <widget class="QFrame" name="advancedOptionsFrame">
+   <item row="0" column="0">
+    <widget class="QFrame" name="frame">
      <property name="frameShape">
       <enum>QFrame::StyledPanel</enum>
      </property>
      <property name="frameShadow">
       <enum>QFrame::Raised</enum>
      </property>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>File to process</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <item>
+         <widget class="QLineEdit" name="editProcessFile">
+          <property name="placeholderText">
+           <string>Choose a file to process</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btBrowseProcessFile">
+          <property name="text">
+           <string>&amp;Browse...</string>
+          </property>
+          <property name="icon">
+           <iconset resource="ui.qrc">
+            <normaloff>:/icons/images/folder-open.svg</normaloff>:/icons/images/folder-open.svg</iconset>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>Metadata</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <item>
+         <widget class="QLineEdit" name="editMetadataFile">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="placeholderText">
+           <string>Choose a metadata file</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btBrowseMetadataFile">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>&amp;Browse...</string>
+          </property>
+          <property name="icon">
+           <iconset resource="ui.qrc">
+            <normaloff>:/icons/images/folder-open.svg</normaloff>:/icons/images/folder-open.svg</iconset>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
     </widget>
    </item>
-   <item>
+   <item row="0" column="1" rowspan="2">
+    <widget class="QWidget" name="wgAdvancedOptions" native="true"/>
+   </item>
+   <item row="3" column="0">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>

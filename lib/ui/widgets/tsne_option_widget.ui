@@ -1,107 +1,67 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>TSNE_option_widget</class>
- <widget class="QWidget" name="TSNE_option_widget">
+ <class>gbTSNEOptions</class>
+ <widget class="QGroupBox" name="gbTSNEOptions">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>151</width>
-    <height>81</height>
+    <width>169</width>
+    <height>112</height>
    </rect>
   </property>
-  <property name="minimumSize">
-   <size>
-    <width>151</width>
-    <height>81</height>
-   </size>
+  <property name="title">
+   <string>T-SNE Visualization</string>
   </property>
-  <property name="maximumSize">
-   <size>
-    <width>151</width>
-    <height>81</height>
-   </size>
-  </property>
-  <property name="windowTitle">
-   <string>Form</string>
-  </property>
-  <layout class="QGridLayout" name="gridLayout">
-   <property name="leftMargin">
-    <number>0</number>
-   </property>
-   <property name="topMargin">
-    <number>0</number>
-   </property>
-   <property name="rightMargin">
-    <number>0</number>
-   </property>
-   <property name="bottomMargin">
-    <number>0</number>
-   </property>
-   <property name="spacing">
-    <number>0</number>
-   </property>
+  <layout class="QGridLayout" name="gridLayout_3">
+   <item row="1" column="0">
+    <widget class="QLabel" name="label_3">
+     <property name="text">
+      <string>Learning  Rate</string>
+     </property>
+    </widget>
+   </item>
    <item row="0" column="0">
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
-     <item>
-      <widget class="QGroupBox" name="gbTSNEOptions">
-       <property name="title">
-        <string>T-SNE Visualization Options</string>
-       </property>
-       <layout class="QGridLayout" name="gridLayout_3">
-        <item row="1" column="0">
-         <widget class="QLabel" name="label_3">
-          <property name="text">
-           <string>Learning  Rate:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="0">
-         <widget class="QLabel" name="label_4">
-          <property name="text">
-           <string>Perplexity:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QSpinBox" name="spinTSNELearningRate">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="minimum">
-           <number>10</number>
-          </property>
-          <property name="maximum">
-           <number>500</number>
-          </property>
-          <property name="singleStep">
-           <number>10</number>
-          </property>
-          <property name="value">
-           <number>200</number>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QSpinBox" name="spinTSNEPerplexity">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="minimum">
-           <number>1</number>
-          </property>
-          <property name="maximum">
-           <number>20</number>
-          </property>
-          <property name="value">
-           <number>6</number>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-     </item>
-    </layout>
+    <widget class="QLabel" name="label_4">
+     <property name="text">
+      <string>Perplexity</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QSpinBox" name="spinTSNELearningRate">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="minimum">
+      <number>10</number>
+     </property>
+     <property name="maximum">
+      <number>500</number>
+     </property>
+     <property name="singleStep">
+      <number>10</number>
+     </property>
+     <property name="value">
+      <number>200</number>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="QSpinBox" name="spinTSNEPerplexity">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="minimum">
+      <number>1</number>
+     </property>
+     <property name="maximum">
+      <number>20</number>
+     </property>
+     <property name="value">
+      <number>6</number>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>

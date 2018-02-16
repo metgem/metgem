@@ -9,8 +9,6 @@ from PyQt5.QtWidgets import (QApplication, QGraphicsItem,
         QRubberBand, QStyle, QOpenGLWidget, QStyleOptionGraphicsItem,
         QFormLayout, QSizePolicy)
 
-# IndexRole = Qt.UserRole + 1
-
 RADIUS = 30
 NODE_BORDER_WIDTH = 5
 FONT_SIZE = 14

@@ -1,10 +1,8 @@
 import os
 import glob
 
-from PyQt5.QtWidgets import QFileDialog, QDialog, QHBoxLayout
-from qtpy import uic
-
-from .widgets.options_widgets import tsneOptionWidget, networkOptionWidget
+from PyQt5.QtWidgets import QFileDialog, QDialog, QVBoxLayout, QDialogButtonBox
+from PyQt5 import uic
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'open_file_dialog.ui')
 
@@ -13,19 +11,10 @@ if __name__ == '__main__':
     sys.path.append(os.path.dirname(os.path.dirname(__file__)))
     
     OpenFileDialogUI, OpenFileDialogBase = uic.loadUiType(UI_FILE)
+    from widgets.options_widgets import TSNEOptionWidget, NetworkOptionWidget
 else:
     OpenFileDialogUI, OpenFileDialogBase = uic.loadUiType(UI_FILE, from_imports='lib.ui', import_from='lib.ui')
-         
-
-"""class TSNEOptions:
-    min_score = None
-
-class NetworkOptions:
-    min_matching_peaks = None
-    min_score = None
-    mz_tolerance = None
-    noise_reduction = None
-    perform_library_search = False"""
+    from .widgets.options_widgets import TSNEOptionWidget, NetworkOptionWidget
     
             
 class OpenFileDialog(OpenFileDialogBase, OpenFileDialogUI):
@@ -48,45 +37,55 @@ class OpenFileDialog(OpenFileDialogBase, OpenFileDialogUI):
         
         self.setupUi(self)
         
+        # Add advanced option button
+        self.btMore = self.buttonBox.addButton("&More", QDialogButtonBox.ActionRole)
+        
         # Add options widgets
-        self.tsne_widget = tsneOptionWidget()
-        self.network_widget = networkOptionWidget()
-        hGrid = QHBoxLayout()
-        hGrid.addWidget(self.network_widget)
-        hGrid.addWidget(self.tsne_widget)
+        self.tsne_widget = TSNEOptionWidget()
+        self.network_widget = NetworkOptionWidget()
+        
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self.network_widget)
+        layout.addWidget(self.tsne_widget)
+        print(self.parent())
+        if self.parent():
+            tsne_options = self.parent().tsne_visual_options
+            self.tsne_widget.setValues(tsne_options)
 
-        tsne_options = self.parent().tsne_visual_options
-        self.tsne_widget.setValue(tsne_options)
+            network_options = self.parent().network_visual_options
+            self.network_widget.setValues(network_options)
 
-        network_options = self.parent().network_visual_options
-        self.network_widget.setValue(network_options)
-
-        self.advancedOptionsFrame.setLayout(hGrid)   
-
-        self.display_advanced_options = False
-        self.toggle_advanced_options()
+        self.wgAdvancedOptions.setLayout(layout)
+        self.wgAdvancedOptions.setVisible(False)
 
         # Connect events
         self.btBrowseProcessFile.clicked.connect(lambda: self.browse('process'))
         self.btBrowseMetadataFile.clicked.connect(lambda: self.browse('metadata'))        
-        self.btToggleAdvancedOptions.clicked.connect(self.toggle_advanced_options)
+        self.btMore.clicked.connect(self.toggle_advanced_options)
+        
+        
+    def showEvent(self, event):
+        self.wgAdvancedOptions.show()
+        self.toggle_advanced_options()
 
     
     def toggle_advanced_options(self):
         """Toggle the Network and TSNE parameters widgets"""
-        if self.display_advanced_options == False:
-             self.advancedOptionsFrame.hide()
-             self.display_advanced_options = True
-             self.btToggleAdvancedOptions.setText("Show Advanced Options...")
+        
+        if self.wgAdvancedOptions.isVisible():
+             self.wgAdvancedOptions.hide()
+             self.btMore.setText("More")
         else:
-             self.advancedOptionsFrame.show()
-             self.display_advanced_options = False
-             self.btToggleAdvancedOptions.setText("Hide Advanced Options...")
+             self.wgAdvancedOptions.show()
+             self.btMore.setText("Less")
+             
         self.adjustSize()  
 
         
     def browse(self, type='process'):
         """Open a dialog to file either .mgf or metadata.txt file"""
+        
         dialog = QFileDialog(self)
         #dialog.setOption(QFileDialog.ShowDirsOnly)
         if type == 'process':
@@ -102,7 +101,7 @@ class OpenFileDialog(OpenFileDialogBase, OpenFileDialogUI):
     def getValues(self):
         """Returns Cosine Computation parameters and files to process"""
         cosine_computation_options = self.getComputeOptions()
-        return (self.editProcessFile.text(), self.editMetadataFile.text(), cosine_computation_options)
+        return self.editProcessFile.text(), self.editMetadataFile.text(), cosine_computation_options
         
 
     def getComputeOptions(self):
@@ -111,7 +110,7 @@ class OpenFileDialog(OpenFileDialogBase, OpenFileDialogUI):
         min_intensity = self.spinMinIntensity.value()
         parent_filter_tolerance = self.spinParentFilterTolerance.value()
         min_matched_peaks = self.spinMinMatchedPeaks.value()
-        return (mz_tolerance, min_intensity, parent_filter_tolerance, min_matched_peaks)
+        return mz_tolerance, min_intensity, parent_filter_tolerance, min_matched_peaks
             
 if __name__ == "__main__":
     import sys
@@ -120,6 +119,6 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     dialog = OpenFileDialog(folder=os.path.realpath(os.path.dirname(__file__)))
     
-    if dialog.exec_() == QtWidgets.QDialog.Accepted:
+    if dialog.exec_() == QDialog.Accepted:
         print('You chose these files:', dialog.getValues())
         
