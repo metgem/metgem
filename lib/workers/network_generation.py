@@ -301,18 +301,23 @@ class ComputeScoresWorker(BaseWorker):
                             fillvalue=(None, None))
             compute = partial(batch_cosine_scores, self.compute_options.MZ_TOLERANCE, self.MIN_MATCHED_PEAKS)
             for result in pool.imap_unordered(compute, groups):
+                if self._should_stop:
+                    self.canceled.emit()
+                    return False
                 self.updated.emit(result)
-                # pbar.update(result)
         else:
             scores_matrix = np.zeros((num_spectra, num_spectra), dtype=np.float32)
             
             combinations = itertools.combinations(self._spectra, 2)
             for spectrum1, spectrum2 in combinations:
+                if self._should_stop:
+                    self.canceled.emit()
+                    return False
+                    
                 score = cosine_score(spectrum1, spectrum2, self.compute_options.MZ_TOLERANCE, self.compute_options.MIN_MATCHED_PEAKS)
                     
                 scores_matrix[spectrum1.id, spectrum2.id] = score
                 self.updated.emit(1)
-                # pbar.update()
 
                     
         # Fill matrice with predictable values
@@ -324,7 +329,7 @@ class ComputeScoresWorker(BaseWorker):
         
         scores_matrix = scores_matrix + scores_matrix.T
         np.fill_diagonal(scores_matrix, 1)
-        
+        scores_matrix[scores_matrix>1] = 1
 
         self._result = scores_matrix
         self.finished.emit()

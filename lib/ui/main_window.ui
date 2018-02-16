@@ -200,11 +200,6 @@
           <height>0</height>
          </size>
         </property>
-        <property name="font">
-         <font>
-          <pointsize>6</pointsize>
-         </font>
-        </property>
         <property name="value">
          <number>0</number>
         </property>
@@ -218,23 +213,6 @@
       </item>
       <item>
        <widget class="QToolButton" name="btCancelProcess">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>8</pointsize>
-         </font>
-        </property>
         <property name="toolTip">
          <string>Cancel current processing</string>
         </property>
@@ -247,12 +225,6 @@
         <property name="icon">
          <iconset resource="ui.qrc">
           <normaloff>:/icons/images/cancel.svg</normaloff>:/icons/images/cancel.svg</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>12</width>
-          <height>12</height>
-         </size>
         </property>
        </widget>
       </item>
@@ -292,17 +264,6 @@
     <property name="title">
      <string>&amp;View</string>
     </property>
-    <widget class="QMenu" name="menuToolbars">
-     <property name="title">
-      <string>&amp;Toolbars</string>
-     </property>
-     <addaction name="actionShowFileToolbar"/>
-     <addaction name="actionShowViewToolbar"/>
-     <addaction name="actionShowNetworkToolbar"/>
-     <addaction name="actionShowExportToolbar"/>
-     <addaction name="actionShowSearchToolbar"/>
-    </widget>
-    <addaction name="menuToolbars"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
@@ -311,7 +272,7 @@
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QToolBar" name="tbFile">
    <property name="windowTitle">
-    <string>toolBar</string>
+    <string>File</string>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
@@ -327,7 +288,7 @@
   </widget>
   <widget class="QToolBar" name="tbView">
    <property name="windowTitle">
-    <string>toolBar_2</string>
+    <string>View</string>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
@@ -344,7 +305,7 @@
   </widget>
   <widget class="QToolBar" name="tbNetwork">
    <property name="windowTitle">
-    <string>toolBar</string>
+    <string>Network</string>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
@@ -360,7 +321,7 @@
   </widget>
   <widget class="QToolBar" name="tbExport">
    <property name="windowTitle">
-    <string>toolBar</string>
+    <string>Export</string>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
@@ -373,7 +334,7 @@
   </widget>
   <widget class="QToolBar" name="tbSearch">
    <property name="windowTitle">
-    <string>toolBar</string>
+    <string>Search</string>
    </property>
    <property name="layoutDirection">
     <enum>Qt::LeftToRight</enum>

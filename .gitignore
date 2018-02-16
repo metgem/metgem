@@ -62,11 +62,30 @@ target/
 # Notepad++ backups #
 *.bak
 
+# ---> Linux
+*~
+
+# temporary files which can be created if a process still has a handle open of a deleted file
+.fuse_hidden*
+
+# KDE directory preferences
+.directory
+
+# Linux trash folder which might appear on any partition or disk
+.Trash-*
+
+# .nfs files are created when an open file is removed but is still being accessed
+.nfs*
+
+# Kate temporary files
+.*.kate-swp
+
 # app-specific development files
-*.mgf
+.*.mgf
 *.csv
 clusterinfosummarygroup_attributes*
 networkedges_*
 test_*.py
 lib/ui/ui_rc.py
 lib/ui/images/main.ico
+log

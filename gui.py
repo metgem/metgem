@@ -1,17 +1,19 @@
+#!/usr/bin/env python
+
 import sys
 import os
 import time
 import json
+import traceback
 
 import numpy as np
 import igraph as ig
 
-from PyQt5.QtWidgets import (QTableWidgetItem, QDialog, QMessageBox, QWidget, 
-    QGraphicsRectItem, QMenu, QToolButton, QActionGroup, QAction)
+from PyQt5.QtWidgets import (QTableWidgetItem, QDialog, QFileDialog, 
+    QMessageBox, QWidget, QGraphicsRectItem, QMenu, QToolButton, QActionGroup,
+    QAction, QDockWidget)
 from PyQt5.QtCore import QThread, QSettings, Qt, QPointF
 from PyQt5 import uic
-
-# from tqdm import tqdm
 
 from lib import ui
 from lib.workers.network_generation import (read_mgf, generate_network, CosineComputationOptions, 
@@ -20,27 +22,47 @@ from lib.workers import TSNEWorker, NetworkWorker, ComputeScoresWorker
 
 
 MAIN_UI_FILE = os.path.join('lib', 'ui', 'main_window.ui')
-APP_NAME = 'We have to find a name...'
-APP_VERSION = 0.1
-DEBUG = True
+DEBUG = os.getenv('DEBUG_MODE', 'false').lower() in ('true', '1')
+EMBED_JUPYTER = os.getenv('EMBED_JUPYTER', 'false').lower() in ('true', '1')
 
 MainWindowUI, MainWindowBase = uic.loadUiType(MAIN_UI_FILE, from_imports='lib.ui', import_from='lib.ui')
 
 
+class WorkerDict(dict):
+    '''A dict that manages itself visibility of it's parent's progressbar'''
+    
+    def __init__(self, parent, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.parent = parent
+        
+        
+    def __setitem__(self, key, item):
+        if not self: # dict is empty, so we are going to create the first entry. Show the progress bar
+            self.parent.statusBar().addPermanentWidget(self.parent.widgetProgress)
+            self.parent.widgetProgress.setVisible(True)
+        super().__setitem__(key, item)
+        
+        
+    def __delitem__(self, key):
+        super().__delitem__(key)
+        if not self: # dict is now empty, hide the progress bar
+            self.parent.widgetProgress.setVisible(False)
+            self.parent.statusBar().removeWidget(self.parent.widgetProgress)
+
+            
 class MainWindow(MainWindowBase, MainWindowUI):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
         # Workers' references
-        self._workers = {}
+        self._workers = WorkerDict(self)
         
         # Create graph
         self.graph = ig.Graph()
         
         # Setup User interface
         self.setupUi(self)
-        self.setWindowTitle(APP_NAME)
 
         # Assigning cosine computation and visualization default options
         self.cosine_computation_options = CosineComputationOptions()
@@ -67,9 +89,38 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.layoutProgress.setParent(None)
         self.layoutProgress.setContentsMargins(0, 0, 0, 0)
         self.widgetProgress.setLayout(self.layoutProgress)
-        self.statusBar().addPermanentWidget(self.widgetProgress)
         self.widgetProgress.setVisible(False)
         
+        # Add a Jupyter widget
+        if EMBED_JUPYTER:
+            from qtconsole.rich_jupyter_widget import RichJupyterWidget
+            from qtconsole.inprocess import QtInProcessKernelManager
+            
+            kernel_manager = QtInProcessKernelManager()
+            kernel_manager.start_kernel()
+            
+            kernel_client = kernel_manager.client()
+            kernel_client.start_channels()
+
+            self.jupyter_widget = RichJupyterWidget()
+            self.jupyter_widget.kernel_manager = kernel_manager
+            self.jupyter_widget.kernel_client = kernel_client
+            
+            def stop():
+                kernel_client.stop_channels()
+                kernel_manager.shutdown_kernel()
+            
+            self.jupyter_widget.exit_requested.connect(stop)
+            app.aboutToQuit.connect(stop)
+            
+            dock_widget = QDockWidget()
+            dock_widget.setObjectName('jupyter')
+            dock_widget.setWindowTitle('Jupyter Console')
+            dock_widget.setWidget(self.jupyter_widget)
+            
+            self.addDockWidget(Qt.BottomDockWidgetArea, dock_widget)
+            kernel_manager.kernel.shell.push({'app': app, 'win': self})
+            
         # Connect events
         self.gvNetwork.scene().selectionChanged.connect(self.onSelectionChanged)
         self.gvTSNE.scene().selectionChanged.connect(self.onSelectionChanged)
@@ -90,22 +141,15 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.actionNeighbors.triggered.connect(lambda: self.selectFirstNeighbors(self.currentView.scene().selectedItems()))
         self.actionExportToCytoscape.triggered.connect(self.exportToCytoscape)
         self.actionExportAsImage.triggered.connect(self.exportAsImage)
-        self.actionShowFileToolbar.triggered.connect(lambda checked: self.tbFile.setVisible(checked))
-        self.actionShowViewToolbar.triggered.connect(lambda checked: self.tbView.setVisible(checked))
-        self.actionShowNetworkToolbar.triggered.connect(lambda checked: self.tbNetwork.setVisible(checked))
-        self.actionShowExportToolbar.triggered.connect(lambda checked: self.tbExport.setVisible(checked))
-        self.actionShowSearchToolbar.triggered.connect(lambda checked: self.tbSearch.setVisible(checked))
         
         self.btNetworkOptions.clicked.connect(self.openVisualizationDialog)
         self.btTSNEOptions.clicked.connect(self.openVisualizationDialog)
 
-        # Load settings
-        # TODO
-        # self._settings = QSettings('CNRS', 'spectrum_similarity')
-        # database = self._settings.value('database')
-        # if database is not None and not os.path.exists(database):
-            # self.database = self._settings.value('database')
-
+        # Add a menu to show/hide toolbars
+        popup_menu = self.createPopupMenu()
+        popup_menu.setTitle("Toolbars")
+        self.menuView.addMenu(popup_menu)
+        
         # Build research bar
         self.updateSearchBar()
             
@@ -125,6 +169,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
         if key == Qt.Key_M: #Show/hide minimap
             view = self.currentView
             view.minimap.setVisible(not view.minimap.isVisible())
+        elif key == Qt.Key_F2:
+            print(self.tbFile.isVisible())
             
             
     def selectFirstNeighbors(self, items):
@@ -159,10 +205,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
         
     def showAbout(self):
         dialog = QMessageBox(self)
-        message = ['Version: {0}'.format(APP_VERSION),
+        message = ['Version: {0}'.format(QCoreApplication.applicationVersion()),
                    '',
                    'Should say something here.']
-        dialog.about(self, 'About {0}'.format(APP_NAME),
+        dialog.about(self, 'About {0}'.format(QCoreApplication.applicationName()),
                     '\n'.join(message))
 
         
@@ -170,16 +216,27 @@ class MainWindow(MainWindowBase, MainWindowUI):
         dialog = QMessageBox(self)
         dialog.aboutQt(self)
         
+
+    def showEvent(self, event):
+        # Load settings
+        settings = QSettings()
+        geom = settings.value('MainWindow.Geometry')
+        if geom is not None:
+            self.restoreGeometry(geom)
+        state = settings.value('MainWindow.State')
+        if state is not None:
+            self.restoreState(state)
+        
         
     def closeEvent(self, event):
-        if DEBUG:
-            reply = QMessageBox.Yes
+        if not DEBUG and self._workers:
+            reply = QMessageBox.question(self, None, 
+                         "There is process running. Do you really want to exit?",
+                         QMessageBox.Close, QMessageBox.Cancel)
         else:
-            reply = QMessageBox.question(self, APP_NAME, 
-                         "Do you really want to exit?",
-                         QMessageBox.Yes, QMessageBox.No)
-    
-        if reply == QMessageBox.Yes:
+            reply = QMessageBox.Close
+            
+        if reply == QMessageBox.Close:
             event.accept()
             self.saveSettings()
         else:
@@ -187,11 +244,16 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
             
     def saveSettings(self):
-        pass
-        #TODO
-        # self._settings.setValue('database', self.database)
-        # del self._settings
+        settings = QSettings()
+        settings.setValue('MainWindow.Geometry', self.saveGeometry())
+        settings.setValue('MainWindow.State', self.saveState())
     
+    
+    def deleteWorker(self, worker):
+        del self._workers[worker]
+        if not self._workers:
+            self.widgetProgress.setVisible(False)
+            
 
     def drawNetwork(self, view, interactions):    
         view.scene().clear()
@@ -243,19 +305,21 @@ class MainWindow(MainWindowBase, MainWindowUI):
         def process_finished():
             layout = worker.result()
             del self._workers[worker]
-            if not self._workers:
-                self.widgetProgress.setVisible(False)
             if layout is not None:
                 apply_layout(layout)
+                
+        def process_canceled():
+            del self._workers[worker]
     
-        self.widgetProgress.setVisible(True)
+        # self.widgetProgress.setVisible(True)
         self.progressBar.setMaximum(100)
         thread = QThread(self)
         worker = NetworkWorker(self.graph)
         worker.moveToThread(thread)
         worker.updated.connect(update_progress)
         worker.finished.connect(process_finished)
-        self.btCancelProcess.pressed.connect(lambda: worker.stop)
+        worker.canceled.connect(process_canceled)
+        self.btCancelProcess.pressed.connect(lambda: worker.stop())
         thread.started.connect(worker.run)
         thread.start()
         self._workers[worker] = thread # Keep a reference to both thread and worker to prevent them to be garbage collected
@@ -308,18 +372,19 @@ class MainWindow(MainWindowBase, MainWindowUI):
             def process_finished():
                 layout[mask] = worker.result()
                 del self._workers[worker]
-                if not self._workers:
-                    self.widgetProgress.setVisible(False)
                 apply_layout(layout)
+                
+            def process_canceled():
+                del self._workers[worker]
             
-            self.widgetProgress.setVisible(True)
             self.progressBar.setMaximum(1000) #TODO
             thread = QThread(self)
             worker = TSNEWorker(1 - scores[mask][:,mask])
             worker.moveToThread(thread)
             worker.updated.connect(update_progress)
             worker.finished.connect(process_finished)
-            self.btCancelProcess.pressed.connect(lambda: worker.stop)
+            worker.canceled.connect(process_canceled)
+            self.btCancelProcess.pressed.connect(lambda: worker.stop())
             thread.started.connect(worker.run)
             thread.start()
             self._workers[worker] = thread # Keep a reference to both thread and worker to prevent them to be garbage collected
@@ -331,27 +396,27 @@ class MainWindow(MainWindowBase, MainWindowUI):
             
     def computeScoresFromSpectra(self, spectra, use_multiprocessing):
         def update_progress(i):
-            # print(self.progressBar.value() + i, self.progressBar.maximum())
             self.progressBar.setFormat('Computing scores...')
             self.progressBar.setValue(self.progressBar.value() + i)
                 
         def process_finished():
             scores_matrix = worker.result()
             del self._workers[worker]
-            if not self._workers:
-                self.widgetProgress.setVisible(False)
+            
+        def process_canceled():
+            del self._workers[worker]
     
         num_spectra = len(spectra)
         num_scores_to_compute = num_spectra * (num_spectra-1) // 2
     
-        self.widgetProgress.setVisible(True)
         self.progressBar.setMaximum(num_scores_to_compute)
         thread = QThread(self)
         worker = ComputeScoresWorker(spectra, use_multiprocessing, self.cosine_computation_options)
         worker.moveToThread(thread)
         worker.updated.connect(update_progress)
         worker.finished.connect(process_finished)
-        self.btCancelProcess.pressed.connect(lambda: worker.stop)
+        worker.canceled.connect(process_canceled)
+        self.btCancelProcess.pressed.connect(lambda: worker.stop())
         thread.started.connect(worker.run)
         thread.start()
         self._workers[worker] = thread # Keep a reference to both thread and worker to prevent them to be garbage collected
@@ -370,7 +435,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 
             multiprocess = False
             spectra = list(read_mgf(self.cosine_computation_options, process_file, use_multiprocessing=multiprocess))
-            # scores_matrix = compute_scores_from_spectra(spectra, use_multiprocessing=multiprocess, tqdm=tqdm_qt) #, network_options)
             worker, thread = self.computeScoresFromSpectra(spectra, multiprocess)
             
             def scores_computed():
@@ -572,11 +636,72 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 painter = QPainter(image)
                 self.currentView.scene().render(painter);
                 image.save(filename)
+        
 
 if __name__ == '__main__':
+        import logging
+        from logging.handlers import RotatingFileHandler
+        
         from PyQt5.QtWidgets import QApplication, QMainWindow
+        from PyQt5.QtCore import QCoreApplication
+
+        def exceptionHandler(exctype, value, trace):
+            """
+            This exception handler prevents quitting to the command line when there is
+            an unhandled exception while processing a Qt signal.
+
+            The script/application willing to use it should implement code similar to:
+
+            .. code-block:: python
+            
+                if __name__ == "__main__":
+                    sys.excepthook = exceptionHandler
+            
+            """
+            logger.error('{} in {}'.format(exctype.__name__, trace.tb_frame.f_code.co_name), exc_info=(exctype, value, trace))
+            msg = QMessageBox(window)
+            msg.setWindowTitle("Unhandled exception")
+            msg.setIcon(QMessageBox.Warning)
+            msg.setText(("It seems you have found a bug in {}. Please report details.\n"
+                        "You should restart the application now.").format(QCoreApplication.applicationName()))
+            msg.setInformativeText(str(value))
+            msg.setDetailedText(''.join(traceback.format_exception(exctype, value, trace)))
+            btRestart = msg.addButton("Restart now", QMessageBox.ResetRole)
+            msg.addButton(QMessageBox.Ignore)
+            msg.raise_()
+            msg.exec_()
+            if msg.clickedButton() == btRestart: # Restart application
+                os.execv(sys.executable, [sys.executable] + sys.argv)
+
+        
+        # Create logger
+        if not os.path.exists('log'):
+            os.makedirs('log')
+        logger = logging.getLogger()
+        formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
+        file_handler = RotatingFileHandler('log/{}.log'.format(__file__), 'a', 1000000, 1)
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+              
+        if DEBUG:
+            stream_handler = logging.StreamHandler()
+            logger.addHandler(stream_handler)
+            
+            logger.setLevel(logging.DEBUG)
+            file_handler.setLevel(logging.DEBUG)
+            stream_handler.setLevel(logging.DEBUG)
+        else:
+            logger.setLevel(logging.WARN)
+            file_handler.setLevel(logging.WARN)
         
         app = QApplication(sys.argv)
+        
+        sys.excepthook = exceptionHandler
+        
+        QCoreApplication.setOrganizationDomain("CNRS")
+        QCoreApplication.setOrganizationName("ICSN")
+        QCoreApplication.setApplicationName("tsne-network")
+        QCoreApplication.setApplicationVersion("0.1")
         window = MainWindow()
         window.show()
         sys.exit(app.exec_())
