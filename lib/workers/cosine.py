@@ -72,6 +72,10 @@ class CosineComputationOptions:
         matched_peaks_window (int): in Da. Default value = 50
 
     """
+    
+    __slots__ = ('mz_tolerance', 'min_intensity', 'parent_filter_tolerance',
+                'min_matched_peaks', 'min_matched_peaks_search',
+                'matched_peaks_window')
 
     def __init__(self):
         self.mz_tolerance = 0.02
@@ -80,23 +84,6 @@ class CosineComputationOptions:
         self.min_matched_peaks = 4
         self.min_matched_peaks_search = 6
         self.matched_peaks_window = 50
-
-
-    def setValues(self, options):
-        """Set the values passed in arguments
-
-        Args :
-            options (tulpe): list of options values in the following order
-                option[0] = mz_tolerance
-                option[1] = min_intensity
-                option[2] = parent_filter_tolerance
-                option[3] = min_matched_peaks
-        """
-        
-        self.mz_tolerance = options[0]
-        self.min_intensity = options[1]
-        self.parent_filter_tolerance = options[2]
-        self.min_matched_peaks = options[3]
 
         
 def grouper(iterable, n, fillvalue=None):

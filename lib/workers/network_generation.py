@@ -8,7 +8,7 @@ from pyteomics import mgf
 from .base_worker import BaseWorker  
     
     
-class NetworkVisualizationOptions:
+class NetworkVisualizationOptions:    
     """Class containing Network visualization options.
 
     Attributes:
@@ -17,25 +17,13 @@ class NetworkVisualizationOptions:
         max_connected_nodes (int): Maximum size of a Network cluster. Default value = 1000
 
     """
+    
+    __slots__ = 'top_k', 'pairs_min_cosine', 'max_connected_nodes'
+    
     def __init__(self):
-        self.top_k = 10 # Maximum numbers of edges for each nodes in the network
-        self.pairs_min_cosine = 0.65 # Minimum cosine score for network generation
+        self.top_k = 10
+        self.pairs_min_cosine = 0.65
         self.max_connected_nodes = 1000
-
-
-    def setValues(self, options):
-        """Set the values passed in arguments
-
-        Args :
-            options (tulpe): list of options values in the following order
-                option[0] = top_k
-                option[1] = pairs_min_cosine
-                option[2] = max_connected_nodes
-
-        """
-        self.top_k = options[0]
-        self.pairs_min_cosine = options[1]
-        self.max_connected_nodes = options[2]
         
     
 def generate_network(scores_matrix, spectra, options, use_self_loops=True):

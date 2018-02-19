@@ -12,9 +12,12 @@ if __name__ == '__main__':
     
     OpenFileDialogUI, OpenFileDialogBase = uic.loadUiType(UI_FILE)
     from widgets.options_widgets import TSNEOptionWidget, NetworkOptionWidget
+    class CosineComputationOptions:
+        pass
 else:
     OpenFileDialogUI, OpenFileDialogBase = uic.loadUiType(UI_FILE, from_imports='lib.ui', import_from='lib.ui')
     from .widgets.options_widgets import TSNEOptionWidget, NetworkOptionWidget
+    from ..workers import CosineComputationOptions
     
             
 class OpenFileDialog(OpenFileDialogBase, OpenFileDialogUI):
@@ -97,20 +100,15 @@ class OpenFileDialog(OpenFileDialogBase, OpenFileDialogUI):
     def getValues(self):
         """Returns files to process and options"""
         
-        cosine_computation_options = self.getComputeOptions()
+        options = CosineComputationOptions()
+        options.mz_tolerance = self.spinMZTolerance.value()
+        options.min_intensity = self.spinMinIntensity.value()
+        options.parent_filter_tolerance = self.spinParentFilterTolerance.value()
+        options.min_matched_peaks = self.spinMinMatchedPeaks.value()
+        
         return self.editProcessFile.text(), self.editMetadataFile.text(), \
-                cosine_computation_options, self.tsne_widget.getValues(), \
+                options, self.tsne_widget.getValues(), \
                 self.network_widget.getValues()
-        
-
-    def getComputeOptions(self):
-        """Returns cosine computation options values from the widget"""
-        
-        mz_tolerance = self.spinMZTolerance.value()
-        min_intensity = self.spinMinIntensity.value()
-        parent_filter_tolerance = self.spinParentFilterTolerance.value()
-        min_matched_peaks = self.spinMinMatchedPeaks.value()
-        return mz_tolerance, min_intensity, parent_filter_tolerance, min_matched_peaks
             
             
 if __name__ == "__main__":

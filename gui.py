@@ -16,6 +16,7 @@ from PyQt5.QtCore import QThread, QSettings, Qt, QPointF
 from PyQt5 import uic
 
 from lib import ui
+from lib import config
 from lib.workers import read_mgf #TODO
 from lib.workers.network_generation import generate_network #TODO
 from lib.workers import (ReadMGFWorker,
@@ -54,15 +55,17 @@ class WorkerDict(dict):
 
 
 class Options:
-    cosine = CosineComputationOptions()
-    network = NetworkVisualizationOptions()
-    tsne = TSNEVisualizationOptions()
+    __slots__ = 'cosine', 'network', 'tsne'
+    
+    def __init__(self):
+        self.cosine = CosineComputationOptions()
+        self.network = NetworkVisualizationOptions()
+        self.tsne = TSNEVisualizationOptions()
     
     
 class Network:
-    spectra = None
-    scores = None
-    infos = None
+    __slots__ = 'spectra', 'scores', 'infos'
+    __pickle = False
     
             
 class MainWindow(MainWindowBase, MainWindowUI):
@@ -279,9 +282,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
         widths = np.array(interactions['Cosine'])
         min = max(0, widths.min() - 0.1)
         if min != widths.max():
-            widths = (ui.RADIUS-1)*(widths-min)/(widths.max()-min)+1
+            widths = (config.RADIUS-1)*(widths-min)/(widths.max()-min)+1
         else:
-            widths = ui.RADIUS
+            widths = config.RADIUS
         
         self.graph.es['__weight'] = interactions['Cosine']
         self.graph.es['__width'] = widths
@@ -373,7 +376,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                     dy += 5
             
             layout = ig.Layout(layout.tolist())
-            layout.scale(ui.RADIUS)
+            layout.scale(config.RADIUS)
             for coord, node in zip(layout, self.graph.vs):
                 node['__tsne_gobj'].setPos(QPointF(*coord))
                     
@@ -469,9 +472,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
         dialog = ui.OpenFileDialog(self, options=self.options)
         if dialog.exec_() == QDialog.Accepted:
             process_file, metadata_file, compute_options, tsne_options, network_options = dialog.getValues()
-            self.options.cosine.setValues(compute_options)
-            self.options.tsne.setValues(tsne_options)
-            self.options.network.setValues(network_options)
+            self.options.cosine = compute_options
+            self.options.tsne = tsne_options
+            self.options.network = network_options
                 
             multiprocess = False
             
@@ -498,18 +501,17 @@ class MainWindow(MainWindowBase, MainWindowUI):
             
     def openVisualizationDialog(self):
         sender = self.sender()
-        if sender.objectName() == "btNetworkOptions":
+        if sender.objectName() == "btNetworkOptions": # Network
             dialog = ui.EditNetworkOptionDialog(self, options=self.options)
             if dialog.exec_() == QDialog.Accepted:
                 options = dialog.getValues()
-                print(options)
-                self.options.network.setValues(options)
+                self.options.network = options
                 # To-Do restart Network graphics
-        else:  # if not "btNetworkOption" the it is "btTsneOption"
+        else: # t-SNE
             dialog = ui.EditTSNEOptionDialog(self, options=self.options)
             if dialog.exec_() == QDialog.Accepted: 
                 options = dialog.getValues()
-                self.options.tsne.setValues(options)
+                self.options.tsne = options
                 # To-Do restart TSNE graphics
 
             

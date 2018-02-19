@@ -2,7 +2,7 @@ import numpy as np
 import igraph as ig
 
 from .base_worker import BaseWorker
-from ..ui import RADIUS
+from ..config import RADIUS
 
 
 class UserRequestedStopError(Exception):

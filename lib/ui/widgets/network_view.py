@@ -9,9 +9,8 @@ from PyQt5.QtWidgets import (QApplication, QGraphicsItem,
         QRubberBand, QStyle, QOpenGLWidget, QStyleOptionGraphicsItem,
         QFormLayout, QSizePolicy)
 
-RADIUS = 30
-NODE_BORDER_WIDTH = 5
-FONT_SIZE = 14
+from ...config import RADIUS, NODE_BORDER_WIDTH, FONT_SIZE
+
 
 class Edge(QGraphicsPathItem):
 

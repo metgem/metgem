@@ -14,20 +14,13 @@ class TSNEVisualizationOptions:
         learning_rate (int): See TSNE documentation. Default value = 200
 
     """
-    perplexity = 6
-    learning_rate = 200
-
-    def setValues(self, options):
-        """Set the values passed in arguments
-
-        Args :
-            options (tulpe): list of options values in the following order
-                option[0] = perplexity
-                option[1] = learning_rate
-
-        """
-        self.perplexity = options[0]
-        self.learning_rate = options[1]
+    
+    __slots__ = 'perplexity', 'learning_rate'
+    
+    
+    def __init__(self):
+        self.perplexity = 6
+        self.learning_rate = 200
 
 
 class UserRequestedStopError(Exception):
@@ -35,6 +28,7 @@ class UserRequestedStopError(Exception):
     
     
 class ProgressStringIO(io.StringIO):
+
     def __init__(self, parent, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.parent = parent
