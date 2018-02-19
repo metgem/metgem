@@ -17,6 +17,8 @@ from PyQt5 import uic
 
 from lib import ui
 from lib import config
+from lib import utils
+from lib.save import savez, MnzFile
 from lib.workers import read_mgf #TODO
 from lib.workers.network_generation import generate_network #TODO
 from lib.workers import (ReadMGFWorker,
@@ -54,24 +56,26 @@ class WorkerDict(dict):
             self.parent.statusBar().removeWidget(self.parent.widgetProgress)
 
 
-class Options:
-    __slots__ = 'cosine', 'network', 'tsne'
+# class Options:
+    # __slots__ = 'cosine', 'network', 'tsne'
     
-    def __init__(self):
-        self.cosine = CosineComputationOptions()
-        self.network = NetworkVisualizationOptions()
-        self.tsne = TSNEVisualizationOptions()
-    
+    # def __init__(self):
+        # self.cosine = CosineComputationOptions()
+        # self.network = NetworkVisualizationOptions()
+        # self.tsne = TSNEVisualizationOptions()
+        
     
 class Network:
     __slots__ = 'spectra', 'scores', 'infos'
-    __pickle = False
     
             
 class MainWindow(MainWindowBase, MainWindowUI):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        
+        # Opened file
+        self.fname = None
         
         # Workers' references
         self._workers = WorkerDict(self)
@@ -83,7 +87,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.setupUi(self)
 
         # Assigning cosine computation and visualization default options
-        self.options = Options()
+        self.options = utils.AttrDict({'cosine': CosineComputationOptions(),
+                                       'network': NetworkVisualizationOptions(),
+                                       'tsne': TSNEVisualizationOptions()})
         
         # Create an object to store all computed objects
         self.network = Network()
@@ -153,6 +159,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.actionZoomSelectedRegion.triggered.connect(
             lambda: self.currentView.fitInView(self.currentView.scene().selectionArea().boundingRect(), Qt.KeepAspectRatio))
         self.leSearch.textChanged.connect(self.doSearch)
+        self.actionOpen.triggered.connect(self.openProject)
+        self.actionSave.triggered.connect(self.saveProject)
+        self.actionSaveAs.triggered.connect(self.saveProjectAs)
 
         self.actionFullScreen.triggered.connect(self.switchFullScreen)
         self.actionHideSelected.triggered.connect(lambda: self.hideItems(self.currentView.scene().selectedItems()))
@@ -273,21 +282,32 @@ class MainWindow(MainWindowBase, MainWindowUI):
         if not self._workers:
             self.widgetProgress.setVisible(False)
             
+            
+    def applyNetworkLayout(self, view, layout):
+        for coord, node in zip(layout, self.graph.vs):
+            node['__network_gobj'].setPos(QPointF(*coord))
+            
+        self.graph.network_layout = layout
+                
+        view.zoomToFit()
+        view.minimap.zoomToFit()
+            
 
-    def drawNetwork(self, view, interactions):    
+    def drawNetwork(self, view, interactions=None, layout=None):    
         view.scene().clear()
     
-        nodes_idx = np.unique(np.vstack((interactions['Source'], interactions['Target'])))
-        
-        widths = np.array(interactions['Cosine'])
-        min = max(0, widths.min() - 0.1)
-        if min != widths.max():
-            widths = (config.RADIUS-1)*(widths-min)/(widths.max()-min)+1
-        else:
-            widths = config.RADIUS
-        
-        self.graph.es['__weight'] = interactions['Cosine']
-        self.graph.es['__width'] = widths
+        if interactions is not None:
+            nodes_idx = np.unique(np.vstack((interactions['Source'], interactions['Target'])))
+            
+            widths = np.array(interactions['Cosine'])
+            min = max(0, widths.min() - 0.1)
+            if min != widths.max():
+                widths = (config.RADIUS-1)*(widths-min)/(widths.max()-min)+1
+            else:
+                widths = config.RADIUS
+            
+            self.graph.es['__weight'] = interactions['Cosine']
+            self.graph.es['__width'] = widths
         
         # Add nodes
         group = QGraphicsRectItem() #Create a pseudo-group, QGraphicsItemGroup is not used because it does not let children handle events
@@ -308,45 +328,51 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.graph.es['__network_gobj'] = group.childItems()
         view.scene().addItem(group)
         self.edges_group = group
-         
-        # Compute layout
-        def apply_layout(layout):
-            for coord, node in zip(layout, self.graph.vs):
-                node['__network_gobj'].setPos(QPointF(*coord))
+        
+        if layout is None:
+            # Compute layout
+            def update_progress(i):
+                self.progressBar.setFormat('Computing layout: {s}%'.format(i))
+                self.progressBar.setValue(i)
+
+            def process_finished():
+                layout = worker.result()
+                del self._workers[worker]
+                if layout is not None:
+                    self.applyNetworkLayout(view, layout)
                     
-            view.zoomToFit()
-            view.minimap.zoomToFit()
-
-        def update_progress(i):
-            self.progressBar.setFormat('Computing layout: {s}%'.format(i))
-            self.progressBar.setValue(i)
-
-        def process_finished():
-            layout = worker.result()
-            del self._workers[worker]
-            if layout is not None:
-                apply_layout(layout)
+            def process_canceled():
+                del self._workers[worker]
+        
+            # self.widgetProgress.setVisible(True)
+            self.progressBar.setMaximum(100)
+            thread = QThread(self)
+            worker = NetworkWorker(self.graph)
+            worker.moveToThread(thread)
+            worker.updated.connect(update_progress)
+            worker.finished.connect(process_finished)
+            worker.canceled.connect(process_canceled)
+            self.btCancelProcess.pressed.connect(lambda: worker.stop())
+            thread.started.connect(worker.run)
+            thread.start()
+            self._workers[worker] = thread # Keep a reference to both thread and worker to prevent them to be garbage collected
+            
+            return worker, thread
+        else:
+            self.applyNetworkLayout(view, layout)
+            
+            
+    def applyTSNELayout(self, view, layout):
+        for coord, node in zip(layout, self.graph.vs):
+            node['__tsne_gobj'].setPos(QPointF(*coord))
+            
+        self.graph.tsne_layout = layout
                 
-        def process_canceled():
-            del self._workers[worker]
-    
-        # self.widgetProgress.setVisible(True)
-        self.progressBar.setMaximum(100)
-        thread = QThread(self)
-        worker = NetworkWorker(self.graph)
-        worker.moveToThread(thread)
-        worker.updated.connect(update_progress)
-        worker.finished.connect(process_finished)
-        worker.canceled.connect(process_canceled)
-        self.btCancelProcess.pressed.connect(lambda: worker.stop())
-        thread.started.connect(worker.run)
-        thread.start()
-        self._workers[worker] = thread # Keep a reference to both thread and worker to prevent them to be garbage collected
-        
-        return worker, thread
+        view.zoomToFit()
+        view.minimap.zoomToFit()
         
         
-    def drawTSNE(self, view, scores):
+    def drawTSNE(self, view, scores=None, layout=None):
         view.scene().clear()
         
         # Add nodes
@@ -358,59 +384,58 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.graph.vs['__tsne_gobj'] = group.childItems()
         view.scene().addItem(group)
         self.nodes_group = group
-         
-        # Compute layout
-        scores[scores<0.65] = 0
         
-        mask = scores.sum(axis=0)>1
-        layout = np.zeros((scores.shape[0], 2))
-        
-        def apply_layout(layout):
-            bb = ig.Layout(layout.tolist()).bounding_box()
-            dx, dy = 0, 0
-            for index in np.where(~mask)[0]:
-                layout[index] = (bb.left+dx, bb.height+dy)
-                dx += 5
-                if dx >= bb.width:
-                    dx = 0
-                    dy += 5
+        if layout is None:
+            # Compute layout
+            scores[scores<0.65] = 0
             
-            layout = ig.Layout(layout.tolist())
-            layout.scale(config.RADIUS)
-            for coord, node in zip(layout, self.graph.vs):
-                node['__tsne_gobj'].setPos(QPointF(*coord))
+            mask = scores.sum(axis=0)>1
+            layout = np.zeros((scores.shape[0], 2))
+            
+            if np.any(mask):           
+                def update_progress(i):
+                    self.progressBar.setFormat('TSNE: Iteration {:d} of {:d}'.format(i, self.progressBar.maximum()))
+                    self.progressBar.setValue(i)
                     
-            view.zoomToFit()
-            view.minimap.zoomToFit()
-        
-        if np.any(mask):           
-            def update_progress(i):
-                self.progressBar.setFormat('TSNE: Iteration {:d} of {:d}'.format(i, self.progressBar.maximum()))
-                self.progressBar.setValue(i)
-                
-            def process_finished():
-                layout[mask] = worker.result()
-                del self._workers[worker]
-                apply_layout(layout)
-                
-            def process_canceled():
-                del self._workers[worker]
+                def process_finished():
+                    nonlocal layout
+                    layout[mask] = worker.result()
+                    del self._workers[worker]
             
-            self.progressBar.setMaximum(1000) #TODO
-            thread = QThread(self)
-            worker = TSNEWorker(1 - scores[mask][:,mask])
-            worker.moveToThread(thread)
-            worker.updated.connect(update_progress)
-            worker.finished.connect(process_finished)
-            worker.canceled.connect(process_canceled)
-            self.btCancelProcess.pressed.connect(lambda: worker.stop())
-            thread.started.connect(worker.run)
-            thread.start()
-            self._workers[worker] = thread # Keep a reference to both thread and worker to prevent them to be garbage collected
-            return worker, thread
+                    bb = ig.Layout(layout.tolist()).bounding_box()
+                    dx, dy = 0, 0
+                    for index in np.where(~mask)[0]:
+                        layout[index] = (bb.left+dx, bb.height+dy)
+                        dx += 5
+                        if dx >= bb.width:
+                            dx = 0
+                            dy += 5
+                    
+                    layout = ig.Layout(layout.tolist())
+                    layout.scale(config.RADIUS)
+                    
+                    self.applyTSNELayout(view, layout)
+                    
+                def process_canceled():
+                    del self._workers[worker]
+                
+                self.progressBar.setMaximum(1000) #TODO
+                thread = QThread(self)
+                worker = TSNEWorker(1 - scores[mask][:,mask])
+                worker.moveToThread(thread)
+                worker.updated.connect(update_progress)
+                worker.finished.connect(process_finished)
+                worker.canceled.connect(process_canceled)
+                self.btCancelProcess.pressed.connect(lambda: worker.stop())
+                thread.started.connect(worker.run)
+                thread.start()
+                self._workers[worker] = thread # Keep a reference to both thread and worker to prevent them to be garbage collected
+                return worker, thread
+            else:
+                self.applyTSNELayout(view, layout)
+                return None, None
         else:
-            apply_layout(layout)
-            return None, None
+            self.applyTSNELayout(view, layout)
             
             
     def computeScoresFromSpectra(self, spectra, use_multiprocessing):
@@ -535,7 +560,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.graph.vs['__label'] = labels.astype('str')
         else:
             self.graph.vs['__label'] = nodes_idx.astype('str')
-            
+
                             
     def draw(self, scores, interactions, infos=None, labels=None):
         self.tvNodes.model().sourceModel().beginResetModel()
@@ -684,6 +709,97 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 painter = QPainter(image)
                 self.currentView.scene().render(painter);
                 image.save(filename)
+                
+                
+    def openProject(self):
+        dialog = QFileDialog(self)
+        dialog.setFileMode(QFileDialog.ExistingFile)
+        dialog.setNameFilters(["{} Files (*{})".format(QCoreApplication.applicationName(),
+                                                       config.FILE_EXTENSION),
+                               "All files (*.*)"])
+        if dialog.exec_() == QDialog.Accepted:
+            filename = dialog.selectedFiles()[0]
+            self.load(filename)
+        
+        
+    def saveProject(self):
+        if self.fname is None:
+            self.saveProjectAs()
+        else:
+            self.save(self.fname)
+        
+        
+    def saveProjectAs(self):
+        dialog = QFileDialog(self)
+        dialog.setAcceptMode(QFileDialog.AcceptSave)
+        dialog.setNameFilters(["{} Files (*{})".format(QCoreApplication.applicationName(),
+                                                       config.FILE_EXTENSION),
+                               "All files (*.*)"])
+        if dialog.exec_() == QDialog.Accepted:
+            filename = dialog.selectedFiles()[0]
+            self.save(filename)
+                
+                
+    def save(self, fname):    
+        graph = self.graph.copy()
+        for attr in graph.vs.attributes():
+            if attr.startswith('__') and attr.endswith('_gobj'):
+                del graph.vs[attr]
+        for attr in graph.es.attributes():
+            if attr.startswith('__') and attr.endswith('_gobj'):
+                del graph.es[attr]
+        
+        d = {'network/scores': getattr(self.network, 'scores', np.array([])),
+             'network/spectra': getattr(self.network, 'spectra', []),
+             'network/infos': getattr(self.network, 'infos', np.array([])),
+             'graph': graph,
+             'network_layout': getattr(self.graph, 'network_layout', np.array([])),
+             'tsne_layout': getattr(self.graph, 'tsne_layout', np.array([])),
+             'options': self.options}
+        
+        try:
+            savez(fname, version=1, **d)
+            self.fname = fname
+            self.setWindowTitle(QCoreApplication.applicationName() + ' - ' + fname)
+        except PermissionError as e:
+            dialog = QMessageBox(self)
+            dialog.warning(self, None, str(e))
+            return False
+        
+        
+    def load(self, fname):
+        try:
+            l = MnzFile(fname)
+        except FileNotFoundError:
+            dialog = QMessageBox(self)
+            dialog.warning(self, None,
+                    "File '{}' not found.".format(fname))
+            return False
+        else:
+            try:
+                version = int(l['version'])
+            except:
+                version = 1
+                
+            if version == 1:
+                self.network.scores = l['network/scores']
+                self.network.spectra = l['network/spectra'].tolist()
+                self.network.infos = l['network/infos']
+                self.graph = l['graph'].tolist()
+                self.graph.network_layout = l['network_layout']
+                self.graph.tsne_layout = l['tsne_layout']
+                self.options = l['options']
+            
+                self.drawNetwork(self.gvNetwork, layout=self.graph.network_layout)
+                self.drawTSNE(self.gvTSNE, layout=self.graph.tsne_layout)
+                
+                self.fname = fname
+                self.setWindowTitle(QCoreApplication.applicationName() + ' - ' + fname)
+            else:
+                dialog = QMessageBox(self)
+                dialog.warning(self, None,
+                        "Unrecognized file format version (version={}).".format(version))
+                return False
         
 
 if __name__ == '__main__':
@@ -706,6 +822,7 @@ if __name__ == '__main__':
                     sys.excepthook = exceptionHandler
             
             """
+            
             logger.error('{} in {}'.format(exctype.__name__, trace.tb_frame.f_code.co_name), exc_info=(exctype, value, trace))
             msg = QMessageBox(window)
             msg.setWindowTitle("Unhandled exception")
@@ -744,12 +861,14 @@ if __name__ == '__main__':
         
         app = QApplication(sys.argv)
         
-        #sys.excepthook = exceptionHandler
-        
         QCoreApplication.setOrganizationDomain("CNRS")
         QCoreApplication.setOrganizationName("ICSN")
         QCoreApplication.setApplicationName("tsne-network")
         QCoreApplication.setApplicationVersion("0.1")
+        
         window = MainWindow()
+        
+        sys.excepthook = exceptionHandler
+        
         window.show()
         sys.exit(app.exec_())

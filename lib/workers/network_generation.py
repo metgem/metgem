@@ -5,10 +5,11 @@ import multiprocessing as mp
 
 from pyteomics import mgf
 
-from .base_worker import BaseWorker  
+from .base_worker import BaseWorker
+from ..utils import AttrDict    
+
     
-    
-class NetworkVisualizationOptions:    
+class NetworkVisualizationOptions(AttrDict):
     """Class containing Network visualization options.
 
     Attributes:
@@ -18,12 +19,10 @@ class NetworkVisualizationOptions:
 
     """
     
-    __slots__ = 'top_k', 'pairs_min_cosine', 'max_connected_nodes'
-    
     def __init__(self):
-        self.top_k = 10
-        self.pairs_min_cosine = 0.65
-        self.max_connected_nodes = 1000
+        super().__init__(top_k = 10,
+                         pairs_min_cosine = 0.65,
+                         max_connected_nodes = 1000)
         
     
 def generate_network(scores_matrix, spectra, options, use_self_loops=True):

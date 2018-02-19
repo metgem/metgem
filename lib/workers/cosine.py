@@ -7,7 +7,7 @@ import numpy as np
 import multiprocessing as mp
 
 from .base_worker import BaseWorker
-
+from ..utils import AttrDict
 
 class Spectrum:
     '''Object representing a MS/MS spectrum.
@@ -58,7 +58,7 @@ class Spectrum:
         return 'Spectrum({}, {:.2f})'.format(self.id, self.mz_parent)
     
 
-class CosineComputationOptions:
+class CosineComputationOptions(AttrDict):
     """Class containing spectra cosine scores options.
 
     Attributes:
@@ -72,18 +72,14 @@ class CosineComputationOptions:
         matched_peaks_window (int): in Da. Default value = 50
 
     """
-    
-    __slots__ = ('mz_tolerance', 'min_intensity', 'parent_filter_tolerance',
-                'min_matched_peaks', 'min_matched_peaks_search',
-                'matched_peaks_window')
 
     def __init__(self):
-        self.mz_tolerance = 0.02
-        self.min_intensity = 0
-        self.parent_filter_tolerance = 17
-        self.min_matched_peaks = 4
-        self.min_matched_peaks_search = 6
-        self.matched_peaks_window = 50
+        super().__init__(mz_tolerance = 0.02,
+                         min_intensity = 0,
+                         parent_filter_tolerance = 17,
+                         min_matched_peaks = 4,
+                         min_matched_peaks_search = 6,
+                         matched_peaks_window = 50)
 
         
 def grouper(iterable, n, fillvalue=None):

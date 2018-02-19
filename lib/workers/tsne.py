@@ -4,9 +4,9 @@ import io
 from sklearn.manifold import TSNE
 
 from .base_worker import BaseWorker
+from ..utils import AttrDict
 
-
-class TSNEVisualizationOptions:
+class TSNEVisualizationOptions(AttrDict):
     """Class containing TSNE visualization options.
 
     Attributes:
@@ -15,12 +15,9 @@ class TSNEVisualizationOptions:
 
     """
     
-    __slots__ = 'perplexity', 'learning_rate'
-    
-    
     def __init__(self):
-        self.perplexity = 6
-        self.learning_rate = 200
+        super().__init__(perplexity = 6,
+                         learning_rate = 200)
 
 
 class UserRequestedStopError(Exception):

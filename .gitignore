@@ -93,3 +93,4 @@ test_*.py
 lib/ui/ui_rc.py
 lib/ui/images/main.ico
 log
+*.mnz
