@@ -80,6 +80,10 @@ target/
 # Kate temporary files
 .*.kate-swp
 
+# ipython
+.ipynb_checkpoints
+*.ipynb
+
 # app-specific development files
 .*.mgf
 *.csv
