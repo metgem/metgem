@@ -9,9 +9,9 @@ import json
 import numpy as np
 import igraph as ig
 
-from PyQt5.QtWidgets import (QTableWidgetItem, QDialog, QFileDialog, 
-    QMessageBox, QWidget, QGraphicsRectItem, QMenu, QToolButton, QActionGroup,
-    QAction, QDockWidget)
+from PyQt5.QtWidgets import (QTableWidgetItem, QDialog, QFileDialog,
+                             QMessageBox, QWidget, QGraphicsRectItem, QMenu, QToolButton, QActionGroup,
+                             QAction, QDockWidget)
 from PyQt5.QtCore import QThread, QSettings, Qt, QPointF
 from PyQt5 import uic
 
@@ -20,13 +20,12 @@ from lib import config
 from lib import utils
 from lib.save import savez, MnzFile
 from lib.graphml import GraphMLWriter, GraphMLParser
-from lib.workers import read_mgf #TODO
-from lib.workers.network_generation import generate_network #TODO
+from lib.workers import read_mgf  # TODO
+from lib.workers.network_generation import generate_network  # TODO
 from lib.workers import (ReadMGFWorker, Spectrum,
-                        TSNEWorker, TSNEVisualizationOptions,
+                         TSNEWorker, TSNEVisualizationOptions,
                          NetworkWorker, NetworkVisualizationOptions,
                          ComputeScoresWorker, CosineComputationOptions)
-
 
 MAIN_UI_FILE = os.path.join('lib', 'ui', 'main_window.ui')
 DEBUG = os.getenv('DEBUG_MODE', 'false').lower() in ('true', '1')
@@ -37,53 +36,45 @@ MainWindowUI, MainWindowBase = uic.loadUiType(MAIN_UI_FILE, from_imports='lib.ui
 
 class WorkerDict(dict):
     '''A dict that manages itself visibility of it's parent's progressbar'''
-    
+
     def __init__(self, parent, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.parent = parent
-        
-        
+
     def __setitem__(self, key, item):
-        if not self: # dict is empty, so we are going to create the first entry. Show the progress bar
+        if not self:  # dict is empty, so we are going to create the first entry. Show the progress bar
             self.parent.statusBar().addPermanentWidget(self.parent.widgetProgress)
             self.parent.widgetProgress.setVisible(True)
         super().__setitem__(key, item)
-        
-        
+
     def __delitem__(self, key):
         super().__delitem__(key)
-        if not self: # dict is now empty, hide the progress bar
+        if not self:  # dict is now empty, hide the progress bar
             self.parent.widgetProgress.setVisible(False)
             self.parent.statusBar().removeWidget(self.parent.widgetProgress)
 
 
-# class Options:
-    # __slots__ = 'cosine', 'network', 'tsne'
-    
-    # def __init__(self):
-        # self.cosine = CosineComputationOptions()
-        # self.network = NetworkVisualizationOptions()
-        # self.tsne = TSNEVisualizationOptions()
-        
-    
 class Network:
     __slots__ = 'spectra', 'scores', 'infos'
-    
-            
+
+
 class MainWindow(MainWindowBase, MainWindowUI):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        
+
+        # Keep track of unsaved changes
+        self._has_unsaved_changes = False
+
         # Opened file
         self.fname = None
-        
+
         # Workers' references
         self._workers = WorkerDict(self)
-        
+
         # Create graph
         self.graph = ig.Graph()
-        
+
         # Setup User interface
         self.setupUi(self)
 
@@ -91,62 +82,62 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.options = utils.AttrDict({'cosine': CosineComputationOptions(),
                                        'network': NetworkVisualizationOptions(),
                                        'tsne': TSNEVisualizationOptions()})
-        
+
         # Create an object to store all computed objects
         self.network = Network()
 
         # Add model to table views
-        for table, Model, name in ((self.tvNodes, ui.widgets.network_view.NodesModel, "Nodes"), 
-                            (self.tvEdges, ui.widgets.network_view.EdgesModel, "Edges")):
+        for table, Model, name in ((self.tvNodes, ui.widgets.network_view.NodesModel, "Nodes"),
+                                   (self.tvEdges, ui.widgets.network_view.EdgesModel, "Edges")):
             table.setSortingEnabled(True)
             model = Model(self.graph)
             proxy = ui.widgets.network_view.ProxyModel()
             proxy.setSourceModel(model)
             table.setModel(proxy)
-        
+
         # Move search layout to search toolbar
         w = QWidget()
         self.layoutSearch.setParent(None)
         w.setLayout(self.layoutSearch)
         self.tbSearch.addWidget(w)
-        
+
         # Move progressbar to the statusbar
         self.widgetProgress = QWidget()
         self.layoutProgress.setParent(None)
         self.layoutProgress.setContentsMargins(0, 0, 0, 0)
         self.widgetProgress.setLayout(self.layoutProgress)
         self.widgetProgress.setVisible(False)
-        
+
         # Add a Jupyter widget
         if EMBED_JUPYTER:
             from qtconsole.rich_jupyter_widget import RichJupyterWidget
             from qtconsole.inprocess import QtInProcessKernelManager
-            
+
             kernel_manager = QtInProcessKernelManager()
             kernel_manager.start_kernel()
-            
+
             kernel_client = kernel_manager.client()
             kernel_client.start_channels()
 
             self.jupyter_widget = RichJupyterWidget()
             self.jupyter_widget.kernel_manager = kernel_manager
             self.jupyter_widget.kernel_client = kernel_client
-            
+
             def stop():
                 kernel_client.stop_channels()
                 kernel_manager.shutdown_kernel()
-            
+
             self.jupyter_widget.exit_requested.connect(stop)
             app.aboutToQuit.connect(stop)
-            
+
             dock_widget = QDockWidget()
             dock_widget.setObjectName('jupyter')
             dock_widget.setWindowTitle('Jupyter Console')
             dock_widget.setWidget(self.jupyter_widget)
-            
+
             self.addDockWidget(Qt.BottomDockWidgetArea, dock_widget)
             kernel_manager.kernel.shell.push({'app': app, 'win': self})
-            
+
         # Connect events
         self.gvNetwork.scene().selectionChanged.connect(self.onSelectionChanged)
         self.gvTSNE.scene().selectionChanged.connect(self.onSelectionChanged)
@@ -155,10 +146,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.actionAboutQt.triggered.connect(self.showAboutQt)
         self.actionProcessFile.triggered.connect(self.showOpenFileDialog)
         self.actionZoomIn.triggered.connect(lambda: self.currentView.scaleView(1.2))
-        self.actionZoomOut.triggered.connect(lambda: self.currentView.scaleView(1/1.2))
+        self.actionZoomOut.triggered.connect(lambda: self.currentView.scaleView(1 / 1.2))
         self.actionZoomToFit.triggered.connect(self.currentView.zoomToFit)
         self.actionZoomSelectedRegion.triggered.connect(
-            lambda: self.currentView.fitInView(self.currentView.scene().selectionArea().boundingRect(), Qt.KeepAspectRatio))
+            lambda: self.currentView.fitInView(self.currentView.scene().selectionArea().boundingRect(),
+                                               Qt.KeepAspectRatio))
         self.leSearch.textChanged.connect(self.doSearch)
         self.actionOpen.triggered.connect(self.openProject)
         self.actionSave.triggered.connect(self.saveProject)
@@ -167,10 +159,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.actionFullScreen.triggered.connect(self.switchFullScreen)
         self.actionHideSelected.triggered.connect(lambda: self.hideItems(self.currentView.scene().selectedItems()))
         self.actionShowAll.triggered.connect(lambda: self.showItems(self.currentView.scene().items()))
-        self.actionNeighbors.triggered.connect(lambda: self.selectFirstNeighbors(self.currentView.scene().selectedItems()))
+        self.actionNeighbors.triggered.connect(
+            lambda: self.selectFirstNeighbors(self.currentView.scene().selectedItems()))
         self.actionExportToCytoscape.triggered.connect(self.exportToCytoscape)
         self.actionExportAsImage.triggered.connect(self.exportAsImage)
-        
+
         self.btNetworkOptions.clicked.connect(self.openVisualizationDialog)
         self.btTSNEOptions.clicked.connect(self.openVisualizationDialog)
 
@@ -178,11 +171,31 @@ class MainWindow(MainWindowBase, MainWindowUI):
         popup_menu = self.createPopupMenu()
         popup_menu.setTitle("Toolbars")
         self.menuView.addMenu(popup_menu)
-        
+
         # Build research bar
         self.updateSearchBar()
-            
 
+    @property
+    def window_title(self):
+        if self.fname is not None:
+            return QCoreApplication.applicationName() + ' - ' + self.fname
+        else:
+            return QCoreApplication.applicationName()
+
+    @property
+    def has_unsaved_changes(self):
+        return self._has_unsaved_changes
+
+    @has_unsaved_changes.setter
+    def has_unsaved_changes(self, value):
+        if value:
+            self.setWindowTitle(self.window_title + '*')
+            self.actionSave.setEnabled(True)
+        else:
+            self.setWindowTitle(self.window_title)
+            self.actionSave.setEnabled(False)
+
+        self._has_unsaved_changes = value
 
     @property
     def currentView(self):
@@ -190,18 +203,16 @@ class MainWindow(MainWindowBase, MainWindowUI):
             if view.hasFocus():
                 return view
         return self.gvNetwork
-        
-        
+
     def keyPressEvent(self, event):
         key = event.key()
 
-        if key == Qt.Key_M: #Show/hide minimap
+        if key == Qt.Key_M:  # Show/hide minimap
             view = self.currentView
             view.minimap.setVisible(not view.minimap.isVisible())
         elif key == Qt.Key_F2:
             print(self.tbFile.isVisible())
-            
-            
+
     def selectFirstNeighbors(self, items):
         view = self.currentView
         for item in items:
@@ -211,18 +222,15 @@ class MainWindow(MainWindowBase, MainWindowUI):
                         v['__network_gobj'].setSelected(True)
                     elif view == self.gvTSNE:
                         v['__tsne_gobj'].setSelected(True)
-            
-            
+
     def showItems(self, items):
         for item in items:
             item.show()
-            
-            
+
     def hideItems(self, items):
         for item in items:
             item.hide()
-            
-            
+
     def switchFullScreen(self):
         if not self.isFullScreen():
             self.setWindowFlags(Qt.Window)
@@ -230,21 +238,18 @@ class MainWindow(MainWindowBase, MainWindowUI):
         else:
             self.setWindowFlags(Qt.Widget)
             self.showNormal()
-        
-        
+
     def showAbout(self):
         dialog = QMessageBox(self)
         message = ['Version: {0}'.format(QCoreApplication.applicationVersion()),
                    '',
                    'Should say something here.']
         dialog.about(self, 'About {0}'.format(QCoreApplication.applicationName()),
-                    '\n'.join(message))
+                     '\n'.join(message))
 
-        
     def showAboutQt(self):
         dialog = QMessageBox(self)
         dialog.aboutQt(self)
-        
 
     def showEvent(self, event):
         # Load settings
@@ -255,81 +260,77 @@ class MainWindow(MainWindowBase, MainWindowUI):
         state = settings.value('MainWindow.State')
         if state is not None:
             self.restoreState(state)
-        
-        
+
     def closeEvent(self, event):
         if not DEBUG and self._workers:
-            reply = QMessageBox.question(self, None, 
-                         "There is process running. Do you really want to exit?",
-                         QMessageBox.Close, QMessageBox.Cancel)
+            reply = QMessageBox.question(self, None,
+                                         "There is process running. Do you really want to exit?",
+                                         QMessageBox.Close, QMessageBox.Cancel)
         else:
             reply = QMessageBox.Close
-            
+
         if reply == QMessageBox.Close:
             event.accept()
             self.saveSettings()
         else:
             event.ignore()
 
-            
     def saveSettings(self):
         settings = QSettings()
         settings.setValue('MainWindow.Geometry', self.saveGeometry())
         settings.setValue('MainWindow.State', self.saveState())
-    
-    
+
     def deleteWorker(self, worker):
         del self._workers[worker]
         if not self._workers:
             self.widgetProgress.setVisible(False)
-            
-            
+
     def applyNetworkLayout(self, view, layout):
         for coord, node in zip(layout, self.graph.vs):
             node['__network_gobj'].setPos(QPointF(*coord))
-            
+
         self.graph.network_layout = layout
-                
+
         view.zoomToFit()
         view.minimap.zoomToFit()
-            
 
-    def drawNetwork(self, view, interactions=None, layout=None):    
+    def drawNetwork(self, view, interactions=None, layout=None):
         view.scene().clear()
-    
+
         if interactions is not None:
             nodes_idx = np.unique(np.vstack((interactions['Source'], interactions['Target'])))
-            
+
             widths = np.array(interactions['Cosine'])
             min = max(0, widths.min() - 0.1)
             if min != widths.max():
-                widths = (config.RADIUS-1)*(widths-min)/(widths.max()-min)+1
+                widths = (config.RADIUS - 1) * (widths - min) / (widths.max() - min) + 1
             else:
                 widths = config.RADIUS
-            
+
             self.graph.es['__weight'] = interactions['Cosine']
             self.graph.es['__width'] = widths
-        
+
         # Add nodes
-        group = QGraphicsRectItem() #Create a pseudo-group, QGraphicsItemGroup is not used because it does not let children handle events
-        group.setZValue(1) # Draw nodes on top of edges
+        group = QGraphicsRectItem()  # Create a pseudo-group, QGraphicsItemGroup is not used because it does not let children handle events
+        group.setZValue(1)  # Draw nodes on top of edges
         for i, n in enumerate(self.graph.vs):
             node = ui.Node(i, n['__label'])
             node.setParentItem(group)
         self.graph.vs['__network_gobj'] = group.childItems()
         view.scene().addItem(group)
         self.nodes_group = group
-           
+
         # Add edges
         group = QGraphicsRectItem()
         group.setZValue(0)
         for i, e in enumerate(self.graph.es):
-            edge = ui.Edge(i, self.graph.vs['__network_gobj'][e.source], self.graph.vs['__network_gobj'][e.target], e['__weight'], e['__width'])
+            edge = ui.Edge(i, self.graph.vs['__network_gobj'][e.source], self.graph.vs['__network_gobj'][e.target],
+                           e['__weight'], e['__width'])
             edge.setParentItem(group)
         self.graph.es['__network_gobj'] = group.childItems()
         view.scene().addItem(group)
         self.edges_group = group
-        
+
         if layout is None:
             # Compute layout
             def update_progress(i):
@@ -341,10 +342,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 del self._workers[worker]
                 if layout is not None:
                     self.applyNetworkLayout(view, layout)
-                    
+
             def process_canceled():
                 del self._workers[worker]
-        
+
             self.progressBar.setFormat('Computing layout...')
             self.progressBar.setMaximum(100)
             thread = QThread(self)
@@ -356,74 +357,73 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.btCancelProcess.pressed.connect(lambda: worker.stop())
             thread.started.connect(worker.run)
             thread.start()
-            self._workers[worker] = thread # Keep a reference to both thread and worker to prevent them to be garbage collected
-            
+            self._workers[
+                worker] = thread  # Keep a reference to both thread and worker to prevent them to be garbage collected
+
             return worker, thread
         else:
             self.applyNetworkLayout(view, layout)
-            
-            
+
     def applyTSNELayout(self, view, layout):
         for coord, node in zip(layout, self.graph.vs):
             node['__tsne_gobj'].setPos(QPointF(*coord))
-            
+
         self.graph.tsne_layout = layout
-                
+
         view.zoomToFit()
         view.minimap.zoomToFit()
-        
-        
+
     def drawTSNE(self, view, scores=None, layout=None):
         view.scene().clear()
-        
+
         # Add nodes
-        group = QGraphicsRectItem() # Create a pseudo-group, QGraphicsItemGroup is not used because it does not let children handle events
-        group.setZValue(1) # Draw nodes on top of edges
+        group = QGraphicsRectItem()  # Create a pseudo-group, QGraphicsItemGroup is not used because it does not let children handle events
+        group.setZValue(1)  # Draw nodes on top of edges
         for i, n in enumerate(self.graph.vs):
             node = ui.Node(i, n['__label'])
             node.setParentItem(group)
         self.graph.vs['__tsne_gobj'] = group.childItems()
         view.scene().addItem(group)
         self.nodes_group = group
-        
+
         if layout is None:
             # Compute layout
-            scores[scores<0.65] = 0
-            
-            mask = scores.sum(axis=0)>1
+            scores[scores < 0.65] = 0
+
+            mask = scores.sum(axis=0) > 1
             layout = np.zeros((scores.shape[0], 2))
-            
-            if np.any(mask):           
+
+            if np.any(mask):
                 def update_progress(i):
                     self.progressBar.setFormat('TSNE: Iteration {:d} of {:d}'.format(i, self.progressBar.maximum()))
                     self.progressBar.setValue(i)
-                    
+
                 def process_finished():
                     nonlocal layout
                     layout[mask] = worker.result()
                     del self._workers[worker]
-            
+
                     bb = ig.Layout(layout.tolist()).bounding_box()
                     dx, dy = 0, 0
                     for index in np.where(~mask)[0]:
-                        layout[index] = (bb.left+dx, bb.height+dy)
+                        layout[index] = (bb.left + dx, bb.height + dy)
                         dx += 5
                         if dx >= bb.width:
                             dx = 0
                             dy += 5
-                    
+
                     layout = ig.Layout(layout.tolist())
                     layout.scale(config.RADIUS)
-                    
+
                     self.applyTSNELayout(view, layout)
-                    
+
                 def process_canceled():
                     del self._workers[worker]
-                
+
                 self.progressBar.setFormat('Computing TSNE...')
-                self.progressBar.setMaximum(1000) #TODO
+                self.progressBar.setMaximum(1000)  # TODO
                 thread = QThread(self)
-                worker = TSNEWorker(1 - scores[mask][:,mask])
+                worker = TSNEWorker(1 - scores[mask][:, mask])
                 worker.moveToThread(thread)
                 worker.updated.connect(update_progress)
                 worker.finished.connect(process_finished)
@@ -431,28 +431,28 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 self.btCancelProcess.pressed.connect(lambda: worker.stop())
                 thread.started.connect(worker.run)
                 thread.start()
-                self._workers[worker] = thread # Keep a reference to both thread and worker to prevent them to be garbage collected
+                self._workers[
+                    worker] = thread  # Keep a reference to both thread and worker to prevent them to be garbage collected
                 return worker, thread
             else:
                 self.applyTSNELayout(view, layout)
                 return None, None
         else:
             self.applyTSNELayout(view, layout)
-            
-            
+
     def computeScoresFromSpectra(self, spectra, use_multiprocessing):
         def update_progress(i):
             self.progressBar.setValue(self.progressBar.value() + i)
-                
+
         def process_finished():
             del self._workers[worker]
-            
+
         def process_canceled():
             del self._workers[worker]
-    
+
         num_spectra = len(spectra)
-        num_scores_to_compute = num_spectra * (num_spectra-1) // 2
-    
+        num_scores_to_compute = num_spectra * (num_spectra - 1) // 2
+
         self.progressBar.setFormat('Computing scores...')
         self.progressBar.setMaximum(num_scores_to_compute)
         thread = QThread(self)
@@ -464,24 +464,24 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.btCancelProcess.pressed.connect(lambda: worker.stop())
         thread.started.connect(worker.run)
         thread.start()
-        self._workers[worker] = thread # Keep a reference to both thread and worker to prevent them to be garbage collected
+        self._workers[
+            worker] = thread  # Keep a reference to both thread and worker to prevent them to be garbage collected
         return worker, thread
-    
-    
+
     def readMGF(self, filename):
         def update_progress(i):
             self.progressBar.setValue(self.progressBar.value() + i)
-                
+
         def process_finished():
             del self._workers[worker]
-            
+
         def process_canceled():
             del self._workers[worker]
-    
+
         self.progressBar.setFormat('Reading MGF...')
         self.progressBar.setMinimum(0)
         self.progressBar.setMaximum(0)
-        
+
         thread = QThread(self)
         worker = ReadMGFWorker(filename, self.options.cosine)
         worker.moveToThread(thread)
@@ -491,10 +491,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.btCancelProcess.pressed.connect(lambda: worker.stop())
         thread.started.connect(worker.run)
         thread.start()
-        self._workers[worker] = thread # Keep a reference to both thread and worker to prevent them to be garbage collected
+        self._workers[
+            worker] = thread  # Keep a reference to both thread and worker to prevent them to be garbage collected
         return worker, thread
-        
-            
+
     def showOpenFileDialog(self):
         dialog = ui.OpenFileDialog(self, options=self.options)
         if dialog.exec_() == QDialog.Accepted:
@@ -502,57 +502,61 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.options.cosine = compute_options
             self.options.tsne = tsne_options
             self.options.network = network_options
-            
+
             def file_read():
                 nonlocal worker
                 self.network.spectra = worker.result()
-                multiprocess = len(self.network.spectra)>1000 # TODO: Tune this, arbitrary decision
+                multiprocess = len(self.network.spectra) > 1000  # TODO: Tune this, arbitrary decision
                 worker, thread = self.computeScoresFromSpectra(self.network.spectra, multiprocess)
                 worker.finished.connect(scores_computed)
 
             def scores_computed():
                 self.network.scores = worker.result()
-                interactions = generate_network(self.network.scores, self.network.spectra, self.options.network, use_self_loops=True)
+                interactions = generate_network(self.network.scores, self.network.spectra, self.options.network,
+                                                use_self_loops=True)
 
-                self.network.infos = np.array([(spectrum.mz_parent,) for spectrum in self.network.spectra], dtype=[('m/z parent', np.float32)])
+                self.network.infos = np.array([(spectrum.mz_parent,) for spectrum in self.network.spectra],
+                                              dtype=[('m/z parent', np.float32)])
 
                 nodes_idx = np.arange(self.network.scores.shape[0])
                 self.createGraph(nodes_idx, self.network.infos, interactions, labels=None)
-                
+
                 self.draw(self.network.scores, interactions, self.network.infos, labels=None)
-                
+
             worker, thread = self.readMGF(process_file)
             worker.finished.connect(file_read)
 
-            
     def openVisualizationDialog(self):
         sender = self.sender()
-        if sender.objectName() == "btNetworkOptions": # Network
+        if sender.objectName() == "btNetworkOptions":  # Network
             dialog = ui.EditNetworkOptionDialog(self, options=self.options)
             if dialog.exec_() == QDialog.Accepted:
                 options = dialog.getValues()
-                self.options.network = options
+                if options != self.options.network:
+                    self.options.network = options
+                    self.has_unsaved_changes = True
                 # To-Do restart Network graphics
-        else: # t-SNE
+        else:  # t-SNE
             dialog = ui.EditTSNEOptionDialog(self, options=self.options)
-            if dialog.exec_() == QDialog.Accepted: 
+            if dialog.exec_() == QDialog.Accepted:
                 options = dialog.getValues()
-                self.options.tsne = options
+                if options != self.options.tsne:
+                    self.options.tsne = options
+                    self.has_unsaved_changes = True
                 # To-Do restart TSNE graphics
 
-            
     def createGraph(self, nodes_idx, infos, interactions, labels=None):
         # Delete all previously created edges and nodes
         self.graph.delete_edges(self.graph.es)
         self.graph.delete_vertices(self.graph.vs)
-        
+
         self.graph.add_vertices(nodes_idx.tolist())
         self.graph.add_edges(zip(interactions['Source'], interactions['Target']))
-        
+
         if infos is not None:
             for col in infos.dtype.names:
                 self.graph.vs[col] = infos[col]
-                
+
         if interactions is not None:
             for col in interactions.dtype.names:
                 self.graph.es[col] = interactions[col]
@@ -562,7 +566,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
         else:
             self.graph.vs['__label'] = nodes_idx.astype('str')
 
-                            
     def draw(self, scores, interactions, infos=None, labels=None):
         self.tvNodes.model().sourceModel().beginResetModel()
         self.tvEdges.model().sourceModel().beginResetModel()
@@ -572,12 +575,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
             worker.finished.connect(lambda: self.drawTSNE(self.gvTSNE, scores))
         else:
             self.drawTSNE(self.gvTSNE, scores)
-        
+
         self.tvNodes.model().sourceModel().endResetModel()
         self.tvEdges.model().sourceModel().endResetModel()
-        self.updateSearchBar()      
-        
-        
+        self.updateSearchBar()
+
     def onSelectionChanged(self):
         view = self.currentView
         items = view.scene().selectedItems()
@@ -589,7 +591,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 edges_idx.append(item.index)
         self.tvNodes.model().setSelection(nodes_idx)
         self.tvEdges.model().setSelection(edges_idx)
-        
+
         if self.actionLinkViews.isChecked():
             if view == self.gvNetwork:
                 self.gvTSNE.scene().selectionChanged.disconnect()
@@ -605,20 +607,18 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 for idx in edges_idx:
                     self.graph.es['__network_gobj'][idx].setSelected(True)
                 self.gvNetwork.scene().selectionChanged.connect(self.onSelectionChanged)
-                
-        
+
     def doSearch(self, value):
         self.tvNodes.model().setFilterRegExp(str(value))
-
 
     def updateSearchBar(self):
         menu = QMenu(self)
         group = QActionGroup(menu, exclusive=True)
-        
+
         model = self.tvNodes.model()
 
-        for index in range(model.columnCount()+1):
-            text = "All" if index == 0 else model.headerData(index-1, Qt.Horizontal, Qt.DisplayRole)
+        for index in range(model.columnCount() + 1):
+            text = "All" if index == 0 else model.headerData(index - 1, Qt.Horizontal, Qt.DisplayRole)
             action = group.addAction(QAction(str(text), checkable=True))
             action.setData(index)
             menu.addAction(action)
@@ -631,15 +631,13 @@ class MainWindow(MainWindowBase, MainWindowUI):
         group.triggered.connect(self.updateSearchMenu)
         self.tvNodes.model().setFilterKeyColumn(-1)
 
-
     def updateSearchMenu(self, action):
-        self.tvNodes.model().setFilterKeyColumn(action.data()-1)
-
+        self.tvNodes.model().setFilterKeyColumn(action.data() - 1)
 
     def exportToCytoscape(self):
         try:
             from py2cytoscape.data.cyrest_client import CyRestClient
-            
+
             # Create exportable copy of the graph object
             g = self.graph.copy()
             for attr in g.vs.attributes():
@@ -652,20 +650,20 @@ class MainWindow(MainWindowBase, MainWindowUI):
                     del g.es[attr]
                 else:
                     g.es[attr] = [str(x) for x in g.es[attr]]
-            
+
             cy = CyRestClient()
             # cy.session.delete()
             g_cy = cy.network.create_from_igraph(g)
-            
+
             # cy.layout.apply(name='force-directed', network=g_cy)
-            
+
             layout = np.empty((g.vcount(), 2))
             for item in self.currentView.scene().items():
                 if item.Type == ui.Node.Type:
                     layout[item.index] = (item.x(), item.y())
             positions = [(suid, x, y) for suid, (x, y) in zip(g_cy.get_nodes()[::-1], layout)]
             cy.layout.apply_from_presets(network=g_cy, positions=positions)
-            
+
             with open('styles.json', 'r') as f:
                 style_js = json.load(f)
             style = cy.style.create('cyREST style', style_js)
@@ -676,15 +674,15 @@ class MainWindow(MainWindowBase, MainWindowUI):
             print('py2tocytoscape is required for this action (https://pypi.python.org/pypi/py2cytoscape).')
         except FileNotFoundError:
             print('styles.json not found...')
-            
+
         # for c in g_cy.get_view(g_cy.get_views()[0])['elements']['nodes']:
-            # pos = c['position']
-            # id_ = int(c['data']['id_original'])
-            # nodes[id_].setPos(QPointF(pos['x'], pos['y']))
-    
-    
+        # pos = c['position']
+        # id_ = int(c['data']['id_original'])
+        # nodes[id_].setPos(QPointF(pos['x'], pos['y']))
+
     def exportAsImage(self):
-        filename, filter = QFileDialog.getSaveFileName(self, "Save image", filter="SVG Files (*.svg);;BMP Files (*.bmp);;JPEG (*.JPEG);;PNG (*.png)")
+        filename, filter = QFileDialog.getSaveFileName(self, "Save image",
+                                                       filter="SVG Files (*.svg);;BMP Files (*.bmp);;JPEG (*.JPEG);;PNG (*.png)")
         if filename:
             if filter == 'SVG Files (*.svg)':
                 try:
@@ -710,8 +708,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 painter = QPainter(image)
                 self.currentView.scene().render(painter);
                 image.save(filename)
-                
-                
+
     def openProject(self):
         dialog = QFileDialog(self)
         dialog.setFileMode(QFileDialog.ExistingFile)
@@ -721,15 +718,13 @@ class MainWindow(MainWindowBase, MainWindowUI):
         if dialog.exec_() == QDialog.Accepted:
             filename = dialog.selectedFiles()[0]
             self.load(filename)
-        
-        
+
     def saveProject(self):
         if self.fname is None:
             self.saveProjectAs()
         else:
             self.save(self.fname)
-        
-        
+
     def saveProjectAs(self):
         dialog = QFileDialog(self)
         dialog.setAcceptMode(QFileDialog.AcceptSave)
@@ -739,20 +734,19 @@ class MainWindow(MainWindowBase, MainWindowUI):
         if dialog.exec_() == QDialog.Accepted:
             filename = dialog.selectedFiles()[0]
             self.save(filename)
-                
-                
+
     def save(self, fname):
         '''Save current project to a file for future access'''
-        
+
         # Export graph to GraphML format
         writer = GraphMLWriter()
         gxl = writer.tostring(self.graph).decode()
-        
+
         # Convert list of Spectrum objects to something that be saved
         spectra = getattr(self.network, 'spectra', [])
         spec_infos = [{'id': s.id, 'mz_parent': s.mz_parent} for s in spectra]
         spec_data = {'network/spectra/{}'.format(s.id): s.data for s in spectra}
-        
+
         # Create dict for saving
         d = {'network/scores': getattr(self.network, 'scores', np.array([])),
              'network/spectra/index.json': spec_infos,
@@ -762,7 +756,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
              'tsne_layout': getattr(self.graph, 'tsne_layout', np.array([])),
              'options.json': self.options}
         d.update(spec_data)
-        
+
         try:
             savez(fname, version=1, **d)
         except PermissionError as e:
@@ -771,32 +765,32 @@ class MainWindow(MainWindowBase, MainWindowUI):
             return False
         else:
             self.fname = fname
-            self.setWindowTitle(QCoreApplication.applicationName() + ' - ' + fname)
-        
-        
+            self.has_unsaved_changes = False
+
     def load(self, fname):
         '''Load project from a previously saved file'''
-        
+
         try:
             with MnzFile(fname) as fid:
                 try:
                     version = int(fid['version'])
                 except:
                     version = 1
-                    
+
                 if version == 1:
                     network = Network()
                     network.scores = fid['network/scores']
                     network.infos = fid['network/infos']
-                    
+
                     spec_infos = fid['network/spectra/index.json']
-                    network.spectra = [Spectrum(s['id'], s['mz_parent'], fid['network/spectra/{}'.format(s['id'])]) for s in spec_infos]
-                    
+                    network.spectra = [Spectrum(s['id'], s['mz_parent'], fid['network/spectra/{}'.format(s['id'])]) for
+                                       s in spec_infos]
+
                     # Load options
                     options = utils.AttrDict(fid['options.json'])
-                    for k,v in options.items():
+                    for k, v in options.items():
                         options[k] = utils.AttrDict(v)
-                    
+
                     # Load graph
                     gxl = fid['graph.gxl']
                     parser = GraphMLParser()
@@ -804,39 +798,40 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
                     graph.network_layout = fid['network_layout']
                     graph.tsne_layout = fid['tsne_layout']
-                    
+
                     self.options = options
                     self.graph = graph
                     self.network = network
-                    
+
                     # Draw
                     self.drawNetwork(self.gvNetwork, layout=self.graph.network_layout)
                     self.drawTSNE(self.gvTSNE, layout=self.graph.tsne_layout)
-                    
+
                     # Save filename and set window title
                     self.fname = fname
-                    self.setWindowTitle(QCoreApplication.applicationName() + ' - ' + fname)
+                    self.has_unsaved_changes = False
                 else:
                     dialog = QMessageBox(self)
                     dialog.warning(self, None,
-                            "Unrecognized file format version (version={}).".format(version))
+                                   "Unrecognized file format version (version={}).".format(version))
                     return False
         except FileNotFoundError:
             dialog = QMessageBox(self)
             dialog.warning(self, None,
-                    "File '{}' not found.".format(fname))
+                           "File '{}' not found.".format(fname))
             return False
-        
+
 
 if __name__ == '__main__':
-        import logging
-        from logging.handlers import RotatingFileHandler
-        
-        from PyQt5.QtWidgets import QApplication, QMainWindow
-        from PyQt5.QtCore import QCoreApplication
+    import logging
+    from logging.handlers import RotatingFileHandler
 
-        def exceptionHandler(exctype, value, trace):
-            """
+    from PyQt5.QtWidgets import QApplication, QMainWindow
+    from PyQt5.QtCore import QCoreApplication
+
+
+    def exceptionHandler(exctype, value, trace):
+        """
             This exception handler prevents quitting to the command line when there is
             an unhandled exception while processing a Qt signal.
 
@@ -848,53 +843,54 @@ if __name__ == '__main__':
                     sys.excepthook = exceptionHandler
             
             """
-            
-            logger.error('{} in {}'.format(exctype.__name__, trace.tb_frame.f_code.co_name), exc_info=(exctype, value, trace))
-            msg = QMessageBox(window)
-            msg.setWindowTitle("Unhandled exception")
-            msg.setIcon(QMessageBox.Warning)
-            msg.setText(("It seems you have found a bug in {}. Please report details.\n"
-                        "You should restart the application now.").format(QCoreApplication.applicationName()))
-            msg.setInformativeText(str(value))
-            msg.setDetailedText(''.join(traceback.format_exception(exctype, value, trace)))
-            btRestart = msg.addButton("Restart now", QMessageBox.ResetRole)
-            msg.addButton(QMessageBox.Ignore)
-            msg.raise_()
-            msg.exec_()
-            if msg.clickedButton() == btRestart: # Restart application
-                os.execv(sys.executable, [sys.executable] + sys.argv)
 
-        
-        # Create logger
-        if not os.path.exists('log'):
-            os.makedirs('log')
-        logger = logging.getLogger()
-        formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
-        file_handler = RotatingFileHandler('log/{}.log'.format(__file__), 'a', 1000000, 1)
-        file_handler.setFormatter(formatter)
-        logger.addHandler(file_handler)
-              
-        if DEBUG:
-            stream_handler = logging.StreamHandler()
-            logger.addHandler(stream_handler)
-            
-            logger.setLevel(logging.DEBUG)
-            file_handler.setLevel(logging.DEBUG)
-            stream_handler.setLevel(logging.DEBUG)
-        else:
-            logger.setLevel(logging.WARN)
-            file_handler.setLevel(logging.WARN)
-        
-        app = QApplication(sys.argv)
-        
-        QCoreApplication.setOrganizationDomain("CNRS")
-        QCoreApplication.setOrganizationName("ICSN")
-        QCoreApplication.setApplicationName("tsne-network")
-        QCoreApplication.setApplicationVersion("0.1")
-        
-        window = MainWindow()
-        
-        # sys.excepthook = exceptionHandler
-        
-        window.show()
-        sys.exit(app.exec_())
+        logger.error('{} in {}'.format(exctype.__name__, trace.tb_frame.f_code.co_name),
+                     exc_info=(exctype, value, trace))
+        msg = QMessageBox(window)
+        msg.setWindowTitle("Unhandled exception")
+        msg.setIcon(QMessageBox.Warning)
+        msg.setText(("It seems you have found a bug in {}. Please report details.\n"
+                     "You should restart the application now.").format(QCoreApplication.applicationName()))
+        msg.setInformativeText(str(value))
+        msg.setDetailedText(''.join(traceback.format_exception(exctype, value, trace)))
+        btRestart = msg.addButton("Restart now", QMessageBox.ResetRole)
+        msg.addButton(QMessageBox.Ignore)
+        msg.raise_()
+        msg.exec_()
+        if msg.clickedButton() == btRestart:  # Restart application
+            os.execv(sys.executable, [sys.executable] + sys.argv)
+
+
+    # Create logger
+    if not os.path.exists('log'):
+        os.makedirs('log')
+    logger = logging.getLogger()
+    formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
+    file_handler = RotatingFileHandler('log/{}.log'.format(__file__), 'a', 1000000, 1)
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
+
+    if DEBUG:
+        stream_handler = logging.StreamHandler()
+        logger.addHandler(stream_handler)
+
+        logger.setLevel(logging.DEBUG)
+        file_handler.setLevel(logging.DEBUG)
+        stream_handler.setLevel(logging.DEBUG)
+    else:
+        logger.setLevel(logging.WARN)
+        file_handler.setLevel(logging.WARN)
+
+    app = QApplication(sys.argv)
+
+    QCoreApplication.setOrganizationDomain("CNRS")
+    QCoreApplication.setOrganizationName("ICSN")
+    QCoreApplication.setApplicationName("tsne-network")
+    QCoreApplication.setApplicationVersion("0.1")
+
+    window = MainWindow()
+
+    # sys.excepthook = exceptionHandler
+
+    window.show()
+    sys.exit(app.exec_())
