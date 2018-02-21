@@ -51,7 +51,7 @@ def zipfile_factory(file, *args, **kwargs):
     return zipfile.ZipFile(file, *args, **kwargs)
                            
 
-def savez(file, version, *args, compress=True, allow_pickle=True, pickle_kwargs=None, **kwargs):
+def savez(file, version, *args, compress=True, **kwargs):
     if isinstance(file, basestring):
         if not file.endswith(FILE_EXTENSION):
             file = file + FILE_EXTENSION
@@ -82,14 +82,13 @@ def savez(file, version, *args, compress=True, allow_pickle=True, pickle_kwargs=
                 zipf.writestr(key, val)
             else:
                 try:
-                    s = json.dumps(val)
+                    s = json.dumps(val, indent=4)
                 except TypeError:
                     fname = key + '.npy'
                     val = np.asanyarray(val)
                     force_zip64 = val.nbytes >= 2**30
                     with zipf.open(fname, 'w', force_zip64=force_zip64) as fid:
                         format.write_array(fid, val,
-                                           allow_pickle=allow_pickle,
-                                           pickle_kwargs=pickle_kwargs)
+                                           allow_pickle=False)
                 else:
                     zipf.writestr(key, s)

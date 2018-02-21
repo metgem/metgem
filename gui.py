@@ -22,7 +22,7 @@ from lib.save import savez, MnzFile
 from lib.graphml import GraphMLWriter, GraphMLParser
 from lib.workers import read_mgf #TODO
 from lib.workers.network_generation import generate_network #TODO
-from lib.workers import (ReadMGFWorker,
+from lib.workers import (ReadMGFWorker, Spectrum,
                         TSNEWorker, TSNEVisualizationOptions,
                          NetworkWorker, NetworkVisualizationOptions,
                          ComputeScoresWorker, CosineComputationOptions)
@@ -467,7 +467,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         return worker, thread
     
     
-    def readMGF(self, filename, use_multiprocessing):
+    def readMGF(self, filename):
         def update_progress(i):
             self.progressBar.setFormat('Reading MGF...')
             self.progressBar.setValue(self.progressBar.value() + i)
@@ -482,7 +482,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.progressBar.setMaximum(0)
         
         thread = QThread(self)
-        worker = ReadMGFWorker(filename, self.options.cosine, use_multiprocessing)
+        worker = ReadMGFWorker(filename, self.options.cosine)
         worker.moveToThread(thread)
         worker.updated.connect(update_progress)
         worker.finished.connect(process_finished)
@@ -501,12 +501,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.options.cosine = compute_options
             self.options.tsne = tsne_options
             self.options.network = network_options
-                
-            multiprocess = False
             
             def file_read():
                 nonlocal worker
                 self.network.spectra = worker.result()
+                multiprocess = len(self.network.spectra)>1000 # TODO: Tune this, arbitrary decision
                 worker, thread = self.computeScoresFromSpectra(self.network.spectra, multiprocess)
                 worker.finished.connect(scores_computed)
 
@@ -521,7 +520,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 
                 self.draw(self.network.scores, interactions, self.network.infos, labels=None)
                 
-            worker, thread = self.readMGF(process_file, use_multiprocessing=multiprocess)
+            worker, thread = self.readMGF(process_file)
             worker.finished.connect(file_read)
 
             
@@ -741,17 +740,27 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.save(filename)
                 
                 
-    def save(self, fname):            
+    def save(self, fname):
+        '''Save current project to a file for future access'''
+        
+        # Export graph to GraphML format
         writer = GraphMLWriter()
         gxl = writer.tostring(self.graph).decode()
         
+        # Convert list of Spectrum objects to something that be saved
+        spectra = getattr(self.network, 'spectra', [])
+        spec_infos = [{'id': s.id, 'mz_parent': s.mz_parent} for s in spectra]
+        spec_data = {'network/spectra/{}'.format(s.id): s.data for s in spectra}
+        
+        # Create dict for saving
         d = {'network/scores': getattr(self.network, 'scores', np.array([])),
-             'network/spectra': getattr(self.network, 'spectra', []),
+             'network/spectra/index.json': spec_infos,
              'network/infos': getattr(self.network, 'infos', np.array([])),
              'graph.gxl': gxl,
              'network_layout': getattr(self.graph, 'network_layout', np.array([])),
              'tsne_layout': getattr(self.graph, 'tsne_layout', np.array([])),
-             'options': self.options}
+             'options.json': self.options}
+        d.update(spec_data)
         
         try:
             savez(fname, version=1, **d)
@@ -765,6 +774,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
         
         
     def load(self, fname):
+        '''Load project from a previously saved file'''
+        
         try:
             with MnzFile(fname) as fid:
                 try:
@@ -775,11 +786,13 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 if version == 1:
                     network = Network()
                     network.scores = fid['network/scores']
-                    network.spectra = fid['network/spectra'].tolist()
                     network.infos = fid['network/infos']
                     
+                    spec_infos = fid['network/spectra/index.json']
+                    network.spectra = [Spectrum(s['id'], s['mz_parent'], fid['network/spectra/{}'.format(s['id'])]) for s in spec_infos]
+                    
                     # Load options
-                    options = utils.AttrDict(fid['options'])
+                    options = utils.AttrDict(fid['options.json'])
                     for k,v in options.items():
                         options[k] = utils.AttrDict(v)
                     
