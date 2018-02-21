@@ -3,8 +3,8 @@
 import sys
 import os
 import time
-import json
 import traceback
+import json
 
 import numpy as np
 import igraph as ig
@@ -19,6 +19,7 @@ from lib import ui
 from lib import config
 from lib import utils
 from lib.save import savez, MnzFile
+from lib.graphml import GraphMLWriter, GraphMLParser
 from lib.workers import read_mgf #TODO
 from lib.workers.network_generation import generate_network #TODO
 from lib.workers import (ReadMGFWorker,
@@ -740,66 +741,77 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.save(filename)
                 
                 
-    def save(self, fname):    
-        graph = self.graph.copy()
-        for attr in graph.vs.attributes():
-            if attr.startswith('__') and attr.endswith('_gobj'):
-                del graph.vs[attr]
-        for attr in graph.es.attributes():
-            if attr.startswith('__') and attr.endswith('_gobj'):
-                del graph.es[attr]
+    def save(self, fname):            
+        writer = GraphMLWriter()
+        gxl = writer.tostring(self.graph).decode()
         
         d = {'network/scores': getattr(self.network, 'scores', np.array([])),
              'network/spectra': getattr(self.network, 'spectra', []),
              'network/infos': getattr(self.network, 'infos', np.array([])),
-             'graph': graph,
+             'graph.gxl': gxl,
              'network_layout': getattr(self.graph, 'network_layout', np.array([])),
              'tsne_layout': getattr(self.graph, 'tsne_layout', np.array([])),
              'options': self.options}
         
         try:
             savez(fname, version=1, **d)
-            self.fname = fname
-            self.setWindowTitle(QCoreApplication.applicationName() + ' - ' + fname)
         except PermissionError as e:
             dialog = QMessageBox(self)
             dialog.warning(self, None, str(e))
             return False
+        else:
+            self.fname = fname
+            self.setWindowTitle(QCoreApplication.applicationName() + ' - ' + fname)
         
         
     def load(self, fname):
         try:
-            l = MnzFile(fname)
+            with MnzFile(fname) as fid:
+                try:
+                    version = int(fid['version'])
+                except:
+                    version = 1
+                    
+                if version == 1:
+                    network = Network()
+                    network.scores = fid['network/scores']
+                    network.spectra = fid['network/spectra'].tolist()
+                    network.infos = fid['network/infos']
+                    
+                    # Load options
+                    options = utils.AttrDict(fid['options'])
+                    for k,v in options.items():
+                        options[k] = utils.AttrDict(v)
+                    
+                    # Load graph
+                    gxl = fid['graph.gxl']
+                    parser = GraphMLParser()
+                    graph = parser.fromstring(gxl)
+
+                    graph.network_layout = fid['network_layout']
+                    graph.tsne_layout = fid['tsne_layout']
+                    
+                    self.options = options
+                    self.graph = graph
+                    self.network = network
+                    
+                    # Draw
+                    self.drawNetwork(self.gvNetwork, layout=self.graph.network_layout)
+                    self.drawTSNE(self.gvTSNE, layout=self.graph.tsne_layout)
+                    
+                    # Save filename and set window title
+                    self.fname = fname
+                    self.setWindowTitle(QCoreApplication.applicationName() + ' - ' + fname)
+                else:
+                    dialog = QMessageBox(self)
+                    dialog.warning(self, None,
+                            "Unrecognized file format version (version={}).".format(version))
+                    return False
         except FileNotFoundError:
             dialog = QMessageBox(self)
             dialog.warning(self, None,
                     "File '{}' not found.".format(fname))
             return False
-        else:
-            try:
-                version = int(l['version'])
-            except:
-                version = 1
-                
-            if version == 1:
-                self.network.scores = l['network/scores']
-                self.network.spectra = l['network/spectra'].tolist()
-                self.network.infos = l['network/infos']
-                self.graph = l['graph'].tolist()
-                self.graph.network_layout = l['network_layout']
-                self.graph.tsne_layout = l['tsne_layout']
-                self.options = l['options']
-            
-                self.drawNetwork(self.gvNetwork, layout=self.graph.network_layout)
-                self.drawTSNE(self.gvTSNE, layout=self.graph.tsne_layout)
-                
-                self.fname = fname
-                self.setWindowTitle(QCoreApplication.applicationName() + ' - ' + fname)
-            else:
-                dialog = QMessageBox(self)
-                dialog.warning(self, None,
-                        "Unrecognized file format version (version={}).".format(version))
-                return False
         
 
 if __name__ == '__main__':
@@ -868,7 +880,7 @@ if __name__ == '__main__':
         
         window = MainWindow()
         
-        sys.excepthook = exceptionHandler
+        # sys.excepthook = exceptionHandler
         
         window.show()
         sys.exit(app.exec_())

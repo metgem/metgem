@@ -78,15 +78,18 @@ def savez(file, version, *args, compress=True, allow_pickle=True, pickle_kwargs=
         
         # Write directly to a ZIP file
         for key, val in namedict.items():
-            try:
-                s = json.dumps(val)
-            except TypeError:
-                fname = key + '.npy'
-                val = np.asanyarray(val)
-                force_zip64 = val.nbytes >= 2**30
-                with zipf.open(fname, 'w', force_zip64=force_zip64) as fid:
-                    format.write_array(fid, val,
-                                       allow_pickle=allow_pickle,
-                                       pickle_kwargs=pickle_kwargs)
+            if isinstance(val, str):
+                zipf.writestr(key, val)
             else:
-                zipf.writestr(key, s)
+                try:
+                    s = json.dumps(val)
+                except TypeError:
+                    fname = key + '.npy'
+                    val = np.asanyarray(val)
+                    force_zip64 = val.nbytes >= 2**30
+                    with zipf.open(fname, 'w', force_zip64=force_zip64) as fid:
+                        format.write_array(fid, val,
+                                           allow_pickle=allow_pickle,
+                                           pickle_kwargs=pickle_kwargs)
+                else:
+                    zipf.writestr(key, s)
