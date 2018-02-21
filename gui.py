@@ -345,7 +345,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             def process_canceled():
                 del self._workers[worker]
         
-            # self.widgetProgress.setVisible(True)
+            self.progressBar.setFormat('Computing layout...')
             self.progressBar.setMaximum(100)
             thread = QThread(self)
             worker = NetworkWorker(self.graph)
@@ -420,6 +420,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 def process_canceled():
                     del self._workers[worker]
                 
+                self.progressBar.setFormat('Computing TSNE...')
                 self.progressBar.setMaximum(1000) #TODO
                 thread = QThread(self)
                 worker = TSNEWorker(1 - scores[mask][:,mask])
@@ -441,7 +442,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
             
     def computeScoresFromSpectra(self, spectra, use_multiprocessing):
         def update_progress(i):
-            self.progressBar.setFormat('Computing scores...')
             self.progressBar.setValue(self.progressBar.value() + i)
                 
         def process_finished():
@@ -453,6 +453,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         num_spectra = len(spectra)
         num_scores_to_compute = num_spectra * (num_spectra-1) // 2
     
+        self.progressBar.setFormat('Computing scores...')
         self.progressBar.setMaximum(num_scores_to_compute)
         thread = QThread(self)
         worker = ComputeScoresWorker(spectra, use_multiprocessing, self.options.cosine)
@@ -469,7 +470,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
     
     def readMGF(self, filename):
         def update_progress(i):
-            self.progressBar.setFormat('Reading MGF...')
             self.progressBar.setValue(self.progressBar.value() + i)
                 
         def process_finished():
@@ -478,6 +478,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         def process_canceled():
             del self._workers[worker]
     
+        self.progressBar.setFormat('Reading MGF...')
         self.progressBar.setMinimum(0)
         self.progressBar.setMaximum(0)
         
