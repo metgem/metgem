@@ -178,7 +178,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
     @property
     def window_title(self):
         if self.fname is not None:
-            return QCoreApplication.applicationName() + ' - ' + self.fname
+            if self.has_unsaved_changes:
+                return QCoreApplication.applicationName() + ' - ' + self.fname + '*'
+            else:
+                return QCoreApplication.applicationName() + ' - ' + self.fname
         else:
             return QCoreApplication.applicationName()
 
@@ -189,7 +192,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
     @has_unsaved_changes.setter
     def has_unsaved_changes(self, value):
         if value:
-            self.setWindowTitle(self.window_title + '*')
+            self.setWindowTitle(self.window_title)
             self.actionSave.setEnabled(True)
         else:
             self.setWindowTitle(self.window_title)
@@ -498,6 +501,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def showOpenFileDialog(self):
         dialog = ui.OpenFileDialog(self, options=self.options)
         if dialog.exec_() == QDialog.Accepted:
+            self.fname = None
+            self.has_unsaved_changes = True
+            self.gvNetwork.scene().clear()
+            self.gvTSNE.scene().clear()
+
             process_file, metadata_file, compute_options, tsne_options, network_options = dialog.getValues()
             self.options.cosine = compute_options
             self.options.tsne = tsne_options
