@@ -16,19 +16,25 @@ class Spectrum:
         data (np.array): 2D-array of floats with 2 columns holding m/z values and intensities, respectively.
         mz_parent (float): m/z ratio of parent ion.
     '''
+    
     # Indexes for array
     MZ = 0
     INTENSITY = 1
     
-    def __init__(self, id, mz_parent, data, options, use_multiprocessing=False):
+    def __init__(self, id, mz_parent, data):
         self.id = id
         self.mz_parent = mz_parent
+        self.data = data
+        
+        
+    def filter_data(self, options):
+        data = self.data
         
         # Filter low mass peaks
         data = data[data[:,Spectrum.MZ]>=50]
         
         # Filter peaks close to the parent ion's m/z
-        data = data[np.logical_or(data[:,Spectrum.MZ]<=mz_parent-options.parent_filter_tolerance, data[:,Spectrum.MZ]>=mz_parent+options.parent_filter_tolerance)]
+        data = data[np.logical_or(data[:,Spectrum.MZ]<=self.mz_parent-options.parent_filter_tolerance, data[:,Spectrum.MZ]>=self.mz_parent+options.parent_filter_tolerance)]
         
         # Keep only peaks higher than threshold
         data = data[data[:,Spectrum.INTENSITY] >= options.min_intensity * data[:,Spectrum.INTENSITY].max() / 100]
@@ -45,13 +51,15 @@ class Spectrum:
         # Normalize data to norm 1
         data[:,Spectrum.INTENSITY] = data[:,Spectrum.INTENSITY] / np.sqrt(data[:,Spectrum.INTENSITY] @ data[:,Spectrum.INTENSITY])
         
-        if use_multiprocessing:
-            self._data = mp.RawArray(c_float, data.size)
-            self.data = np.frombuffer(self._data, dtype=np.float32)
-            self.data[:] = data.ravel()
-            self.data = self.data.reshape(data.shape)
-        else:
-            self.data = data
+        self.data = data
+        
+        
+    def use_multiprocessing(self):
+        data = self.data
+        self._data = mp.RawArray(c_float, data.size)
+        self.data = np.frombuffer(self._data, dtype=np.float32)
+        self.data[:] = data.ravel()
+        self.data = self.data.reshape(data.shape)
         
         
     def __repr__(self):
@@ -98,15 +106,16 @@ def init(spectra, num, matrix):
     scores_matrix = matrix
 
         
-def batch_cosine_scores(ids, tolerance):
+def batch_cosine_scores(ids, options):
     '''Compute a bach of cosine scores and write them directly into the results matrix.
     
     Args:
         ids (list of int): ids of spectra to process.
-        tolerance (float): m/z window allowed to consider two m/z as the same.
+        options (CosineComputationOptions)
         
     Returns:
         int: Number of scores calculated'''
+
     m = np.frombuffer(scores_matrix, dtype=np.float32)
     m = m.reshape((num_spectra, num_spectra))
     
@@ -116,32 +125,32 @@ def batch_cosine_scores(ids, tolerance):
             break
         
         m[spec_id, ref_id] = cosine_score(spec_list[spec_id],
-                             spec_list[ref_id], tolerance)
+                             spec_list[ref_id], options)
         counter += 1
         
     return counter
 
     
-def cosine_score(spectrum1, spectrum2, tolerance, min_matched_peaks):
+def cosine_score(spectrum1, spectrum2, options):
     '''Compute cosine score from two spectra and a given m/z tolerance.
     
     Args:
         spectrum1 (Spectrum): First spectrum to compare.
         spectrum2 (Spectrum): Second spectrum to compare.
-        tolerance (float): m/z window allowed to consider two m/z as the same.
+        options (CosineComputationOptions)
         
     Returns:
         float: Cosine similarity between spectrum1 and spectrum2.'''
-    
+
     dm = spectrum1.mz_parent - spectrum2.mz_parent
 
     diff_matrix = spectrum2.data[:,Spectrum.MZ] - spectrum1.data[:,Spectrum.MZ][:,None]
     if dm != 0.:
         idxMatched1, idxMatched2 = np.where( \
-            np.logical_or(np.abs(diff_matrix) <= tolerance,
-                          np.abs(diff_matrix+dm) <= tolerance))
+            np.logical_or(np.abs(diff_matrix) <= options.mz_tolerance,
+                          np.abs(diff_matrix+dm) <= options.mz_tolerance))
     else:
-        idxMatched1, idxMatched2 = np.where(np.abs(diff_matrix) <= tolerance)
+        idxMatched1, idxMatched2 = np.where(np.abs(diff_matrix) <= options.mz_tolerance)
     del diff_matrix
 
     if idxMatched1.size + idxMatched2.size == 0:
@@ -165,7 +174,7 @@ def cosine_score(spectrum1, spectrum2, tolerance, min_matched_peaks):
             peakUsed2[peakMatches[i][1]] = True
             numMatchedPeaks += 1
             
-    if numMatchedPeaks < min_matched_peaks:
+    if numMatchedPeaks < options.min_matched_peaks:
         return 0.
         
     return score
@@ -187,8 +196,11 @@ class ComputeScoresWorker(BaseWorker):
         num_scores_to_compute = num_spectra * (num_spectra-1) // 2
 
         
-        # Compute cosine scores            
+        # Compute cosine scores
         if self.use_multiprocessing:
+            # for spectrum in self._spectra:
+                # spectrum.use_multiprocessing()
+            
             scores_matrix = mp.RawArray(c_float, num_spectra**2)
             m = np.frombuffer(scores_matrix, dtype=np.float32)
             m[:] = 0
@@ -200,7 +212,7 @@ class ComputeScoresWorker(BaseWorker):
             groups = grouper(combinations, 
                             min(10000, num_scores_to_compute//max_workers),
                             fillvalue=(None, None))
-            compute = partial(batch_cosine_scores, self.options.mz_tolerance, self.options.min_matched_peaks)
+            compute = partial(batch_cosine_scores, options=self.options)
             for result in pool.imap_unordered(compute, groups):
                 if self._should_stop:
                     self.canceled.emit()
@@ -215,7 +227,7 @@ class ComputeScoresWorker(BaseWorker):
                     self.canceled.emit()
                     return False
                     
-                score = cosine_score(spectrum1, spectrum2, self.options.mz_tolerance, self.options.min_matched_peaks)
+                score = cosine_score(spectrum1, spectrum2, self.options)
                     
                 scores_matrix[spectrum1.id, spectrum2.id] = score
                 self.updated.emit(1)
