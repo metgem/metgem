@@ -153,3 +153,4 @@ bin/
 /lib/ui/ui_rc.py
 /lib/ui/images/main.ico
 /log/
+windows/share/

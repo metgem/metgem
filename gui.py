@@ -106,7 +106,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.widgetProgress.setVisible(False)
 
         # Add a Jupyter widget
-        import qtconsole
         if EMBED_JUPYTER:
             from qtconsole.rich_jupyter_widget import RichJupyterWidget
             from qtconsole.inprocess import QtInProcessKernelManager

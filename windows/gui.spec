@@ -2,6 +2,7 @@
 
 import os
 import sys
+import glob
 
 DEBUG = os.getenv('DEBUG_MODE', 'false').lower() in ('true', '1')
 
@@ -20,19 +21,9 @@ a = Analysis(['../gui.py'],
                     ('../lib/ui/*.ui', 'lib/ui'),
                     ('../lib/ui/images/*', 'lib/ui/images'),
                     ('../lib/ui/widgets/*.ui', 'lib/ui/widgets')],
-             hiddenimports=['igraph.vendor.texttable',
-                            'scipy._lib.messagestream',
-                            'sklearn.neighbors.typedefs',
-                            'sklearn.neighbors.quad_tree',
-                            'sklearn.tree._utils',
-                            'sklearn.tree._criterion',
-                            'sklearn.tree._splitter',
-                            'sklearn.tree._tree'
-                            'sklearn.tree.tree',
-                            'sklearn.tree.export',
-                            'sklearn.tree.setup'],
-             hookspath=[],
-             runtime_hooks=[],
+             hiddenimports=[],
+             hookspath=['hooks'],
+             runtime_hooks=sorted(glob.glob('rthooks/*_pyi_*.py')),
              excludes=['FixTk', 'tcl', 'tk', '_tkinter', 'tkinter', 'Tkinter', #Remove Tkinter
                        'lib2to3'
                       ],
@@ -43,6 +34,9 @@ a = Analysis(['../gui.py'],
 # Remove MKL binaries
 a.binaries = [bin for bin in a.binaries if not bin[0].startswith('mkl_')]
 a.binaries = [bin for bin in a.binaries if not bin[0].startswith('api-ms-win-')]
+
+# Remove unused IPthon data files
+a.datas = [dat for dat in a.datas if not dat[0].startswith('IPython')]
              
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
