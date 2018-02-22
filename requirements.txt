@@ -1,0 +1,9 @@
+lxml==4.1.1
+numpy==1.14.1
+PyQt5==5.10
+pyteomics==3.4.2
+python-igraph==0.7.1.post7
+scikit-learn==0.19.1
+scipy==1.0.0
+sip==4.19.7
+sklearn==0.0
