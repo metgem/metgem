@@ -25,6 +25,14 @@ var/
 .installed.cfg
 *.egg
 
+# Virtualenv
+pyvenv.cfg
+Scripts
+include
+lib/site-packages
+lib/tcl8.5/
+pip-selfcheck.json
+
 # PyInstaller
 #  Usually these files are written by a python script from a template
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
