@@ -1,5 +1,5 @@
 class AttrDict(dict):
-    """A dictionnary where item can be accessed as attributes"""
+    """A frozen dictionary where item can be accessed as attributes."""
     
     def __getattr__(self, item):
         try:
@@ -11,7 +11,7 @@ class AttrDict(dict):
         return self.__setitem__(item, value)
     
     def __setitem__(self, item, value):
-        if not item in self:
+        if item not in self:
             raise AttributeError("'{}' object has no attribute '{}'".format(self.__class__.__name__, item))
         super().__setitem__(item, value)
 
