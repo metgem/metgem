@@ -23,6 +23,11 @@ MAIN_UI_FILE = os.path.join('lib', 'ui', 'main_window.ui')
 DEBUG = os.getenv('DEBUG_MODE', 'false').lower() in ('true', '1')
 EMBED_JUPYTER = os.getenv('EMBED_JUPYTER', 'false').lower() in ('true', '1')
 
+if sys.platform == 'win32':
+    LOG_PATH = os.path.expandvars(r'%APPDATA%\tsne-network\log')
+else:
+    LOG_PATH = 'log'  # TODO: find better place for linux and os x
+
 MainWindowUI, MainWindowBase = uic.loadUiType(MAIN_UI_FILE, from_imports='lib.ui', import_from='lib.ui')
 
 
@@ -862,11 +867,12 @@ if __name__ == '__main__':
 
 
     # Create logger
-    if not os.path.exists('log'):
-        os.makedirs('log')
+    if not os.path.exists(LOG_PATH):
+        os.makedirs(LOG_PATH)
+
     logger = logging.getLogger()
     formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
-    file_handler = RotatingFileHandler('log/{}.log'.format(__file__), 'a', 1000000, 1)
+    file_handler = RotatingFileHandler(os.path.join(LOG_PATH, '{}.log'.format(__file__)), 'a', 1000000, 1)
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
 
@@ -893,4 +899,11 @@ if __name__ == '__main__':
     sys.excepthook = exceptionHandler
 
     window.show()
+
+    # Support for file association
+    if len(sys.argv) > 1:
+        fname = sys.argv[1]
+        if os.path.exists(fname) and os.path.splitext(fname)[1] == '.mnz':
+            window.load(fname)
+
     sys.exit(app.exec_())

@@ -1,6 +1,9 @@
 # -*- mode: python -*-
 
+import os
 import sys
+
+DEBUG = os.getenv('DEBUG_MODE', 'false').lower() in ('true', '1')
 
 # Encrypt files?
 block_cipher = None
@@ -11,7 +14,8 @@ sys.modules['FixTk'] = None
 a = Analysis(['../gui.py'],
              pathex=[r'Lib\site-packages\scipy\extra-dll'],
              binaries=[],
-             datas=[('../examples/*', 'examples'),
+             datas=[('../LICENSE', ''),
+                    ('../examples/*', 'examples'),
                     ('../lib/ui/*_rc.py', 'lib/ui'),
                     ('../lib/ui/*.ui', 'lib/ui'),
                     ('../lib/ui/images/*', 'lib/ui/images'),
@@ -47,10 +51,10 @@ exe = EXE(pyz,
           a.scripts,
           exclude_binaries=True,
           name='gui',
-          debug=False,
+          debug=DEBUG,
           strip=False,
           upx=False,
-          console=False)
+          console=DEBUG)
           
 coll = COLLECT(exe,
                a.binaries,

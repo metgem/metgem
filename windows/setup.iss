@@ -32,6 +32,7 @@ WizardSmallImageFile=compiler:WizModernSmallImage-IS.bmp
 ArchitecturesInstallIn64BitMode=x64
 ArchitecturesAllowed=x64
 ChangesAssociations=True
+LicenseFile=dist\gui\LICENSE
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
