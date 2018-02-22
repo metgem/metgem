@@ -16,16 +16,8 @@ from PyQt5.QtCore import QThread, QSettings, Qt, QPointF
 from PyQt5.QtGui import QPainter, QImage
 from PyQt5 import uic
 
-from lib import ui
-from lib import config
-from lib import utils
-from lib.save import savez, MnzFile
-from lib.graphml import GraphMLWriter, GraphMLParser
+from lib import ui, config, utils, save, graphml, workers
 from lib.workers.network_generation import generate_network  # TODO
-from lib.workers import (ReadMGFWorker, Spectrum,
-                         TSNEWorker, TSNEVisualizationOptions,
-                         NetworkWorker, NetworkVisualizationOptions,
-                         ComputeScoresWorker, CosineComputationOptions)
 
 MAIN_UI_FILE = os.path.join('lib', 'ui', 'main_window.ui')
 DEBUG = os.getenv('DEBUG_MODE', 'false').lower() in ('true', '1')
@@ -79,19 +71,19 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.setupUi(self)
 
         # Assigning cosine computation and visualization default options
-        self.options = utils.AttrDict({'cosine': CosineComputationOptions(),
-                                       'network': NetworkVisualizationOptions(),
-                                       'tsne': TSNEVisualizationOptions()})
+        self.options = utils.AttrDict({'cosine': workers.CosineComputationOptions(),
+                                       'network': workers.NetworkVisualizationOptions(),
+                                       'tsne': workers.TSNEVisualizationOptions()})
 
         # Create an object to store all computed objects
         self.network = Network()
 
         # Add model to table views
-        for table, Model, name in ((self.tvNodes, ui.widgets.network_view.NodesModel, "Nodes"),
-                                   (self.tvEdges, ui.widgets.network_view.EdgesModel, "Edges")):
+        for table, Model, name in ((self.tvNodes, ui.widgets.NodesModel, "Nodes"),
+                                   (self.tvEdges, ui.widgets.EdgesModel, "Edges")):
             table.setSortingEnabled(True)
             model = Model(self.graph)
-            proxy = ui.widgets.network_view.ProxyModel()
+            proxy = ui.widgets.ProxyModel()
             proxy.setSourceModel(model)
             table.setModel(proxy)
 
@@ -351,7 +343,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.progressBar.setFormat('Computing layout...')
             self.progressBar.setMaximum(100)
             thread = QThread(self)
-            worker = NetworkWorker(self.graph)
+            worker = workers.NetworkWorker(self.graph)
             worker.moveToThread(thread)
             worker.updated.connect(update_progress)
             worker.finished.connect(process_finished)
@@ -425,7 +417,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 self.progressBar.setFormat('Computing TSNE...')
                 self.progressBar.setMaximum(1000)  # TODO
                 thread = QThread(self)
-                worker = TSNEWorker(1 - scores[mask][:, mask])
+                worker = workers.TSNEWorker(1 - scores[mask][:, mask])
                 worker.moveToThread(thread)
                 worker.updated.connect(update_progress)
                 worker.finished.connect(process_finished)
@@ -458,7 +450,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.progressBar.setFormat('Computing scores...')
         self.progressBar.setMaximum(num_scores_to_compute)
         thread = QThread(self)
-        worker = ComputeScoresWorker(spectra, use_multiprocessing, self.options.cosine)
+        worker = workers.ComputeScoresWorker(spectra, use_multiprocessing, self.options.cosine)
         worker.moveToThread(thread)
         worker.updated.connect(update_progress)
         worker.finished.connect(process_finished)
@@ -485,7 +477,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.progressBar.setMaximum(0)
 
         thread = QThread(self)
-        worker = ReadMGFWorker(filename, self.options.cosine)
+        worker = workers.ReadMGFWorker(filename, self.options.cosine)
         worker.moveToThread(thread)
         worker.updated.connect(update_progress)
         worker.finished.connect(process_finished)
@@ -514,7 +506,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 nonlocal worker
                 self.network.spectra = worker.result()
                 multiprocess = len(self.network.spectra) > 1000  # TODO: Tune this, arbitrary decision
-                multiprocess = True
                 worker, thread = self.computeScoresFromSpectra(self.network.spectra, multiprocess)
                 worker.finished.connect(scores_computed)
 
@@ -748,7 +739,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         """Save current project to a file for future access"""
 
         # Export graph to GraphML format
-        writer = GraphMLWriter()
+        writer = graphml.GraphMLWriter()
         gxl = writer.tostring(self.graph).decode()
 
         # Convert list of Spectrum objects to something that be saved
@@ -767,7 +758,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         d.update(spec_data)
 
         try:
-            savez(fname, version=1, **d)
+            save.savez(fname, version=1, **d)
         except PermissionError as e:
             dialog = QMessageBox(self)
             dialog.warning(self, None, str(e))
@@ -780,7 +771,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         """Load project from a previously saved file"""
 
         try:
-            with MnzFile(fname) as fid:
+            with save.MnzFile(fname) as fid:
                 try:
                     version = int(fid['version'])
                 except ValueError:
@@ -792,7 +783,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                     network.infos = fid['network/infos']
 
                     spec_infos = fid['network/spectra/index.json']
-                    network.spectra = [Spectrum(s['id'], s['mz_parent'], fid['network/spectra/{}'.format(s['id'])]) for
+                    network.spectra = [workers.Spectrum(s['id'], s['mz_parent'], fid['network/spectra/{}'.format(s['id'])]) for
                                        s in spec_infos]
 
                     # Load options
@@ -802,7 +793,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
                     # Load graph
                     gxl = fid['graph.gxl']
-                    parser = GraphMLParser()
+                    parser = graphml.GraphMLParser()
                     graph = parser.fromstring(gxl)
 
                     graph.network_layout = fid['network_layout']

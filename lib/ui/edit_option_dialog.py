@@ -1,9 +1,9 @@
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QDialogButtonBox
 
 if __name__ == '__main__':
-    from widgets.options_widgets import TSNEOptionWidget, NetworkOptionWidget
+    from widgets import TSNEOptionWidget, NetworkOptionWidget
 else:
-    from .widgets.options_widgets import TSNEOptionWidget, NetworkOptionWidget
+    from .widgets import TSNEOptionWidget, NetworkOptionWidget
          
 
 class BaseOptionDialog(QDialog):
