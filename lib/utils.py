@@ -11,16 +11,25 @@ class AttrDict(dict):
         return self.__setitem__(item, value)
     
     def __setitem__(self, item, value):
-        # if len(self) > 0 and not item in self:
-        #     raise AttributeError("'{}' object has no attribute '{}'".format(self.__class__.__name__, item))
+        if not item in self:
+            raise AttributeError("'{}' object has no attribute '{}'".format(self.__class__.__name__, item))
         super().__setitem__(item, value)
-        
-    def update(self, data, **kwargs):
-        data = {k: v for k, v in data.items() if k in self}
-        super().update(data)
+
+    def __getstate__(self):
+        return dict(self)
+
+    def __setstate__(self, state):
+        super().update(state)
+
+    def __reduce__(self):
+        return self.__class__, (), self.__getstate__()
         
     def __dir__(self):
         return super().__dir__() + [str(k) for k in self.keys()]
+
+    def update(self, data, **kwargs):
+        data = {k: v for k, v in data.items() if k in self}
+        super().update(data)
 
     def copy(self):
         return AttrDict(self)
