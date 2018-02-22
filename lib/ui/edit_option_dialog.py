@@ -1,8 +1,4 @@
-import os
-import glob
-
-from PyQt5.QtWidgets import QFileDialog, QDialog, QVBoxLayout, QDialogButtonBox
-from PyQt5 import uic
+from PyQt5.QtWidgets import QDialog, QVBoxLayout, QDialogButtonBox
 
 if __name__ == '__main__':
     from widgets.options_widgets import TSNEOptionWidget, NetworkOptionWidget
@@ -41,11 +37,9 @@ class BaseOptionDialog(QDialog):
         
         self.buttonBox.accepted.connect(self.accept)
         self.buttonBox.rejected.connect(self.reject)
-        
-        
+
     def getValues(self):
         return self.option_widget.getValues()
-            
 
             
 class EditTSNEOptionDialog(BaseOptionDialog):
@@ -69,4 +63,3 @@ if __name__ == "__main__":
     
     if dialog.exec_() == QDialog.Accepted:
         print('You chose these files:', dialog.getValues())
-        

@@ -2,17 +2,18 @@
 
 import sys
 import os
-import time
 import traceback
 import json
 
 import numpy as np
 import igraph as ig
 
-from PyQt5.QtWidgets import (QTableWidgetItem, QDialog, QFileDialog,
-                             QMessageBox, QWidget, QGraphicsRectItem, QMenu, QToolButton, QActionGroup,
+from PyQt5.QtWidgets import (QDialog, QFileDialog,
+                             QMessageBox, QWidget, QGraphicsRectItem,
+                             QMenu, QToolButton, QActionGroup,
                              QAction, QDockWidget)
 from PyQt5.QtCore import QThread, QSettings, Qt, QPointF
+from PyQt5.QtGui import QPainter, QImage
 from PyQt5 import uic
 
 from lib import ui
@@ -20,7 +21,6 @@ from lib import config
 from lib import utils
 from lib.save import savez, MnzFile
 from lib.graphml import GraphMLWriter, GraphMLParser
-from lib.workers import read_mgf  # TODO
 from lib.workers.network_generation import generate_network  # TODO
 from lib.workers import (ReadMGFWorker, Spectrum,
                          TSNEWorker, TSNEVisualizationOptions,
@@ -35,7 +35,7 @@ MainWindowUI, MainWindowBase = uic.loadUiType(MAIN_UI_FILE, from_imports='lib.ui
 
 
 class WorkerDict(dict):
-    '''A dict that manages itself visibility of it's parent's progressbar'''
+    """A dict that manages itself visibility of it's parent's progressbar"""
 
     def __init__(self, parent, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -263,6 +263,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         state = settings.value('MainWindow.State')
         if state is not None:
             self.restoreState(state)
+        super().showEvent(event)
 
     def closeEvent(self, event):
         if not DEBUG and self._workers:
@@ -301,12 +302,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
         view.scene().clear()
 
         if interactions is not None:
-            nodes_idx = np.unique(np.vstack((interactions['Source'], interactions['Target'])))
-
             widths = np.array(interactions['Cosine'])
-            min = max(0, widths.min() - 0.1)
-            if min != widths.max():
-                widths = (config.RADIUS - 1) * (widths - min) / (widths.max() - min) + 1
+            min_ = max(0, widths.min() - 0.1)
+            if min_ != widths.max():
+                widths = (config.RADIUS - 1) * (widths - min_) / (widths.max() - min_) + 1
             else:
                 widths = config.RADIUS
 
@@ -515,6 +514,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 nonlocal worker
                 self.network.spectra = worker.result()
                 multiprocess = len(self.network.spectra) > 1000  # TODO: Tune this, arbitrary decision
+                multiprocess = True
                 worker, thread = self.computeScoresFromSpectra(self.network.spectra, multiprocess)
                 worker.finished.connect(scores_computed)
 
@@ -543,7 +543,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 if options != self.options.network:
                     self.options.network = options
                     self.has_unsaved_changes = True
-                # To-Do restart Network graphics
+                # TODO restart Network graphics
         else:  # t-SNE
             dialog = ui.EditTSNEOptionDialog(self, options=self.options)
             if dialog.exec_() == QDialog.Accepted:
@@ -551,7 +551,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 if options != self.options.tsne:
                     self.options.tsne = options
                     self.has_unsaved_changes = True
-                # To-Do restart TSNE graphics
+                # TODO restart TSNE graphics
 
     def createGraph(self, nodes_idx, infos, interactions, labels=None):
         # Delete all previously created edges and nodes
@@ -574,7 +574,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         else:
             self.graph.vs['__label'] = nodes_idx.astype('str')
 
-    def draw(self, scores, interactions, infos=None, labels=None):
+    def draw(self, scores, interactions, labels=None):  # TODO
         self.tvNodes.model().sourceModel().beginResetModel()
         self.tvEdges.model().sourceModel().beginResetModel()
 
@@ -689,10 +689,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
         # nodes[id_].setPos(QPointF(pos['x'], pos['y']))
 
     def exportAsImage(self):
-        filename, filter = QFileDialog.getSaveFileName(self, "Save image",
-                                                       filter="SVG Files (*.svg);;BMP Files (*.bmp);;JPEG (*.JPEG);;PNG (*.png)")
+        filename, filter_ = QFileDialog.getSaveFileName(self, "Save image",
+                                                        filter=("SVG Files (*.svg);;BMP Files (*.bmp);;"
+                                                                "JPEG (*.JPEG);;PNG (*.png)"))
         if filename:
-            if filter == 'SVG Files (*.svg)':
+            if filter_ == 'SVG Files (*.svg)':
                 try:
                     from PyQt5.QtSvg import QSvgGenerator
                 except ImportError:
@@ -744,7 +745,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.save(filename)
 
     def save(self, fname):
-        '''Save current project to a file for future access'''
+        """Save current project to a file for future access"""
 
         # Export graph to GraphML format
         writer = GraphMLWriter()
@@ -776,13 +777,13 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.has_unsaved_changes = False
 
     def load(self, fname):
-        '''Load project from a previously saved file'''
+        """Load project from a previously saved file"""
 
         try:
             with MnzFile(fname) as fid:
                 try:
                     version = int(fid['version'])
-                except:
+                except ValueError:
                     version = 1
 
                 if version == 1:
@@ -898,7 +899,7 @@ if __name__ == '__main__':
 
     window = MainWindow()
 
-    # sys.excepthook = exceptionHandler
+    sys.excepthook = exceptionHandler
 
     window.show()
     sys.exit(app.exec_())

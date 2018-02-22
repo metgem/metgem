@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
 from PyQt5.QtCore import (QLineF, QPointF, QRectF, Qt,
-        QAbstractTableModel, QModelIndex, QSortFilterProxyModel)
+                          QAbstractTableModel, QModelIndex, QSortFilterProxyModel)
 from PyQt5.QtGui import (QPainter, QPainterPath, QPen, QSurfaceFormat, QImage)
 from PyQt5.QtWidgets import (QApplication, QGraphicsItem,
-        QGraphicsEllipseItem, QGraphicsPathItem, QFrame,
-        QGraphicsTextItem, QGraphicsScene, QGraphicsView,
-        QRubberBand, QStyle, QOpenGLWidget, QStyleOptionGraphicsItem,
-        QFormLayout, QSizePolicy)
+                             QGraphicsEllipseItem, QGraphicsPathItem,
+                             QGraphicsScene, QGraphicsView,
+                             QRubberBand, QStyle, QOpenGLWidget,
+                             QFormLayout, QSizePolicy)
 
 from ...config import RADIUS, NODE_BORDER_WIDTH, FONT_SIZE
 
@@ -16,112 +16,98 @@ class Edge(QGraphicsPathItem):
 
     Type = QGraphicsItem.UserType + 2
 
-    def __init__(self, index, sourceNode, destNode, weight=1, width=1):
+    def __init__(self, index, source_node, dest_node, weight=1, width=1):
         super().__init__()
         
         self.__is_self_loop = False
 
         self.index = index
-        self.sourcePoint = QPointF()
-        self.destPoint = QPointF()
+        self.source_point = QPointF()
+        self.dest_point = QPointF()
         self.weight = weight
         
         self.setAcceptedMouseButtons(Qt.LeftButton)
-        self.source = sourceNode
-        self.dest = destNode
-        self.source.addEdge(self)
-        self.dest.addEdge(self)
+        self._source = source_node
+        self._dest = dest_node
+        self._source.addEdge(self)
+        self._dest.addEdge(self)
         
         self.setColor(Qt.darkGray)
         self.setWidth(width)
         self.adjust()
         
         self.setFlag(QGraphicsItem.ItemIsSelectable)
-        
-        # self.setOpacity(0.3)
 
     def setColor(self, color):
         pen = self.pen()
         pen.setColor(color)
         self.setPen(pen)
         
-        
     def setWidth(self, width):
         pen = self.pen()
-        if self.sourceNode() != self.destNode():
+        if self._source != self._dest:
             pen.setWidth(width)
         else:
             pen.setWidth(1)
         self.setPen(pen)
         
-        
     def itemChange(self, change, value):
         if change == QGraphicsItem.ItemSelectedChange:
-            # if value:
-                # self.setPen(QPen(Qt.red, self.pen().width(), Qt.SolidLine))
-            # else:
-                # self.setPen(QPen(self._color, self.pen().width(), Qt.SolidLine))
-            self.setZValue(not self.isSelected()) # Bring item to front
-            self.setCacheMode(self.cacheMode()) # Force redraw
+            self.setZValue(not self.isSelected())  # Bring item to front
+            self.setCacheMode(self.cacheMode())  # Force redraw
         return super().itemChange(change, value)
         
-        
     def sourceNode(self):
-        return self.source
-        
+        return self._source
 
     def setSourceNode(self, node):
-        self.source = node
+        self._source = node
         self.adjust()
-        
 
     def destNode(self):
-        return self.dest
-        
+        return self._dest
 
     def setDestNode(self, node):
-        self.dest = node
+        self._dest = node
         self.adjust()
-        
 
     def adjust(self):
-        if not self.source or not self.dest:
+        if not self._source or not self._dest:
             return
 
-        line = QLineF(self.mapFromItem(self.source, 0, 0),
-                      self.mapFromItem(self.dest, 0, 0))
+        line = QLineF(self.mapFromItem(self._source, 0, 0),
+                      self.mapFromItem(self._dest, 0, 0))
         length = line.length()
 
         self.prepareGeometryChange()
 
         if length > 2*RADIUS+NODE_BORDER_WIDTH:
-            edgeOffset = QPointF((line.dx() * (RADIUS + NODE_BORDER_WIDTH + 1)) / length,
+            edge_offset = QPointF((line.dx() * (RADIUS + NODE_BORDER_WIDTH + 1)) / length,
                                  (line.dy() * (RADIUS + NODE_BORDER_WIDTH + 1)) / length)
-            self.sourcePoint = line.p1() + edgeOffset
-            self.destPoint = line.p2() - edgeOffset
+            self.source_point = line.p1() + edge_offset
+            self.dest_point = line.p2() - edge_offset
         else:
-            self.sourcePoint = line.p1()
-            self.destPoint = line.p1()
+            self.source_point = line.p1()
+            self.dest_point = line.p1()
         
         path = QPainterPath()
-        if self.sourceNode() == self.destNode(): # Draw self-loops
+        if self.sourceNode() == self.destNode():  # Draw self-loops
             self.__is_self_loop = True
-            path.moveTo(self.sourcePoint.x()-RADIUS-NODE_BORDER_WIDTH*2,
-                        self.sourcePoint.y())
-            path.cubicTo(QPointF(self.sourcePoint.x()-4*RADIUS,
-                                 self.sourcePoint.y()),
-                         QPointF(self.sourcePoint.x(),
-                                 self.sourcePoint.y()-4*RADIUS),
-                         QPointF(self.destPoint.x(),
-                                 self.destPoint.y()-RADIUS-NODE_BORDER_WIDTH*2))
+            path.moveTo(self.source_point.x()-RADIUS-NODE_BORDER_WIDTH*2,
+                        self.source_point.y())
+            path.cubicTo(QPointF(self.source_point.x()-4*RADIUS,
+                                 self.source_point.y()),
+                         QPointF(self.source_point.x(),
+                                 self.source_point.y()-4*RADIUS),
+                         QPointF(self.dest_point.x(),
+                                 self.dest_point.y()-RADIUS-NODE_BORDER_WIDTH*2))
         else:
             self.__is_self_loop = False
-            path.moveTo(self.sourcePoint)
-            path.lineTo(self.destPoint)
+            path.moveTo(self.source_point)
+            path.lineTo(self.dest_point)
         self.setPath(path)
         
-        
-    def paint(self, painter, option, widget):            
+    def paint(self, painter, option, widget):
         pen = self.pen()
         
         # If selected, change color to red
@@ -129,9 +115,7 @@ class Edge(QGraphicsPathItem):
             pen.setColor(Qt.red)
         
         painter.setPen(pen)
-        
         painter.drawPath(self.path())
-
         
     def boundingRect(self):
         brect = super().boundingRect()
@@ -151,7 +135,7 @@ class Node(QGraphicsEllipseItem):
     def __init__(self, index, label=''):
         super().__init__(-RADIUS, -RADIUS, 2*RADIUS, 2*RADIUS)
 
-        self.edgeList = []
+        self._edge_list = []
         self._pie = []
         
         self.index = index
@@ -164,47 +148,37 @@ class Node(QGraphicsEllipseItem):
         
         self.setColor(Qt.lightGray)
         self.setPen(QPen(Qt.black, NODE_BORDER_WIDTH))
-        
-        # self.setOpacity(0.3)
-    
     
     def setColor(self, color):
         self._color = color
         
-        
     def setPie(self, values):
         self._pie = values
-        self.setCacheMode(self.cacheMode()) # Force redraw
-
+        self.setCacheMode(self.cacheMode())  # Force redraw
         
     def addEdge(self, edge):
-        self.edgeList.append(edge)
+        self._edge_list.append(edge)
         edge.adjust()
-        
 
     def edges(self):
-        return self.edgeList
-        
+        return self._edge_list
 
     def itemChange(self, change, value):
         if change == QGraphicsItem.ItemPositionHasChanged:
-            for edge in self.edgeList:
+            for edge in self._edge_list:
                 edge.adjust()
         elif change == QGraphicsItem.ItemSelectedChange:
             self.setZValue(not self.isSelected()) # Bring item to front
             self.setCacheMode(self.cacheMode()) # Force redraw
         return super().itemChange(change, value)
-        
 
     def mousePressEvent(self, event):
         self.update()
         super().mousePressEvent(event)
-        
 
     def mouseReleaseEvent(self, event):
         self.update()
         super().mouseReleaseEvent(event)
-        
         
     def paint(self, painter, option, widget):
         # If selected, change brush to yellow
@@ -250,7 +224,7 @@ class MiniMapGraphicsView(QGraphicsView):
     def __init__(self, parent):
         super().__init__(parent)
         
-        self.dragStartPos = None
+        self._drag_start_pos = None
         
         self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.setFixedSize(200, 200)
@@ -263,7 +237,6 @@ class MiniMapGraphicsView(QGraphicsView):
         self.band = QRubberBand(QRubberBand.Rectangle, self)
         self.band.hide()
         
-        
     def centerOn(self, pos):
         if self.band.isVisible():
             self.parent().centerOn(self.mapToScene(pos))
@@ -271,26 +244,22 @@ class MiniMapGraphicsView(QGraphicsView):
             rect.moveCenter(pos)
             self.band.setGeometry(rect)
         
-        
     def mousePressEvent(self, event):
         if self.band.isVisible() and event.button() == Qt.LeftButton:
             rect = self.band.geometry()
             if event.pos() in rect:
-                self.dragStartPos = event.pos()
+                self._drag_start_pos = event.pos()
             else:
                 self.centerOn(event.pos())
     
-    
     def mouseMoveEvent(self, event):
-        if self.band.isVisible() and event.buttons() == Qt.MouseButtons(Qt.LeftButton) and self.dragStartPos is not None:
+        if self.band.isVisible() and event.buttons() == Qt.MouseButtons(Qt.LeftButton) and self._drag_start_pos is not None:
             self.centerOn(event.pos())
-    
     
     def mouseReleaseEvent(self, event):
         if event.button() == Qt.LeftButton and self.band.isVisible():
             self.viewport().unsetCursor()
-            self.dragStartPos = None
-    
+            self._drag_start_pos = None
     
     def adjustRubberband(self):
         if not self.parent().items():
@@ -303,7 +272,6 @@ class MiniMapGraphicsView(QGraphicsView):
                 self.band.show()
             else:
                 self.band.hide()
-
         
     def zoomToFit(self):
         self.fitInView(self.scene().sceneRect().adjusted(-20, -20, 20, 20), Qt.KeepAspectRatio)
@@ -318,15 +286,8 @@ class NetworkView(QGraphicsView):
         
         fmt = QSurfaceFormat()
         fmt.setSamples(4)
-        # fmt.setSwapBehavior(QSurfaceFormat.DoubleBuffer)
-        # fmt.setProfile(QSurfaceFormat.CoreProfile)
-        # fmt.setDepthBufferSize(24)
-        # QSurfaceFormat.setDefaultFormat(fmt)
         self.setViewport(QOpenGLWidget())
         self.viewport().setFormat(fmt)
-        
-        # print(self.viewport().format().samples(), self.viewport().format().depthBufferSize())
-        # self.setViewportUpdateMode(QGraphicsView.SmartViewportUpdate)
 
         layout = QFormLayout(self)
         layout.setContentsMargins(0, 0, 6, 0)
@@ -336,7 +297,6 @@ class NetworkView(QGraphicsView):
         self.setLayout(layout)
         
         scene = QGraphicsScene(self)
-        # scene.setItemIndexMethod(QGraphicsScene.NoIndex)
         self.setScene(scene)        
         
         self.setCacheMode(QGraphicsView.CacheBackground)
@@ -354,33 +314,18 @@ class NetworkView(QGraphicsView):
             """NetworkView:focus {
                 border: 3px solid palette(highlight);
             }""")
-        # self.setWindowTitle("Test Network")
-
         
     def setScene(self, scene):
         super().setScene(scene)
         self.minimap.setScene(scene)
-
-        
-    # def activateOpenGL(self):
-        # vport = QOpenGLWidget()
-        # fmt = QSurfaceFormat()
-        # fmt.setSamples(4)
-        # QSurfaceFormat.setDefaultFormat(fmt)
-        # vport.setFormat(fmt)
-        # self.setViewport(vport)
-
             
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton and not self.itemAt(event.pos()):
             self.setDragMode(QGraphicsView.ScrollHandDrag)
-            # self.setLowLOD()
         elif event.button() == Qt.RightButton:
             self.setDragMode(QGraphicsView.RubberBandDrag)
             self.setRubberBandSelectionMode(Qt.ContainsItemShape)
-            
         super().mousePressEvent(event)
-        
         
     def mouseReleaseEvent(self, event):
         super().mouseReleaseEvent(event)
@@ -388,10 +333,8 @@ class NetworkView(QGraphicsView):
         if event.button() == Qt.LeftButton:
             self.setDragMode(QGraphicsView.NoDrag)
             self.viewport().unsetCursor()
-            # self.setHighLOD()
         elif event.button() == Qt.RightButton:
             self.setDragMode(QGraphicsView.NoDrag)
-            
             
     def mouseMoveEvent(self, event):
         if self.dragMode() == QGraphicsView.ScrollHandDrag:
@@ -399,43 +342,25 @@ class NetworkView(QGraphicsView):
             
         super().mouseMoveEvent(event)
         
-        
     def resizeEvent(self, event):
         super().resizeEvent(event)
         self.minimap.adjustRubberband()
-        
-    
-    # def setLowLOD(self):
-        # pass
-        # if self.edges_group is not None:
-            # self.edges_group.hide()
-        
-        
-    # def setHighLOD(self):
-        # pass
-        # if self.edges_group is not None:
-            # self.edges_group.show()
-        
         
     def translate(self, x, y):
         super().translate(x, y)
         self.minimap.adjustRubberband()
         
-        
     def scale(self, factor_x, factor_y):
         super().scale(factor_x, factor_y)
         self.minimap.adjustRubberband()
-
                 
     def zoomToFit(self):
         self.fitInView(self.scene().sceneRect().adjusted(-20, -20, 20, 20), Qt.KeepAspectRatio)
-        self._minimum_zoom = self.transform().m11() # Set zoom out limit to horizontal scaling factor
+        self._minimum_zoom = self.transform().m11()  # Set zoom out limit to horizontal scaling factor
         self.minimap.adjustRubberband()
-        
         
     def wheelEvent(self, event):
         self.scaleView(2**(event.angleDelta().y() / 240.0))
-        
 
     def scaleView(self, scaleFactor):
         factor = self.transform().scale(scaleFactor, scaleFactor).mapRect(QRectF(0, 0, 1, 1)).width()
@@ -444,31 +369,24 @@ class NetworkView(QGraphicsView):
             return
 
         self.scale(scaleFactor, scaleFactor)
-        
 
-NodesModelType = 0
-EdgesModelType = 1
+
 class GraphTableModel(QAbstractTableModel):
+    NodesModelType = 0
+    EdgesModelType = 1
 
     def __init__(self, graph, parent=None):
         super().__init__(parent)
         self.graph = graph
-        
-    # def clear(self):
-        # self.beginResetModel()
 
-        # self.endResetModel()
-        
     def rowCount(self, parent=QModelIndex()):
-        if self._type == EdgesModelType:
+        if self._type == GraphTableModel.EdgesModelType:
             return self.graph.ecount()
         else:
             return self.graph.vcount()
         
-        
     def columnCount(self, parent=QModelIndex()):
         return len(self.attributes)
-        
         
     def data(self, index, role=Qt.DisplayRole):
         if not index.isValid():
@@ -478,40 +396,33 @@ class GraphTableModel(QAbstractTableModel):
         row = index.row()
         if column > self.columnCount() or row > self.rowCount():
             return None
-        
-        # if role == IndexRole:
-            # return row
-        # el
+
         if role in (Qt.DisplayRole, Qt.EditRole):
-            if self._type == EdgesModelType:
+            if self._type == GraphTableModel.EdgesModelType:
                 return str(self.graph.es[self.attributes[column]][row])
             else:
                 return str(self.graph.vs[self.attributes[column]][row])
-            
         
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if role == Qt.DisplayRole and orientation == Qt.Horizontal:
             return self.attributes[section]
-        # elif role == Qt.DisplayRole and orientation == Qt.Vertical:
-            # return None
         else:
             return super().headerData(section, orientation, role)
          
-         
-    @property   
+    @property
     def attributes(self):
-        if self._type == EdgesModelType:
+        if self._type == GraphTableModel.EdgesModelType:
             return [x for x in self.graph.es.attributes() if not x.startswith('__')]
         else:
             return [x for x in self.graph.vs.attributes() if not x.startswith('__')]
             
             
 class NodesModel(GraphTableModel):
-    _type = NodesModelType
+    _type = GraphTableModel.NodesModelType
     
     
 class EdgesModel(GraphTableModel):
-    _type = EdgesModelType
+    _type = GraphTableModel.EdgesModelType
         
         
 class ProxyModel(QSortFilterProxyModel):
@@ -521,21 +432,20 @@ class ProxyModel(QSortFilterProxyModel):
             
             # self._filter = None
             self._selection = None
-           
             
-        def filterAcceptsRow(self, sourceRow, sourceParent):
+        def filterAcceptsRow(self, source_row, source_parent):
             if self._selection is not None:
-                index = self.sourceModel().index(sourceRow, 0)
+                index = self.sourceModel().index(source_row, 0)
                 # idx = self.sourceModel().data(index, IndexRole)
                 if index.row() in self._selection:
                     return True
                 return False
             
-            return super().filterAcceptsRow(sourceRow, sourceParent)
-            
+            return super().filterAcceptsRow(source_row, source_parent)
             
         def setSelection(self, idx):
-            '''Display only selected items from the scene'''
+            """Display only selected items from the scene"""
+
             if len(idx) == 0:
                 self._selection = None
             else:
@@ -551,11 +461,11 @@ if __name__ == '__main__':
     import numpy as np
     import igraph as ig
     from tqdm import tqdm
-    
-    
+
     from PyQt5.QtWidgets import (QVBoxLayout, QLineEdit, QWidget, QTableView,
-        QTabWidget, QSplitter, QFileDialog, QGraphicsRectItem)
-        
+                                 QTabWidget, QSplitter, QFileDialog, QGraphicsRectItem)
+
+
     class MainWindow(QWidget):
 
         def __init__(self, *args, **kwargs):
@@ -600,8 +510,6 @@ if __name__ == '__main__':
             # Connect Events
             edit.returnPressed.connect(self.filter_by_label)
             self.view.scene().selectionChanged.connect(self.on_selection_changed)
-            
-        
         
         def exportToCytoscape(self):
             try:
@@ -643,17 +551,11 @@ if __name__ == '__main__':
                 print('py2tocytoscape is required for this action (https://pypi.python.org/pypi/py2cytoscape).')
             except FileNotFoundError:
                 print('styles.json not found...')
-                
-            # for c in g_cy.get_view(g_cy.get_views()[0])['elements']['nodes']:
-                # pos = c['position']
-                # id_ = int(c['data']['id_original'])
-                # nodes[id_].setPos(QPointF(pos['x'], pos['y']))
-        
         
         def exportAsImage(self):
-            filename, filter = QFileDialog.getSaveFileName(self, "Save image", filter="SVG Files (*.svg);;BMP Files (*.bmp);;JPEG (*.JPEG);;PNG (*.png)")
+            filename, filter_ = QFileDialog.getSaveFileName(self, "Save image", filter="SVG Files (*.svg);;BMP Files (*.bmp);;JPEG (*.JPEG);;PNG (*.png)")
             if filename:
-                if filter == 'SVG Files (*.svg)':
+                if filter_ == 'SVG Files (*.svg)':
                     try:
                         from PyQt5.QtSvg import QSvgGenerator
                     except ImportError:
@@ -678,7 +580,6 @@ if __name__ == '__main__':
                     self.view.scene().render(painter);
                     image.save(filename)
             
-            
         def drawForeground(self, painter, rect):
             self.view._drawForeground(painter, rect)
             
@@ -700,7 +601,6 @@ if __name__ == '__main__':
                 F5:  Recalculate layout
                 '''
                 painter.drawText(self.rect(), Qt.AlignLeft | Qt.AlignTop, help_text)
-
                 
         def keyPressEvent(self, event):
             key = event.key()
@@ -727,11 +627,9 @@ if __name__ == '__main__':
                 if not self.isFullScreen():
                     self.setWindowFlags(Qt.Window)
                     self.showFullScreen()
-                    # self.activateOpenGL()
                 else:
                     self.setWindowFlags(Qt.Widget)
                     self.showNormal()
-                    # self.actfivateOpenGL()
             elif key == Qt.Key_P:
                 if not hasattr(self, '_pie_used'):
                     self._pie_used = False
@@ -757,7 +655,6 @@ if __name__ == '__main__':
             else:
                 super().keyPressEvent(event)
                 
-                
         def drawNetwork(self, interactions, infos=None, labels=None):
             self.interactions = interactions
             self.infos = infos
@@ -776,12 +673,9 @@ if __name__ == '__main__':
             
             print('Creating graph...')
             g = self.graph
-            g.delete_vertices(g.vs) # Delete all previously created nodes
-            g.add_vertices(nodes_idx.tolist()) #[int(x) for x in nodes_idx])
-            # print(interactions['Source'])
-            # print(interactions['Source']-1)
+            g.delete_vertices(g.vs)  # Delete all previously created nodes
+            g.add_vertices(nodes_idx.tolist())
             g.add_edges(zip(interactions['Source']-1, interactions['Target']-1))
-            # g.add_edges([(int(x['Source']-1), int(x['Target']-1)) for x in interactions])
             g.es['__weight'] = interactions['Cosine']
             g.es['__width'] = widths
             
@@ -799,7 +693,7 @@ if __name__ == '__main__':
                 g.vs['__label'] = nodes_idx.astype('str')
             
             print('Adding nodes...')
-            group = QGraphicsRectItem() #Create a pseudo-group, QGraphicsItemGroup is not used because it does not let children handle events
+            group = QGraphicsRectItem()  #Create a pseudo-group, QGraphicsItemGroup is not used because it does not let children handle events
             group.setZValue(1) # Draw nodes on top of edges
             for i, n in enumerate(tqdm(g.vs)):
                 node = Node(i, n['__label'])
@@ -859,7 +753,6 @@ if __name__ == '__main__':
             self.view.zoomToFit()
             self.view.minimap.zoomToFit()
             
-            
         def on_selection_changed(self):
             items = self.view.scene().selectedItems()
             nodes_idx, edges_idx = [], []
@@ -870,7 +763,6 @@ if __name__ == '__main__':
                     edges_idx.append(item.index)
             self._tables[0].model().setSelection(nodes_idx)
             self._tables[1].model().setSelection(edges_idx)
-            
 
         def filter_by_label(self):
             import time
@@ -894,7 +786,6 @@ if __name__ == '__main__':
             # self._tables[0].model().setFilterKeyColumn(0)
             print('Filtered {} node(s) and {} edge(s) in {:.1f}ms'.format(num_nodes, num_edges, (time.time()-t0)*1000))
             
-            
         def draw(self, interactions, infos, labels=None):
             for table in self._tables:
                 table.model().sourceModel().beginResetModel()
@@ -903,9 +794,10 @@ if __name__ == '__main__':
             
             for table in self._tables:
                 table.model().sourceModel().endResetModel()
-                
-    
+
+
     COLORS = [Qt.GlobalColor(x) for x in range(4, 19) if x != Qt.yellow]
+
     def get_color(index):
         return COLORS[index % len(COLORS)]
     
@@ -917,7 +809,6 @@ if __name__ == '__main__':
                                 'Target': [2, 3, 4, 5],
                                 'Delta MZ': [28.031406, 0., 0., 0.],
                                 'Cosine': [0.891845, 1., 1., 1.]}).to_records()
-
 
     infos = pd.DataFrame({'Source': [1, 2, 3, 4, 5],
                           'parent mass': [621.307, 593.276, 609.270, 545.272, 447.274]}).to_records()

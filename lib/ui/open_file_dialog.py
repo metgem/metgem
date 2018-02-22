@@ -1,16 +1,14 @@
 import os
 import sys
 
-from PyQt5.QtWidgets import QFileDialog, QDialog, QVBoxLayout, QDialogButtonBox, QCompleter, QFileSystemModel
+from PyQt5.QtWidgets import QFileDialog, QDialog, QVBoxLayout, QDialogButtonBox, QCompleter, QFileSystemModel, QWidget
 from PyQt5.QtGui import QPalette, QColor
-from PyQt5.QtCore import Qt, QDir
+from PyQt5.QtCore import Qt, QDir, QSignalMapper
 from PyQt5 import uic
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'open_file_dialog.ui')
 
 if __name__ == '__main__':
-    import sys
-
     sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
     OpenFileDialogUI, OpenFileDialogBase = uic.loadUiType(UI_FILE)
@@ -40,7 +38,7 @@ class OpenFileDialog(OpenFileDialogBase, OpenFileDialogUI):
 
     """
 
-    def __init__(self, *args, folder=None, options=None, **kwargs):
+    def __init__(self, *args, options=None, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.setupUi(self)
@@ -83,8 +81,13 @@ class OpenFileDialog(OpenFileDialogBase, OpenFileDialogUI):
         self.wgAdvancedOptions.setLayout(layout)
 
         # Connect events
-        self.btBrowseProcessFile.clicked.connect(lambda: self.browse('process'))
-        self.btBrowseMetadataFile.clicked.connect(lambda: self.browse('metadata'))
+        self._mapper = QSignalMapper(self)
+        self.btBrowseProcessFile.clicked.connect(self._mapper.map)
+        self._mapper.setMapping(self.btBrowseProcessFile, 'process')
+        self.btBrowseMetadataFile.clicked.connect(self._mapper.map)
+        self._mapper.setMapping(self.btBrowseMetadataFile, 'metadata')
+        self._mapper.mapped[str].connect(self.browse)
+
         self.btMore.clicked.connect(self.toggle_advanced_options)
 
     def done(self, r):
@@ -104,6 +107,7 @@ class OpenFileDialog(OpenFileDialogBase, OpenFileDialogUI):
     def showEvent(self, event):
         self.wgAdvancedOptions.hide()
         self.adjustSize()
+        super().showEvent(event)
 
     def toggle_advanced_options(self):
         """Toggle the Network and t-SNE parameters widgets"""
@@ -117,17 +121,17 @@ class OpenFileDialog(OpenFileDialogBase, OpenFileDialogUI):
 
         self.adjustSize()
 
-    def browse(self, type='process'):
+    def browse(self, type_='process'):
         """Open a dialog to file either .mgf or metadata.txt file"""
 
         dialog = QFileDialog(self)
         dialog.setFileMode(QFileDialog.ExistingFile)
 
-        if type == 'process':
+        if type_ == 'process':
             dialog.setNameFilters(["MGF Files (*.mgf)", "All files (*.*)"])
         if dialog.exec_() == QDialog.Accepted:
             filename = dialog.selectedFiles()[0]
-            if type == 'process':
+            if type_ == 'process':
                 self.editProcessFile.setText(filename)
                 self.editProcessFile.setPalette(self.style().standardPalette())
             else:
@@ -149,11 +153,10 @@ class OpenFileDialog(OpenFileDialogBase, OpenFileDialogUI):
 
 
 if __name__ == "__main__":
-    import sys
     from PyQt5.QtWidgets import QApplication
 
     app = QApplication(sys.argv)
-    dialog = OpenFileDialog(folder=os.path.realpath(os.path.dirname(__file__)))
+    dlg = OpenFileDialog(folder=os.path.realpath(os.path.dirname(__file__)))
 
-    if dialog.exec_() == QDialog.Accepted:
-        print('You chose these files:', dialog.getValues())
+    if dlg.exec_() == QDialog.Accepted:
+        print('You chose these files:', dlg.getValues())
