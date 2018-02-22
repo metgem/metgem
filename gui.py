@@ -218,10 +218,13 @@ class MainWindow(MainWindowBase, MainWindowUI):
         for item in items:
             if item.Type == ui.Node.Type:
                 for v in self.graph.vs[item.index].neighbors():
-                    if view == self.gvNetwork:
-                        v['__network_gobj'].setSelected(True)
-                    elif view == self.gvTSNE:
-                        v['__tsne_gobj'].setSelected(True)
+                    try:
+                        if view == self.gvNetwork:
+                            v['__network_gobj'].setSelected(True)
+                        elif view == self.gvTSNE:
+                            v['__tsne_gobj'].setSelected(True)
+                    except KeyError:
+                        pass
 
     def showItems(self, items):
         for item in items:
@@ -287,8 +290,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.widgetProgress.setVisible(False)
 
     def applyNetworkLayout(self, view, layout):
-        for coord, node in zip(layout, self.graph.vs):
-            node['__network_gobj'].setPos(QPointF(*coord))
+        try:
+            for coord, node in zip(layout, self.graph.vs):
+                node['__network_gobj'].setPos(QPointF(*coord))
+        except KeyError:
+            pass
 
         self.graph.network_layout = layout
 
@@ -364,8 +370,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.applyNetworkLayout(view, layout)
 
     def applyTSNELayout(self, view, layout):
-        for coord, node in zip(layout, self.graph.vs):
-            node['__tsne_gobj'].setPos(QPointF(*coord))
+        try:
+            for coord, node in zip(layout, self.graph.vs):
+                node['__tsne_gobj'].setPos(QPointF(*coord))
+        except KeyError:
+            pass
 
         self.graph.tsne_layout = layout
 
@@ -600,16 +609,22 @@ class MainWindow(MainWindowBase, MainWindowUI):
             if view == self.gvNetwork:
                 self.gvTSNE.scene().selectionChanged.disconnect()
                 self.gvTSNE.scene().clearSelection()
-                for idx in nodes_idx:
-                    self.graph.vs['__tsne_gobj'][idx].setSelected(True)
+                try:
+                    for idx in nodes_idx:
+                        self.graph.vs['__tsne_gobj'][idx].setSelected(True)
+                except KeyError:
+                    pass
                 self.gvTSNE.scene().selectionChanged.connect(self.onSelectionChanged)
             elif view == self.gvTSNE:
                 self.gvNetwork.scene().selectionChanged.disconnect()
                 self.gvNetwork.scene().clearSelection()
-                for idx in nodes_idx:
-                    self.graph.vs['__network_gobj'][idx].setSelected(True)
-                for idx in edges_idx:
-                    self.graph.es['__network_gobj'][idx].setSelected(True)
+                try:
+                    for idx in nodes_idx:
+                        self.graph.vs['__network_gobj'][idx].setSelected(True)
+                    for idx in edges_idx:
+                        self.graph.es['__network_gobj'][idx].setSelected(True)
+                except KeyError:
+                    pass
                 self.gvNetwork.scene().selectionChanged.connect(self.onSelectionChanged)
 
     def doSearch(self, value):
