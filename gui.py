@@ -574,7 +574,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         else:
             self.graph.vs['__label'] = nodes_idx.astype('str')
 
-    def draw(self, scores, interactions, labels=None):  # TODO
+    def draw(self, scores, interactions, infos=None, labels=None):  # TODO: Use infos and labels
         self.tvNodes.model().sourceModel().beginResetModel()
         self.tvEdges.model().sourceModel().beginResetModel()
 
