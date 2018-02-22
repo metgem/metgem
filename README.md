@@ -1,5 +1,7 @@
 # Build instructions for Windows (Python 3.6, Windows 64 bits)
-Tools can be downloaded from here: https://mycore.core-cloud.net/index.php/s/2z4z9phDvxplWiE
+Tools can be downloaded from [here](https://mycore.core-cloud.net/index.php/s/2z4z9phDvxplWiE/download)
+
+```
 > python -m venv windows
 > cd windows
 > Scripts\activate.bat
@@ -14,3 +16,4 @@ Tools can be downloaded from here: https://mycore.core-cloud.net/index.php/s/2z4
 > bin\ResHacker\ResourceHacker.exe -open dist\gui\gui.exe -save dist\gui\gui.exe -resource dist\gui\gui.exe.manifest -action add -mask MANIFEST,1, -log CONSOLE
 > del dist\gui\gui.exe.manifest
 > bin\InnoSetup\ISCC.exe setup.iss
+```
