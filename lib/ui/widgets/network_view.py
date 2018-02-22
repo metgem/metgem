@@ -375,15 +375,14 @@ class GraphTableModel(QAbstractTableModel):
     NodesModelType = 0
     EdgesModelType = 1
 
-    def __init__(self, graph, parent=None):
+    def __init__(self, parent=None):
         super().__init__(parent)
-        self.graph = graph
 
     def rowCount(self, parent=QModelIndex()):
         if self._type == GraphTableModel.EdgesModelType:
-            return self.graph.ecount()
+            return self.parent().graph.ecount()
         else:
-            return self.graph.vcount()
+            return self.parent().graph.vcount()
         
     def columnCount(self, parent=QModelIndex()):
         return len(self.attributes)
@@ -399,9 +398,9 @@ class GraphTableModel(QAbstractTableModel):
 
         if role in (Qt.DisplayRole, Qt.EditRole):
             if self._type == GraphTableModel.EdgesModelType:
-                return str(self.graph.es[self.attributes[column]][row])
+                return str(self.parent().graph.es[self.attributes[column]][row])
             else:
-                return str(self.graph.vs[self.attributes[column]][row])
+                return str(self.parent().graph.vs[self.attributes[column]][row])
         
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if role == Qt.DisplayRole and orientation == Qt.Horizontal:
@@ -412,9 +411,9 @@ class GraphTableModel(QAbstractTableModel):
     @property
     def attributes(self):
         if self._type == GraphTableModel.EdgesModelType:
-            return [x for x in self.graph.es.attributes() if not x.startswith('__')]
+            return [x for x in self.parent().graph.es.attributes() if not x.startswith('__')]
         else:
-            return [x for x in self.graph.vs.attributes() if not x.startswith('__')]
+            return [x for x in self.parent().graph.vs.attributes() if not x.startswith('__')]
             
             
 class NodesModel(GraphTableModel):

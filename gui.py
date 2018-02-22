@@ -87,7 +87,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         for table, Model, name in ((self.tvNodes, ui.widgets.NodesModel, "Nodes"),
                                    (self.tvEdges, ui.widgets.EdgesModel, "Edges")):
             table.setSortingEnabled(True)
-            model = Model(self.graph)
+            model = Model(self)
             proxy = ui.widgets.ProxyModel()
             proxy.setSourceModel(model)
             table.setModel(proxy)
@@ -106,6 +106,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.widgetProgress.setVisible(False)
 
         # Add a Jupyter widget
+        import qtconsole
         if EMBED_JUPYTER:
             from qtconsole.rich_jupyter_widget import RichJupyterWidget
             from qtconsole.inprocess import QtInProcessKernelManager
@@ -223,7 +224,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                             v['__network_gobj'].setSelected(True)
                         elif view == self.gvTSNE:
                             v['__tsne_gobj'].setSelected(True)
-                    except KeyError:
+                    except (KeyError, AttributeError):
                         pass
 
     def showItems(self, items):
@@ -293,7 +294,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         try:
             for coord, node in zip(layout, self.graph.vs):
                 node['__network_gobj'].setPos(QPointF(*coord))
-        except KeyError:
+        except (KeyError, AttributeError):
             pass
 
         self.graph.network_layout = layout
@@ -368,12 +369,13 @@ class MainWindow(MainWindowBase, MainWindowUI):
             return worker, thread
         else:
             self.applyNetworkLayout(view, layout)
+            return None, None
 
     def applyTSNELayout(self, view, layout):
         try:
             for coord, node in zip(layout, self.graph.vs):
                 node['__tsne_gobj'].setPos(QPointF(*coord))
-        except KeyError:
+        except (KeyError, AttributeError):
             pass
 
         self.graph.tsne_layout = layout
@@ -447,6 +449,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 return None, None
         else:
             self.applyTSNELayout(view, layout)
+            return None, None
 
     def computeScoresFromSpectra(self, spectra, use_multiprocessing):
         def update_progress(i):
@@ -579,15 +582,24 @@ class MainWindow(MainWindowBase, MainWindowUI):
         else:
             self.graph.vs['__label'] = nodes_idx.astype('str')
 
-    def draw(self, scores, interactions, infos=None, labels=None):  # TODO: Use infos and labels
+    def draw(self, scores=None, interactions=None, infos=None, labels=None, compute_layouts=True):  # TODO: Use infos and labels
         self.tvNodes.model().sourceModel().beginResetModel()
         self.tvEdges.model().sourceModel().beginResetModel()
 
-        worker, thread = self.drawNetwork(self.gvNetwork, interactions)
-        if worker is not None:
-            worker.finished.connect(lambda: self.drawTSNE(self.gvTSNE, scores))
+        if not compute_layouts and self.graph.network_layout is not None:
+            worker, thread = self.drawNetwork(self.gvNetwork, layout=self.graph.network_layout)
         else:
-            self.drawTSNE(self.gvTSNE, scores)
+            worker, thread = self.drawNetwork(self.gvNetwork, interactions)
+
+        if not compute_layouts and self.graph.tsne_layout is not None:
+            draw_tsne = lambda: self.drawTSNE(self.gvTSNE, layout=self.graph.tsne_layout)
+        else:
+            draw_tsne = lambda: self.drawTSNE(self.gvTSNE, scores)
+
+        if worker is not None:
+            worker.finished.connect(draw_tsne)
+        else:
+            draw_tsne()
 
         self.tvNodes.model().sourceModel().endResetModel()
         self.tvEdges.model().sourceModel().endResetModel()
@@ -612,7 +624,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 try:
                     for idx in nodes_idx:
                         self.graph.vs['__tsne_gobj'][idx].setSelected(True)
-                except KeyError:
+                except (KeyError, AttributeError):
                     pass
                 self.gvTSNE.scene().selectionChanged.connect(self.onSelectionChanged)
             elif view == self.gvTSNE:
@@ -623,7 +635,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                         self.graph.vs['__network_gobj'][idx].setSelected(True)
                     for idx in edges_idx:
                         self.graph.es['__network_gobj'][idx].setSelected(True)
-                except KeyError:
+                except (KeyError, AttributeError):
                     pass
                 self.gvNetwork.scene().selectionChanged.connect(self.onSelectionChanged)
 
@@ -824,8 +836,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                     self.network = network
 
                     # Draw
-                    self.drawNetwork(self.gvNetwork, layout=self.graph.network_layout)
-                    self.drawTSNE(self.gvTSNE, layout=self.graph.tsne_layout)
+                    self.draw(compute_layouts=False)
 
                     # Save filename and set window title
                     self.fname = fname
