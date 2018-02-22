@@ -16,7 +16,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-#lib/
+lib/
 lib64/
 parts/
 sdist/
@@ -37,7 +37,6 @@ pip-selfcheck.json
 #  Usually these files are written by a python script from a template
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
 *.manifest
-*.spec
 
 # Installer logs
 pip-log.txt
@@ -140,12 +139,17 @@ crashlytics-build.properties
 fabric.properties
 
 # app-specific development files
-.*.mgf
+bin/
+*.whl
+*.exe
+*.mgf
 *.csv
-clusterinfosummarygroup_attributes*
-networkedges_*
-test_*.py
-lib/ui/ui_rc.py
-lib/ui/images/main.ico
-log
 *.mnz
+*.zip
+/clusterinfosummarygroup_attributes*
+/networkedges_*
+/test_*.py
+!/lib
+/lib/ui/ui_rc.py
+/lib/ui/images/main.ico
+/log/
