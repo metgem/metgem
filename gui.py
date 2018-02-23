@@ -432,7 +432,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 self.progressBar.setFormat('Computing TSNE...')
                 self.progressBar.setMaximum(1000)  # TODO
                 thread = QThread(self)
-                worker = workers.TSNEWorker(1 - scores[mask][:, mask])
+                worker = workers.TSNEWorker(1 - scores[mask][:, mask], self.options.tsne)
                 worker.moveToThread(thread)
                 worker.updated.connect(update_progress)
                 worker.finished.connect(process_finished)
@@ -542,23 +542,46 @@ class MainWindow(MainWindowBase, MainWindowUI):
             worker.finished.connect(file_read)
 
     def openVisualizationDialog(self):
-        sender = self.sender()
-        if sender.objectName() == "btNetworkOptions":  # Network
-            dialog = ui.EditNetworkOptionDialog(self, options=self.options)
-            if dialog.exec_() == QDialog.Accepted:
-                options = dialog.getValues()
-                if options != self.options.network:
-                    self.options.network = options
-                    self.has_unsaved_changes = True
-                # TODO restart Network graphics
-        else:  # t-SNE
-            dialog = ui.EditTSNEOptionDialog(self, options=self.options)
-            if dialog.exec_() == QDialog.Accepted:
-                options = dialog.getValues()
-                if options != self.options.tsne:
-                    self.options.tsne = options
-                    self.has_unsaved_changes = True
-                # TODO restart TSNE graphics
+        if hasattr(self.network, 'scores'): 
+            sender = self.sender()
+            if sender.objectName() == "btNetworkOptions":  # Network
+                dialog = ui.EditNetworkOptionDialog(self, options=self.options)
+                if dialog.exec_() == QDialog.Accepted:
+                    options = dialog.getValues()
+                    if options != self.options.network:
+                        self.tvNodes.model().sourceModel().beginResetModel()
+                        self.tvEdges.model().sourceModel().beginResetModel()
+                        self.options.network = options
+                        self.has_unsaved_changes = True
+                        # TODO restart Network graphics
+                        interactions = generate_network(self.network.scores, self.network.spectra, self.options.network,
+                                                    use_self_loops=True)
+                        nodes_idx = np.arange(self.network.scores.shape[0])
+                        self.createGraph(nodes_idx, self.network.infos, interactions, labels=None)
+                        self.drawNetwork(self.gvNetwork, interactions)
+                        self.tvNodes.model().sourceModel().endResetModel()
+                        self.tvEdges.model().sourceModel().endResetModel()
+                        self.updateSearchBar()
+
+            else:  # t-SNE
+                dialog = ui.EditTSNEOptionDialog(self, options=self.options)
+                if dialog.exec_() == QDialog.Accepted:
+                    options = dialog.getValues()
+                    if options != self.options.tsne:
+                        self.tvNodes.model().sourceModel().beginResetModel()
+                        self.tvEdges.model().sourceModel().beginResetModel()
+                        self.options.tsne = options
+                        self.has_unsaved_changes = True
+                        self.drawTSNE(self.gvTSNE, self.network.scores)
+                        self.tvNodes.model().sourceModel().endResetModel()
+                        self.tvEdges.model().sourceModel().endResetModel()
+                        self.updateSearchBar()
+        else:
+            dialog = QMessageBox()
+            dialog.setIcon(QMessageBox.Warning)
+            dialog.setText("No network found, please open a file first.")
+            dialog.setWindowTitle("Error")
+            dialog.exec_()
 
     def createGraph(self, nodes_idx, infos, interactions, labels=None):
         # Delete all previously created edges and nodes
