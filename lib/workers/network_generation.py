@@ -27,7 +27,6 @@ class NetworkVisualizationOptions(AttrDict):
     
 def generate_network(scores_matrix, spectra, options, use_self_loops=True):
     interactions = []
-    
     num_spectra = len(spectra)
     
     np.fill_diagonal(scores_matrix, 0)
