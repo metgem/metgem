@@ -26,7 +26,7 @@ $ cd packaging
 $ pip3 install -r ../requirements.txt
 $ pip install pyinstaller
 $ brew install imagemagick
-$ chmod +ax make_icns.sh
+$ chmod a+x make_icns.sh
 $ ./make_icns.sh ../lib/ui/images/main.svg
 $ pyrcc5 ../lib/ui/ui.qrc -o ../lib/ui/ui_rc.py
 $ pyinstaller gui.spec
