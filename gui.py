@@ -29,6 +29,8 @@ EMBED_JUPYTER = os.getenv('EMBED_JUPYTER', 'false').lower() in ('true', '1')
 if sys.platform == 'win32':
     LOG_PATH = os.path.expandvars(r'%APPDATA%\tsne-network\log')
 else:
+    LOG_PATH = os.path.expanduser('~/Library/Logs/tsne-network/log')
+else:
     LOG_PATH = 'log'  # TODO: find better place for linux and os x
 
 MainWindowUI, MainWindowBase = uic.loadUiType(MAIN_UI_FILE, from_imports='lib.ui', import_from='lib.ui')
