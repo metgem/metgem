@@ -20,7 +20,8 @@ from lib import ui, config, utils, save, graphml, workers
 from lib.workers.network_generation import generate_network  # TODO
 
 MAIN_UI_FILE = os.path.join('lib', 'ui', 'main_window.ui')
-if hasattr(sys, '_frozen'):
+if getattr(sys, 'frozen', False):
+    MAIN_UI_FILE = os.path.join(sys._MEIPASS, MAIN_UI_FILE)
 
 DEBUG = os.getenv('DEBUG_MODE', 'false').lower() in ('true', '1')
 EMBED_JUPYTER = os.getenv('EMBED_JUPYTER', 'false').lower() in ('true', '1')
