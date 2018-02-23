@@ -146,6 +146,8 @@ bin/
 *.csv
 *.mnz
 *.zip
+*.ico
+*.icns
 /clusterinfosummarygroup_attributes*
 /networkedges_*
 /test_*.py
@@ -153,4 +155,4 @@ bin/
 /lib/ui/ui_rc.py
 /lib/ui/images/main.ico
 /log/
-windows/share/
+packaging/share/
