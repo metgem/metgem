@@ -145,6 +145,7 @@ fabric.properties
 bin/
 *.whl
 *.exe
+*.dmg
 *.mgf
 *.csv
 *.mnz

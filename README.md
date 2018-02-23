@@ -24,10 +24,11 @@ First install brew and Python 3, using [these instructions](http://docs.python-g
 ```bash
 $ cd packaging
 $ pip3 install -r ../requirements.txt
-$ pip install pyinstaller
+$ pip3 install pyinstaller
+$ pip3 install dmgbuild
 $ brew install imagemagick
 $ ./make_icns.sh ../lib/ui/images/main.svg
 $ pyrcc5 ../lib/ui/ui.qrc -o ../lib/ui/ui_rc.py
 $ pyinstaller gui.spec
-$ 
+$ dmgbuild -s dmgbuild_settings.py '' XXX.dmg
 ```
