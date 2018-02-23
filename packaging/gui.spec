@@ -3,43 +3,58 @@
 import os
 import sys
 import glob
+from PyInstaller.utils.hooks import qt_plugins_binaries
 
 DEBUG = os.getenv('DEBUG_MODE', 'false').lower() in ('true', '1')
+
+pathex = []
+binaries = []
+datas = []
+hookspath = []
+runtime_hooks = []
+hiddenimports = []
+excludes = []
 
 # Encrypt files?
 block_cipher = None
 
 # Remove Tkinter: https://github.com/pyinstaller/pyinstaller/wiki/Recipe-remove-tkinter-tcl
 sys.modules['FixTk'] = None
-tk_excludes = ['FixTk', 'tcl', 'tk', '_tkinter', 'tkinter', 'Tkinter']
+excludes.extend(['FixTk', 'tcl', 'tk', '_tkinter', 'tkinter', 'Tkinter'])
+
+# Remove lib2to3
+excludes.extend(['lib2to3'])
 
 # Add some useful folders to path
-pathex = []
 if sys.platform == 'win32':
     pathex.append(r'Lib\site-packages\scipy\extra-dll')
 
 # Gather data files
 datas = [('../LICENSE', ''),
-         ('../examples/*', 'examples'),
          ('../lib/ui/*_rc.py', 'lib/ui'),
          ('../lib/ui/*.ui', 'lib/ui'),
          ('../lib/ui/images/*', 'lib/ui/images'),
          ('../lib/ui/widgets/*.ui', 'lib/ui/widgets')]
+if sys.platform != 'darwin':
+    datas.extend([('../examples/*', 'examples')])
+         
+# Get Qt styles dll
+binaries.extend(qt_plugins_binaries('styles', namespace='PyQt5'))
     
 # Define path for build hooks
-hookspath = ['hooks']
+hookspath.extend(['hooks'])
 
 # Define path for runtime hooks
-runtime_hooks = sorted(glob.glob('rthooks/*_pyi_*.py'))
+runtime_hooks.extend(sorted(glob.glob('rthooks/*_pyi_*.py')))
     
 a = Analysis(['../gui.py'],
              pathex=pathex,
-             binaries=[],
+             binaries=binaries,
              datas=datas,
-             hiddenimports=[],
+             hiddenimports=hiddenimports,
              hookspath=hookspath,
              runtime_hooks=runtime_hooks,
-             excludes=tk_excludes + ['lib2to3'],
+             excludes=excludes,
              win_no_prefer_redirects=False,
              win_private_assemblies=False,
              cipher=block_cipher)
@@ -48,8 +63,11 @@ a = Analysis(['../gui.py'],
 a.binaries = [bin for bin in a.binaries if not bin[0].startswith('mkl_')]
 a.binaries = [bin for bin in a.binaries if not bin[0].startswith('api-ms-win-')]
 
-# Remove unused IPthon data files
+# Remove unused IPython data files
 a.datas = [dat for dat in a.datas if not dat[0].startswith('IPython')]
+             
+# Remove unused pytz data files
+a.datas = [dat for dat in a.datas if not dat[0].startswith('pytz/')]
              
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
