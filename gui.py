@@ -41,19 +41,29 @@ class WorkerDict(dict):
 
     def __init__(self, parent, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.parent = parent
+        self._parent = parent
+        
+    def parent(self):
+        return self._parent
 
-    def __setitem__(self, key, item):
+    def __setitem__(self, worker, thread):
         if not self:  # dict is empty, so we are going to create the first entry. Show the progress bar
-            self.parent.statusBar().addPermanentWidget(self.parent.widgetProgress)
-            self.parent.widgetProgress.setVisible(True)
-        super().__setitem__(key, item)
+            self.parent().statusBar().addPermanentWidget(self.parent().widgetProgress)
+            self.parent().widgetProgress.setVisible(True)
+            
+        super().__setitem__(worker, thread)
+        
+        worker.moveToThread(thread)
+        self.parent().btCancelProcess.pressed.connect(lambda: worker.stop())
+        thread.started.connect(worker.run)
+        thread.start()
 
-    def __delitem__(self, key):
-        super().__delitem__(key)
+    def __delitem__(self, worker):        
+        super().__delitem__(worker)
+        
         if not self:  # dict is now empty, hide the progress bar
-            self.parent.widgetProgress.setVisible(False)
-            self.parent.statusBar().removeWidget(self.parent.widgetProgress)
+            self.parent().widgetProgress.setVisible(False)
+            self.parent().statusBar().removeWidget(self.parent().widgetProgress)
 
 
 class Network:
@@ -305,11 +315,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
         settings.setValue('MainWindow.Geometry', self.saveGeometry())
         settings.setValue('MainWindow.State', self.saveState())
 
-    def deleteWorker(self, worker):
-        del self._workers[worker]
-        if not self._workers:
-            self.widgetProgress.setVisible(False)
-
     def applyNetworkLayout(self, view, layout):
         try:
             for coord, node in zip(layout, self.graph.vs):
@@ -377,13 +382,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.progressBar.setMaximum(100)
             thread = QThread(self)
             worker = workers.NetworkWorker(self.graph)
-            worker.moveToThread(thread)
             worker.updated.connect(update_progress)
             worker.finished.connect(process_finished)
             worker.canceled.connect(process_canceled)
-            self.btCancelProcess.pressed.connect(lambda: worker.stop())
-            thread.started.connect(worker.run)
-            thread.start()
             self._workers[
                 worker] = thread  # Keep a reference to both thread and worker to prevent them to be garbage collected
 
@@ -456,13 +457,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 self.progressBar.setMaximum(1000)  # TODO
                 thread = QThread(self)
                 worker = workers.TSNEWorker(1 - scores[mask][:, mask], self.options.tsne)
-                worker.moveToThread(thread)
                 worker.updated.connect(update_progress)
                 worker.finished.connect(process_finished)
                 worker.canceled.connect(process_canceled)
-                self.btCancelProcess.pressed.connect(lambda: worker.stop())
-                thread.started.connect(worker.run)
-                thread.start()
                 self._workers[
                     worker] = thread  # Keep a reference to both thread and worker to prevent them to be garbage collected
                 return worker, thread
@@ -490,13 +487,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.progressBar.setMaximum(num_scores_to_compute)
         thread = QThread(self)
         worker = workers.ComputeScoresWorker(spectra, use_multiprocessing, self.options.cosine)
-        worker.moveToThread(thread)
         worker.updated.connect(update_progress)
         worker.finished.connect(process_finished)
         worker.canceled.connect(process_canceled)
-        self.btCancelProcess.pressed.connect(lambda: worker.stop())
-        thread.started.connect(worker.run)
-        thread.start()
         self._workers[
             worker] = thread  # Keep a reference to both thread and worker to prevent them to be garbage collected
         return worker, thread
@@ -517,13 +510,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         thread = QThread(self)
         worker = workers.ReadMGFWorker(filename, self.options.cosine)
-        worker.moveToThread(thread)
         worker.updated.connect(update_progress)
         worker.finished.connect(process_finished)
         worker.canceled.connect(process_canceled)
-        self.btCancelProcess.pressed.connect(lambda: worker.stop())
-        thread.started.connect(worker.run)
-        thread.start()
         self._workers[
             worker] = thread  # Keep a reference to both thread and worker to prevent them to be garbage collected
         return worker, thread
