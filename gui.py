@@ -319,6 +319,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         self.graph.network_layout = layout
 
+        view.scene().setSceneRect(view.scene().itemsBoundingRect())
         view.zoomToFit()
         view.minimap.zoomToFit()
 
@@ -400,6 +401,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         self.graph.tsne_layout = layout
 
+        view.scene().setSceneRect(view.scene().itemsBoundingRect())
         view.zoomToFit()
         view.minimap.zoomToFit()
 
