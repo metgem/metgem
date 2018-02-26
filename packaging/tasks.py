@@ -41,9 +41,6 @@ def check_dependencies(ctx):
     if sys.platform == 'darwin':
         dependencies.append('dmgbuild>=1.3')
 
-        if shutil.which('imagemagick') is None:
-            raise RuntimeError("Imagemagick is needed for building. Try `brew install imagemagick`.")
-
     pkg_resources.require(dependencies)
 
     if sys.platform == 'win32' and not os.path.exists('bin'):
