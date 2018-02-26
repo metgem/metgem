@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
-from PyQt5.QtCore import (QLineF, QPointF, QRectF, Qt,
+from PyQt5.QtCore import (QLineF, QPointF, QRectF, Qt, pyqtSignal,
                           QAbstractTableModel, QModelIndex, QSortFilterProxyModel)
 from PyQt5.QtGui import (QPainter, QPainterPath, QPen, QSurfaceFormat, QImage)
 from PyQt5.QtWidgets import (QApplication, QGraphicsItem,
                              QGraphicsEllipseItem, QGraphicsPathItem,
                              QGraphicsScene, QGraphicsView,
                              QRubberBand, QStyle, QOpenGLWidget,
-                             QFormLayout, QSizePolicy)
+                             QFormLayout, QSizePolicy, QMenu)
 
 from ...config import RADIUS, NODE_BORDER_WIDTH, FONT_SIZE
 
@@ -275,9 +275,12 @@ class MiniMapGraphicsView(QGraphicsView):
         
     def zoomToFit(self):
         self.fitInView(self.scene().sceneRect().adjusted(-20, -20, 20, 20), Qt.KeepAspectRatio)
-        
-        
+
+
 class NetworkView(QGraphicsView):
+
+    showSpectrumTriggered = pyqtSignal(Node)
+    compareSpectrumTriggered = pyqtSignal(Node)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -318,6 +321,19 @@ class NetworkView(QGraphicsView):
     def setScene(self, scene):
         super().setScene(scene)
         self.minimap.setScene(scene)
+
+    def contextMenuEvent(self, event):
+        menu = QMenu(self)
+        pos = self.mapToScene(event.pos()).toPoint()
+        item = self.scene().itemAt(pos, self.transform())
+        if item is not None and isinstance(item, Node):
+            action = menu.addAction('Show spectrum')
+            action.triggered.connect(lambda: self.showSpectrumTriggered.emit(item))
+            action = menu.addAction('Set as compare spectrum')
+            action.triggered.connect(lambda: self.compareSpectrumTriggered.emit(item))
+
+        if len(menu.actions()) > 0:
+            menu.exec(event.globalPos())
             
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton and not self.itemAt(event.pos()):

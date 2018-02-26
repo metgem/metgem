@@ -143,6 +143,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
         # Connect events
         self.gvNetwork.scene().selectionChanged.connect(self.onSelectionChanged)
         self.gvTSNE.scene().selectionChanged.connect(self.onSelectionChanged)
+        self.gvNetwork.showSpectrumTriggered.connect(lambda node: self.showSpectrum('show', node))
+        self.gvTSNE.showSpectrumTriggered.connect(lambda node: self.showSpectrum('show', node))
+        self.gvNetwork.compareSpectrumTriggered.connect(lambda node: self.showSpectrum('compare', node))
+        self.gvTSNE.compareSpectrumTriggered.connect(lambda node: self.showSpectrum('compare', node))
+
         self.actionQuit.triggered.connect(self.close)
         self.actionAbout.triggered.connect(self.showAbout)
         self.actionAboutQt.triggered.connect(self.showAboutQt)
@@ -215,8 +220,19 @@ class MainWindow(MainWindowBase, MainWindowUI):
         if key == Qt.Key_M:  # Show/hide minimap
             view = self.currentView
             view.minimap.setVisible(not view.minimap.isVisible())
-        elif key == Qt.Key_F2:
-            print(self.tbFile.isVisible())
+
+    def showSpectrum(self, type_, node):
+        if self.network.spectra is not None:
+            try:
+                data = self.network.spectra[node.index].human_readable_data
+            except KeyError:
+                dialog = QDialog(self)
+                dialog.warning(self, None, 'Selected spectrum does not exists.')
+            else:
+                if type_ == 'compare':
+                    self.cvSpectrum.set_spectrum2(data, node.label)
+                else:
+                    self.cvSpectrum.set_spectrum1(data, node.label)
 
     def selectFirstNeighbors(self, items):
         view = self.currentView
