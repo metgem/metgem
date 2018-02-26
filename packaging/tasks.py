@@ -47,6 +47,8 @@ def check_dependencies(ctx):
         print('Download binaries needed for build...', end='\t')
         download_file(WINDOWS_BIN_URL, 'bin.zip')
         extract_zip('bin.zip')
+        assert(os.path.exists('bin'))
+        os.remove('bin.zip')
         print('Done')
 
 @task
