@@ -388,8 +388,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
             worker.updated.connect(update_progress)
             worker.finished.connect(process_finished)
             worker.canceled.connect(process_canceled)
-            self._workers[
-                worker] = thread  # Keep a reference to both thread and worker to prevent them to be garbage collected
 
             return worker, thread
         else:
@@ -465,8 +463,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 worker.updated.connect(update_progress)
                 worker.finished.connect(process_finished)
                 worker.canceled.connect(process_canceled)
-                self._workers[
-                    worker] = thread  # Keep a reference to both thread and worker to prevent them to be garbage collected
+
                 return worker, thread
             else:
                 self.applyTSNELayout(view, layout)
@@ -495,8 +492,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         worker.updated.connect(update_progress)
         worker.finished.connect(process_finished)
         worker.canceled.connect(process_canceled)
-        self._workers[
-            worker] = thread  # Keep a reference to both thread and worker to prevent them to be garbage collected
+
         return worker, thread
 
     def readMGF(self, filename):
@@ -518,8 +514,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         worker.updated.connect(update_progress)
         worker.finished.connect(process_finished)
         worker.canceled.connect(process_canceled)
-        self._workers[
-            worker] = thread  # Keep a reference to both thread and worker to prevent them to be garbage collected
+
         return worker, thread
 
     def showOpenFileDialog(self):
@@ -540,7 +535,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 self.network.spectra = worker.result()
                 multiprocess = len(self.network.spectra) > 1000  # TODO: Tune this, arbitrary decision
                 worker, thread = self.computeScoresFromSpectra(self.network.spectra, multiprocess)
-                worker.finished.connect(scores_computed)
+                if worker is not None:
+                    worker.finished.connect(scores_computed)
+                    self._workers[worker] = thread
 
             def scores_computed():
                 self.network.scores = worker.result()
@@ -550,14 +547,13 @@ class MainWindow(MainWindowBase, MainWindowUI):
                                                         use_self_loops=True)
                 self.network.infos = np.array([(spectrum.mz_parent,) for spectrum in self.network.spectra],
                                               dtype=[('m/z parent', np.float32)])
-                self.createGraph(interactions, labels=None)
-                self.draw(scores=self.network.scores,
-                          interactions=interactions,
-                          infos=self.network.infos,
-                          labels=None)
+                self.createGraph(interactions)
+                self.draw(interactions=interactions)
 
             worker, thread = self.readMGF(process_file)
-            worker.finished.connect(file_read)
+            if worker is not None:
+                worker.finished.connect(file_read)
+                self._workers[worker] = thread
 
     def openVisualizationDialog(self, type_):
         if hasattr(self.network, 'scores'):
@@ -612,7 +608,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         else:
             self.graph.vs['__label'] = nodes_idx.astype('str')
 
-    def draw(self, interactions=None, infos=None, labels=None, compute_layouts=True, which='all'):  # TODO: Use infos and labels
+    def draw(self, interactions=None, labels=None, compute_layouts=True, which='all'):  # TODO: Use infos and labels
         if which == 'all':
             which = {'network', 't-sne'}
         elif isinstance(which, str):
@@ -629,15 +625,23 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 worker, thread = self.drawNetwork(self.gvNetwork, interactions)
 
         if 't-sne' in which:
+            layout = None
+
+            def draw_tsne():
+                worker, thread = self.drawTSNE(self.gvTSNE, layout=layout)
+                if worker is not None:
+                    self._workers[worker] = thread
+
             if not compute_layouts and self.graph.tsne_layout is not None:
-                draw_tsne = lambda: self.drawTSNE(self.gvTSNE, layout=self.graph.tsne_layout)
-            else:
-                draw_tsne = lambda: self.drawTSNE(self.gvTSNE)
+                layout = self.graph.tsne_layout
 
             if worker is not None:
                 worker.finished.connect(draw_tsne)
             else:
                 draw_tsne()
+
+        if worker is not None:
+            self._workers[worker] = thread
 
         self.tvNodes.model().sourceModel().endResetModel()
         self.tvEdges.model().sourceModel().endResetModel()
