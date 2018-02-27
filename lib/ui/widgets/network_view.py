@@ -45,7 +45,7 @@ class Edge(QGraphicsPathItem):
         
     def setWidth(self, width):
         pen = self.pen()
-        if self._source != self._dest:
+        if self._source != self._dest and width is not None:
             pen.setWidth(width)
         else:
             pen.setWidth(1)

@@ -17,7 +17,6 @@ from PyQt5.QtGui import QPainter, QImage
 from PyQt5 import uic
 
 from lib import ui, config, utils, save, graphml, workers
-from lib.workers.network_generation import generate_network  # TODO
 
 MAIN_UI_FILE = os.path.join('lib', 'ui', 'main_window.ui')
 if getattr(sys, 'frozen', False):
@@ -410,7 +409,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         view.zoomToFit()
         view.minimap.zoomToFit()
 
-    def drawTSNE(self, view, scores=None, layout=None):
+    def drawTSNE(self, view, layout=None):
         view.scene().clear()
 
         # Add nodes
@@ -424,6 +423,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.nodes_group = group
 
         if layout is None:
+            scores = self.network.scores.copy()
+
             # Compute layout
             scores[scores < 0.65] = 0
 
@@ -543,16 +544,17 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
             def scores_computed():
                 self.network.scores = worker.result()
-                interactions = generate_network(self.network.scores, self.network.spectra, self.options.network,
-                                                use_self_loops=True)
-
+                interactions = workers.generate_network(self.network.scores,
+                                                        self.network.spectra,
+                                                        self.options.network,
+                                                        use_self_loops=True)
                 self.network.infos = np.array([(spectrum.mz_parent,) for spectrum in self.network.spectra],
                                               dtype=[('m/z parent', np.float32)])
-
-                nodes_idx = np.arange(self.network.scores.shape[0])
-                self.createGraph(nodes_idx, self.network.infos, interactions, labels=None)
-
-                self.draw(self.network.scores, interactions, self.network.infos, labels=None)
+                self.createGraph(interactions, labels=None)
+                self.draw(scores=self.network.scores,
+                          interactions=interactions,
+                          infos=self.network.infos,
+                          labels=None)
 
             worker, thread = self.readMGF(process_file)
             worker.finished.connect(file_read)
@@ -564,49 +566,42 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 if dialog.exec_() == QDialog.Accepted:
                     options = dialog.getValues()
                     if options != self.options.network:
-                        self.tvNodes.model().sourceModel().beginResetModel()
-                        self.tvEdges.model().sourceModel().beginResetModel()
                         self.options.network = options
                         self.has_unsaved_changes = True
-                        # TODO restart Network graphics
-                        interactions = generate_network(self.network.scores,
+
+                        interactions = workers.generate_network(self.network.scores,
                                                         self.network.spectra,
                                                         self.options.network,
                                                         use_self_loops=True)
-                        nodes_idx = np.arange(self.network.scores.shape[0])
-                        self.createGraph(nodes_idx, self.network.infos, interactions, labels=None)
-                        self.drawNetwork(self.gvNetwork, interactions)
-                        self.tvNodes.model().sourceModel().endResetModel()
-                        self.tvEdges.model().sourceModel().endResetModel()
+                        self.createGraph(interactions)
+                        self.draw(interactions=interactions, which='network')
                         self.updateSearchBar()
             elif type_ == 't-sne':
                 dialog = ui.EditTSNEOptionDialog(self, options=self.options)
                 if dialog.exec_() == QDialog.Accepted:
                     options = dialog.getValues()
                     if options != self.options.tsne:
-                        self.tvNodes.model().sourceModel().beginResetModel()
-                        self.tvEdges.model().sourceModel().beginResetModel()
                         self.options.tsne = options
                         self.has_unsaved_changes = True
-                        self.drawTSNE(self.gvTSNE, self.network.scores)
-                        self.tvNodes.model().sourceModel().endResetModel()
-                        self.tvEdges.model().sourceModel().endResetModel()
+
+                        self.draw(scores=self.network.scores, which='t-sne')
                         self.updateSearchBar()
         else:
             dialog = QMessageBox()
             dialog.information(self, None, "No network found, please open a file first.")
 
-    def createGraph(self, nodes_idx, infos, interactions, labels=None):
+    def createGraph(self, interactions, labels=None):
         # Delete all previously created edges and nodes
         self.graph.delete_edges(self.graph.es)
         self.graph.delete_vertices(self.graph.vs)
 
+        nodes_idx = np.arange(self.network.scores.shape[0])
         self.graph.add_vertices(nodes_idx.tolist())
         self.graph.add_edges(zip(interactions['Source'], interactions['Target']))
 
-        if infos is not None:
-            for col in infos.dtype.names:
-                self.graph.vs[col] = infos[col]
+        if self.network.infos is not None:
+            for col in self.network.infos.dtype.names:
+                self.graph.vs[col] = self.network.infos[col]
 
         if interactions is not None:
             for col in interactions.dtype.names:
@@ -617,24 +612,32 @@ class MainWindow(MainWindowBase, MainWindowUI):
         else:
             self.graph.vs['__label'] = nodes_idx.astype('str')
 
-    def draw(self, scores=None, interactions=None, infos=None, labels=None, compute_layouts=True):  # TODO: Use infos and labels
+    def draw(self, interactions=None, infos=None, labels=None, compute_layouts=True, which='all'):  # TODO: Use infos and labels
+        if which == 'all':
+            which = {'network', 't-sne'}
+        elif isinstance(which, str):
+            which = set((which,))
+
         self.tvNodes.model().sourceModel().beginResetModel()
         self.tvEdges.model().sourceModel().beginResetModel()
 
-        if not compute_layouts and self.graph.network_layout is not None:
-            worker, thread = self.drawNetwork(self.gvNetwork, layout=self.graph.network_layout)
-        else:
-            worker, thread = self.drawNetwork(self.gvNetwork, interactions)
+        worker = None
+        if 'network' in which:
+            if not compute_layouts and self.graph.network_layout is not None:
+                worker, thread = self.drawNetwork(self.gvNetwork, layout=self.graph.network_layout)
+            else:
+                worker, thread = self.drawNetwork(self.gvNetwork, interactions)
 
-        if not compute_layouts and self.graph.tsne_layout is not None:
-            draw_tsne = lambda: self.drawTSNE(self.gvTSNE, layout=self.graph.tsne_layout)
-        else:
-            draw_tsne = lambda: self.drawTSNE(self.gvTSNE, scores)
+        if 't-sne' in which:
+            if not compute_layouts and self.graph.tsne_layout is not None:
+                draw_tsne = lambda: self.drawTSNE(self.gvTSNE, layout=self.graph.tsne_layout)
+            else:
+                draw_tsne = lambda: self.drawTSNE(self.gvTSNE)
 
-        if worker is not None:
-            worker.finished.connect(draw_tsne)
-        else:
-            draw_tsne()
+            if worker is not None:
+                worker.finished.connect(draw_tsne)
+            else:
+                draw_tsne()
 
         self.tvNodes.model().sourceModel().endResetModel()
         self.tvEdges.model().sourceModel().endResetModel()
