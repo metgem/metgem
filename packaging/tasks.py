@@ -3,7 +3,7 @@ import sys
 import pkg_resources
 import shutil
 
-from invoke import task
+from invoke import task, call
 
 DIST = 'dist'
 NAME = 'gui'
@@ -30,16 +30,18 @@ if sys.platform == 'win32':
 
 
 @task
-def check_dependencies(ctx):
-    if sys.prefix == sys.base_prefix:
+def check_dependencies(ctx, build=False):
+    if build and sys.prefix == sys.base_prefix:
         raise RuntimeError("Build should be done in a virtual env.")
 
     with open('../requirements.txt', 'r') as f:
         dependencies = f.readlines()
-    dependencies.append('pyinstaller>=3.3')
 
-    if sys.platform == 'darwin':
-        dependencies.append('dmgbuild>=1.3')
+    if build:
+        dependencies.append('pyinstaller>=3.3')
+
+        if sys.platform == 'darwin':
+            dependencies.append('dmgbuild>=1.3')
 
     pkg_resources.require(dependencies)
 
@@ -67,7 +69,7 @@ def clean(ctx, dist=False, bytecode=False, extra=''):
             ctx.run("rm -rf {}".format(pattern))
 
 
-@task(check_dependencies)
+@task(call(check_dependencies, build=True))
 def build(ctx, clean=False):
     icon(ctx)
     rc(ctx)
@@ -87,7 +89,7 @@ def rc(ctx):
     ctx.run("pyrcc5 ../lib/ui/ui.qrc -o ../lib/ui/ui_rc.py")
 
 
-@task(check_dependencies)
+@task(call(check_dependencies, build=True))
 def exe(ctx, clean=False):
     switchs = "--clean" if clean else ""
     result = ctx.run("pyinstaller gui.spec --noconfirm" + " " + switchs)
