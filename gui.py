@@ -35,8 +35,8 @@ else:
 MainWindowUI, MainWindowBase = uic.loadUiType(MAIN_UI_FILE, from_imports='lib.ui', import_from='lib.ui')
 
 
-class WorkerDict(dict):
-    """A dict that manages itself visibility of it's parent's progressbar"""
+class WorkerSet(set):
+    """A set that manages itself visibility of it's parent's progressbar"""
 
     def __init__(self, parent, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -45,30 +45,43 @@ class WorkerDict(dict):
     def parent(self):
         return self._parent
 
-    def __setitem__(self, key, value):
-        worker = key
-        thread = QThread(self.parent())
-
+    def _pre_add(self):
         if not self:  # dict is empty, so we are going to create the first entry. Show the progress bar
             self.parent().statusBar().addPermanentWidget(self.parent().widgetProgress)
             self.parent().widgetProgress.setVisible(True)
-            
-        super().__setitem__(worker, thread)
-        
+
+    def _post_add(self, worker):
+        thread = QThread(self.parent())
         worker.moveToThread(thread)
         self.parent().btCancelProcess.pressed.connect(lambda: worker.stop())
-        worker.canceled.connect(lambda: self.__delitem__(worker))
-        worker.error.connect(lambda: self.__delitem__(worker))
+        worker.canceled.connect(lambda: self.remove(worker))
+        worker.error.connect(lambda: self.remove(worker))
         thread.started.connect(worker.run)
         thread.start()
 
-    def __delitem__(self, key):
-        if key in self:
-            super().__delitem__(key)
-        
+    def _pre_remove(self, worker):
+        pass
+
+    def _post_remove(self):
         if not self:  # dict is now empty, hide the progress bar
             self.parent().widgetProgress.setVisible(False)
             self.parent().statusBar().removeWidget(self.parent().widgetProgress)
+
+    def add(self, worker):
+        self._pre_add()
+        super().add(worker)
+        self._post_add(worker)
+
+    def update(self, workers):
+        self._pre_add()
+        super().update(workers)
+        for worker in workers:
+            self._post_add(worker)
+
+    def remove(self, worker):
+        self._pre_remove(worker)
+        super().remove(worker)
+        self._post_remove()
 
 
 class MainWindow(MainWindowBase, MainWindowUI):
@@ -83,7 +96,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.fname = None
 
         # Workers' references
-        self._workers = WorkerDict(self)
+        self._workers = WorkerSet(self)
 
         # Create graph
         self.graph = ig.Graph()
@@ -376,7 +389,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
             def process_finished():
                 layout = worker.result()
-                del self._workers[worker]
+                self._workers.remove(worker)
                 if layout is not None:
                     self.applyNetworkLayout(view, layout)
 
@@ -434,7 +447,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 def process_finished():
                     nonlocal layout
                     layout[mask] = worker.result()
-                    del self._workers[worker]
+                    self._workers.remove(worker)
 
                     bb = ig.Layout(layout.tolist()).bounding_box()
                     dx, dy = 0, 0
@@ -469,7 +482,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.progressBar.setValue(self.progressBar.value() + i)
 
         def process_finished():
-            del self._workers[worker]
+            self._workers.remove(worker)
 
         num_spectra = len(spectra)
         num_scores_to_compute = num_spectra * (num_spectra - 1) // 2
@@ -487,7 +500,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.progressBar.setValue(self.progressBar.value() + i)
 
         def process_finished():
-            del self._workers[worker]
+            self._workers.remove(worker)
 
         self.progressBar.setFormat('Reading MGF...')
         self.progressBar.setMinimum(0)
@@ -519,7 +532,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 worker = self.computeScoresFromSpectra(self.network.spectra, multiprocess)
                 if worker is not None:
                     worker.finished.connect(scores_computed)
-                    self._workers[worker] = 1
+                    self._workers.add(worker)
 
             def scores_computed():
                 self.network.scores = worker.result()
@@ -535,7 +548,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             worker = self.readMGF(process_file)
             if worker is not None:
                 worker.finished.connect(file_read)
-                self._workers[worker] = 1
+                self._workers.add(worker)
 
     def openVisualizationDialog(self, type_):
         if hasattr(self.network, 'scores'):
@@ -612,7 +625,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             def draw_tsne():
                 worker = self.drawTSNE(self.gvTSNE, layout=layout)
                 if worker is not None:
-                    self._workers[worker] = 1
+                    self._workers.add(worker)
 
             if not compute_layouts and self.graph.tsne_layout is not None:
                 layout = self.graph.tsne_layout
@@ -623,7 +636,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 draw_tsne()
 
         if worker is not None:
-            self._workers[worker] = 1
+            self._workers.add(worker)
 
         self.tvNodes.model().sourceModel().endResetModel()
         self.tvEdges.model().sourceModel().endResetModel()
@@ -783,7 +796,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             filename = dialog.selectedFiles()[0]
             worker = self.load(filename)
             if worker is not None:
-                self._workers[worker] = 1
+                self._workers.add(worker)
 
     def saveProject(self):
         if self.fname is None:
@@ -791,7 +804,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         else:
             worker = self.save(self.fname)
             if worker is not None:
-                self._workers[worker] = 1
+                self._workers.add(worker)
 
     def saveProjectAs(self):
         dialog = QFileDialog(self)
@@ -803,13 +816,13 @@ class MainWindow(MainWindowBase, MainWindowUI):
             filename = dialog.selectedFiles()[0]
             worker = self.save(filename)
             if worker is not None:
-                self._workers[worker] = 1
+                self._workers.add(worker)
 
     def save(self, fname):
         """Save current project to a file for future access"""
 
         def process_finished():
-            del self._workers[worker]
+            self._workers.remove(worker)
 
             self.fname = fname
             self.has_unsaved_changes = False
@@ -836,7 +849,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         def process_finished():
             graph, network, options = worker.result()
-            del self._workers[worker]
+            self._workers.remove(worker)
 
             self.options = options
             self.graph = graph
