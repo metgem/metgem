@@ -1,0 +1,2 @@
+class UnsupportedVersionError(OSError):
+    pass

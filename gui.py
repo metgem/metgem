@@ -16,7 +16,7 @@ from PyQt5.QtCore import QThread, QSettings, Qt, QPointF, QSignalMapper
 from PyQt5.QtGui import QPainter, QImage
 from PyQt5 import uic
 
-from lib import ui, config, utils, save, graphml, workers
+from lib import ui, config, utils, save, graphml, workers, errors
 
 MAIN_UI_FILE = os.path.join('lib', 'ui', 'main_window.ui')
 if getattr(sys, 'frozen', False):
@@ -45,7 +45,10 @@ class WorkerDict(dict):
     def parent(self):
         return self._parent
 
-    def __setitem__(self, worker, thread):
+    def __setitem__(self, key, value):
+        worker = key
+        thread = QThread(self.parent())
+
         if not self:  # dict is empty, so we are going to create the first entry. Show the progress bar
             self.parent().statusBar().addPermanentWidget(self.parent().widgetProgress)
             self.parent().widgetProgress.setVisible(True)
@@ -54,19 +57,18 @@ class WorkerDict(dict):
         
         worker.moveToThread(thread)
         self.parent().btCancelProcess.pressed.connect(lambda: worker.stop())
+        worker.canceled.connect(lambda: self.__delitem__(worker))
+        worker.error.connect(lambda: self.__delitem__(worker))
         thread.started.connect(worker.run)
         thread.start()
 
-    def __delitem__(self, worker):        
-        super().__delitem__(worker)
+    def __delitem__(self, key):
+        if key in self:
+            super().__delitem__(key)
         
         if not self:  # dict is now empty, hide the progress bar
             self.parent().widgetProgress.setVisible(False)
             self.parent().statusBar().removeWidget(self.parent().widgetProgress)
-
-
-class Network:
-    __slots__ = 'spectra', 'scores', 'infos'
 
 
 class MainWindow(MainWindowBase, MainWindowUI):
@@ -95,7 +97,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                                        'tsne': workers.TSNEVisualizationOptions()})
 
         # Create an object to store all computed objects
-        self.network = Network()
+        self.network = utils.Network()
 
         # Add model to table views
         for table, Model, name in ((self.tvNodes, ui.widgets.NodesModel, "Nodes"),
@@ -378,21 +380,16 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 if layout is not None:
                     self.applyNetworkLayout(view, layout)
 
-            def process_canceled():
-                del self._workers[worker]
-
             self.progressBar.setFormat('Computing layout...')
             self.progressBar.setMaximum(100)
-            thread = QThread(self)
             worker = workers.NetworkWorker(self.graph)
             worker.updated.connect(update_progress)
             worker.finished.connect(process_finished)
-            worker.canceled.connect(process_canceled)
 
-            return worker, thread
+            return worker
         else:
             self.applyNetworkLayout(view, layout)
-            return None, None
+            return None
 
     def applyTSNELayout(self, view, layout):
         try:
@@ -453,24 +450,19 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
                     self.applyTSNELayout(view, layout)
 
-                def process_canceled():
-                    del self._workers[worker]
-
                 self.progressBar.setFormat('Computing TSNE...')
                 self.progressBar.setMaximum(1000)  # TODO
-                thread = QThread(self)
                 worker = workers.TSNEWorker(1 - scores[mask][:, mask], self.options.tsne)
                 worker.updated.connect(update_progress)
                 worker.finished.connect(process_finished)
-                worker.canceled.connect(process_canceled)
 
-                return worker, thread
+                return worker
             else:
                 self.applyTSNELayout(view, layout)
-                return None, None
+                return None
         else:
             self.applyTSNELayout(view, layout)
-            return None, None
+            return None
 
     def computeScoresFromSpectra(self, spectra, use_multiprocessing):
         def update_progress(i):
@@ -479,21 +471,16 @@ class MainWindow(MainWindowBase, MainWindowUI):
         def process_finished():
             del self._workers[worker]
 
-        def process_canceled():
-            del self._workers[worker]
-
         num_spectra = len(spectra)
         num_scores_to_compute = num_spectra * (num_spectra - 1) // 2
 
         self.progressBar.setFormat('Computing scores...')
         self.progressBar.setMaximum(num_scores_to_compute)
-        thread = QThread(self)
         worker = workers.ComputeScoresWorker(spectra, use_multiprocessing, self.options.cosine)
         worker.updated.connect(update_progress)
         worker.finished.connect(process_finished)
-        worker.canceled.connect(process_canceled)
 
-        return worker, thread
+        return worker
 
     def readMGF(self, filename):
         def update_progress(i):
@@ -502,20 +489,15 @@ class MainWindow(MainWindowBase, MainWindowUI):
         def process_finished():
             del self._workers[worker]
 
-        def process_canceled():
-            del self._workers[worker]
-
         self.progressBar.setFormat('Reading MGF...')
         self.progressBar.setMinimum(0)
         self.progressBar.setMaximum(0)
 
-        thread = QThread(self)
         worker = workers.ReadMGFWorker(filename, self.options.cosine)
         worker.updated.connect(update_progress)
         worker.finished.connect(process_finished)
-        worker.canceled.connect(process_canceled)
 
-        return worker, thread
+        return worker
 
     def showOpenFileDialog(self):
         dialog = ui.OpenFileDialog(self, options=self.options)
@@ -534,10 +516,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 nonlocal worker
                 self.network.spectra = worker.result()
                 multiprocess = len(self.network.spectra) > 1000  # TODO: Tune this, arbitrary decision
-                worker, thread = self.computeScoresFromSpectra(self.network.spectra, multiprocess)
+                worker = self.computeScoresFromSpectra(self.network.spectra, multiprocess)
                 if worker is not None:
                     worker.finished.connect(scores_computed)
-                    self._workers[worker] = thread
+                    self._workers[worker] = 1
 
             def scores_computed():
                 self.network.scores = worker.result()
@@ -550,10 +532,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 self.createGraph(interactions)
                 self.draw(interactions=interactions)
 
-            worker, thread = self.readMGF(process_file)
+            worker = self.readMGF(process_file)
             if worker is not None:
                 worker.finished.connect(file_read)
-                self._workers[worker] = thread
+                self._workers[worker] = 1
 
     def openVisualizationDialog(self, type_):
         if hasattr(self.network, 'scores'):
@@ -620,17 +602,17 @@ class MainWindow(MainWindowBase, MainWindowUI):
         worker = None
         if 'network' in which:
             if not compute_layouts and self.graph.network_layout is not None:
-                worker, thread = self.drawNetwork(self.gvNetwork, layout=self.graph.network_layout)
+                worker = self.drawNetwork(self.gvNetwork, layout=self.graph.network_layout)
             else:
-                worker, thread = self.drawNetwork(self.gvNetwork, interactions)
+                worker = self.drawNetwork(self.gvNetwork, interactions)
 
         if 't-sne' in which:
             layout = None
 
             def draw_tsne():
-                worker, thread = self.drawTSNE(self.gvTSNE, layout=layout)
+                worker = self.drawTSNE(self.gvTSNE, layout=layout)
                 if worker is not None:
-                    self._workers[worker] = thread
+                    self._workers[worker] = 1
 
             if not compute_layouts and self.graph.tsne_layout is not None:
                 layout = self.graph.tsne_layout
@@ -641,7 +623,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 draw_tsne()
 
         if worker is not None:
-            self._workers[worker] = thread
+            self._workers[worker] = 1
 
         self.tvNodes.model().sourceModel().endResetModel()
         self.tvEdges.model().sourceModel().endResetModel()
@@ -788,7 +770,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 image.fill(Qt.transparent)
 
                 painter = QPainter(image)
-                self.currentView.scene().render(painter);
+                self.currentView.scene().render(painter)
                 image.save(filename)
 
     def openProject(self):
@@ -799,13 +781,17 @@ class MainWindow(MainWindowBase, MainWindowUI):
                                "All files (*.*)"])
         if dialog.exec_() == QDialog.Accepted:
             filename = dialog.selectedFiles()[0]
-            self.load(filename)
+            worker = self.load(filename)
+            if worker is not None:
+                self._workers[worker] = 1
 
     def saveProject(self):
         if self.fname is None:
             self.saveProjectAs()
         else:
-            self.save(self.fname)
+            worker = self.save(self.fname)
+            if worker is not None:
+                self._workers[worker] = 1
 
     def saveProjectAs(self):
         dialog = QFileDialog(self)
@@ -815,92 +801,73 @@ class MainWindow(MainWindowBase, MainWindowUI):
                                "All files (*.*)"])
         if dialog.exec_() == QDialog.Accepted:
             filename = dialog.selectedFiles()[0]
-            self.save(filename)
+            worker = self.save(filename)
+            if worker is not None:
+                self._workers[worker] = 1
 
     def save(self, fname):
         """Save current project to a file for future access"""
 
-        # Export graph to GraphML format
-        writer = graphml.GraphMLWriter()
-        gxl = writer.tostring(self.graph).decode()
+        def process_finished():
+            del self._workers[worker]
 
-        # Convert list of Spectrum objects to something that be saved
-        spectra = getattr(self.network, 'spectra', [])
-        spec_infos = [{'id': s.id, 'mz_parent': s.mz_parent} for s in spectra]
-        spec_data = {'network/spectra/{}'.format(s.id): s.data for s in spectra}
-
-        # Create dict for saving
-        d = {'network/scores': getattr(self.network, 'scores', np.array([])),
-             'network/spectra/index.json': spec_infos,
-             'network/infos': getattr(self.network, 'infos', np.array([])),
-             'graph.gxl': gxl,
-             'network_layout': getattr(self.graph, 'network_layout', np.array([])),
-             'tsne_layout': getattr(self.graph, 'tsne_layout', np.array([])),
-             'options.json': self.options}
-        d.update(spec_data)
-
-        try:
-            save.savez(fname, version=1, **d)
-        except PermissionError as e:
-            dialog = QMessageBox(self)
-            dialog.warning(self, None, str(e))
-            return False
-        else:
             self.fname = fname
             self.has_unsaved_changes = False
+
+        def error(e):
+            if e.__class__ == PermissionError:
+                dialog = QMessageBox(self)
+                dialog.warning(self, None, str(e))
+            else:
+                raise e
+
+        self.progressBar.setFormat('Saving project...')
+        self.progressBar.setMinimum(0)
+        self.progressBar.setMaximum(0)
+
+        worker = workers.SaveProjectWorker(fname, self.graph, self.network, self.options)
+        worker.finished.connect(process_finished)
+        worker.error.connect(error)
+
+        return worker
 
     def load(self, fname):
         """Load project from a previously saved file"""
 
-        try:
-            with save.MnzFile(fname) as fid:
-                try:
-                    version = int(fid['version'])
-                except ValueError:
-                    version = 1
+        def process_finished():
+            graph, network, options = worker.result()
+            del self._workers[worker]
 
-                if version == 1:
-                    network = Network()
-                    network.scores = fid['network/scores']
-                    network.infos = fid['network/infos']
+            self.options = options
+            self.graph = graph
+            self.network = network
 
-                    spec_infos = fid['network/spectra/index.json']
-                    network.spectra = [workers.Spectrum(s['id'], s['mz_parent'], fid['network/spectra/{}'.format(s['id'])]) for
-                                       s in spec_infos]
+            # Draw
+            self.draw(compute_layouts=False)
 
-                    # Load options
-                    options = utils.AttrDict(fid['options.json'])
-                    for k, v in options.items():
-                        options[k] = utils.AttrDict(v)
+            # Save filename and set window title
+            self.fname = fname
+            self.has_unsaved_changes = False
 
-                    # Load graph
-                    gxl = fid['graph.gxl']
-                    parser = graphml.GraphMLParser()
-                    graph = parser.fromstring(gxl)
+        def error(e):
+            if isinstance(e, FileNotFoundError):
+                dialog = QMessageBox(self)
+                dialog.warning(self, None, f"File '{self.filename}' not found.")
+            elif isinstance(e, errors.UnsupportedVersionError):
+                dialog = QMessageBox(self)
+                dialog.warning(self, None, str(e))
+            else:
+                raise e
 
-                    graph.network_layout = fid['network_layout']
-                    graph.tsne_layout = fid['tsne_layout']
+        self.progressBar.setFormat('Loading project...')
+        self.progressBar.setMinimum(0)
+        self.progressBar.setMaximum(0)
 
-                    self.options = options
-                    self.graph = graph
-                    self.network = network
+        worker = workers.LoadProjectWorker(fname)
+        worker.finished.connect(process_finished)
+        worker.error.connect(error)
 
-                    # Draw
-                    self.draw(compute_layouts=False)
-
-                    # Save filename and set window title
-                    self.fname = fname
-                    self.has_unsaved_changes = False
-                else:
-                    dialog = QMessageBox(self)
-                    dialog.warning(self, None,
-                                   "Unrecognized file format version (version={}).".format(version))
-                    return False
-        except FileNotFoundError:
-            dialog = QMessageBox(self)
-            dialog.warning(self, None,
-                           "File '{}' not found.".format(fname))
-            return False
+        return worker
 
 
 if __name__ == '__main__':

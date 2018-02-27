@@ -33,3 +33,7 @@ class AttrDict(dict):
 
     def copy(self):
         return AttrDict(self)
+
+
+class Network:
+    __slots__ = 'spectra', 'scores', 'infos'
