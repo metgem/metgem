@@ -150,7 +150,7 @@
             </property>
             <property name="icon">
              <iconset resource="ui.qrc">
-              <normaloff>:/icons/images/system-run.svg</normaloff>:/icons/images/system-run.svg</iconset>
+              <normaloff>:/icons/images/emblem-system.svg</normaloff>:/icons/images/emblem-system.svg</iconset>
             </property>
            </widget>
           </item>
@@ -179,7 +179,7 @@
             </property>
             <property name="icon">
              <iconset resource="ui.qrc">
-              <normaloff>:/icons/images/system-run.svg</normaloff>:/icons/images/system-run.svg</iconset>
+              <normaloff>:/icons/images/emblem-system.svg</normaloff>:/icons/images/emblem-system.svg</iconset>
             </property>
            </widget>
           </item>
@@ -195,7 +195,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <widget class="QTableView" name="tvNodes">
        <attribute name="icon">

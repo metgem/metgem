@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="icons">
+    <file>images/emblem-system.svg</file>
     <file>images/spectrum.svg</file>
     <file>images/cancel.svg</file>
     <file>images/lock.svg</file>
