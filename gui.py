@@ -12,7 +12,7 @@ from PyQt5.QtWidgets import (QDialog, QFileDialog,
                              QMessageBox, QWidget, QGraphicsRectItem,
                              QMenu, QToolButton, QActionGroup,
                              QAction, QDockWidget)
-from PyQt5.QtCore import QThread, QSettings, Qt, QPointF
+from PyQt5.QtCore import QThread, QSettings, Qt, QPointF, QSignalMapper
 from PyQt5.QtGui import QPainter, QImage
 from PyQt5 import uic
 
@@ -181,8 +181,12 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.actionExportToCytoscape.triggered.connect(self.exportToCytoscape)
         self.actionExportAsImage.triggered.connect(self.exportAsImage)
 
-        self.btNetworkOptions.clicked.connect(self.openVisualizationDialog)
-        self.btTSNEOptions.clicked.connect(self.openVisualizationDialog)
+        self._mapper = QSignalMapper(self)
+        self.btNetworkOptions.clicked.connect(self._mapper.map)
+        self._mapper.setMapping(self.btNetworkOptions, 'network')
+        self.btTSNEOptions.clicked.connect(self._mapper.map)
+        self._mapper.setMapping(self.btTSNEOptions, 't-sne')
+        self._mapper.mapped[str].connect(self.openVisualizationDialog)
 
         # Add a menu to show/hide toolbars
         popup_menu = self.createPopupMenu()
@@ -553,10 +557,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
             worker, thread = self.readMGF(process_file)
             worker.finished.connect(file_read)
 
-    def openVisualizationDialog(self):
-        if hasattr(self.network, 'scores'): 
-            sender = self.sender()
-            if sender.objectName() == "btNetworkOptions":  # Network
+    def openVisualizationDialog(self, type_):
+        if hasattr(self.network, 'scores'):
+            if type_ == 'network':
                 dialog = ui.EditNetworkOptionDialog(self, options=self.options)
                 if dialog.exec_() == QDialog.Accepted:
                     options = dialog.getValues()
@@ -566,16 +569,17 @@ class MainWindow(MainWindowBase, MainWindowUI):
                         self.options.network = options
                         self.has_unsaved_changes = True
                         # TODO restart Network graphics
-                        interactions = generate_network(self.network.scores, self.network.spectra, self.options.network,
-                                                    use_self_loops=True)
+                        interactions = generate_network(self.network.scores,
+                                                        self.network.spectra,
+                                                        self.options.network,
+                                                        use_self_loops=True)
                         nodes_idx = np.arange(self.network.scores.shape[0])
                         self.createGraph(nodes_idx, self.network.infos, interactions, labels=None)
                         self.drawNetwork(self.gvNetwork, interactions)
                         self.tvNodes.model().sourceModel().endResetModel()
                         self.tvEdges.model().sourceModel().endResetModel()
                         self.updateSearchBar()
-
-            else:  # t-SNE
+            elif type_ == 't-sne':
                 dialog = ui.EditTSNEOptionDialog(self, options=self.options)
                 if dialog.exec_() == QDialog.Accepted:
                     options = dialog.getValues()
@@ -590,10 +594,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                         self.updateSearchBar()
         else:
             dialog = QMessageBox()
-            dialog.setIcon(QMessageBox.Warning)
-            dialog.setText("No network found, please open a file first.")
-            dialog.setWindowTitle("Error")
-            dialog.exec_()
+            dialog.information(self, None, "No network found, please open a file first.")
 
     def createGraph(self, nodes_idx, infos, interactions, labels=None):
         # Delete all previously created edges and nodes
