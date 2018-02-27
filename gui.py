@@ -706,6 +706,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def exportToCytoscape(self):
         try:
             from py2cytoscape.data.cyrest_client import CyRestClient
+            from requests import ConnectionError
+
+            cy = CyRestClient()
 
             # Create exportable copy of the graph object
             g = self.graph.copy()
@@ -720,7 +723,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 else:
                     g.es[attr] = [str(x) for x in g.es[attr]]
 
-            cy = CyRestClient()
             # cy.session.delete()
             g_cy = cy.network.create_from_igraph(g)
 
@@ -737,12 +739,18 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 style_js = json.load(f)
             style = cy.style.create('cyREST style', style_js)
             cy.style.apply(style, g_cy)
-        except ConnectionRefusedError:
-            print('Please launch Cytoscape before trying to export.')
+        except (ConnectionRefusedError, ConnectionError):
+            dialog = QMessageBox()
+            dialog.information(self, None,
+                               'Please launch Cytoscape before trying to export.')
         except ImportError:
-            print('py2tocytoscape is required for this action (https://pypi.python.org/pypi/py2cytoscape).')
+            dialog = QMessageBox()
+            dialog.information(self, None,
+                               'py2tocytoscape is required for this action (https://pypi.python.org/pypi/py2cytoscape).')
         except FileNotFoundError:
-            print('styles.json not found...')
+            dialog = QMessageBox()
+            dialog.warning(self, None,
+                           f'styles.json not found. You may have to reinstall {QCoreApplication.applicationName()}')
 
         # for c in g_cy.get_view(g_cy.get_views()[0])['elements']['nodes']:
         # pos = c['position']
