@@ -293,10 +293,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
     def showAbout(self):
         dialog = QMessageBox(self)
-        message = ['Version: {0}'.format(QCoreApplication.applicationVersion()),
+        message = (f'Version: {QCoreApplication.applicationVersion()}',
                    '',
-                   'Should say something here.']
-        dialog.about(self, 'About {0}'.format(QCoreApplication.applicationName()),
+                   'Should say something here.')
+        dialog.about(self, f'About {QCoreApplication.applicationName()}',
                      '\n'.join(message))
 
     def showAboutQt(self):
@@ -384,7 +384,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         if layout is None:
             # Compute layout
             def update_progress(i):
-                self.progressBar.setFormat('Computing layout: {s}%'.format(i))
+                self.progressBar.setFormat(f'Computing layout: {i:d}%')
                 self.progressBar.setValue(i)
 
             def process_finished():
@@ -441,7 +441,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
             if np.any(mask):
                 def update_progress(i):
-                    self.progressBar.setFormat('TSNE: Iteration {:d} of {:d}'.format(i, self.progressBar.maximum()))
+                    self.progressBar.setFormat(f'TSNE: Iteration {i:d} of {self.progressBar.maximum():d}')
                     self.progressBar.setValue(i)
 
                 def process_finished():
@@ -789,8 +789,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def openProject(self):
         dialog = QFileDialog(self)
         dialog.setFileMode(QFileDialog.ExistingFile)
-        dialog.setNameFilters(["{} Files (*{})".format(QCoreApplication.applicationName(),
-                                                       config.FILE_EXTENSION),
+        dialog.setNameFilters([f"{QCoreApplication.applicationName()} Files (*{config.FILE_EXTENSION})",
                                "All files (*.*)"])
         if dialog.exec_() == QDialog.Accepted:
             filename = dialog.selectedFiles()[0]
@@ -809,8 +808,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def saveProjectAs(self):
         dialog = QFileDialog(self)
         dialog.setAcceptMode(QFileDialog.AcceptSave)
-        dialog.setNameFilters(["{} Files (*{})".format(QCoreApplication.applicationName(),
-                                                       config.FILE_EXTENSION),
+        dialog.setNameFilters([f"{QCoreApplication.applicationName()} Files (*{config.FILE_EXTENSION})",
                                "All files (*.*)"])
         if dialog.exec_() == QDialog.Accepted:
             filename = dialog.selectedFiles()[0]
