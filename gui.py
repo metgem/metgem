@@ -345,7 +345,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
             def process_finished():
                 layout = worker.result()
-                self._workers.remove(worker)
                 if layout is not None:
                     self.applyNetworkLayout(view, layout)
 
@@ -403,7 +402,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 def process_finished():
                     nonlocal layout
                     layout[mask] = worker.result()
-                    self._workers.remove(worker)
 
                     bb = ig.Layout(layout.tolist()).bounding_box()
                     dx, dy = 0, 0
@@ -437,9 +435,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
         def update_progress(i):
             self.progressBar.setValue(self.progressBar.value() + i)
 
-        def process_finished():
-            self._workers.remove(worker)
-
         num_spectra = len(spectra)
         num_scores_to_compute = num_spectra * (num_spectra - 1) // 2
 
@@ -447,7 +442,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.progressBar.setMaximum(num_scores_to_compute)
         worker = workers.ComputeScoresWorker(spectra, use_multiprocessing, self.options.cosine)
         worker.updated.connect(update_progress)
-        worker.finished.connect(process_finished)
 
         return worker
 
@@ -455,16 +449,12 @@ class MainWindow(MainWindowBase, MainWindowUI):
         def update_progress(i):
             self.progressBar.setValue(self.progressBar.value() + i)
 
-        def process_finished():
-            self._workers.remove(worker)
-
         self.progressBar.setFormat('Reading MGF...')
         self.progressBar.setMinimum(0)
         self.progressBar.setMaximum(0)
 
         worker = workers.ReadMGFWorker(filename, self.options.cosine)
         worker.updated.connect(update_progress)
-        worker.finished.connect(process_finished)
 
         return worker
 
@@ -780,8 +770,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
         """Save current project to a file for future access"""
 
         def process_finished():
-            self._workers.remove(worker)
-
             self.fname = fname
             self.has_unsaved_changes = False
 
@@ -807,7 +795,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         def process_finished():
             graph, network, options = worker.result()
-            self._workers.remove(worker)
 
             self.options = options
             self.graph = graph
