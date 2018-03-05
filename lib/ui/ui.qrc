@@ -1,6 +1,13 @@
 <RCC>
   <qresource prefix="icons">
+    <file>images/new.svg</file>
+    <file>images/select-invert.svg</file>
+    <file>images/select-all.svg</file>
+    <file>images/select-none.svg</file>
+    <file>images/update-available.svg</file>
     <file>images/emblem-system.svg</file>
+    <file>images/library.svg</file>
+    <file>images/new-library.svg</file>
     <file>images/spectrum.svg</file>
     <file>images/cancel.svg</file>
     <file>images/lock.svg</file>

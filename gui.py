@@ -12,7 +12,7 @@ from PyQt5.QtWidgets import (QDialog, QFileDialog,
                              QMessageBox, QWidget, QGraphicsRectItem,
                              QMenu, QToolButton, QActionGroup,
                              QAction, QDockWidget)
-from PyQt5.QtCore import QThread, QSettings, Qt, QPointF, QSignalMapper
+from PyQt5.QtCore import QSettings, Qt, QPointF, QSignalMapper
 from PyQt5.QtGui import QPainter, QImage
 from PyQt5 import uic
 
@@ -35,55 +35,6 @@ else:
 MainWindowUI, MainWindowBase = uic.loadUiType(MAIN_UI_FILE, from_imports='lib.ui', import_from='lib.ui')
 
 
-class WorkerSet(set):
-    """A set that manages itself visibility of it's parent's progressbar"""
-
-    def __init__(self, parent, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._parent = parent
-        
-    def parent(self):
-        return self._parent
-
-    def _pre_add(self):
-        if not self:  # dict is empty, so we are going to create the first entry. Show the progress bar
-            self.parent().statusBar().addPermanentWidget(self.parent().widgetProgress)
-            self.parent().widgetProgress.setVisible(True)
-
-    def _post_add(self, worker):
-        thread = QThread(self.parent())
-        worker.moveToThread(thread)
-        self.parent().btCancelProcess.pressed.connect(lambda: worker.stop())
-        worker.canceled.connect(lambda: self.remove(worker))
-        worker.error.connect(lambda: self.remove(worker))
-        thread.started.connect(worker.run)
-        thread.start()
-
-    def _pre_remove(self, worker):
-        pass
-
-    def _post_remove(self):
-        if not self:  # dict is now empty, hide the progress bar
-            self.parent().widgetProgress.setVisible(False)
-            self.parent().statusBar().removeWidget(self.parent().widgetProgress)
-
-    def add(self, worker):
-        self._pre_add()
-        super().add(worker)
-        self._post_add(worker)
-
-    def update(self, workers):
-        self._pre_add()
-        super().update(workers)
-        for worker in workers:
-            self._post_add(worker)
-
-    def remove(self, worker):
-        self._pre_remove(worker)
-        super().remove(worker)
-        self._post_remove()
-
-
 class MainWindow(MainWindowBase, MainWindowUI):
 
     def __init__(self, *args, **kwargs):
@@ -96,7 +47,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.fname = None
 
         # Workers' references
-        self._workers = WorkerSet(self)
+        self._workers = utils.WorkerSet(self)
 
         # Create graph
         self.graph = ig.Graph()
@@ -194,6 +145,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
             lambda: self.selectFirstNeighbors(self.currentView.scene().selectedItems()))
         self.actionExportToCytoscape.triggered.connect(self.exportToCytoscape)
         self.actionExportAsImage.triggered.connect(self.exportAsImage)
+
+        self.actionDownloadDatabases.triggered.connect(self.openDownloadDatabasesDialog)
 
         self._mapper = QSignalMapper(self)
         self.btNetworkOptions.clicked.connect(self._mapper.map)
@@ -580,6 +533,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
         else:
             dialog = QMessageBox()
             dialog.information(self, None, "No network found, please open a file first.")
+
+    def openDownloadDatabasesDialog(self):
+        dialog = ui.DownloadDatabaseDialog(self)
+        dialog.exec_()
 
     def createGraph(self, interactions, labels=None):
         # Delete all previously created edges and nodes

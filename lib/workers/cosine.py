@@ -7,7 +7,7 @@ import numpy as np
 import multiprocessing as mp
 
 from .base_worker import BaseWorker
-from ..utils import AttrDict
+from ..utils import AttrDict, grouper
 
 
 class Spectrum:
@@ -97,13 +97,6 @@ class CosineComputationOptions(AttrDict):
                          min_matched_peaks=4,
                          min_matched_peaks_search=6,
                          matched_peaks_window=50)
-
-
-def grouper(iterable, n, fillvalue=None):
-    """Collect data into fixed-length chunks or blocks"""
-    # grouper('ABCDEFG', 3, 'x') --> ABC DEF Gxx"
-    args = [iter(iterable)] * n
-    return itertools.zip_longest(*args, fillvalue=fillvalue)
 
 
 def init(spectra, num, matrix):

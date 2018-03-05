@@ -5,6 +5,7 @@ from sklearn.manifold import TSNE
 
 from .base_worker import BaseWorker
 from ..utils import AttrDict
+from ..errors import UserRequestedStopError
 
 class TSNEVisualizationOptions(AttrDict):
     """Class containing TSNE visualization options.
@@ -16,13 +17,9 @@ class TSNEVisualizationOptions(AttrDict):
     """
     
     def __init__(self):
-        super().__init__(perplexity = 6,
-                         learning_rate = 200)
+        super().__init__(perplexity=6,
+                         learning_rate=200)
 
-
-class UserRequestedStopError(Exception):
-    '''Raised if user request to stop a worker's process'''
-    
     
 class ProgressStringIO(io.StringIO):
 

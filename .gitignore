@@ -143,6 +143,9 @@ fabric.properties
 
 # app-specific development files
 bin/
+databases/
+*.h5
+*.sqlite
 *.whl
 *.exe
 *.dmg
