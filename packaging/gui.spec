@@ -3,7 +3,10 @@
 import os
 import sys
 import glob
-from PyInstaller.utils.hooks import qt_plugins_binaries
+from PyInstaller.utils.hooks import qt_plugins_binaries, get_module_file_attribute
+
+os.path.join(os.path.dirname(get_module_file_attribute('PyQt5')),
+                                     'Qt', 'bin')
 
 DEBUG = os.getenv('DEBUG_MODE', 'false').lower() in ('true', '1')
 
@@ -20,7 +23,7 @@ block_cipher = None
 
 # Remove Tkinter: https://github.com/pyinstaller/pyinstaller/wiki/Recipe-remove-tkinter-tcl
 sys.modules['FixTk'] = None
-excludes.extend(['FixTk', 'tcl', 'tk', '_tkinter', 'tkinter', 'Tkinter'])
+excludes.extend(['FixTk', 'tcl', 'tk', '_tkinter', 'tkinter', 'Tkinter', 'matplotlib.backends._tkagg'])
 
 # Remove lib2to3
 excludes.extend(['lib2to3'])
@@ -40,6 +43,12 @@ if sys.platform != 'darwin':
          
 # Get Qt styles dll
 binaries.extend(qt_plugins_binaries('styles', namespace='PyQt5'))
+
+# Adds Qt OpenGL
+hiddenimports.extend(['PyQt5.QtOpenGL'])
+if sys.platform == 'win32':
+    binaries.extend([(os.path.join(os.path.dirname(get_module_file_attribute('PyQt5')), 'Qt', 'bin', dll), r'PyQt5\Qt\bin')
+                      for dll in ('libEGL.dll', 'libGLESv2.dll')])
     
 # Define path for build hooks
 hookspath.extend(['hooks'])
@@ -61,13 +70,16 @@ a = Analysis(['../gui.py'],
              
 # Remove MKL binaries
 a.binaries = [bin for bin in a.binaries if not bin[0].startswith('mkl_')]
-a.binaries = [bin for bin in a.binaries if not bin[0].startswith('api-ms-win-')]
+# a.binaries = [bin for bin in a.binaries if not bin[0].startswith('api-ms-win-')]
 
 # Remove unused IPython data files
 a.datas = [dat for dat in a.datas if not dat[0].startswith('IPython')]
              
 # Remove unused pytz data files
-a.datas = [dat for dat in a.datas if not dat[0].startswith('pytz/')]
+a.datas = [dat for dat in a.datas if not dat[0].startswith('pytz')]
+
+# Remove matplotlib sample data
+a.datas = [dat for dat in a.datas if not ('sample_data' in dat[0] and dat[0].startswith('mpl-data'))]
              
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
