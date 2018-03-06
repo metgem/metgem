@@ -1,6 +1,5 @@
 import os
 from collections import OrderedDict
-import h5py
 
 import numpy as np
 
@@ -54,14 +53,12 @@ class DataBaseBuilder:
         self.echo = echo
 
         self.session = None
-        self.hf = None
 
         keys = ('bank', 'organism', 'pi', 'submituser', 'datacollector', 'source_instrument', 'spectrum')
         self._uniques = {k: OrderedDict() for k in keys if k != 'spectrum'}
         self._indexes = {k: 1 for k in keys}
 
         self.session = create_session(f'{self.name}.sqlite', echo=self.echo, drop_all=True)
-        self.hf = h5py.File(f'{self.name}.h5', 'w')
 
     def __enter__(self):
         return self
@@ -87,12 +84,9 @@ class DataBaseBuilder:
         self.session.close()
         self.session.bind.dispose()
 
-        self.hf.close()
-
     def add_bank(self, mgf_path):
         bank = os.path.splitext(os.path.basename(mgf_path))[0]
         self._uniques['bank'][bank] = self._indexes['bank']
-        group = self.hf.create_group(bank)
 
         for batch in chunk_read_mgf(mgf_path, 1000):  # Read mgf file by batch of 1000 spectra
             spectra = []
@@ -136,7 +130,9 @@ class DataBaseBuilder:
                 if mz is not None and intensity is not None and mz.size > 0 and intensity.size > 0:
                     intensity = intensity / intensity.max() * 100
                     peaks = np.column_stack((mz, intensity))
-                    group.create_dataset(str(self._indexes['spectrum']), data=peaks)
+                    spectrum['peaks'] = peaks
+                else:
+                    spectrum['peaks'] = np.array([], dtype=np.float32)
 
                 spectra.append(spectrum)
                 self._indexes['spectrum'] += 1
@@ -145,7 +141,6 @@ class DataBaseBuilder:
             # We can't use ORM because we have a lot of insertions to do
             # See http://docs.sqlalchemy.org/en/latest/faq/performance.html#i-m-inserting-400-000-rows-with-the-orm-and-it-s-really-slow
             self.session.execute(Spectrum.__table__.insert(), spectra)
-            # self.session.execute(Peak.__table__.insert(), batch_peaks)
             self.session.flush()
 
         self.session.commit()
@@ -180,7 +175,7 @@ if __name__ == "__main__":
     import glob
 
     t00 = time.time()
-    with DataBaseBuilder('spectra') as db:
+    with DataBaseBuilder('spectra', echo=False) as db:
         for path in glob.glob(r'C:\Users\elie\Desktop\ML\databases\*.mgf'):
             if not path.endswith('ALL_GNPS.mgf'):
                 filename = os.path.basename(path)

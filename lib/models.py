@@ -1,9 +1,22 @@
-from sqlalchemy import (Column, ForeignKey, Integer, Float, String, Boolean)
+from sqlalchemy import (Column, ForeignKey, Integer, Float, String, Boolean, Binary, TypeDecorator)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.hybrid import hybrid_property
 
+import numpy as np
+
 Base = declarative_base()
+
+
+class NumpySpectrumArray(TypeDecorator):
+
+    impl = Binary
+
+    def process_bind_param(self, value, dialect):
+        return value.tobytes(order='C')
+
+    def process_result_value(self, value, dialect):
+        return np.frombuffer(value, dtype='<f4').reshape(-1, 2)
 
 
 class Organism(Base):
@@ -66,6 +79,7 @@ class Spectrum(Base):
     pubmed = Column(String)
     submituser_id = Column(Integer, ForeignKey('submitters.id'))
     submituser = relationship('Submitter')
+    peaks = Column(NumpySpectrumArray)
 
     @hybrid_property
     def polarity(self):
