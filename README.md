@@ -1,5 +1,6 @@
 # Build instructions for Windows (Python 3.6, 64 bits)
-Some useful tools are downloaded automatically when running build scripts
+Some useful tools are downloaded automatically when running build scripts.
+Wheel packages for igraph can be found on [Christoph Gohlke's website](https://www.lfd.uci.edu/~gohlke/pythonlibs/#python-igraph)
 
 ```
 > python -m venv packaging
@@ -7,7 +8,7 @@ Some useful tools are downloaded automatically when running build scripts
 > Scripts\activate.bat
 > pip install invoke==0.22.1
 > invoke check-dependencies
-> pip install whl\python_igraph-0.7.1.post7-cp36-cp36m-win_amd64.whl
+> pip install python_igraph-*.whl
 > pip install -r ..\requirements.txt
 > pip install pyinstaller
 > invoke build
