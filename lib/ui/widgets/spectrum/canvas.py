@@ -6,13 +6,11 @@ import numpy as np
 
 if __name__ == '__main__':
     from base import BaseCanvas
-    from toolbar import SpectrumNavigationToolbar
     class Spectrum:
         MZ = 0
         INTENSITY = 1
 else:
     from .base import BaseCanvas
-    from .toolbar import SpectrumNavigationToolbar
     from ....workers import Spectrum
 
 
@@ -28,24 +26,20 @@ class SpectrumCanvas(BaseCanvas):
 
         super().__init__(parent, title=title)
 
-        toolbar = SpectrumNavigationToolbar(self, parent)
-        toolbar.setParent(self)
-
         # Load data
         self.spectrum1_data = spectrum1_data
         self.spectrum2_data = spectrum2_data
 
-        # Y Tick labels should be always positive
-        self.axes.yaxis.set_major_formatter(FuncFormatter(lambda x, pos: '{:.0f}'.format(abs(x))))
+        self.prepare_axes()
 
-    def hasData(self):
+    def has_data(self):
         return self._spectrum1_data is not None
 
-    def prepareAxes(self, data=None):
-        super().prepareAxes(data)
+    def prepare_axes(self, data=None):
+        super().prepare_axes(data)
 
         # Y Tick labels should be always positive
-        self.axes.yaxis.set_major_formatter(FuncFormatter(lambda x, pos: '{:.0f}'.format(abs(x))))
+        self.axes.yaxis.set_major_formatter(FuncFormatter(lambda x, pos: f'{abs(x):.0f}'))
 
     def _set_data(self, type_, data, label=None):
         self.axes.clear()
@@ -62,13 +56,13 @@ class SpectrumCanvas(BaseCanvas):
         else:
             self.axes.set_ylim(0, 100 + self.Y_SPACING)
 
-        self.prepareAxes(self._spectrum1_data)
-        if self.hasData():
+        self.prepare_axes(self._spectrum1_data)
+        if self.has_data():
             self.toolbar.setVisible(True)
 
-            self._spectrum1_plot = self.plotSpectrum(self._spectrum1_data, colors='r', label=self._spectrum1_label)
+            self._spectrum1_plot = self.plot_spectrum(self._spectrum1_data, colors='r', label=self._spectrum1_label)
             if self._spectrum2_data is not None:
-                self._spectrum2_plot = self.plotSpectrum(self._spectrum2_data, yinverted=True, colors='b',
+                self._spectrum2_plot = self.plot_spectrum(self._spectrum2_data, yinverted=True, colors='b',
                                                    label=self._spectrum2_label)
             else:
                 self._spectrum2_plot = None
@@ -99,8 +93,8 @@ class SpectrumCanvas(BaseCanvas):
     def set_spectrum2(self, data, label=None):
         self._set_data('spectrum2', data, label)
 
-    def autoAdjustYLim(self):
-        if self.hasData():
+    def auto_adjust_ylim(self):
+        if self.has_data():
             xlim = self.axes.get_xlim()
             intensities = self._spectrum1_data[:, Spectrum.INTENSITY][
                 np.logical_and(self._spectrum1_data[:, Spectrum.MZ] >= xlim[0],
@@ -191,7 +185,7 @@ if __name__ == "__main__":
     widget.setLayout(layout)
 
     canvas = SpectrumCanvas(title='Long long name Test spectrum')
-    # canvas.set_spectrum1(test_data)
+    canvas.set_spectrum1(test_data)
     layout.addWidget(canvas)
 
     button = QPushButton('Compare spectra')

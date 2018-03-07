@@ -58,6 +58,16 @@ class MainWindow(MainWindowBase, MainWindowUI):
         # Setup User interface
         self.setupUi(self)
 
+        # Add toolbar for spectrum
+        self.tbSpectrum = ui.widgets.SpectrumNavigationToolbar(self.cvSpectrum, self)
+        self.tbSpectrum.setObjectName('tbSpectrum')
+        self.tbSpectrum.setWindowTitle('Spectrum')
+        self.addToolBar(Qt.BottomToolBarArea, self.tbSpectrum)
+        self.tbSpectrum.setVisible(False)
+
+        # Activate first tab of tab widget
+        self.tabWidget.setCurrentIndex(0)
+
         # Assigning cosine computation and visualization default options
         self.options = utils.AttrDict({'cosine': workers.CosineComputationOptions(),
                                        'network': workers.NetworkVisualizationOptions(),
@@ -158,6 +168,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self._mapper.setMapping(self.btTSNEOptions, 't-sne')
         self._mapper.mapped[str].connect(self.openVisualizationDialog)
 
+        self.tabWidget.currentChanged.connect(self.on_current_tab_changed)
+
         # Add a menu to show/hide toolbars
         popup_menu = self.createPopupMenu()
         popup_menu.setTitle("Toolbars")
@@ -213,10 +225,15 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 dialog = QDialog(self)
                 dialog.warning(self, None, 'Selected spectrum does not exists.')
             else:
+                # Set data as first or second spectrum
                 if type_ == 'compare':
                     self.cvSpectrum.set_spectrum2(data, node.label)
                 else:
                     self.cvSpectrum.set_spectrum1(data, node.label)
+                # Show spectrum tab
+                for index in range(self.tabWidget.count()):
+                    if self.tabWidget.tabText(index) == "Spectra":
+                        self.tabWidget.setCurrentIndex(index)
 
     def selectFirstNeighbors(self, items):
         view = self.currentView
@@ -238,6 +255,12 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def hideItems(self, items):
         for item in items:
             item.hide()
+
+    def on_current_tab_changed(self, index):
+        if self.tabWidget.tabText(index) == "Spectra":
+            self.tbSpectrum.setVisible(True)
+        else:
+            self.tbSpectrum.setVisible(False)
 
     def switchFullScreen(self):
         if not self.isFullScreen():

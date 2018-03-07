@@ -51,11 +51,11 @@ class BaseCanvas(FigureCanvas):
         # Spectrum title
         self._title = title
     
-    def hasData(self):
+    def has_data(self):
         """Is data loaded, should be reimplemented in subclass"""
         return False
         
-    def prepareAxes(self, data=None):
+    def prepare_axes(self, data=None):
         """Prepare default axes"""
 
         if data is None:
@@ -67,13 +67,13 @@ class BaseCanvas(FigureCanvas):
         self.axes.set_xlabel("$m/z$", self.fontdict)
         self.axes.set_ylabel("Normalized Intensity (%)", self.fontdict)
             
-        if self.hasData():
+        if self.has_data():
             self.axes.set_xlim((data[:, Spectrum.MZ].min()-self.X_MARGIN,
                                 data[:, Spectrum.MZ].max()+self.X_MARGIN))
         else:
             self.axes.set_xlim(0, 1000)
                                 
-    def plotSpectrum(self, data, yinverted=False, **kwargs):
+    def plot_spectrum(self, data, yinverted=False, **kwargs):
         if data is None:
             return
 
@@ -84,5 +84,5 @@ class BaseCanvas(FigureCanvas):
             return self.axes.vlines(data[:, Spectrum.MZ], 0, data[:, Spectrum.INTENSITY],
                                     linewidth=0.5, **kwargs)
     
-    def autoAdjustYLim(self):
+    def auto_adjust_ylim(self):
         pass

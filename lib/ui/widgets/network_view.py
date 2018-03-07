@@ -334,6 +334,12 @@ class NetworkView(QGraphicsView):
 
         if len(menu.actions()) > 0:
             menu.exec(event.globalPos())
+
+    def mouseDoubleClickEvent(self, event):
+        pos = self.mapToScene(event.pos()).toPoint()
+        item = self.scene().itemAt(pos, self.transform())
+        if item is not None and isinstance(item, Node):
+            self.showSpectrumTriggered.emit(item)
             
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton and not self.itemAt(event.pos()):

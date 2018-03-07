@@ -191,8 +191,11 @@
     </item>
     <item>
      <widget class="QTabWidget" name="tabWidget">
-      <property name="currentIndex">
-       <number>0</number>
+      <property name="tabPosition">
+       <enum>QTabWidget::West</enum>
+      </property>
+      <property name="movable">
+       <bool>true</bool>
       </property>
       <widget class="QTableView" name="tvNodes">
        <attribute name="icon">
