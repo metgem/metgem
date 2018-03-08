@@ -362,7 +362,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             node.setParentItem(group)
         self.graph.vs['__network_gobj'] = group.childItems()
         view.scene().addItem(group)
-        self.nodes_group = group
+        self.gvNetwork.nodes_group = group
 
         # Add edges
         group = QGraphicsRectItem()
@@ -373,7 +373,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             edge.setParentItem(group)
         self.graph.es['__network_gobj'] = group.childItems()
         view.scene().addItem(group)
-        self.edges_group = group
+        self.gvNetwork.edges_group = group
 
         if layout is None:
             # Compute layout
@@ -415,13 +415,12 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         # Add nodes
         group = QGraphicsRectItem()  # Create a pseudo-group, QGraphicsItemGroup is not used because it does not let children handle events
-        group.setZValue(1)  # Draw nodes on top of edges
         for i, n in enumerate(self.graph.vs):
             node = ui.Node(i, n['__label'])
             node.setParentItem(group)
         self.graph.vs['__tsne_gobj'] = group.childItems()
         view.scene().addItem(group)
-        self.nodes_group = group
+        self.gvTSNE.nodes_group = group
 
         if layout is None:
             scores = self.network.scores.copy()
@@ -550,6 +549,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
                                                         use_self_loops=True)
                         self.createGraph(interactions)
                         self.draw(interactions=interactions, which='network')
+                        try:
+                            self.graph.vs['__tsne_gobj'] = self.gvTSNE.nodes_group.childItems()
+                        except AttributeError:
+                            pass
                         self.updateSearchBar()
             elif type_ == 't-sne':
                 dialog = ui.EditTSNEOptionDialog(self, options=self.options)
@@ -559,7 +562,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                         self.options.tsne = options
                         self.has_unsaved_changes = True
 
-                        self.draw(scores=self.network.scores, which='t-sne')
+                        self.draw(which='t-sne')
                         self.updateSearchBar()
         else:
             dialog = QMessageBox()
@@ -649,7 +652,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 try:
                     for idx in nodes_idx:
                         self.graph.vs['__tsne_gobj'][idx].setSelected(True)
-                except (KeyError, AttributeError):
+                except (KeyError, AttributeError, RuntimeError):
                     pass
                 self.gvTSNE.scene().selectionChanged.connect(self.onSelectionChanged)
             elif view == self.gvTSNE:
@@ -660,7 +663,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                         self.graph.vs['__network_gobj'][idx].setSelected(True)
                     for idx in edges_idx:
                         self.graph.es['__network_gobj'][idx].setSelected(True)
-                except (KeyError, AttributeError):
+                except (KeyError, AttributeError, RuntimeError):
                     pass
                 self.gvNetwork.scene().selectionChanged.connect(self.onSelectionChanged)
 
