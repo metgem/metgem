@@ -1,6 +1,4 @@
-from matplotlib.ticker import FuncFormatter
-
-from PyQt5.QtCore import pyqtProperty
+from matplotlib.ticker import FuncFormatter, AutoMinorLocator
 
 import numpy as np
 
@@ -40,6 +38,9 @@ class SpectrumCanvas(BaseCanvas):
 
         # Y Tick labels should be always positive
         self.axes.yaxis.set_major_formatter(FuncFormatter(lambda x, pos: f'{abs(x):.0f}'))
+
+        # Place X minor ticks
+        self.axes.xaxis.set_minor_locator(AutoMinorLocator())
 
     def _set_data(self, type_, data, label=None):
         self.axes.clear()

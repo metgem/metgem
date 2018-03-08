@@ -54,6 +54,8 @@ class SpectrumNavigationToolbar(NavigationToolbar):
         self.toolitems = [t for t in self.toolitems if
                           t[0] in ('Home', 'Back', 'Forward', None, 'Pan', 'Zoom')]
 
+        self.toolitems.extend([('Reset', 'Reset data', 'reset', 'reset_data')])
+
         for i, item in enumerate(self.toolitems):
             if item[-1] is None:
                 continue
@@ -239,8 +241,9 @@ class SpectrumNavigationToolbar(NavigationToolbar):
         self._zoom_mode = 'x'  # pretend key=='x' to prevent Y axis range to change
         self.mouse_move(event)
 
-    def close_file(self):
-        self.canvas.closeFile()
+    def reset_data(self):
+        self.canvas.set_spectrum1(None)
+        self.canvas.set_spectrum2(None)
 
     def enterEvent(self, event):
         super().enterEvent(event)

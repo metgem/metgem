@@ -11,8 +11,8 @@ import igraph as ig
 from PyQt5.QtWidgets import (QDialog, QFileDialog,
                              QMessageBox, QWidget, QGraphicsRectItem,
                              QMenu, QToolButton, QActionGroup,
-                             QAction, QDockWidget)
-from PyQt5.QtCore import QSettings, Qt, QPointF, QSignalMapper
+                             QAction, QDockWidget, QWIDGETSIZE_MAX)
+from PyQt5.QtCore import QSettings, Qt, QPointF, QSignalMapper, QSize, QPropertyAnimation, QEasingCurve
 from PyQt5.QtGui import QPainter, QImage
 from PyQt5 import uic
 
@@ -67,6 +67,13 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         # Activate first tab of tab widget
         self.tabWidget.setCurrentIndex(0)
+
+        # Create a corner button to hide/show pages of tab widget
+        w = QToolButton(self)
+        w.setArrowType(Qt.DownArrow)
+        w.setIconSize(QSize(12, 12))
+        w.setAutoRaise(True)
+        self.tabWidget.setCornerWidget(w, Qt.TopRightCorner)
 
         # Assigning cosine computation and visualization default options
         self.options = utils.AttrDict({'cosine': workers.CosineComputationOptions(),
@@ -169,6 +176,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self._mapper.mapped[str].connect(self.openVisualizationDialog)
 
         self.tabWidget.currentChanged.connect(self.on_current_tab_changed)
+        self.tabWidget.cornerWidget(Qt.TopRightCorner).clicked.connect(self.on_show_tabwidget)
 
         # Add a menu to show/hide toolbars
         popup_menu = self.createPopupMenu()
@@ -231,9 +239,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 else:
                     self.cvSpectrum.set_spectrum1(data, node.label)
                 # Show spectrum tab
-                for index in range(self.tabWidget.count()):
-                    if self.tabWidget.tabText(index) == "Spectra":
-                        self.tabWidget.setCurrentIndex(index)
+                self.tabWidget.setCurrentIndex(self.tabWidget.indexOf(self.cvSpectrum))
 
     def selectFirstNeighbors(self, items):
         view = self.currentView
@@ -257,10 +263,19 @@ class MainWindow(MainWindowBase, MainWindowUI):
             item.hide()
 
     def on_current_tab_changed(self, index):
-        if self.tabWidget.tabText(index) == "Spectra":
+        if index == self.tabWidget.indexOf(self.cvSpectrum):
             self.tbSpectrum.setVisible(True)
         else:
             self.tbSpectrum.setVisible(False)
+
+    def on_show_tabwidget(self):
+        w = self.tabWidget.cornerWidget(Qt.TopRightCorner)
+        if w.arrowType() == Qt.DownArrow:
+            w.setArrowType(Qt.UpArrow)
+            self.tabWidget.setMaximumHeight(self.tabWidget.tabBar().height())
+        else:
+            w.setArrowType(Qt.DownArrow)
+            self.tabWidget.setMaximumHeight(QWIDGETSIZE_MAX)
 
     def switchFullScreen(self):
         if not self.isFullScreen():
