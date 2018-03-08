@@ -29,7 +29,7 @@ excludes.extend(['FixTk', 'tcl', 'tk', '_tkinter', 'tkinter', 'Tkinter', 'matplo
 excludes.extend(['lib2to3'])
 
 # Add some useful folders to path
-if sys.platform == 'win32':
+if sys.platform.startswith('win'):
     pathex.append(r'Lib\site-packages\scipy\extra-dll')
 
 # Gather data files
@@ -38,7 +38,7 @@ datas = [('../LICENSE', ''),
          ('../lib/ui/*.ui', 'lib/ui'),
          ('../lib/ui/images/*', 'lib/ui/images'),
          ('../lib/ui/widgets/*.ui', 'lib/ui/widgets')]
-if sys.platform != 'darwin':
+if not sys.platform.startswith('darwin'):
     datas.extend([('../examples/*', 'examples')])
          
 # Get Qt styles dll
@@ -46,7 +46,7 @@ binaries.extend(qt_plugins_binaries('styles', namespace='PyQt5'))
 
 # Adds Qt OpenGL
 hiddenimports.extend(['PyQt5.QtOpenGL'])
-if sys.platform == 'win32':
+if sys.platform.startswith('win'):
     binaries.extend([(os.path.join(os.path.dirname(get_module_file_attribute('PyQt5')), 'Qt', 'bin', dll), r'PyQt5\Qt\bin')
                       for dll in ('libEGL.dll', 'libGLESv2.dll')])
     
@@ -101,7 +101,7 @@ coll = COLLECT(exe,
                upx=False,
                name='gui')
                
-if sys.platform == 'darwin':
+if sys.platform.startswith('darwin'):
     app = BUNDLE(coll,
                  name='gui.app',
                  icon='main.icns',

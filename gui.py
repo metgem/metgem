@@ -5,6 +5,8 @@ import os
 import traceback
 import json
 
+from requests import ConnectionError
+
 import numpy as np
 import igraph as ig
 
@@ -25,14 +27,17 @@ if getattr(sys, 'frozen', False):
 DEBUG = os.getenv('DEBUG_MODE', 'false').lower() in ('true', '1')
 EMBED_JUPYTER = os.getenv('EMBED_JUPYTER', 'false').lower() in ('true', '1')
 
-if sys.platform == 'win32':
+if sys.platform.startswith('win'):
     LOG_PATH = os.path.expandvars(r'%APPDATA%\tsne-network\log')
     DATABASES_PATH = os.path.expandvars(r'%APPDATA%\tsne-network\databases')
-elif sys.platform == 'darwin':
+elif sys.platform.startswith('darwin'):
     LOG_PATH = os.path.expanduser('~/Library/Logs/tsne-network/log')
     DATABASES_PATH = os.path.expanduser(r'~/Library/tsne-network/databases')
+elif sys.platform.startswith('linux'):
+    LOG_PATH = os.path.expanduser('~/.config/tsne-network/log')
+    DATABASES_PATH = os.path.expanduser(r'~/.config/tsne-network/databases')
 else:
-    LOG_PATH = 'log'  # TODO: find better place for linux and os x
+    LOG_PATH = 'log'
     DATABASES_PATH = 'databases'
 
 MainWindowUI, MainWindowBase = uic.loadUiType(MAIN_UI_FILE, from_imports='lib.ui', import_from='lib.ui')
@@ -696,7 +701,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def exportToCytoscape(self):
         try:
             from py2cytoscape.data.cyrest_client import CyRestClient
-            from requests import ConnectionError
 
             cy = CyRestClient()
 

@@ -50,7 +50,7 @@ class OpenFileDialog(OpenFileDialogBase, OpenFileDialogUI):
         # Set completer for input files
         for edit in (self.editProcessFile, self.editMetadataFile):
             completer = QCompleter(edit)
-            if sys.platform == 'win32':
+            if sys.platform.startswith('win'):
                 completer.setCaseSensitivity(Qt.CaseInsensitive)
             model = QFileSystemModel(completer)
             model.setFilter(QDir.AllDirs | QDir.Files | QDir.NoDotAndDotDot)

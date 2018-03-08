@@ -8,7 +8,7 @@ from invoke import task, call
 DIST = 'dist'
 NAME = 'gui'
 
-if sys.platform == 'win32':
+if sys.platform.startswith('win'):
     WINDOWS_BIN_URL = 'https://mycore.core-cloud.net/index.php/s/2z4z9phDvxplWiE/download'
 
     import urllib.request
@@ -40,12 +40,12 @@ def check_dependencies(ctx, build=False):
     if build:
         dependencies.append('pyinstaller>=3.3')
 
-        if sys.platform == 'darwin':
+        if sys.platform.startswith('darwin'):
             dependencies.append('dmgbuild>=1.3')
 
     pkg_resources.require(dependencies)
 
-    if sys.platform == 'win32' and not os.path.exists('bin'):
+    if sys.platform.startswith('win') and not os.path.exists('bin'):
         print('Download binaries needed for build...', end='\t')
         download_file(WINDOWS_BIN_URL, 'bin.zip')
         extract_zip('bin.zip')
@@ -63,7 +63,7 @@ def clean(ctx, dist=False, bytecode=False, extra=''):
     if extra:
         patterns.append(extra)
     for pattern in patterns:
-        if sys.platform == 'win32':
+        if sys.platform.startswith('win'):
             ctx.run("del /s /q {}".format(pattern))
         else:
             ctx.run("rm -rf {}".format(pattern))
@@ -78,9 +78,9 @@ def build(ctx, clean=False):
 
 @task(check_dependencies)
 def icon(ctx):
-    if sys.platform == 'win32':
+    if sys.platform.startswith('win'):
         ctx.run("bin\ImageMagick\convert.exe -density 384 -background transparent ../lib/ui/images/main.svg -define icon:auto-resize -colors 256 main.ico")
-    elif sys.platform == 'darwin':
+    elif sys.platform.startswith('darwin'):
         ctx.run("./make_icns.sh ../lib/ui/images/main.svg")
 
 
@@ -94,29 +94,29 @@ def exe(ctx, clean=False):
     switchs = "--clean" if clean else ""
     result = ctx.run("pyinstaller gui.spec --noconfirm" + " " + switchs)
     if result:
-        if sys.platform == 'win32':
+        if sys.platform.startswith('win'):
             replace_icon(ctx)
             replace_manifest(ctx)
 
 
 @task(check_dependencies)
 def replace_icon(ctx):
-    if sys.platform == 'win32':
+    if sys.platform.startswith('win'):
         ctx.run("bin\ResHacker\ResourceHacker.exe -open {0}\{1}\{1}.exe -save {0}\{1}\{1}.exe -action delete -mask ICONGROUP,101, -log CONSOLE".format(DIST, NAME))
         ctx.run("bin\ResHacker\ResourceHacker.exe -open {0}\{1}\{1}.exe -save {0}\{1}\{1}.exe -resource main.ico -action addoverwrite -mask ICONGROUP,101, -log CONSOLE".format(DIST, NAME))
 
 
 @task(check_dependencies)
 def replace_manifest(ctx):
-    if sys.platform == 'win32':
+    if sys.platform.startswith('win'):
         ctx.run("bin\ResHacker\ResourceHacker.exe -open {0}\{1}\{1}.exe -save {0}\{1}\{1}.exe -resource {0}\{1}\{1}.exe.manifest -action add -mask MANIFEST,1, -log CONSOLE".format(DIST, NAME))
         ctx.run("del {0}\{1}\{1}.exe.manifest".format(DIST, NAME))
 
 
 @task(check_dependencies)
 def installer(ctx):
-    if sys.platform == 'win32':
+    if sys.platform.startswith('win'):
         ctx.run("bin\InnoSetup\ISCC.exe setup.iss")
-    elif sys.platform == 'darwin':
+    elif sys.platform.startswith('darwin'):
         ctx.run("dmgbuild -s dmgbuild_settings.py '' XXX.dmg")
 
