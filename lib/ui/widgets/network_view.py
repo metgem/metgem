@@ -420,9 +420,9 @@ class GraphTableModel(QAbstractTableModel):
 
         if role in (Qt.DisplayRole, Qt.EditRole):
             if self._type == GraphTableModel.EdgesModelType:
-                return str(self.parent().graph.es[self.attributes[column]][row])
+                return self.parent().graph.es[self.attributes[column]][row]
             else:
-                return str(self.parent().graph.vs[self.attributes[column]][row])
+                return self.parent().graph.vs[self.attributes[column]][row]
         
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if role == Qt.DisplayRole and orientation == Qt.Horizontal:
