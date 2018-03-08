@@ -1,4 +1,5 @@
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QDialogButtonBox
+from PyQt5.QtCore import Qt
 
 if __name__ == '__main__':
     from widgets import TSNEOptionWidget, NetworkOptionWidget
@@ -11,6 +12,7 @@ class BaseOptionDialog(QDialog):
         super().__init__(*args, **kwargs)
         
         self.setWindowTitle('Options')
+        self.setWindowFlags(Qt.Tool | Qt.CustomizeWindowHint | Qt.WindowCloseButtonHint)
         
         layout = QVBoxLayout()   
         

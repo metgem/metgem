@@ -6,12 +6,13 @@ class BaseWorker(QObject):
     canceled = pyqtSignal()
     updated = pyqtSignal(int)
     error = pyqtSignal(Exception)
-    
-    def __init__(self):
+
+    def __init__(self, track_progress=True):
         super().__init__()
         
         self._should_stop = False
         self._result = None
+        self.track_progress = track_progress
         
     
     def run(self):

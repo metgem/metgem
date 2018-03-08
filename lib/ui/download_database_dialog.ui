@@ -9,12 +9,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>467</width>
+    <width>472</width>
     <height>529</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Download databases</string>
+  </property>
+  <property name="modal">
+   <bool>true</bool>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -75,6 +78,30 @@
       </widget>
      </item>
      <item>
+      <widget class="QFrame" name="frame">
+       <property name="frameShape">
+        <enum>QFrame::VLine</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Raised</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="btRefresh">
+       <property name="toolTip">
+        <string>Refresh list</string>
+       </property>
+       <property name="text">
+        <string>...</string>
+       </property>
+       <property name="icon">
+        <iconset resource="ui.qrc">
+         <normaloff>:/icons/images/refresh.svg</normaloff>:/icons/images/refresh.svg</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
       <spacer name="horizontalSpacer_2">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -90,7 +117,11 @@
     </layout>
    </item>
    <item>
-    <widget class="QListWidget" name="lstDatabases"/>
+    <widget class="LoadingListWidget" name="lstDatabases">
+     <property name="sortingEnabled">
+      <bool>true</bool>
+     </property>
+    </widget>
    </item>
    <item>
     <widget class="QLabel" name="labelDesc">
@@ -159,6 +190,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>LoadingListWidget</class>
+   <extends>QListWidget</extends>
+   <header>lib/ui/widgets.h</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="ui.qrc"/>
  </resources>
@@ -170,8 +208,8 @@
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>248</x>
-     <y>254</y>
+     <x>254</x>
+     <y>522</y>
     </hint>
     <hint type="destinationlabel">
      <x>157</x>
@@ -186,8 +224,8 @@
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>316</x>
-     <y>260</y>
+     <x>322</x>
+     <y>522</y>
     </hint>
     <hint type="destinationlabel">
      <x>286</x>

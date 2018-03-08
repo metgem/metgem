@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="icons">
+    <file>images/download-package.svg</file>
     <file>images/new.svg</file>
     <file>images/select-invert.svg</file>
     <file>images/select-all.svg</file>

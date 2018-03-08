@@ -61,45 +61,55 @@ class WorkerSet(set):
     def parent(self):
         return self._parent
 
-    def _pre_add(self):
+    def show_progressbar(self):
         if not self:  # dict is empty, so we are going to create the first entry. Show the progress bar
             if hasattr(self.parent(), 'statusBar'):
                 self.parent().statusBar().addPermanentWidget(self.parent().widgetProgress)
             self.parent().widgetProgress.setVisible(True)
 
-    def _post_add(self, worker):
-        thread = QThread(self.parent())
-        worker.moveToThread(thread)
-        self.parent().btCancelProcess.pressed.connect(lambda: worker.stop())
-        # remove_worker = lambda: self.remove(worker)
-        worker.finished.connect(lambda: self.remove(worker))
-        worker.canceled.connect(lambda: self.remove(worker))
-        worker.error.connect(lambda: self.remove(worker))
-        thread.started.connect(worker.run)
-        thread.start()
-
-    def _pre_remove(self, worker):
-        pass
-
-    def _post_remove(self):
+    def hide_progressbar(self):
         if not self:  # dict is now empty, hide the progress bar
             self.parent().widgetProgress.setVisible(False)
             if hasattr(self.parent(), 'statusBar'):
                 self.parent().statusBar().removeWidget(self.parent().widgetProgress)
 
+    def connect_events(self, worker):
+        thread = QThread(self.parent())
+        worker.moveToThread(thread)
+
+        self.parent().btCancelProcess.pressed.connect(lambda: worker.stop())
+        worker.finished.connect(lambda: self.remove(worker))
+        worker.canceled.connect(lambda: self.remove(worker))
+        worker.error.connect(lambda: self.remove(worker))
+        thread.started.connect(worker.run)
+
+        thread.start()
+
     def add(self, worker):
-        self._pre_add()
+        if worker.track_progress:
+            self.show_progressbar()
+
         super().add(worker)
-        self._post_add(worker)
+
+        self.connect_events(worker)
 
     def update(self, workers):
-        self._pre_add()
-        super().update(workers)
+        show_progress = False
         for worker in workers:
-            self._post_add(worker)
+            if worker.track_progress:
+                show_progress = True
+                break
+        if show_progress:
+            self.show_progressbar()
+
+        super().update(workers)
+
+        for worker in workers:
+            self.connect_events(worker)
 
     def remove(self, worker):
         if worker in self:
-            self._pre_remove(worker)
             super().remove(worker)
-            self._post_remove()
+
+            if worker.track_progress:
+                self.hide_progressbar()

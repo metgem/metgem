@@ -17,6 +17,9 @@ class ListGNPSDatabasesWorker(BaseWorker):
 
     updated = pyqtSignal(dict)
 
+    def __init__(self):
+        super().__init__(track_progress=False)
+
     def run(self):
         items = []
 
@@ -52,7 +55,7 @@ class ListGNPSDatabasesWorker(BaseWorker):
 class GetGNPSDatabasesMtimeWorker(BaseWorker):
 
     def __init__(self, ids):
-        super().__init__()
+        super().__init__(track_progress=False)
         self.ids = ids
 
     def run(self):

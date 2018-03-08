@@ -11,6 +11,7 @@ from PyQt5 import uic
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'download_database_dialog.ui')
 
+from .widgets import AutoToolTipItemDelegate
 from ..database import DataBaseBuilder
 from ..utils import WorkerSet
 from ..workers import ListGNPSDatabasesWorker, DownloadGNPSDatabasesWorker, GetGNPSDatabasesMtimeWorker
@@ -29,34 +30,26 @@ class DownloadDatabaseDialog(DownloadDatabaseDialogUI, DownloadDatabaseDialogBas
         self.base_path = base_path
 
         self.setupUi(self)
-        self.widgetProgress.setVisible(False)
+        self.setWindowFlags(Qt.Tool | Qt.CustomizeWindowHint  | Qt.WindowCloseButtonHint)
+        self.widgetProgress.hide()
 
         self.lstDatabases.setIconSize(QSize(12, 12))
+        self.lstDatabases.setFocus()
+        self.lstDatabases.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.lstDatabases.setItemDelegate(AutoToolTipItemDelegate())
 
         self._workers = WorkerSet(self)
         self._mtimes = None
 
         # Add download button
         self.btDownload = self.buttonBox.addButton("&Download", QDialogButtonBox.ActionRole)
+        self.btDownload.setIcon(QIcon(":/icons/images/download-package.svg"))
+        self.btDownload.setEnabled(False)
 
-        # Create worker to populate list and start it
-        def update_list(dict_item):
-            item = QListWidgetItem(dict_item['name'])
-            item.setToolTip(dict_item['name'])
-            item.setCheckState(Qt.Unchecked)
-            item.setData(DownloadDatabaseDialog.IDS_ROLE, dict_item['ids'])
-            item.setData(DownloadDatabaseDialog.DESC_ROLE, dict_item['desc'])
-            self.lstDatabases.addItem(item)
-
-        def process_finished():
-            worker = self.prepare_get_mtimes_worker()
-            self._workers.add(worker)
-
-        worker = ListGNPSDatabasesWorker()
-        worker.updated.connect(update_list)
-        worker.error.connect(self.on_error)
-        worker.finished.connect(process_finished)
-        self._workers.add(worker)
+        # Set Close button as default
+        btClose = self.buttonBox.button(QDialogButtonBox.Close)
+        if btClose is not None:
+            btClose.setDefault(True)
 
         # Connect events
         self._mapper = QSignalMapper(self)
@@ -69,7 +62,41 @@ class DownloadDatabaseDialog(DownloadDatabaseDialogUI, DownloadDatabaseDialogBas
         self._mapper.mapped[str].connect(self.select)
 
         self.lstDatabases.currentItemChanged.connect(self.update_description)
+        self.lstDatabases.itemChanged.connect(self.check_selection)
         self.btDownload.clicked.connect(self.download_databases)
+        self.btRefresh.clicked.connect(self.refresh_list)
+
+        self.refresh_list()
+
+    def refresh_list(self):
+        self.btRefresh.setEnabled(False)
+        self.lstDatabases.clear()
+        self.lstDatabases.setLoading(True)
+
+        worker = self.prepare_populate_list_worker()
+        self._workers.add(worker)
+
+    def prepare_populate_list_worker(self):
+        # Create worker to populate list and start it
+        def update_list(dict_item):
+            item = QListWidgetItem(dict_item['name'])
+            item.setCheckState(Qt.Unchecked)
+            item.setData(DownloadDatabaseDialog.IDS_ROLE, dict_item['ids'])
+            item.setData(DownloadDatabaseDialog.DESC_ROLE, dict_item['desc'])
+            self.lstDatabases.addItem(item)
+
+        def process_finished():
+            self.lstDatabases.setLoading(False)
+            self.btRefresh.setEnabled(True)
+            worker = self.prepare_get_mtimes_worker()
+            self._workers.add(worker)
+
+        worker = ListGNPSDatabasesWorker()
+        worker.updated.connect(update_list)
+        worker.error.connect(self.on_error)
+        worker.finished.connect(process_finished)
+
+        return worker
 
     def prepare_get_mtimes_worker(self):
         def process_finished():
@@ -110,6 +137,17 @@ class DownloadDatabaseDialog(DownloadDatabaseDialogUI, DownloadDatabaseDialogBas
                  if item.data(DownloadDatabaseDialog.IDS_ROLE) is not None]
         return ids
 
+    def check_selection(self, item):
+        if item.checkState():
+            self.btDownload.setEnabled(True)
+        else:
+            enabled = False
+            for i in range(self.lstDatabases.count()):
+                if self.lstDatabases.item(i).checkState():
+                    enabled = True
+                    break
+            self.btDownload.setEnabled(enabled)
+
     def update_description(self, current, previous):
         desc = current.data(DownloadDatabaseDialog.DESC_ROLE)
         self.labelDesc.setText(desc)
@@ -134,7 +172,16 @@ class DownloadDatabaseDialog(DownloadDatabaseDialogUI, DownloadDatabaseDialogBas
                     else:
                         item.setIcon(QIcon(":/icons/images/new.svg"))
 
+    def setEnabled(self, enabled):
+        self.lstDatabases.setEnabled(enabled)
+        self.btDownload.setEnabled(enabled)
+        self.btSelectAll.setEnabled(enabled)
+        self.btSelectNone.setEnabled(enabled)
+        self.btSelectInvert.setEnabled(enabled)
+
     def download_databases(self):
+        self.setEnabled(False)
+
         if not os.path.exists(self.base_path):
             os.makedirs(self.base_path)
 
@@ -151,12 +198,17 @@ class DownloadDatabaseDialog(DownloadDatabaseDialogUI, DownloadDatabaseDialogBas
         def update_progress(i):
             self.progressBar.setValue(self.progressBar.value() + i)
 
+        def clean_up():
+            self.setEnabled(True)
+            self.update_badges()
+
         self.progressBar.setValue(0)
         worker = DownloadGNPSDatabasesWorker(ids, self.base_path)
         worker.filesizes_ready.connect(update_filesizes)
         worker.updated.connect(update_progress)
         worker.error.connect(self.on_error)
-        worker.finished.connect(self.update_badges)
+        worker.finished.connect(clean_up)
+        worker.canceled.connect(clean_up)
         self._workers.add(worker)
 
         # self.convert_databases()
