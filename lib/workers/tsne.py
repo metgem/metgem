@@ -3,7 +3,7 @@ import io
 
 from sklearn.manifold import TSNE
 
-from .base_worker import BaseWorker
+from .base import BaseWorker
 from ..utils import AttrDict
 from ..errors import UserRequestedStopError
 

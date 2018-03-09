@@ -62,6 +62,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         # Setup User interface
         self.setupUi(self)
+        self.gvNetwork.setFocus()
 
         # Add toolbar for spectrum
         self.tbSpectrum = ui.widgets.SpectrumNavigationToolbar(self.cvSpectrum, self)
@@ -141,47 +142,47 @@ class MainWindow(MainWindowBase, MainWindowUI):
             kernel_manager.kernel.shell.push({'app': app, 'win': self})
 
         # Connect events
-        self.gvNetwork.scene().selectionChanged.connect(self.onSelectionChanged)
-        self.gvTSNE.scene().selectionChanged.connect(self.onSelectionChanged)
-        self.gvNetwork.showSpectrumTriggered.connect(lambda node: self.showSpectrum('show', node))
-        self.gvTSNE.showSpectrumTriggered.connect(lambda node: self.showSpectrum('show', node))
-        self.gvNetwork.compareSpectrumTriggered.connect(lambda node: self.showSpectrum('compare', node))
-        self.gvTSNE.compareSpectrumTriggered.connect(lambda node: self.showSpectrum('compare', node))
+        self.gvNetwork.scene().selectionChanged.connect(self.on_scene_selection_changed)
+        self.gvTSNE.scene().selectionChanged.connect(self.on_scene_selection_changed)
+        self.gvNetwork.showSpectrumTriggered.connect(lambda node: self.on_show_spectrum_triggered('show', node))
+        self.gvTSNE.showSpectrumTriggered.connect(lambda node: self.on_show_spectrum_triggered('show', node))
+        self.gvNetwork.compareSpectrumTriggered.connect(lambda node: self.on_show_spectrum_triggered('compare', node))
+        self.gvTSNE.compareSpectrumTriggered.connect(lambda node: self.on_show_spectrum_triggered('compare', node))
 
         self.actionQuit.triggered.connect(self.close)
-        self.actionAbout.triggered.connect(self.showAbout)
-        self.actionAboutQt.triggered.connect(self.showAboutQt)
-        self.actionProcessFile.triggered.connect(self.showOpenFileDialog)
-        self.actionZoomIn.triggered.connect(lambda: self.currentView.scaleView(1.2))
-        self.actionZoomOut.triggered.connect(lambda: self.currentView.scaleView(1 / 1.2))
-        self.actionZoomToFit.triggered.connect(self.currentView.zoomToFit)
+        self.actionAbout.triggered.connect(self.on_about_triggered)
+        self.actionAboutQt.triggered.connect(self.on_about_qt_triggered)
+        self.actionProcessFile.triggered.connect(self.on_process_file_triggered)
+        self.actionZoomIn.triggered.connect(lambda: self.current_view.scaleView(1.2))
+        self.actionZoomOut.triggered.connect(lambda: self.current_view.scaleView(1 / 1.2))
+        self.actionZoomToFit.triggered.connect(self.current_view.zoomToFit)
         self.actionZoomSelectedRegion.triggered.connect(
-            lambda: self.currentView.fitInView(self.currentView.scene().selectionArea().boundingRect(),
-                                               Qt.KeepAspectRatio))
-        self.leSearch.textChanged.connect(self.doSearch)
-        self.actionOpen.triggered.connect(self.openProject)
-        self.actionSave.triggered.connect(self.saveProject)
-        self.actionSaveAs.triggered.connect(self.saveProjectAs)
+            lambda: self.current_view.fitInView(self.current_view.scene().selectionArea().boundingRect(),
+                                                Qt.KeepAspectRatio))
+        self.leSearch.textChanged.connect(self.on_search_text_changed)
+        self.actionOpen.triggered.connect(self.on_open_project_triggered)
+        self.actionSave.triggered.connect(self.on_save_project_triggered)
+        self.actionSaveAs.triggered.connect(self.on_save_project_as_triggered)
 
-        self.actionFullScreen.triggered.connect(self.switchFullScreen)
-        self.actionHideSelected.triggered.connect(lambda: self.hideItems(self.currentView.scene().selectedItems()))
-        self.actionShowAll.triggered.connect(lambda: self.showItems(self.currentView.scene().items()))
+        self.actionFullScreen.triggered.connect(self.on_full_screen_triggered)
+        self.actionHideSelected.triggered.connect(lambda: self.hide_items(self.current_view.scene().selectedItems()))
+        self.actionShowAll.triggered.connect(lambda: self.show_items(self.current_view.scene().items()))
         self.actionNeighbors.triggered.connect(
-            lambda: self.selectFirstNeighbors(self.currentView.scene().selectedItems()))
-        self.actionExportToCytoscape.triggered.connect(self.exportToCytoscape)
-        self.actionExportAsImage.triggered.connect(self.exportAsImage)
+            lambda: self.on_select_first_neighbors_triggered(self.current_view.scene().selectedItems()))
+        self.actionExportToCytoscape.triggered.connect(self.on_export_to_cytoscape_triggered)
+        self.actionExportAsImage.triggered.connect(self.on_export_as_image_triggered)
 
-        self.actionDownloadDatabases.triggered.connect(self.openDownloadDatabasesDialog)
+        self.actionDownloadDatabases.triggered.connect(self.on_download_databases_triggered)
 
         self._mapper = QSignalMapper(self)
         self.btNetworkOptions.clicked.connect(self._mapper.map)
         self._mapper.setMapping(self.btNetworkOptions, 'network')
         self.btTSNEOptions.clicked.connect(self._mapper.map)
         self._mapper.setMapping(self.btTSNEOptions, 't-sne')
-        self._mapper.mapped[str].connect(self.openVisualizationDialog)
+        self._mapper.mapped[str].connect(self.on_edit_options_triggered)
 
         self.tabWidget.currentChanged.connect(self.on_current_tab_changed)
-        self.tabWidget.cornerWidget(Qt.TopRightCorner).clicked.connect(self.on_show_tabwidget)
+        self.tabWidget.cornerWidget(Qt.TopRightCorner).clicked.connect(self.minimize_tabwidget)
 
         # Add a menu to show/hide toolbars
         popup_menu = self.createPopupMenu()
@@ -189,7 +190,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.menuView.addMenu(popup_menu)
 
         # Build research bar
-        self.updateSearchBar()
+        self.update_search_menu()
 
     @property
     def window_title(self):
@@ -217,92 +218,38 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self._has_unsaved_changes = value
 
     @property
-    def currentView(self):
+    def current_view(self):
         for view in (self.gvNetwork, self.gvTSNE):
             if view.hasFocus():
                 return view
         return self.gvNetwork
 
+    def update_search_menu(self):
+        menu = QMenu(self)
+        group = QActionGroup(menu, exclusive=True)
+
+        model = self.tvNodes.model()
+
+        for index in range(model.columnCount() + 1):
+            text = "All" if index == 0 else model.headerData(index - 1, Qt.Horizontal, Qt.DisplayRole)
+            action = group.addAction(QAction(str(text), checkable=True))
+            action.setData(index)
+            menu.addAction(action)
+            if index == 0:
+                action.setChecked(True)
+                menu.addSeparator()
+
+        self.btSearch.setMenu(menu)
+        self.btSearch.setPopupMode(QToolButton.InstantPopup)
+        group.triggered.connect(lambda: self.tvNodes.model().setFilterKeyColumn(action.data()-1))
+        self.tvNodes.model().setFilterKeyColumn(-1)
+
     def keyPressEvent(self, event):
         key = event.key()
 
         if key == Qt.Key_M:  # Show/hide minimap
-            view = self.currentView
+            view = self.current_view
             view.minimap.setVisible(not view.minimap.isVisible())
-
-    def showSpectrum(self, type_, node):
-        if self.network.spectra is not None:
-            try:
-                data = self.network.spectra[node.index].human_readable_data
-            except KeyError:
-                dialog = QDialog(self)
-                dialog.warning(self, None, 'Selected spectrum does not exists.')
-            else:
-                # Set data as first or second spectrum
-                if type_ == 'compare':
-                    self.cvSpectrum.set_spectrum2(data, node.label)
-                else:
-                    self.cvSpectrum.set_spectrum1(data, node.label)
-                # Show spectrum tab
-                self.tabWidget.setCurrentIndex(self.tabWidget.indexOf(self.cvSpectrum))
-
-    def selectFirstNeighbors(self, items):
-        view = self.currentView
-        for item in items:
-            if item.Type == ui.Node.Type:
-                for v in self.graph.vs[item.index].neighbors():
-                    try:
-                        if view == self.gvNetwork:
-                            v['__network_gobj'].setSelected(True)
-                        elif view == self.gvTSNE:
-                            v['__tsne_gobj'].setSelected(True)
-                    except (KeyError, AttributeError):
-                        pass
-
-    def showItems(self, items):
-        for item in items:
-            item.show()
-
-    def hideItems(self, items):
-        for item in items:
-            item.hide()
-
-    def on_current_tab_changed(self, index):
-        if index == self.tabWidget.indexOf(self.cvSpectrum):
-            self.tbSpectrum.setVisible(True)
-        else:
-            self.tbSpectrum.setVisible(False)
-
-    def on_show_tabwidget(self):
-        w = self.tabWidget.cornerWidget(Qt.TopRightCorner)
-        if w.arrowType() == Qt.DownArrow:
-            w.setArrowType(Qt.UpArrow)
-            self.tabWidget.setMaximumHeight(self.tabWidget.tabBar().height())
-            self.tabWidget.setDocumentMode(True)
-        else:
-            w.setArrowType(Qt.DownArrow)
-            self.tabWidget.setDocumentMode(False)
-            self.tabWidget.setMaximumHeight(QWIDGETSIZE_MAX)
-
-    def switchFullScreen(self):
-        if not self.isFullScreen():
-            self.setWindowFlags(Qt.Window)
-            self.showFullScreen()
-        else:
-            self.setWindowFlags(Qt.Widget)
-            self.showNormal()
-
-    def showAbout(self):
-        dialog = QMessageBox(self)
-        message = (f'Version: {QCoreApplication.applicationVersion()}',
-                   '',
-                   'Should say something here.')
-        dialog.about(self, f'About {QCoreApplication.applicationName()}',
-                     '\n'.join(message))
-
-    def showAboutQt(self):
-        dialog = QMessageBox(self)
-        dialog.aboutQt(self)
 
     def showEvent(self, event):
         self.load_settings()
@@ -322,6 +269,308 @@ class MainWindow(MainWindowBase, MainWindowUI):
         else:
             event.ignore()
 
+    def on_current_tab_changed(self, index):
+        if index == self.tabWidget.indexOf(self.cvSpectrum):
+            self.tbSpectrum.setVisible(True)
+        else:
+            self.tbSpectrum.setVisible(False)
+
+    def on_scene_selection_changed(self):
+        view = self.current_view
+        items = view.scene().selectedItems()
+        nodes_idx, edges_idx = [], []
+        for item in items:
+            if item.Type == ui.Node.Type:
+                nodes_idx.append(item.index)
+            elif item.Type == ui.Edge.Type:
+                edges_idx.append(item.index)
+        self.tvNodes.model().setSelection(nodes_idx)
+        self.tvEdges.model().setSelection(edges_idx)
+
+        if self.actionLinkViews.isChecked():
+            if view == self.gvNetwork:
+                self.gvTSNE.scene().selectionChanged.disconnect()
+                self.gvTSNE.scene().clearSelection()
+                try:
+                    for idx in nodes_idx:
+                        self.graph.vs['__tsne_gobj'][idx].setSelected(True)
+                except (KeyError, AttributeError, RuntimeError):
+                    pass
+                self.gvTSNE.scene().selectionChanged.connect(self.on_scene_selection_changed)
+            elif view == self.gvTSNE:
+                self.gvNetwork.scene().selectionChanged.disconnect()
+                self.gvNetwork.scene().clearSelection()
+                try:
+                    for idx in nodes_idx:
+                        self.graph.vs['__network_gobj'][idx].setSelected(True)
+                    for idx in edges_idx:
+                        self.graph.es['__network_gobj'][idx].setSelected(True)
+                except (KeyError, AttributeError, RuntimeError):
+                    pass
+                self.gvNetwork.scene().selectionChanged.connect(self.on_scene_selection_changed)
+
+    def on_search_text_changed(self, value):
+        self.tvNodes.model().setFilterRegExp(str(value))
+
+    def on_open_project_triggered(self):
+        dialog = QFileDialog(self)
+        dialog.setFileMode(QFileDialog.ExistingFile)
+        dialog.setNameFilters([f"{QCoreApplication.applicationName()} Files (*{config.FILE_EXTENSION})",
+                               "All files (*.*)"])
+        if dialog.exec_() == QDialog.Accepted:
+            filename = dialog.selectedFiles()[0]
+            worker = self.prepare_load_project_worker(filename)
+            if worker is not None:
+                self._workers.add(worker)
+
+    def on_save_project_triggered(self):
+        if self.fname is None:
+            self.saveProjectAs()
+        else:
+            worker = self.prepare_save_project_worker(self.fname)
+            if worker is not None:
+                self._workers.add(worker)
+
+    def on_save_project_as_triggered(self):
+        dialog = QFileDialog(self)
+        dialog.setAcceptMode(QFileDialog.AcceptSave)
+        dialog.setNameFilters([f"{QCoreApplication.applicationName()} Files (*{config.FILE_EXTENSION})",
+                               "All files (*.*)"])
+        if dialog.exec_() == QDialog.Accepted:
+            filename = dialog.selectedFiles()[0]
+            worker = self.prepare_save_project_worker(filename)
+            if worker is not None:
+                self._workers.add(worker)
+
+    def on_about_triggered(self):
+        dialog = QMessageBox(self)
+        message = (f'Version: {QCoreApplication.applicationVersion()}',
+                   '',
+                   'Should say something here.')
+        dialog.about(self, f'About {QCoreApplication.applicationName()}',
+                     '\n'.join(message))
+
+    def on_about_qt_triggered(self):
+        dialog = QMessageBox(self)
+        dialog.aboutQt(self)
+
+    def on_export_to_cytoscape_triggered(self):
+        try:
+            from py2cytoscape.data.cyrest_client import CyRestClient
+
+            cy = CyRestClient()
+
+            # Create exportable copy of the graph object
+            g = self.graph.copy()
+            for attr in g.vs.attributes():
+                if attr.startswith('__'):
+                    del g.vs[attr]
+                else:
+                    g.vs[attr] = [str(x) for x in g.vs[attr]]
+            for attr in g.es.attributes():
+                if attr.startswith('__'):
+                    del g.es[attr]
+                else:
+                    g.es[attr] = [str(x) for x in g.es[attr]]
+
+            # cy.session.delete()
+            g_cy = cy.network.create_from_igraph(g)
+
+            # cy.layout.apply(name='force-directed', network=g_cy)
+
+            layout = np.empty((g.vcount(), 2))
+            for item in self.current_view.scene().items():
+                if item.Type == ui.Node.Type:
+                    layout[item.index] = (item.x(), item.y())
+            positions = [(suid, x, y) for suid, (x, y) in zip(g_cy.get_nodes()[::-1], layout)]
+            cy.layout.apply_from_presets(network=g_cy, positions=positions)
+
+            with open('styles.json', 'r') as f:
+                style_js = json.load(f)
+            style = cy.style.create('cyREST style', style_js)
+            cy.style.apply(style, g_cy)
+        except (ConnectionRefusedError, ConnectionError):
+            dialog = QMessageBox()
+            dialog.information(self, None,
+                               'Please launch Cytoscape before trying to export.')
+        except ImportError:
+            dialog = QMessageBox()
+            dialog.information(self, None,
+                               'py2tocytoscape is required for this action (https://pypi.python.org/pypi/py2cytoscape).')
+        except FileNotFoundError:
+            dialog = QMessageBox()
+            dialog.warning(self, None,
+                           f'styles.json not found. You may have to reinstall {QCoreApplication.applicationName()}')
+
+        # for c in g_cy.get_view(g_cy.get_views()[0])['elements']['nodes']:
+        # pos = c['position']
+        # id_ = int(c['data']['id_original'])
+        # nodes[id_].setPos(QPointF(pos['x'], pos['y']))
+
+    def on_export_as_image_triggered(self):
+        filename, filter_ = QFileDialog.getSaveFileName(self, "Save image",
+                                                        filter=("SVG Files (*.svg);;BMP Files (*.bmp);;"
+                                                                "JPEG (*.JPEG);;PNG (*.png)"))
+        if filename:
+            if filter_ == 'SVG Files (*.svg)':
+                try:
+                    from PyQt5.QtSvg import QSvgGenerator
+                except ImportError:
+                    print('QtSvg was not found on your system. It is needed for SVG export.')
+                else:
+                    svg_gen = QSvgGenerator()
+
+                    svg_gen.setFileName(filename)
+                    svg_gen.setSize(self.size())
+                    svg_gen.setViewBox(self.scene().sceneRect())
+                    svg_gen.setTitle("SVG Generator Example Drawing")
+                    svg_gen.setDescription("An SVG drawing created by the SVG Generator.")
+
+                    painter = QPainter(svg_gen)
+                    self.current_view.scene().render(painter)
+                    painter.end()
+            else:
+                image = QImage(self.view.scene().sceneRect().size().toSize(), QImage.Format_ARGB32)
+                image.fill(Qt.transparent)
+
+                painter = QPainter(image)
+                self.current_view.scene().render(painter)
+                image.save(filename)
+
+    def on_show_spectrum_triggered(self, type_, node):
+        if self.network.spectra is not None:
+            try:
+                data = self.network.spectra[node.index].human_readable_data
+            except KeyError:
+                dialog = QDialog(self)
+                dialog.warning(self, None, 'Selected spectrum does not exists.')
+            else:
+                # Set data as first or second spectrum
+                if type_ == 'compare':
+                    self.cvSpectrum.set_spectrum2(data, node.label)
+                else:
+                    self.cvSpectrum.set_spectrum1(data, node.label)
+
+                # Show spectrum tab
+                self.tabWidget.setCurrentIndex(self.tabWidget.indexOf(self.cvSpectrum))
+
+    def on_select_first_neighbors_triggered(self, items):
+        view = self.current_view
+        for item in items:
+            if item.Type == ui.Node.Type:
+                for v in self.graph.vs[item.index].neighbors():
+                    try:
+                        if view == self.gvNetwork:
+                            v['__network_gobj'].setSelected(True)
+                        elif view == self.gvTSNE:
+                            v['__tsne_gobj'].setSelected(True)
+                    except (KeyError, AttributeError):
+                        pass
+
+    def show_items(self, items):
+        for item in items:
+            item.show()
+
+    def hide_items(self, items):
+        for item in items:
+            item.hide()
+
+    def minimize_tabwidget(self):
+        w = self.tabWidget.cornerWidget(Qt.TopRightCorner)
+        if w.arrowType() == Qt.DownArrow:
+            w.setArrowType(Qt.UpArrow)
+            self.tabWidget.setMaximumHeight(self.tabWidget.tabBar().height())
+            self.tabWidget.setDocumentMode(True)
+        else:
+            w.setArrowType(Qt.DownArrow)
+            self.tabWidget.setDocumentMode(False)
+            self.tabWidget.setMaximumHeight(QWIDGETSIZE_MAX)
+
+    def on_full_screen_triggered(self):
+        if not self.isFullScreen():
+            self.setWindowFlags(Qt.Window)
+            self.showFullScreen()
+        else:
+            self.setWindowFlags(Qt.Widget)
+            self.showNormal()
+
+    def on_process_file_triggered(self):
+        dialog = ui.OpenFileDialog(self, options=self.options)
+        if dialog.exec_() == QDialog.Accepted:
+            self.fname = None
+            self.has_unsaved_changes = True
+            self.gvNetwork.scene().clear()
+            self.gvTSNE.scene().clear()
+
+            process_file, metadata_file, compute_options, tsne_options, network_options = dialog.getValues()
+            self.options.cosine = compute_options
+            self.options.tsne = tsne_options
+            self.options.network = network_options
+
+            def file_read():
+                nonlocal worker
+                self.network.spectra = worker.result()
+                multiprocess = len(self.network.spectra) > 1000  # TODO: Tune this, arbitrary decision
+                worker = self.prepare_compute_scores_worker(self.network.spectra, multiprocess)
+                if worker is not None:
+                    worker.finished.connect(scores_computed)
+                    self._workers.add(worker)
+
+            def scores_computed():
+                self.network.scores = worker.result()
+                interactions = workers.generate_network(self.network.scores,
+                                                        self.network.spectra,
+                                                        self.options.network,
+                                                        use_self_loops=True)
+                self.network.infos = np.array([(spectrum.mz_parent,) for spectrum in self.network.spectra],
+                                              dtype=[('m/z parent', np.float32)])
+                self.create_graph(interactions)
+                self.draw(interactions=interactions)
+
+            worker = self.prepare_read_mgf_worker(process_file)
+            if worker is not None:
+                worker.finished.connect(file_read)
+                self._workers.add(worker)
+
+    def on_edit_options_triggered(self, type_):
+        if hasattr(self.network, 'scores'):
+            if type_ == 'network':
+                dialog = ui.EditNetworkOptionsDialog(self, options=self.options)
+                if dialog.exec_() == QDialog.Accepted:
+                    options = dialog.getValues()
+                    if options != self.options.network:
+                        self.options.network = options
+                        self.has_unsaved_changes = True
+
+                        interactions = workers.generate_network(self.network.scores,
+                                                        self.network.spectra,
+                                                        self.options.network,
+                                                        use_self_loops=True)
+                        self.create_graph(interactions)
+                        self.draw(which='network', interactions=interactions)
+                        try:
+                            self.graph.vs['__tsne_gobj'] = self.gvTSNE.nodes_group.childItems()
+                        except AttributeError:
+                            pass
+                        self.update_search_menu()
+            elif type_ == 't-sne':
+                dialog = ui.EditTSNEOptionsDialog(self, options=self.options)
+                if dialog.exec_() == QDialog.Accepted:
+                    options = dialog.getValues()
+                    if options != self.options.tsne:
+                        self.options.tsne = options
+                        self.has_unsaved_changes = True
+
+                        self.draw(which='t-sne')
+                        self.update_search_menu()
+        else:
+            dialog = QMessageBox()
+            dialog.information(self, None, "No network found, please open a file first.")
+
+    def on_download_databases_triggered(self):
+        dialog = ui.DownloadDatabasesDialog(self, base_path=DATABASES_PATH)
+        dialog.exec_()
+
     def save_settings(self):
         settings = QSettings()
         settings.setValue('MainWindow.Geometry', self.saveGeometry())
@@ -339,9 +588,69 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.restoreState(setting)
         setting = settings.value('MainWindow.TabWidget.State')
         if setting:
-            self.on_show_tabwidget()
+            self.minimize_tabwidget()
 
-    def applyNetworkLayout(self, view, layout):
+    def create_graph(self, interactions, labels=None):
+        # Delete all previously created edges and nodes
+        self.graph.delete_edges(self.graph.es)
+        self.graph.delete_vertices(self.graph.vs)
+
+        nodes_idx = np.arange(self.network.scores.shape[0])
+        self.graph.add_vertices(nodes_idx.tolist())
+        self.graph.add_edges(zip(interactions['Source'], interactions['Target']))
+
+        if self.network.infos is not None:
+            for col in self.network.infos.dtype.names:
+                self.graph.vs[col] = self.network.infos[col]
+
+        if interactions is not None:
+            for col in interactions.dtype.names:
+                self.graph.es[col] = interactions[col]
+
+        if labels is not None:
+            self.graph.vs['__label'] = labels.astype('str')
+        else:
+            self.graph.vs['__label'] = nodes_idx.astype('str')
+
+    def draw(self, interactions=None, labels=None, compute_layouts=True, which='all'):  # TODO: Use infos and labels
+        print('draw', interactions, labels, compute_layouts, which)
+        if which == 'all':
+            which = {'network', 't-sne'}
+        elif isinstance(which, str):
+            which = set((which,))
+
+        self.tvNodes.model().sourceModel().beginResetModel()
+        self.tvEdges.model().sourceModel().beginResetModel()
+
+        worker = None
+        if 'network' in which:
+            if not compute_layouts and self.graph.network_layout is not None:
+                worker = self.prepare_draw_network_worker(layout=self.graph.network_layout)
+            else:
+                worker = self.prepare_draw_network_worker(interactions=interactions)
+
+        if 't-sne' in which:
+            layout = None
+
+            def draw_tsne():
+                worker = self.prepare_draw_tsne_worker(layout=layout)
+                self._workers.add(worker)
+
+            if not compute_layouts and self.graph.tsne_layout is not None:
+                layout = self.graph.tsne_layout
+
+            if worker is not None:
+                worker.finished.connect(draw_tsne)
+            else:
+                draw_tsne()
+
+        self._workers.add(worker)
+
+        self.tvNodes.model().sourceModel().endResetModel()
+        self.tvEdges.model().sourceModel().endResetModel()
+        self.update_search_menu()
+
+    def apply_network_layout(self, layout):
         try:
             for coord, node in zip(layout, self.graph.vs):
                 node['__network_gobj'].setPos(QPointF(*coord))
@@ -350,12 +659,25 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         self.graph.network_layout = layout
 
-        view.scene().setSceneRect(view.scene().itemsBoundingRect())
-        view.zoomToFit()
-        view.minimap.zoomToFit()
+        self.gvNetwork.scene().setSceneRect(self.gvNetwork.scene().itemsBoundingRect())
+        self.gvNetwork.zoomToFit()
+        self.gvNetwork.minimap.zoomToFit()
 
-    def drawNetwork(self, view, interactions=None, layout=None):
-        view.scene().clear()
+    def apply_tsne_layout(self, layout):
+        try:
+            for coord, node in zip(layout, self.graph.vs):
+                node['__tsne_gobj'].setPos(QPointF(*coord))
+        except (KeyError, AttributeError):
+            pass
+
+        self.graph.tsne_layout = layout
+
+        self.gvTSNE.scene().setSceneRect(self.gvTSNE.scene().itemsBoundingRect())
+        self.gvTSNE.zoomToFit()
+        self.gvTSNE.minimap.zoomToFit()
+
+    def prepare_draw_network_worker(self, interactions=None, layout=None):
+        self.gvNetwork.scene().clear()
 
         if interactions is not None:
             widths = np.array(interactions['Cosine'])
@@ -375,7 +697,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             node = ui.Node(i, n['__label'])
             node.setParentItem(group)
         self.graph.vs['__network_gobj'] = group.childItems()
-        view.scene().addItem(group)
+        self.gvNetwork.scene().addItem(group)
         self.gvNetwork.nodes_group = group
 
         # Add edges
@@ -386,7 +708,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                            e['__weight'], e['__width'])
             edge.setParentItem(group)
         self.graph.es['__network_gobj'] = group.childItems()
-        view.scene().addItem(group)
+        self.gvNetwork.scene().addItem(group)
         self.gvNetwork.edges_group = group
 
         if layout is None:
@@ -398,7 +720,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             def process_finished():
                 layout = worker.result()
                 if layout is not None:
-                    self.applyNetworkLayout(view, layout)
+                    self.apply_network_layout(layout)
 
             self.progressBar.setFormat('Computing layout...')
             self.progressBar.setMaximum(100)
@@ -408,24 +730,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
             return worker
         else:
-            self.applyNetworkLayout(view, layout)
-            return None
+            worker = workers.GenericWorker(self.apply_network_layout, layout)
+            return worker
 
-    def applyTSNELayout(self, view, layout):
-        try:
-            for coord, node in zip(layout, self.graph.vs):
-                node['__tsne_gobj'].setPos(QPointF(*coord))
-        except (KeyError, AttributeError):
-            pass
-
-        self.graph.tsne_layout = layout
-
-        view.scene().setSceneRect(view.scene().itemsBoundingRect())
-        view.zoomToFit()
-        view.minimap.zoomToFit()
-
-    def drawTSNE(self, view, layout=None):
-        view.scene().clear()
+    def prepare_draw_tsne_worker(self, layout=None):
+        self.gvTSNE.scene().clear()
 
         # Add nodes
         group = QGraphicsRectItem()  # Create a pseudo-group, QGraphicsItemGroup is not used because it does not let children handle events
@@ -433,7 +742,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             node = ui.Node(i, n['__label'])
             node.setParentItem(group)
         self.graph.vs['__tsne_gobj'] = group.childItems()
-        view.scene().addItem(group)
+        self.gvTSNE.scene().addItem(group)
         self.gvTSNE.nodes_group = group
 
         if layout is None:
@@ -466,7 +775,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                     layout = ig.Layout(layout.tolist())
                     layout.scale(config.RADIUS)
 
-                    self.applyTSNELayout(view, layout)
+                    self.apply_tsne_layout(layout)
 
                 self.progressBar.setFormat('Computing TSNE...')
                 self.progressBar.setMaximum(1000)  # TODO
@@ -476,13 +785,13 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
                 return worker
             else:
-                self.applyTSNELayout(view, layout)
-                return None
+                worker = workers.GenericWorker(self.apply_tsne_layout, layout)
+                return worker
         else:
-            self.applyTSNELayout(view, layout)
-            return None
+            worker = workers.GenericWorker(self.apply_tsne_layout, layout)
+            return worker
 
-    def computeScoresFromSpectra(self, spectra, use_multiprocessing):
+    def prepare_compute_scores_worker(self, spectra, use_multiprocessing):
         def update_progress(i):
             self.progressBar.setValue(self.progressBar.value() + i)
 
@@ -496,7 +805,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         return worker
 
-    def readMGF(self, filename):
+    def prepare_read_mgf_worker(self, filename):
         def update_progress(i):
             self.progressBar.setValue(self.progressBar.value() + i)
 
@@ -509,318 +818,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         return worker
 
-    def showOpenFileDialog(self):
-        dialog = ui.OpenFileDialog(self, options=self.options)
-        if dialog.exec_() == QDialog.Accepted:
-            self.fname = None
-            self.has_unsaved_changes = True
-            self.gvNetwork.scene().clear()
-            self.gvTSNE.scene().clear()
-
-            process_file, metadata_file, compute_options, tsne_options, network_options = dialog.getValues()
-            self.options.cosine = compute_options
-            self.options.tsne = tsne_options
-            self.options.network = network_options
-
-            def file_read():
-                nonlocal worker
-                self.network.spectra = worker.result()
-                multiprocess = len(self.network.spectra) > 1000  # TODO: Tune this, arbitrary decision
-                worker = self.computeScoresFromSpectra(self.network.spectra, multiprocess)
-                if worker is not None:
-                    worker.finished.connect(scores_computed)
-                    self._workers.add(worker)
-
-            def scores_computed():
-                self.network.scores = worker.result()
-                interactions = workers.generate_network(self.network.scores,
-                                                        self.network.spectra,
-                                                        self.options.network,
-                                                        use_self_loops=True)
-                self.network.infos = np.array([(spectrum.mz_parent,) for spectrum in self.network.spectra],
-                                              dtype=[('m/z parent', np.float32)])
-                self.createGraph(interactions)
-                self.draw(interactions=interactions)
-
-            worker = self.readMGF(process_file)
-            if worker is not None:
-                worker.finished.connect(file_read)
-                self._workers.add(worker)
-
-    def openVisualizationDialog(self, type_):
-        if hasattr(self.network, 'scores'):
-            if type_ == 'network':
-                dialog = ui.EditNetworkOptionDialog(self, options=self.options)
-                if dialog.exec_() == QDialog.Accepted:
-                    options = dialog.getValues()
-                    if options != self.options.network:
-                        self.options.network = options
-                        self.has_unsaved_changes = True
-
-                        interactions = workers.generate_network(self.network.scores,
-                                                        self.network.spectra,
-                                                        self.options.network,
-                                                        use_self_loops=True)
-                        self.createGraph(interactions)
-                        self.draw(interactions=interactions, which='network')
-                        try:
-                            self.graph.vs['__tsne_gobj'] = self.gvTSNE.nodes_group.childItems()
-                        except AttributeError:
-                            pass
-                        self.updateSearchBar()
-            elif type_ == 't-sne':
-                dialog = ui.EditTSNEOptionDialog(self, options=self.options)
-                if dialog.exec_() == QDialog.Accepted:
-                    options = dialog.getValues()
-                    if options != self.options.tsne:
-                        self.options.tsne = options
-                        self.has_unsaved_changes = True
-
-                        self.draw(which='t-sne')
-                        self.updateSearchBar()
-        else:
-            dialog = QMessageBox()
-            dialog.information(self, None, "No network found, please open a file first.")
-
-    def openDownloadDatabasesDialog(self):
-        dialog = ui.DownloadDatabaseDialog(self, base_path=DATABASES_PATH)
-        dialog.exec_()
-
-    def createGraph(self, interactions, labels=None):
-        # Delete all previously created edges and nodes
-        self.graph.delete_edges(self.graph.es)
-        self.graph.delete_vertices(self.graph.vs)
-
-        nodes_idx = np.arange(self.network.scores.shape[0])
-        self.graph.add_vertices(nodes_idx.tolist())
-        self.graph.add_edges(zip(interactions['Source'], interactions['Target']))
-
-        if self.network.infos is not None:
-            for col in self.network.infos.dtype.names:
-                self.graph.vs[col] = self.network.infos[col]
-
-        if interactions is not None:
-            for col in interactions.dtype.names:
-                self.graph.es[col] = interactions[col]
-
-        if labels is not None:
-            self.graph.vs['__label'] = labels.astype('str')
-        else:
-            self.graph.vs['__label'] = nodes_idx.astype('str')
-
-    def draw(self, interactions=None, labels=None, compute_layouts=True, which='all'):  # TODO: Use infos and labels
-        if which == 'all':
-            which = {'network', 't-sne'}
-        elif isinstance(which, str):
-            which = set((which,))
-
-        self.tvNodes.model().sourceModel().beginResetModel()
-        self.tvEdges.model().sourceModel().beginResetModel()
-
-        worker = None
-        if 'network' in which:
-            if not compute_layouts and self.graph.network_layout is not None:
-                worker = self.drawNetwork(self.gvNetwork, layout=self.graph.network_layout)
-            else:
-                worker = self.drawNetwork(self.gvNetwork, interactions)
-
-        if 't-sne' in which:
-            layout = None
-
-            def draw_tsne():
-                worker = self.drawTSNE(self.gvTSNE, layout=layout)
-                if worker is not None:
-                    self._workers.add(worker)
-
-            if not compute_layouts and self.graph.tsne_layout is not None:
-                layout = self.graph.tsne_layout
-
-            if worker is not None:
-                worker.finished.connect(draw_tsne)
-            else:
-                draw_tsne()
-
-        if worker is not None:
-            self._workers.add(worker)
-
-        self.tvNodes.model().sourceModel().endResetModel()
-        self.tvEdges.model().sourceModel().endResetModel()
-        self.updateSearchBar()
-
-    def onSelectionChanged(self):
-        view = self.currentView
-        items = view.scene().selectedItems()
-        nodes_idx, edges_idx = [], []
-        for item in items:
-            if item.Type == ui.Node.Type:
-                nodes_idx.append(item.index)
-            elif item.Type == ui.Edge.Type:
-                edges_idx.append(item.index)
-        self.tvNodes.model().setSelection(nodes_idx)
-        self.tvEdges.model().setSelection(edges_idx)
-
-        if self.actionLinkViews.isChecked():
-            if view == self.gvNetwork:
-                self.gvTSNE.scene().selectionChanged.disconnect()
-                self.gvTSNE.scene().clearSelection()
-                try:
-                    for idx in nodes_idx:
-                        self.graph.vs['__tsne_gobj'][idx].setSelected(True)
-                except (KeyError, AttributeError, RuntimeError):
-                    pass
-                self.gvTSNE.scene().selectionChanged.connect(self.onSelectionChanged)
-            elif view == self.gvTSNE:
-                self.gvNetwork.scene().selectionChanged.disconnect()
-                self.gvNetwork.scene().clearSelection()
-                try:
-                    for idx in nodes_idx:
-                        self.graph.vs['__network_gobj'][idx].setSelected(True)
-                    for idx in edges_idx:
-                        self.graph.es['__network_gobj'][idx].setSelected(True)
-                except (KeyError, AttributeError, RuntimeError):
-                    pass
-                self.gvNetwork.scene().selectionChanged.connect(self.onSelectionChanged)
-
-    def doSearch(self, value):
-        self.tvNodes.model().setFilterRegExp(str(value))
-
-    def updateSearchBar(self):
-        menu = QMenu(self)
-        group = QActionGroup(menu, exclusive=True)
-
-        model = self.tvNodes.model()
-
-        for index in range(model.columnCount() + 1):
-            text = "All" if index == 0 else model.headerData(index - 1, Qt.Horizontal, Qt.DisplayRole)
-            action = group.addAction(QAction(str(text), checkable=True))
-            action.setData(index)
-            menu.addAction(action)
-            if index == 0:
-                action.setChecked(True)
-                menu.addSeparator()
-
-        self.btSearch.setMenu(menu)
-        self.btSearch.setPopupMode(QToolButton.InstantPopup)
-        group.triggered.connect(self.updateSearchMenu)
-        self.tvNodes.model().setFilterKeyColumn(-1)
-
-    def updateSearchMenu(self, action):
-        self.tvNodes.model().setFilterKeyColumn(action.data() - 1)
-
-    def exportToCytoscape(self):
-        try:
-            from py2cytoscape.data.cyrest_client import CyRestClient
-
-            cy = CyRestClient()
-
-            # Create exportable copy of the graph object
-            g = self.graph.copy()
-            for attr in g.vs.attributes():
-                if attr.startswith('__'):
-                    del g.vs[attr]
-                else:
-                    g.vs[attr] = [str(x) for x in g.vs[attr]]
-            for attr in g.es.attributes():
-                if attr.startswith('__'):
-                    del g.es[attr]
-                else:
-                    g.es[attr] = [str(x) for x in g.es[attr]]
-
-            # cy.session.delete()
-            g_cy = cy.network.create_from_igraph(g)
-
-            # cy.layout.apply(name='force-directed', network=g_cy)
-
-            layout = np.empty((g.vcount(), 2))
-            for item in self.currentView.scene().items():
-                if item.Type == ui.Node.Type:
-                    layout[item.index] = (item.x(), item.y())
-            positions = [(suid, x, y) for suid, (x, y) in zip(g_cy.get_nodes()[::-1], layout)]
-            cy.layout.apply_from_presets(network=g_cy, positions=positions)
-
-            with open('styles.json', 'r') as f:
-                style_js = json.load(f)
-            style = cy.style.create('cyREST style', style_js)
-            cy.style.apply(style, g_cy)
-        except (ConnectionRefusedError, ConnectionError):
-            dialog = QMessageBox()
-            dialog.information(self, None,
-                               'Please launch Cytoscape before trying to export.')
-        except ImportError:
-            dialog = QMessageBox()
-            dialog.information(self, None,
-                               'py2tocytoscape is required for this action (https://pypi.python.org/pypi/py2cytoscape).')
-        except FileNotFoundError:
-            dialog = QMessageBox()
-            dialog.warning(self, None,
-                           f'styles.json not found. You may have to reinstall {QCoreApplication.applicationName()}')
-
-        # for c in g_cy.get_view(g_cy.get_views()[0])['elements']['nodes']:
-        # pos = c['position']
-        # id_ = int(c['data']['id_original'])
-        # nodes[id_].setPos(QPointF(pos['x'], pos['y']))
-
-    def exportAsImage(self):
-        filename, filter_ = QFileDialog.getSaveFileName(self, "Save image",
-                                                        filter=("SVG Files (*.svg);;BMP Files (*.bmp);;"
-                                                                "JPEG (*.JPEG);;PNG (*.png)"))
-        if filename:
-            if filter_ == 'SVG Files (*.svg)':
-                try:
-                    from PyQt5.QtSvg import QSvgGenerator
-                except ImportError:
-                    print('QtSvg was not found on your system. It is needed for SVG export.')
-                else:
-                    svg_gen = QSvgGenerator()
-
-                    svg_gen.setFileName(filename)
-                    svg_gen.setSize(self.size())
-                    svg_gen.setViewBox(self.scene().sceneRect())
-                    svg_gen.setTitle("SVG Generator Example Drawing")
-                    svg_gen.setDescription("An SVG drawing created by the SVG Generator.")
-
-                    painter = QPainter(svg_gen)
-                    self.currentView.scene().render(painter)
-                    painter.end()
-            else:
-                image = QImage(self.view.scene().sceneRect().size().toSize(), QImage.Format_ARGB32)
-                image.fill(Qt.transparent)
-
-                painter = QPainter(image)
-                self.currentView.scene().render(painter)
-                image.save(filename)
-
-    def openProject(self):
-        dialog = QFileDialog(self)
-        dialog.setFileMode(QFileDialog.ExistingFile)
-        dialog.setNameFilters([f"{QCoreApplication.applicationName()} Files (*{config.FILE_EXTENSION})",
-                               "All files (*.*)"])
-        if dialog.exec_() == QDialog.Accepted:
-            filename = dialog.selectedFiles()[0]
-            worker = self.load(filename)
-            if worker is not None:
-                self._workers.add(worker)
-
-    def saveProject(self):
-        if self.fname is None:
-            self.saveProjectAs()
-        else:
-            worker = self.save(self.fname)
-            if worker is not None:
-                self._workers.add(worker)
-
-    def saveProjectAs(self):
-        dialog = QFileDialog(self)
-        dialog.setAcceptMode(QFileDialog.AcceptSave)
-        dialog.setNameFilters([f"{QCoreApplication.applicationName()} Files (*{config.FILE_EXTENSION})",
-                               "All files (*.*)"])
-        if dialog.exec_() == QDialog.Accepted:
-            filename = dialog.selectedFiles()[0]
-            worker = self.save(filename)
-            if worker is not None:
-                self._workers.add(worker)
-
-    def save(self, fname):
+    def prepare_save_project_worker(self, fname):
         """Save current project to a file for future access"""
 
         def process_finished():
@@ -844,7 +842,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         return worker
 
-    def load(self, fname):
+    def prepare_load_project_worker(self, fname):
         """Load project from a previously saved file"""
 
         def process_finished():

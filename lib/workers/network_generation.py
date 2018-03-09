@@ -1,11 +1,8 @@
 import itertools
 
 import numpy as np
-import multiprocessing as mp
 
-from pyteomics import mgf
-
-from .base_worker import BaseWorker
+from .base import BaseWorker
 from ..utils import AttrDict    
 
     
@@ -25,7 +22,7 @@ class NetworkVisualizationOptions(AttrDict):
                          max_connected_nodes = 1000)
         
     
-def generate_network(scores_matrix, spectra, options, use_self_loops=True):
+def generate_network(scores_matrix, spectra, options, use_self_loops=True): #TODO: change this in worker
     interactions = []
     num_spectra = len(spectra)
     

@@ -6,7 +6,7 @@ from functools import partial
 import numpy as np
 import multiprocessing as mp
 
-from .base_worker import BaseWorker
+from .base import BaseWorker
 from ..utils import AttrDict, grouper
 
 

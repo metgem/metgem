@@ -42,6 +42,7 @@ class OpenFileDialog(OpenFileDialogBase, OpenFileDialogUI):
         super().__init__(*args, **kwargs)
 
         self.setupUi(self)
+        self.btBrowseProcessFile.setFocus()
 
         # Create palette used when validating input files
         self._error_palette = QPalette()

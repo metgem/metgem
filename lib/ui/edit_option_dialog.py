@@ -7,7 +7,7 @@ else:
     from .widgets import TSNEOptionWidget, NetworkOptionWidget
          
 
-class BaseOptionDialog(QDialog):
+class EditOptionsDialogBase(QDialog):
     def __init__(self, *args, options=None, **kwargs):
         super().__init__(*args, **kwargs)
         
@@ -44,13 +44,13 @@ class BaseOptionDialog(QDialog):
         return self.option_widget.getValues()
 
             
-class EditTSNEOptionDialog(BaseOptionDialog):
-    """Dialog to modify the TSNE options"""
+class EditTSNEOptionsDialog(EditOptionsDialogBase):
+    """Dialog to modify the t-SNE options"""
     
     pass
 
 
-class EditNetworkOptionDialog(BaseOptionDialog):
+class EditNetworkOptionsDialog(EditOptionsDialogBase):
     """Dialog to modify the Network options"""
     
     pass

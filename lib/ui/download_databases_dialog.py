@@ -9,19 +9,19 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt, QSignalMapper, QSize
 from PyQt5 import uic
 
-UI_FILE = os.path.join(os.path.dirname(__file__), 'download_database_dialog.ui')
+UI_FILE = os.path.join(os.path.dirname(__file__), 'download_databases_dialog.ui')
 
 from .widgets import AutoToolTipItemDelegate
 from ..database import DataBaseBuilder
 from ..utils import WorkerSet
 from ..workers import ListGNPSDatabasesWorker, DownloadGNPSDatabasesWorker, GetGNPSDatabasesMtimeWorker
 
-DownloadDatabaseDialogUI, DownloadDatabaseDialogBase = uic.loadUiType(UI_FILE,
+DownloadDatabasesDialogUI, DownloadDatabasesDialogBase = uic.loadUiType(UI_FILE,
                                                                       from_imports='lib.ui',
                                                                       import_from='lib.ui')
 
 
-class DownloadDatabaseDialog(DownloadDatabaseDialogUI, DownloadDatabaseDialogBase):
+class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialogBase):
     IDS_ROLE = Qt.UserRole + 1
     DESC_ROLE = Qt.UserRole + 2
 
@@ -81,8 +81,8 @@ class DownloadDatabaseDialog(DownloadDatabaseDialogUI, DownloadDatabaseDialogBas
         def update_list(dict_item):
             item = QListWidgetItem(dict_item['name'])
             item.setCheckState(Qt.Unchecked)
-            item.setData(DownloadDatabaseDialog.IDS_ROLE, dict_item['ids'])
-            item.setData(DownloadDatabaseDialog.DESC_ROLE, dict_item['desc'])
+            item.setData(DownloadDatabasesDialog.IDS_ROLE, dict_item['ids'])
+            item.setData(DownloadDatabasesDialog.DESC_ROLE, dict_item['desc'])
             self.lstDatabases.addItem(item)
 
         def process_finished():
@@ -133,8 +133,8 @@ class DownloadDatabaseDialog(DownloadDatabaseDialogUI, DownloadDatabaseDialogBas
     def get_ids(self, selected_only=False):
         items = [self.lstDatabases.item(i) for i in range(self.lstDatabases.count())
                  if not selected_only or self.lstDatabases.item(i).checkState() == Qt.Checked]
-        ids = [id_ for item in items for id_ in item.data(DownloadDatabaseDialog.IDS_ROLE)
-                 if item.data(DownloadDatabaseDialog.IDS_ROLE) is not None]
+        ids = [id_ for item in items for id_ in item.data(DownloadDatabasesDialog.IDS_ROLE)
+                 if item.data(DownloadDatabasesDialog.IDS_ROLE) is not None]
         return ids
 
     def check_selection(self, item):
@@ -149,7 +149,7 @@ class DownloadDatabaseDialog(DownloadDatabaseDialogUI, DownloadDatabaseDialogBas
             self.btDownload.setEnabled(enabled)
 
     def update_description(self, current, previous):
-        desc = current.data(DownloadDatabaseDialog.DESC_ROLE)
+        desc = current.data(DownloadDatabasesDialog.DESC_ROLE)
         self.labelDesc.setText(desc)
 
     def update_badges(self):
@@ -158,7 +158,7 @@ class DownloadDatabaseDialog(DownloadDatabaseDialogUI, DownloadDatabaseDialogBas
 
         for i in range(self.lstDatabases.count()):
             item = self.lstDatabases.item(i)
-            ids = item.data(DownloadDatabaseDialog.IDS_ROLE)
+            ids = item.data(DownloadDatabasesDialog.IDS_ROLE)
             if ids is None:
                 continue
             for id_ in ids:
@@ -217,8 +217,8 @@ class DownloadDatabaseDialog(DownloadDatabaseDialogUI, DownloadDatabaseDialogBas
         with DataBaseBuilder(os.path.join(self.base_path, 'spectra')) as db:
             items = [self.lstDatabases.item(i) for i in range(self.lstDatabases.count())
                      if self.lstDatabases.item(i).checkState() == Qt.Checked]
-            ids = [id_ for item in items for id_ in item.data(DownloadDatabaseDialog.IDS_ROLE)
-                   if item.data(DownloadDatabaseDialog.IDS_ROLE) is not None]
+            ids = [id_ for item in items for id_ in item.data(DownloadDatabasesDialog.IDS_ROLE)
+                   if item.data(DownloadDatabasesDialog.IDS_ROLE) is not None]
             self.progressBar.setMinimum(0)
             self.progressBar.setMaximum(len(ids))
             self.progressBar.setValue(0)

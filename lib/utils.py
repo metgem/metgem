@@ -111,5 +111,4 @@ class WorkerSet(set):
         if worker in self:
             super().remove(worker)
 
-            if worker.track_progress:
-                self.hide_progressbar()
+            self.hide_progressbar()

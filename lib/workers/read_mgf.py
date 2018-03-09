@@ -2,7 +2,7 @@ import numpy as np
 
 from pyteomics import mgf
 
-from .base_worker import BaseWorker 
+from .base import BaseWorker
 from .cosine import Spectrum
 
     

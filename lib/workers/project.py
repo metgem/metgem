@@ -1,6 +1,6 @@
 import numpy as np
 
-from .base_worker import BaseWorker
+from .base import BaseWorker
 from ..save import MnzFile, savez
 from ..utils import Network, AttrDict
 from ..workers import Spectrum

@@ -7,7 +7,7 @@ from lxml import html, etree
 
 from PyQt5.QtCore import pyqtSignal
 
-from .base_worker import BaseWorker
+from .base import BaseWorker
 
 LIB_URL = "https://gnps.ucsd.edu/ProteoSAFe/libraries.jsp"
 FTP_URL = "ccms-ftp.ucsd.edu"
