@@ -174,6 +174,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.actionExportAsImage.triggered.connect(self.on_export_as_image_triggered)
 
         self.actionDownloadDatabases.triggered.connect(self.on_download_databases_triggered)
+        self.actionViewDatabases.triggered.connect(self.on_view_databases_triggered)
 
         self._mapper = QSignalMapper(self)
         self.btNetworkOptions.clicked.connect(self._mapper.map)
@@ -576,6 +577,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
         dialog = ui.DownloadDatabasesDialog(self, base_path=DATABASES_PATH)
         dialog.exec_()
 
+    def on_view_databases_triggered(self):
+        dialog = ui.ViewDatabasesDialog(self, base_path=DATABASES_PATH)
+        dialog.exec_()
+
     def save_settings(self):
         settings = QSettings()
         settings.setValue('MainWindow.Geometry', self.saveGeometry())
@@ -907,8 +912,11 @@ if __name__ == '__main__':
             
             """
 
-        logger.error('{} in {}'.format(exctype.__name__, trace.tb_frame.f_code.co_name),
-                     exc_info=(exctype, value, trace))
+        if trace is not None:
+            msg = f"{exctype.__name__} in {trace.tb_frame.f_code.co_name}"
+        else:
+            msg = exctype.__name__
+        logger.error(msg, exc_info=(exctype, value, trace))
         msg = QMessageBox(window)
         msg.setWindowTitle("Unhandled exception")
         msg.setIcon(QMessageBox.Warning)

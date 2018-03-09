@@ -59,26 +59,26 @@ class Spectrum(Base):
     __tablename__ = 'spectra'
     id = Column(Integer, primary_key=True)
     bank_id = Column(Integer, ForeignKey('banks.id'), nullable=False)
-    bank = relationship('Bank')
+    bank = relationship('Bank', lazy='subquery')
     pepmass = Column(Float, nullable=False, index=True)
     positive = Column(Boolean, nullable=False)
     charge = Column(Integer, nullable=False)
     mslevel = Column(Integer, nullable=False)
     source_instrument_id = Column(Integer, ForeignKey('instruments.id'))
-    source_instrument = relationship('Instrument')
+    source_instrument = relationship('Instrument', lazy='subquery')
     organism_id = Column(Integer, ForeignKey('organisms.id'))
-    organism = relationship('Organism', foreign_keys=organism_id)
+    organism = relationship('Organism', lazy='subquery')
     name = Column(String)
-    pi_id = Column(Integer, ForeignKey('organisms.id'))
-    pi = relationship('Organism', foreign_keys=pi_id)
+    pi_id = Column(Integer, ForeignKey('investigators.id'))
+    pi = relationship('Organism', lazy='subquery')
     datacollector_id = Column(Integer, ForeignKey('datacollectors.id'))
-    datacollector = relationship('DataCollector')
+    datacollector = relationship('DataCollector', lazy='subquery')
     smiles = Column(String)
     inchi = Column(String)
     inchiaux = Column(String)
     pubmed = Column(String)
     submituser_id = Column(Integer, ForeignKey('submitters.id'))
-    submituser = relationship('Submitter')
+    submituser = relationship('Submitter', lazy='subquery')
     peaks = Column(NumpySpectrumArray)
 
     @hybrid_property
@@ -104,8 +104,8 @@ class Spectrum(Base):
                 setattr(self, key, value)
 
     def __repr__(self):
-        return (f'Spectrum(bank={self.bank}, pemass={self.pepmass}, polarity={repr(self.polarity)}, '
-                f'charge={self.charge}, mslevel={mslevel})')
+        return (f"Spectrum(bank='{self.bank.name}', pemass={self.pepmass}, polarity={repr(self.polarity)}, "
+                f"charge={self.charge}, mslevel={self.mslevel})")
 
     def __getitem__(self, key):
         return self.values.__getitem__(key)

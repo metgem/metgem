@@ -1,5 +1,9 @@
 <RCC>
   <qresource prefix="icons">
+    <file>images/go-last.svg</file>
+    <file>images/go-next.svg</file>
+    <file>images/go-previous.svg</file>
+    <file>images/go-first.svg</file>
     <file>images/info.svg</file>
     <file>images/preferences-system.svg</file>
     <file>images/download-package.svg</file>

@@ -358,7 +358,7 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionDownloadDatabases"/>
-   <addaction name="actionExploreDatabase"/>
+   <addaction name="actionViewDatabases"/>
   </widget>
   <widget class="QToolBar" name="tbSearch">
    <property name="windowTitle">
@@ -704,19 +704,19 @@
     <string>Download database from GNPS</string>
    </property>
   </action>
-  <action name="actionExploreDatabase">
+  <action name="actionViewDatabases">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="icon">
     <iconset resource="ui.qrc">
      <normaloff>:/icons/images/library.svg</normaloff>:/icons/images/library.svg</iconset>
    </property>
    <property name="text">
-    <string>&amp;Explore database</string>
+    <string>&amp;View databases</string>
    </property>
    <property name="toolTip">
-    <string>Explore database</string>
+    <string>Explore databases</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+E</string>

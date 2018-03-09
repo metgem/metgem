@@ -17,8 +17,8 @@ from ..utils import WorkerSet
 from ..workers import ListGNPSDatabasesWorker, DownloadGNPSDatabasesWorker, GetGNPSDatabasesMtimeWorker
 
 DownloadDatabasesDialogUI, DownloadDatabasesDialogBase = uic.loadUiType(UI_FILE,
-                                                                      from_imports='lib.ui',
-                                                                      import_from='lib.ui')
+                                                                        from_imports='lib.ui',
+                                                                        import_from='lib.ui')
 
 
 class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialogBase):

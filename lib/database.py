@@ -147,7 +147,7 @@ class DataBaseBuilder:
         self._indexes['bank'] += 1
 
 
-class Library:
+class SpectraLibrary:
 
     def __init__(self, database, echo=False):
         self.database = database
@@ -166,7 +166,7 @@ class Library:
     @property
     def session(self):
         if self._session is None:
-            self._session = create_session(self.database, echo=self.echo)
+            self._session = create_session(f'{self.database}.sqlite', echo=self.echo)
         return self._session
 
 
@@ -176,7 +176,7 @@ if __name__ == "__main__":
 
     t00 = time.time()
     with DataBaseBuilder('spectra', echo=False) as db:
-        for path in glob.glob(r'C:\Users\elie\Desktop\ML\databases\*.mgf'):
+        for path in glob.glob(os.path.expanduser(r'~/.config/tsne-network/databases/*.mgf')):
             if not path.endswith('ALL_GNPS.mgf'):
                 filename = os.path.basename(path)
                 print(f'Processing {filename}...')
