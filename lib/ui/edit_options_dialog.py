@@ -2,9 +2,9 @@ from PyQt5.QtWidgets import QDialog, QVBoxLayout, QDialogButtonBox
 from PyQt5.QtCore import Qt
 
 if __name__ == '__main__':
-    from widgets import TSNEOptionWidget, NetworkOptionWidget
+    from widgets import TSNEOptionsWidget, NetworkOptionsWidget
 else:
-    from .widgets import TSNEOptionWidget, NetworkOptionWidget
+    from .widgets import TSNEOptionsWidget, NetworkOptionsWidget
          
 
 class EditOptionsDialogBase(QDialog):
@@ -17,7 +17,7 @@ class EditOptionsDialogBase(QDialog):
         layout = QVBoxLayout()   
         
         if self.__class__.__name__.startswith('EditTSNE'):
-            self.option_widget = TSNEOptionWidget()
+            self.option_widget = TSNEOptionsWidget()
             layout.addWidget(self.option_widget)
 
             # Set options values
@@ -25,7 +25,7 @@ class EditOptionsDialogBase(QDialog):
                 self.option_widget.setValues(options.tsne)
                 
         elif self.__class__.__name__.startswith('EditNetwork'):
-            self.option_widget = NetworkOptionWidget()
+            self.option_widget = NetworkOptionsWidget()
             layout.addWidget(self.option_widget)
 
             # Set options values
@@ -61,7 +61,7 @@ if __name__ == "__main__":
     from PyQt5.QtWidgets import QApplication
     
     app = QApplication(sys.argv)
-    dialog = EditTSNEOptionDialog()
+    dialog = EditTSNEOptionsDialog()
     
     if dialog.exec_() == QDialog.Accepted:
         print('You chose these files:', dialog.getValues())

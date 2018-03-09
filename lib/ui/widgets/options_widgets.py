@@ -5,7 +5,7 @@ from PyQt5 import uic
 import os
 
 try:
-    from ...workers import NetworkVisualizationOptions, TSNEVisualizationOptions
+    from ...workers import NetworkVisualizationOptions, TSNEVisualizationOptions, CosineComputationOptions
 except ValueError:
     class NetworkVisualizationOptions:
         pass
@@ -14,12 +14,12 @@ except ValueError:
         pass
 
 
-class NetworkOptionWidget(QGroupBox):
+class NetworkOptionsWidget(QGroupBox):
     """Create a widget containing Network visualization options"""
     
     def __init__(self):
         super().__init__()
-        uic.loadUi(os.path.join(os.path.dirname(__file__), 'network_option_widget.ui'), self)
+        uic.loadUi(os.path.join(os.path.dirname(__file__), 'network_options_widget.ui'), self)
 
     def getValues(self):
         options = NetworkVisualizationOptions()
@@ -41,27 +41,55 @@ class NetworkOptionWidget(QGroupBox):
         self.spinNetworkMaxConnectedComponentSize.setValue(options.max_connected_nodes)
 
 
-class TSNEOptionWidget(QGroupBox):
-    """Create a widget containing TSNE visualization options"""
+class TSNEOptionsWidget(QGroupBox):
+    """Create a widget containing t-SNE visualization options"""
     
     def __init__(self):
         super().__init__()
-        uic.loadUi(os.path.join(os.path.dirname(__file__), 'tsne_option_widget.ui'), self)
+        uic.loadUi(os.path.join(os.path.dirname(__file__), 'tsne_options_widget.ui'), self)
 
     def getValues(self):
-        """Return TSNE perplexity and learning rate options as a tulpe"""
+        """Return t-SNE options"""
+        
         options = TSNEVisualizationOptions()
         options.perplexity = self.spinTSNEPerplexity.value()
         options.learning_rate = self.spinTSNELearningRate.value()
+        
         return options
 
     def setValues(self, options):
-        """Modify TSNE perplexity and learning rate options
+        """Modify t-SNE perplexity and learning rate options
 
         Args: 
-            tsne_visualization_options (TSNEVisualizationOptions): Modifies the Widget's spinBoxes 
-            to match the TSNE visualization options.  
+            t-SNE_visualization_options (t-SNEVisualizationOptions): Modifies the Widget's spinBoxes 
+            to match the t-SNE visualization options.  
         """
         
         self.spinTSNEPerplexity.setValue(options.perplexity)
         self.spinTSNELearningRate.setValue(options.learning_rate)
+
+
+class CosineOptionsWidget(QGroupBox):
+    """Create a widget containing Cosine computations options"""
+
+    def __init__(self):
+        super().__init__()
+        uic.loadUi(os.path.join(os.path.dirname(__file__), 'cosine_options_widget.ui'), self)
+
+    def getValues(self):
+        options = CosineComputationOptions()
+        options.mz_tolerance = self.spinMZTolerance.value()
+        options.min_intensity = self.spinMinIntensity.value()
+        options.parent_filter_tolerance = self.spinParentFilterTolerance.value()
+        options.min_matched_peaks = self.spinMinMatchedPeaks.value()
+        
+        return options
+
+    def setValues(self, options):
+        """Modify Cosine visualization options
+        """
+
+        self.spinMZTolerance.setValue(options.mz_tolerance)
+        self.spinMinIntensity.setValue(options.min_intensity)
+        self.spinParentFilterTolerance.setValue(options.parent_filter_tolerance)
+        self.spinMinMatchedPeaks.setValue(options.min_matched_peaks)

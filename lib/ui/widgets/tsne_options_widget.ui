@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>169</width>
-    <height>112</height>
+    <width>172</width>
+    <height>118</height>
    </rect>
   </property>
   <property name="title">
@@ -91,6 +91,10 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>spinTSNEPerplexity</tabstop>
+  <tabstop>spinTSNELearningRate</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

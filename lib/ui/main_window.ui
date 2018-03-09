@@ -296,6 +296,7 @@
    <addaction name="actionSaveAs"/>
    <addaction name="separator"/>
    <addaction name="actionProcessFile"/>
+   <addaction name="actionCurrentParameters"/>
   </widget>
   <widget class="QToolBar" name="tbView">
    <property name="windowTitle">
@@ -719,6 +720,18 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+E</string>
+   </property>
+  </action>
+  <action name="actionCurrentParameters">
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/info.svg</normaloff>:/icons/images/info.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Current &amp;Parameters</string>
+   </property>
+   <property name="toolTip">
+    <string>Show Current Parameters</string>
    </property>
   </action>
  </widget>

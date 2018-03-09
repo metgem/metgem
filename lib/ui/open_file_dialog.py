@@ -12,14 +12,14 @@ if __name__ == '__main__':
     sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
     OpenFileDialogUI, OpenFileDialogBase = uic.loadUiType(UI_FILE)
-    from widgets.options_widgets import TSNEOptionWidget, NetworkOptionWidget
+    from widgets import TSNEOptionsWidget, NetworkOptionsWidget, CosineOptionsWidget
 
 
     class CosineComputationOptions:
         pass
 else:
     OpenFileDialogUI, OpenFileDialogBase = uic.loadUiType(UI_FILE, from_imports='lib.ui', import_from='lib.ui')
-    from .widgets.options_widgets import TSNEOptionWidget, NetworkOptionWidget
+    from .widgets import TSNEOptionsWidget, NetworkOptionsWidget, CosineOptionsWidget
     from ..workers import CosineComputationOptions
 
 
@@ -63,23 +63,27 @@ class OpenFileDialog(OpenFileDialogBase, OpenFileDialogUI):
             edit.setText(QDir.currentPath())
             edit.setCompleter(completer)
 
-        # Add advanced option button
-        self.btMore = self.buttonBox.addButton("&More >>", QDialogButtonBox.DestructiveRole)
 
         # Add options widgets
-        self.tsne_widget = TSNEOptionWidget()
-        self.network_widget = NetworkOptionWidget()
+        self.cosine_widget = CosineOptionsWidget()
+        self.tsne_widget = TSNEOptionsWidget()
+        self.network_widget = NetworkOptionsWidget()
 
+        self.layout().addWidget(self.cosine_widget, self.layout().count()-1, 0)
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.network_widget)
         layout.addWidget(self.tsne_widget)
 
         if options:
+            self.cosine_widget.setValues(options.cosine)
             self.tsne_widget.setValues(options.tsne)
             self.network_widget.setValues(options.network)
 
         self.wgAdvancedOptions.setLayout(layout)
+
+        # Add advanced option button
+        self.btMore = self.buttonBox.addButton("&More >>", QDialogButtonBox.DestructiveRole)
 
         # Connect events
         self._mapper = QSignalMapper(self)
@@ -142,14 +146,8 @@ class OpenFileDialog(OpenFileDialogBase, OpenFileDialogUI):
     def getValues(self):
         """Returns files to process and options"""
 
-        options = CosineComputationOptions()
-        options.mz_tolerance = self.spinMZTolerance.value()
-        options.min_intensity = self.spinMinIntensity.value()
-        options.parent_filter_tolerance = self.spinParentFilterTolerance.value()
-        options.min_matched_peaks = self.spinMinMatchedPeaks.value()
-
         return (self.editProcessFile.text(), self.editMetadataFile.text(),
-                options, self.tsne_widget.getValues(),
+                self.cosine_widget.getValues(), self.tsne_widget.getValues(),
                 self.network_widget.getValues())
 
 

@@ -153,6 +153,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.actionAbout.triggered.connect(self.on_about_triggered)
         self.actionAboutQt.triggered.connect(self.on_about_qt_triggered)
         self.actionProcessFile.triggered.connect(self.on_process_file_triggered)
+        self.actionCurrentParameters.triggered.connect(self.on_current_parameters_triggered)
         self.actionZoomIn.triggered.connect(lambda: self.current_view.scaleView(1.2))
         self.actionZoomOut.triggered.connect(lambda: self.current_view.scaleView(1 / 1.2))
         self.actionZoomToFit.triggered.connect(self.current_view.zoomToFit)
@@ -466,6 +467,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
                             v['__tsne_gobj'].setSelected(True)
                     except (KeyError, AttributeError):
                         pass
+
+    def on_current_parameters_triggered(self):
+        dialog = ui.CurrentParametersDialog(self, options=self.options)
+        dialog.exec_()
 
     def show_items(self, items):
         for item in items:

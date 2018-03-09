@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="icons">
+    <file>images/info.svg</file>
     <file>images/preferences-system.svg</file>
     <file>images/download-package.svg</file>
     <file>images/new.svg</file>
