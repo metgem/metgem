@@ -147,7 +147,7 @@
             </property>
             <property name="icon">
              <iconset resource="ui.qrc">
-              <normaloff>:/icons/images/emblem-system.svg</normaloff>:/icons/images/emblem-system.svg</iconset>
+              <normaloff>:/icons/images/preferences-system.svg</normaloff>:/icons/images/preferences-system.svg</iconset>
             </property>
            </widget>
           </item>
@@ -176,7 +176,7 @@
             </property>
             <property name="icon">
              <iconset resource="ui.qrc">
-              <normaloff>:/icons/images/emblem-system.svg</normaloff>:/icons/images/emblem-system.svg</iconset>
+              <normaloff>:/icons/images/preferences-system.svg</normaloff>:/icons/images/preferences-system.svg</iconset>
             </property>
            </widget>
           </item>
@@ -191,6 +191,9 @@
     </item>
     <item>
      <widget class="QTabWidget" name="tabWidget">
+      <property name="documentMode">
+       <bool>false</bool>
+      </property>
       <property name="movable">
        <bool>true</bool>
       </property>
@@ -231,12 +234,12 @@
      <x>0</x>
      <y>0</y>
      <width>1114</width>
-     <height>21</height>
+     <height>30</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
-     <string>File</string>
+     <string>Fi&amp;le</string>
     </property>
     <addaction name="actionOpen"/>
     <addaction name="actionProcessFile"/>

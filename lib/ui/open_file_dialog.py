@@ -63,7 +63,7 @@ class OpenFileDialog(OpenFileDialogBase, OpenFileDialogUI):
             edit.setCompleter(completer)
 
         # Add advanced option button
-        self.btMore = self.buttonBox.addButton("&More", QDialogButtonBox.ActionRole)
+        self.btMore = self.buttonBox.addButton("&More >>", QDialogButtonBox.DestructiveRole)
 
         # Add options widgets
         self.tsne_widget = TSNEOptionWidget()
@@ -114,10 +114,10 @@ class OpenFileDialog(OpenFileDialogBase, OpenFileDialogUI):
 
         if self.wgAdvancedOptions.isVisible():
             self.wgAdvancedOptions.hide()
-            self.btMore.setText("&More")
+            self.btMore.setText("&More >>")
         else:
             self.wgAdvancedOptions.show()
-            self.btMore.setText("&Less")
+            self.btMore.setText("<< &Less")
 
         self.adjustSize()
 

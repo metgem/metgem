@@ -278,8 +278,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
         if w.arrowType() == Qt.DownArrow:
             w.setArrowType(Qt.UpArrow)
             self.tabWidget.setMaximumHeight(self.tabWidget.tabBar().height())
+            self.tabWidget.setDocumentMode(True)
         else:
             w.setArrowType(Qt.DownArrow)
+            self.tabWidget.setDocumentMode(False)
             self.tabWidget.setMaximumHeight(QWIDGETSIZE_MAX)
 
     def switchFullScreen(self):
@@ -303,14 +305,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         dialog.aboutQt(self)
 
     def showEvent(self, event):
-        # Load settings
-        settings = QSettings()
-        geom = settings.value('MainWindow.Geometry')
-        if geom is not None:
-            self.restoreGeometry(geom)
-        state = settings.value('MainWindow.State')
-        if state is not None:
-            self.restoreState(state)
+        self.load_settings()
         super().showEvent(event)
 
     def closeEvent(self, event):
@@ -323,14 +318,28 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         if reply == QMessageBox.Close:
             event.accept()
-            self.saveSettings()
+            self.save_settings()
         else:
             event.ignore()
 
-    def saveSettings(self):
+    def save_settings(self):
         settings = QSettings()
         settings.setValue('MainWindow.Geometry', self.saveGeometry())
         settings.setValue('MainWindow.State', self.saveState())
+        settings.setValue('MainWindow.TabWidget.State',
+                          self.tabWidget.cornerWidget(Qt.TopRightCorner).arrowType() == Qt.UpArrow)
+
+    def load_settings(self):
+        settings = QSettings()
+        setting = settings.value('MainWindow.Geometry')
+        if setting is not None:
+            self.restoreGeometry(setting)
+            setting = settings.value('MainWindow.State')
+        if setting is not None:
+            self.restoreState(setting)
+        setting = settings.value('MainWindow.TabWidget.State')
+        if setting:
+            self.on_show_tabwidget()
 
     def applyNetworkLayout(self, view, layout):
         try:
