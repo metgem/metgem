@@ -20,8 +20,8 @@ KEYMAP['zoom_temp'] = ['control']
 
 class SpectrumNavigationToolbar(NavigationToolbar):
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, coordinates=True, **kwargs)
+    def __init__(self, canvas, parent=None, coordinates=True, **kwargs):
+        super().__init__(canvas, parent=parent, coordinates=coordinates, **kwargs)
         self.layout().setSpacing(0)
 
         # Initialize timers for step pan/zoom

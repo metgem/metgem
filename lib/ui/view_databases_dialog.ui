@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1061</width>
-    <height>689</height>
+    <width>1132</width>
+    <height>691</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -83,6 +83,46 @@
       </widget>
      </item>
      <item>
+      <widget class="QFrame" name="frame_2">
+       <property name="frameShape">
+        <enum>QFrame::VLine</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Raised</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="editGoTo">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>70</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="clearButtonEnabled">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="btGoTo">
+       <property name="text">
+        <string>...</string>
+       </property>
+       <property name="icon">
+        <iconset resource="ui.qrc">
+         <normaloff>:/icons/images/go-jump.svg</normaloff>:/icons/images/go-jump.svg</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -98,12 +138,31 @@
      <item>
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>Bank</string>
+        <string>Database</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QComboBox" name="cbBanks"/>
+      <widget class="QComboBox" name="cbBanks">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>200</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>300</width>
+         <height>16777215</height>
+        </size>
+       </property>
+      </widget>
      </item>
      <item>
       <widget class="QToolButton" name="btRefresh">
@@ -119,16 +178,43 @@
     </layout>
    </item>
    <item>
-    <widget class="QTableView" name="tvSpectra">
-     <property name="alternatingRowColors">
-      <bool>true</bool>
+    <widget class="QSplitter" name="splitter">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
      </property>
-     <property name="selectionMode">
-      <enum>QAbstractItemView::SingleSelection</enum>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
      </property>
-     <property name="selectionBehavior">
-      <enum>QAbstractItemView::SelectRows</enum>
-     </property>
+     <widget class="QTableView" name="tvSpectra">
+      <property name="alternatingRowColors">
+       <bool>true</bool>
+      </property>
+      <property name="selectionMode">
+       <enum>QAbstractItemView::SingleSelection</enum>
+      </property>
+      <property name="selectionBehavior">
+       <enum>QAbstractItemView::SelectRows</enum>
+      </property>
+     </widget>
+     <widget class="QFrame" name="frame">
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="SpectrumWidget" name="widgetSpectrum" native="true"/>
+       </item>
+       <item>
+        <widget class="QSvgWidget" name="widgetStructure" native="true"/>
+       </item>
+      </layout>
+     </widget>
     </widget>
    </item>
    <item>
@@ -143,6 +229,31 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>SpectrumWidget</class>
+   <extends>QWidget</extends>
+   <header>lib/ui/widgets.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>QSvgWidget</class>
+   <extends>QWidget</extends>
+   <header>lib/ui/widgets.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <tabstops>
+  <tabstop>btFirst</tabstop>
+  <tabstop>btPrevious</tabstop>
+  <tabstop>btNext</tabstop>
+  <tabstop>btLast</tabstop>
+  <tabstop>editGoTo</tabstop>
+  <tabstop>btGoTo</tabstop>
+  <tabstop>cbBanks</tabstop>
+  <tabstop>btRefresh</tabstop>
+  <tabstop>tvSpectra</tabstop>
+ </tabstops>
  <resources>
   <include location="ui.qrc"/>
  </resources>

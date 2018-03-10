@@ -158,6 +158,9 @@ class SpectraLibrary:
         return self
 
     def __exit__(self, type_, value, traceback):
+        self.close()
+
+    def close(self):
         if self._session is not None:
             self._session.close()
             self._session.bind.dispose()

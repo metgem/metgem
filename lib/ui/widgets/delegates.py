@@ -1,11 +1,12 @@
-from PyQt5.QtWidgets import QStyledItemDelegate, QStyle, QToolTip
+from PyQt5.QtWidgets import QStyledItemDelegate, QToolTip
 from PyQt5.QtCore import QEvent, Qt
 
+
 class AutoToolTipItemDelegateMixin():
-    '''
+    """
     QItemDelegate subclass that shows tooltip based on item text and
-    only if text is not fully visibile
-    '''
+    only if text is not fully visible
+    """
 
     def __init__(self, parent=None):
         self._widths = {}
