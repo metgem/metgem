@@ -1,8 +1,18 @@
 import os
 
-from rdkit import Chem
+try:
+    from rdkit.Chem import MolFromSmiles, rdDepictor
+    from rdkit.Chem.Draw import rdMolDraw2D
+    from rdkit.Chem.inchi import INCHI_AVAILABLE
+    if INCHI_AVAILABLE:
+        from rdkit.Chem.inchi import MolFromInchi
+except:
+    RDKIT_AVAILABLE = False
+    INCHI_AVAILABLE = False
+else:
+    RDKIT_AVAILABLE = True
 
-from PyQt5.QtCore import Qt, QAbstractListModel, QModelIndex, QItemSelectionModel
+from PyQt5.QtCore import Qt, QAbstractListModel, QModelIndex, QItemSelectionModel, QByteArray
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5 import uic
 
@@ -53,7 +63,7 @@ class BanksModel(QAbstractListModel):
 
 
 class SpectraModel(QStandardItemModel):
-    IdRole = Qt.UserRole + 1
+    ObjectRole = Qt.UserRole + 1
 
     def __init__(self, session, bank):
         self._columns = [col for col in Spectrum.__table__.columns
@@ -91,9 +101,9 @@ class SpectraModel(QStandardItemModel):
         if row > self.rowCount() or column > self.columnCount():
             return None
 
-        if role == SpectraModel.IdRole:
+        if role == SpectraModel.ObjectRole:
             try:
-                return self._data[row].id
+                return self._data[row]
             except IndexError:
                 return None
         if role in (Qt.DisplayRole, Qt.EditRole):
@@ -158,14 +168,31 @@ class ViewDatabasesDialog(ViewDatabasesDialogUI, ViewDatabasesDialogBase):
         self.tvSpectra.selectionModel().selectionChanged.connect(self.on_selection_changed)
 
     def on_selection_changed(self, item):
-        id_ = item.indexes()[0].data(role=SpectraModel.IdRole)
-        if id_ is None:
-            return
-        spec = self.library.session.query(Spectrum).filter(Spectrum.id == id_).one_or_none()
-        if spec is None:
+        obj = item.indexes()[0].data(role=SpectraModel.ObjectRole)
+        if obj is None:
             return
 
-        self.widgetSpectrum.canvas.set_spectrum1(spec.peaks)
+        # Show spectrum
+        self.widgetSpectrum.canvas.set_spectrum1(obj.peaks)
+
+        # Try to render structure from InChI or SMILES
+        if RDKIT_AVAILABLE:
+            mol = None
+            if INCHI_AVAILABLE and obj.inchi:  # Use InChI first
+                mol = MolFromInchi(obj.inchi)
+            if mol is None and obj.smiles:     # If InChI not available, use SMILES as a fallback
+                mol = MolFromSmiles(obj.smiles)
+            if mol is not None:
+                if not mol.GetNumConformers():
+                    rdDepictor.Compute2DCoords(mol)
+                drawer = rdMolDraw2D.MolDraw2DSVG(self.widgetStructure.size().width(),
+                                                  self.widgetStructure.size().height())
+                drawer.DrawMolecule(mol)
+                drawer.FinishDrawing()
+                svg = drawer.GetDrawingText().replace('svg:', '')
+                self.widgetStructure.load(QByteArray(svg.encode()))
+            else:
+                self.widgetStructure.load(QByteArray(b''))
 
     def on_bank_changed(self):
         bank = self.cbBanks.currentData(role=BanksModel.BankIdRole)
