@@ -6,11 +6,21 @@ try:
     from rdkit.Chem.inchi import INCHI_AVAILABLE
     if INCHI_AVAILABLE:
         from rdkit.Chem.inchi import MolFromInchi
-except:
+except ImportError:
     RDKIT_AVAILABLE = False
     INCHI_AVAILABLE = False
 else:
     RDKIT_AVAILABLE = True
+
+try:
+    import pybel
+    from lxml import etree
+except ImportError:
+    OPENBABEL_AVAILABLE = False
+    INCHI_AVAILABLE = False
+else:
+    OPENBABEL_AVAILABLE = True
+    INCHI_AVAILABLE = 'inchi' in pybel.informats.keys()
 
 from PyQt5.QtCore import Qt, QAbstractListModel, QModelIndex, QItemSelectionModel, QByteArray
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
@@ -142,6 +152,7 @@ class ViewDatabasesDialog(ViewDatabasesDialogUI, ViewDatabasesDialogBase):
     def __init__(self, *args, base_path=None, **kwargs):
         super().__init__(*args, **kwargs)
 
+        print(base_path)
         self.library = SpectraLibrary(os.path.join(base_path, 'spectra'))
 
         self.setupUi(self)
@@ -180,7 +191,7 @@ class ViewDatabasesDialog(ViewDatabasesDialogUI, ViewDatabasesDialogBase):
             mol = None
             if INCHI_AVAILABLE and obj.inchi:  # Use InChI first
                 mol = MolFromInchi(obj.inchi)
-            if mol is None and obj.smiles:     # If InChI not available, use SMILES as a fallback
+            elif obj.smiles:                   # If InChI not available, use SMILES as a fallback
                 mol = MolFromSmiles(obj.smiles)
             if mol is not None:
                 if not mol.GetNumConformers():
@@ -193,6 +204,20 @@ class ViewDatabasesDialog(ViewDatabasesDialogUI, ViewDatabasesDialogBase):
                 self.widgetStructure.load(QByteArray(svg.encode()))
             else:
                 self.widgetStructure.load(QByteArray(b''))
+        elif OPENBABEL_AVAILABLE:  # If RDkit not available, try to use OpenBabel
+            try:
+                if INCHI_AVAILABLE and obj.inchi:
+                    mol = pybel.readstring('inchi', obj.inchi)
+                elif obj.smiles:
+                    mol = pybel.readstring('smiles', obj.smiles)
+            except OSError:
+                self.widgetStructure.load(QByteArray(b''))
+            else:
+                # Convert to svg, code loosely based on _repr_svg_ from pybel's Molecule
+                namespace = "http://www.w3.org/2000/svg"
+                tree = etree.fromstring(mol.write("svg"))
+                svg = tree.find(f"{{{namespace}}}g/{{{namespace}}}svg")
+                self.widgetStructure.load(QByteArray(etree.tostring(svg)))
 
     def on_bank_changed(self):
         bank = self.cbBanks.currentData(role=BanksModel.BankIdRole)
