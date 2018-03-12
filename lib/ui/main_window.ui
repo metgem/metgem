@@ -205,6 +205,9 @@
        </widget>
       </widget>
       <widget class="QTabWidget" name="tabWidget">
+       <property name="currentIndex">
+        <number>2</number>
+       </property>
        <property name="documentMode">
         <bool>false</bool>
        </property>
@@ -229,7 +232,7 @@
          <string>Edges</string>
         </attribute>
        </widget>
-       <widget class="SpectrumCanvas" name="cvSpectrum">
+       <widget class="ExtendedSpectrumWidget" name="cvSpectrum">
         <attribute name="icon">
          <iconset resource="ui.qrc">
           <normaloff>:/icons/images/spectrum.svg</normaloff>:/icons/images/spectrum.svg</iconset>
@@ -249,7 +252,7 @@
      <x>0</x>
      <y>0</y>
      <width>1089</width>
-     <height>30</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -739,12 +742,12 @@
   <customwidget>
    <class>NetworkView</class>
    <extends>QGraphicsView</extends>
-   <header>lib/ui.h</header>
+   <header>lib/ui/widgets.h</header>
   </customwidget>
   <customwidget>
-   <class>SpectrumCanvas</class>
+   <class>ExtendedSpectrumWidget</class>
    <extends>QWidget</extends>
-   <header>lib/ui/widgets/spectrum/canvas.h</header>
+   <header>lib/ui/widgets.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

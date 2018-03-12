@@ -20,7 +20,9 @@ KEYMAP['zoom_temp'] = ['control']
 
 class SpectrumNavigationToolbar(NavigationToolbar):
 
-    def __init__(self, canvas, parent=None, coordinates=True, **kwargs):
+    def __init__(self, canvas, parent=None, coordinates=True, extended_mode=False, **kwargs):
+        self._extended_mode = extended_mode
+
         super().__init__(canvas, parent=parent, coordinates=coordinates, **kwargs)
         self.layout().setSpacing(0)
 
@@ -54,7 +56,8 @@ class SpectrumNavigationToolbar(NavigationToolbar):
         self.toolitems = [t for t in self.toolitems if
                           t[0] in ('Home', 'Back', 'Forward', None, 'Pan', 'Zoom')]
 
-        self.toolitems.extend([('Reset', 'Reset data', 'reset', 'reset_data')])
+        if self._extended_mode:
+            self.toolitems.extend([('Reset', 'Reset data', 'reset', 'reset_data')])
 
         for i, item in enumerate(self.toolitems):
             if item[-1] is None:

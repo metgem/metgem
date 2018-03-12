@@ -64,13 +64,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.setupUi(self)
         self.gvNetwork.setFocus()
 
-        # Add toolbar for spectrum
-        self.tbSpectrum = ui.widgets.SpectrumNavigationToolbar(self.cvSpectrum, self)
-        self.tbSpectrum.setObjectName('tbSpectrum')
-        self.tbSpectrum.setWindowTitle('Spectrum')
-        self.addToolBar(Qt.BottomToolBarArea, self.tbSpectrum)
-        self.tbSpectrum.setVisible(False)
-
         # Activate first tab of tab widget
         self.tabWidget.setCurrentIndex(0)
 
@@ -183,7 +176,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self._mapper.setMapping(self.btTSNEOptions, 't-sne')
         self._mapper.mapped[str].connect(self.on_edit_options_triggered)
 
-        self.tabWidget.currentChanged.connect(self.on_current_tab_changed)
         self.tabWidget.cornerWidget(Qt.TopRightCorner).clicked.connect(self.minimize_tabwidget)
 
         # Add a menu to show/hide toolbars
@@ -270,12 +262,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.save_settings()
         else:
             event.ignore()
-
-    def on_current_tab_changed(self, index):
-        if index == self.tabWidget.indexOf(self.cvSpectrum):
-            self.tbSpectrum.setVisible(True)
-        else:
-            self.tbSpectrum.setVisible(False)
 
     def on_scene_selection_changed(self):
         view = self.current_view
@@ -623,7 +609,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.graph.vs['__label'] = nodes_idx.astype('str')
 
     def draw(self, interactions=None, labels=None, compute_layouts=True, which='all'):  # TODO: Use infos and labels
-        print('draw', interactions, labels, compute_layouts, which)
         if which == 'all':
             which = {'network', 't-sne'}
         elif isinstance(which, str):

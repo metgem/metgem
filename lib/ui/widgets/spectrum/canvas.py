@@ -25,8 +25,8 @@ class SpectrumCanvas(BaseCanvas):
         super().__init__(parent, title=title)
 
         # Load data
-        self.spectrum1_data = spectrum1_data
-        self.spectrum2_data = spectrum2_data
+        self.set_spectrum1(spectrum1_data)
+        self.set_spectrum2(spectrum2_data)
 
         self.prepare_axes()
 
@@ -59,7 +59,8 @@ class SpectrumCanvas(BaseCanvas):
 
         self.prepare_axes(self._spectrum1_data)
         if self.has_data():
-            self.toolbar.setVisible(True)
+            if self.toolbar is not None:
+                self.toolbar.setVisible(True)
 
             self._spectrum1_plot = self.plot_spectrum(self._spectrum1_data, colors='r', label=self._spectrum1_label)
             if self._spectrum2_data is not None:
@@ -76,7 +77,8 @@ class SpectrumCanvas(BaseCanvas):
                 self.axes.legend(handles=handles)
             self.dataLoaded.emit()
         else:
-            self.toolbar.setVisible(False)
+            if self.toolbar is not None:
+                self.toolbar.setVisible(False)
             self._spectrum1_plot = None
             self._spectrum2_plot = None
 
