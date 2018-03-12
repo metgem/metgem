@@ -24,6 +24,9 @@ class SpectrumCanvas(BaseCanvas):
 
         super().__init__(parent, title=title)
 
+        if self.toolbar is not None:
+            self.toolbar.setVisible(False)
+
         # Load data
         self.set_spectrum1(spectrum1_data)
         self.set_spectrum2(spectrum2_data)
