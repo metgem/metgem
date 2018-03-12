@@ -1,25 +1,20 @@
-from PyQt5.QtWidgets import QStyledItemDelegate, QToolTip
+from PyQt5.QtWidgets import QItemDelegate, QToolTip
 from PyQt5.QtCore import QEvent, Qt
 
 
-class AutoToolTipItemDelegateMixin():
+class AutoToolTipItemDelegateMixin:
     """
     QItemDelegate subclass that shows tooltip based on item text and
     only if text is not fully visible
     """
 
-    def __init__(self, parent=None):
-        self._widths = {}
-        super().__init__(parent)
-
     def helpEvent(self, event, view, option, index):
         if event is None or view is None:
             return False
 
-        if event.type() == QEvent.ToolTip and index.isValid() and index in self._widths:
-            if self._widths[index] < self.sizeHint(option, index).width():
-                tooltip = self.displayText(index.data(Qt.DisplayRole),
-                                           option.locale)
+        if event.type() == QEvent.ToolTip and index.isValid():
+            if option.rect.width() <= self.sizeHint(option, index).width():
+                tooltip = index.data(Qt.DisplayRole)
 
                 # If text is elided, show tooltip
                 if tooltip != '':
@@ -32,13 +27,8 @@ class AutoToolTipItemDelegateMixin():
 
         return super().helpEvent(event, view, option, index)
 
-    def paint(self, painter, option, index):
-        # For some reason, option.rect in helpEvent has bad width in helpEvent but is ok in paint
-        self._widths[index] = option.rect.width()
-        super().paint(painter, option, index)
 
-
-class AutoToolTipItemDelegate(AutoToolTipItemDelegateMixin, QStyledItemDelegate):
+class AutoToolTipItemDelegate(AutoToolTipItemDelegateMixin, QItemDelegate):
     pass
 
 
