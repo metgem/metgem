@@ -582,7 +582,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             setting = settings.value('MainWindow.State')
         if setting is not None:
             self.restoreState(setting)
-        setting = settings.value('MainWindow.TabWidget.State')
+        setting = settings.value('MainWindow.TabWidget.State', type=bool)
         if setting:
             self.minimize_tabwidget()
 
