@@ -83,7 +83,7 @@ class Spectrum(Base):
 
     @hybrid_property
     def polarity(self):
-        return '+' if self.positive else '-'
+        return 'Positive' if self.positive else 'Negative'
 
     @polarity.setter
     def polarity(self, value):

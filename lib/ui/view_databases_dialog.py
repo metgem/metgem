@@ -1,5 +1,7 @@
 import os
 
+from PyQt5.QtWidgets import QAbstractItemView
+
 try:
     from rdkit.Chem import MolFromSmiles, rdDepictor
     from rdkit.Chem.Draw import rdMolDraw2D
@@ -22,8 +24,8 @@ else:
     OPENBABEL_AVAILABLE = True
     INCHI_AVAILABLE = 'inchi' in pybel.informats.keys()
 
-from PyQt5.QtCore import Qt, QAbstractListModel, QModelIndex, QItemSelectionModel, QByteArray
-from PyQt5.QtGui import QStandardItemModel, QStandardItem
+from PyQt5.QtCore import (Qt, QAbstractListModel, QModelIndex,
+                          QItemSelectionModel, QByteArray, QAbstractTableModel, QItemSelection)
 from PyQt5 import uic
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'view_databases_dialog.ui')
@@ -50,9 +52,7 @@ class BanksModel(QAbstractListModel):
 
     def refresh(self):
         self.beginResetModel()
-
         self._data = sorted([(b.name, b.id) for b in self.session.query(Bank.name, Bank.id)])
-
         self.endResetModel()
 
     def rowCount(self, parent=QModelIndex()):
@@ -72,35 +72,51 @@ class BanksModel(QAbstractListModel):
             return self._data[row][1]
 
 
-class SpectraModel(QStandardItemModel):
+class SpectraModel(QAbstractTableModel):
     ObjectRole = Qt.UserRole + 1
+
+    BATCH_SIZE = 200
 
     def __init__(self, session, bank):
         self._columns = [col for col in Spectrum.__table__.columns
                          if col.name not in ('peaks', 'bank_id', 'id')]
 
-        super().__init__(100, len(self._columns))
+        super().__init__()
 
         self.session = session
         self._data = []
-        for i, col in enumerate(self._columns):
-            text = col.comment if col.comment is not None else col.name.split('_id')[0]
-            self.setHorizontalHeaderItem(i, QStandardItem(text))
-
         self._bank_id = bank
         self._offset = 0
         self._max_results = 0
 
-        self.refresh()
+        self.query_db()
 
-    def refresh(self):
-        self.beginResetModel()
-
+    def query_db(self):
         query = self.session.query(Spectrum).filter(Spectrum.bank_id == self._bank_id)
         self._max_results = query.count()
-        self._data = [spec for spec in query.limit(100).offset(self._offset)]
+        self._data.extend([spec for spec in query.limit(self.BATCH_SIZE).offset(self._offset)])
+        self._offset += self.BATCH_SIZE
 
-        self.endResetModel()
+    def rowCount(self, parent=QModelIndex()):
+        if parent.isValid():
+            return 0
+        return self._max_results
+
+    def columnCount(self, parent=QModelIndex()):
+        if parent.isValid():
+            return 0
+        return len(self._columns)
+
+    def headerData(self, section, orientation, role=Qt.DisplayRole):
+        if (orientation == Qt.Horizontal and section > self.columnCount())\
+                or (orientation == Qt.Horizontal and section > self.rowCount()):
+            return None
+
+        if role == Qt.DisplayRole and orientation == Qt.Horizontal:
+            col = self._columns[section]
+            return col.comment if col.comment is not None else col.name.split('_id')[0]
+        else:
+            return super().headerData(section, orientation, role)
 
     def data(self, index, role):
         if not index.isValid():
@@ -111,40 +127,34 @@ class SpectraModel(QStandardItemModel):
         if row > self.rowCount() or column > self.columnCount():
             return None
 
+        if row >= self._offset:
+            self.query_db()
+
+        try:
+            obj = self._data[row]
+        except IndexError:
+            return None
+
         if role == SpectraModel.ObjectRole:
-            try:
-                return self._data[row]
-            except IndexError:
-                return None
-        if role in (Qt.DisplayRole, Qt.EditRole):
-            try:
-                attr = self._columns[column].name
-                value = getattr(self._data[row], attr, None)
-                if isinstance(value, Base):
-                    value = getattr(value, 'name', None)
-                return value
-            except IndexError:
-                return None
-        else:
-            return super().data(index, role)
+            return obj
+        elif role in (Qt.DisplayRole, Qt.EditRole):
+            attr = self._columns[column].name.split('_id')[0]
+            attr = 'polarity' if attr == 'positive' else attr
+            value = getattr(obj, attr, None)
+            if isinstance(value, Base):
+                value = getattr(value, 'name', None)
+            return value
 
     def bank(self):
         return self._bank_id
 
     def set_bank(self, bank_id):
+        self.beginResetModel()
         self._bank_id = bank_id
+        self._data = []
         self._offset = 0
-        self.refresh()
-
-    def offset(self):
-        return self._offset
-
-    def set_offset(self, offset):
-        self._offset = offset
-        self.refresh()
-
-    def max_results(self):
-        return self._max_results
+        self.query_db()
+        self.endResetModel()
 
 
 class ViewDatabasesDialog(ViewDatabasesDialogUI, ViewDatabasesDialogBase):
@@ -152,7 +162,6 @@ class ViewDatabasesDialog(ViewDatabasesDialogUI, ViewDatabasesDialogBase):
     def __init__(self, *args, base_path=None, **kwargs):
         super().__init__(*args, **kwargs)
 
-        print(base_path)
         self.library = SpectraLibrary(os.path.join(base_path, 'spectra'))
 
         self.setupUi(self)
@@ -165,10 +174,9 @@ class ViewDatabasesDialog(ViewDatabasesDialogUI, ViewDatabasesDialogBase):
         model = SpectraModel(self.library.session,
                              self.cbBanks.currentData(role=BanksModel.BankIdRole))
         self.tvSpectra.setModel(model)
-        self.update_label()
 
         # Connect events
-        self.btRefresh.clicked.connect(self.cbBanks.model().refresh)
+        self.btRefresh.clicked.connect(self.on_refresh)
         self.cbBanks.currentIndexChanged.connect(self.on_bank_changed)
         self.btFirst.clicked.connect(self.on_goto_first)
         self.btPrevious.clicked.connect(self.on_goto_previous)
@@ -176,12 +184,38 @@ class ViewDatabasesDialog(ViewDatabasesDialogUI, ViewDatabasesDialogBase):
         self.btLast.clicked.connect(self.on_goto_last)
         self.btGoTo.clicked.connect(self.on_goto_line)
         self.editGoTo.returnPressed.connect(self.on_goto_line)
-        self.tvSpectra.selectionModel().selectionChanged.connect(self.on_selection_changed)
+        self.tvSpectra.selectionModel().currentChanged.connect(self.on_selection_changed)
+        self.tvSpectra.verticalScrollBar().valueChanged.connect(self.update_label)
 
-    def on_selection_changed(self, item):
-        obj = item.indexes()[0].data(role=SpectraModel.ObjectRole)
+    def on_refresh(self):
+        self.cbBanks.model().refresh()
+        self.cbBanks.setCurrentIndex(0)
+
+    def on_selection_changed(self, index):
+        obj = index.data(role=SpectraModel.ObjectRole)
         if obj is None:
             return
+
+        # Update description labels
+        self.lblName.setText(obj.name)
+        self.lblInChI.setText(obj.inchi)
+        self.lblSmiles.setText(obj.smiles)
+        self.lblPubMed.setText(str(obj.pubmed))
+        self.lblPepmass.setText(str(obj.pepmass))
+        self.lblPolarity.setText(obj.polarity)
+        self.lblCharge.setText(str(obj.charge))
+        self.lblMSLevel.setText(str(obj.mslevel))
+        if obj.source_instrument is not None:
+            self.lblSourceInstrument.setText(obj.source_instrument.name)
+        if obj.pi is not None:
+            self.lblPi.setText(obj.pi.name)
+        if obj.organism is not None:
+            self.lblOrganism.setText(obj.organism.name)
+        if obj.datacollector is not None:
+            self.lblDataCollector.setText(obj.datacollector.name)
+        if obj.submituser is not None:
+            self.lblSubmitUser.setText(obj.submituser.name)
+
 
         # Show spectrum
         self.widgetSpectrum.canvas.set_spectrum1(obj.peaks)
@@ -222,46 +256,37 @@ class ViewDatabasesDialog(ViewDatabasesDialogUI, ViewDatabasesDialogBase):
     def on_bank_changed(self):
         bank = self.cbBanks.currentData(role=BanksModel.BankIdRole)
         self.tvSpectra.model().set_bank(bank)
-        self.update_label()
+        self.select_row(0)
 
     def on_goto_first(self):
-        self.set_offset(0)
+        self.select_row(0)
 
     def on_goto_previous(self):
-        offset = self.tvSpectra.model().offset()
-        delta = self.tvSpectra.model().rowCount()
-        if offset - delta >= 0:
-            self.set_offset(offset-delta)
+        first, last = self.visible_rows()
+        self.select_row(first-(last-first+1), QAbstractItemView.PositionAtTop)
 
     def on_goto_next(self):
-        offset = self.tvSpectra.model().offset()
-        max_ = self.tvSpectra.model().max_results()
-        delta = self.tvSpectra.model().rowCount()
-        if offset + delta <= max_:
-            self.set_offset(offset+delta)
+        first, last = self.visible_rows()
+        self.select_row(last+1, QAbstractItemView.PositionAtTop)
 
     def on_goto_last(self):
-        max_ = self.tvSpectra.model().max_results()
-        delta = self.tvSpectra.model().rowCount()
-        self.set_offset(max_-max_%delta)
+        self.select_row(self.tvSpectra.model().rowCount()-1)
 
     def on_goto_line(self):
         try:
-            num = int(self.editGoTo.text()) - 1
+            row = int(self.editGoTo.text()) - 1
         except ValueError:
             return False
         else:
-            max_ = self.tvSpectra.model().max_results()
-            if 0 <= num < max_:
-                delta = self.tvSpectra.model().rowCount()
-                self.set_offset(num - num % delta)
-                index = self.tvSpectra.model().index(num % delta, 0)
-                self.tvSpectra.selectionModel().select(index, QItemSelectionModel.Select | QItemSelectionModel.Rows)
-                self.tvSpectra.scrollTo(index)
+            self.select_row(row)
 
     def closeEvent(self, event):
         self.library.close()
         super().closeEvent(event)
+
+    def showEvent(self, event):
+        self.select_row(0)
+        super().showEvent(event)
 
     def keyPressEvent(self, event):
         if event.key() in (Qt.Key_Enter, Qt.Key_Return):
@@ -269,11 +294,21 @@ class ViewDatabasesDialog(ViewDatabasesDialogUI, ViewDatabasesDialogBase):
         super().keyPressEvent(event)
 
     def update_label(self):
-        offset = self.tvSpectra.model().offset() + 1
-        max_ = self.tvSpectra.model().max_results() + 1
-        delta = self.tvSpectra.model().rowCount() - 1
-        self.lblOffset.setText(f"{offset}-{min(offset+delta, max_)} of {max_}")
+        first, last = self.visible_rows()
+        max_ = self.tvSpectra.model().rowCount()
+        self.lblOffset.setText(f"{first+1}-{last} of {max_}")
 
-    def set_offset(self, offset):
-        self.tvSpectra.model().set_offset(offset)
-        self.update_label()
+    def visible_rows(self):
+        first = self.tvSpectra.rowAt(0)
+        last = self.tvSpectra.rowAt(self.tvSpectra.height())
+        last = self.tvSpectra.rowAt(self.tvSpectra.height() - self.tvSpectra.rowHeight(last)/2)
+        max_ = self.tvSpectra.model().rowCount()
+        last = last if last > 0 else max_
+        return first, last
+
+    def select_row(self, row, scroll_hint: QAbstractItemView.ScrollHint = QAbstractItemView.EnsureVisible):
+        if 0 <= row < self.tvSpectra.model().rowCount():
+            index = self.tvSpectra.model().index(row, 0)
+            self.tvSpectra.selectRow(row)
+            self.tvSpectra.scrollTo(index, scroll_hint)
+
