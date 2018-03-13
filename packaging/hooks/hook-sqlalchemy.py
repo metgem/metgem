@@ -1,0 +1,1 @@
+hiddenimports = ['sqlalchemy.ext.baked']

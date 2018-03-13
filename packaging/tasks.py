@@ -31,7 +31,7 @@ if sys.platform.startswith('win'):
 
 @task
 def check_dependencies(ctx, build=False):
-    if build and sys.prefix == sys.base_prefix:
+    if build and (sys.prefix == sys.base_prefix and not os.environ.get('CONDA_DEFAULT_ENV', False)):
         raise RuntimeError("Build should be done in a virtual env.")
 
     with open('../requirements.txt', 'r') as f:
@@ -71,8 +71,6 @@ def clean(ctx, dist=False, bytecode=False, extra=''):
 
 @task(call(check_dependencies, build=True))
 def build(ctx, clean=False):
-    icon(ctx)
-    rc(ctx)
     exe(ctx, clean)
     installer(ctx)
 
@@ -91,6 +89,8 @@ def rc(ctx):
 
 @task(call(check_dependencies, build=True))
 def exe(ctx, clean=False):
+    icon(ctx)
+    rc(ctx)
     switchs = "--clean" if clean else ""
     result = ctx.run("pyinstaller gui.spec --noconfirm" + " " + switchs)
     if result:

@@ -30,13 +30,14 @@ excludes.extend(['lib2to3'])
 
 # Add some useful folders to path
 if sys.platform.startswith('win'):
-    pathex.append(r'Lib\site-packages\scipy\extra-dll')
+    pathex.append(sys.prefix + r'\Lib\site-packages\scipy\extra-dll')
 
 # Gather data files
 datas = [('../LICENSE', ''),
          ('../lib/ui/*_rc.py', 'lib/ui'),
          ('../lib/ui/*.ui', 'lib/ui'),
-         ('../lib/ui/images/*', 'lib/ui/images'),
+         ('../lib/ui/widgets/images/*', 'lib/ui/widgets/images'),
+         ('../lib/ui/widgets/spectrum/images/*', 'lib/ui/widgets/spectrum/images'),
          ('../lib/ui/widgets/*.ui', 'lib/ui/widgets')]
 if not sys.platform.startswith('darwin'):
     datas.extend([('../examples/*', 'examples')])
