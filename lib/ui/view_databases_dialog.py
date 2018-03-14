@@ -25,7 +25,7 @@ else:
     INCHI_AVAILABLE = 'inchi' in pybel.informats.keys()
 
 from PyQt5.QtCore import (Qt, QAbstractListModel, QModelIndex,
-                          QItemSelectionModel, QByteArray, QAbstractTableModel, QItemSelection)
+                          QByteArray, QAbstractTableModel)
 from PyQt5 import uic
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'view_databases_dialog.ui')
@@ -200,11 +200,15 @@ class ViewDatabasesDialog(ViewDatabasesDialogUI, ViewDatabasesDialogBase):
         self.lblName.setText(obj.name)
         self.lblInChI.setText(obj.inchi)
         self.lblSmiles.setText(obj.smiles)
-        self.lblPubMed.setText(str(obj.pubmed))
+        self.lblPubMed.setText(f"<a href='http://www.ncbi.nlm.nih.gov/pubmed/?term={obj.pubmed}'>{obj.pubmed}</a>")
         self.lblPepmass.setText(str(obj.pepmass))
         self.lblPolarity.setText(obj.polarity)
         self.lblCharge.setText(str(obj.charge))
         self.lblMSLevel.setText(str(obj.mslevel))
+        self.lblQuality.setText(str(obj.libraryquality))
+        self.lblLibraryId.setText(
+            f"<a href='https://gnps.ucsd.edu/ProteoSAFe/gnpslibraryspectrum.jsp?SpectrumID="
+            f"{obj.spectrumid}'>{obj.spectrumid}</a>")
         if obj.source_instrument is not None:
             self.lblSourceInstrument.setText(obj.source_instrument.name)
         if obj.pi is not None:
@@ -214,7 +218,8 @@ class ViewDatabasesDialog(ViewDatabasesDialogUI, ViewDatabasesDialogBase):
         if obj.datacollector is not None:
             self.lblDataCollector.setText(obj.datacollector.name)
         if obj.submituser is not None:
-            self.lblSubmitUser.setText(obj.submituser.name)
+            self.lblSubmitUser.setText("<a href='https://gnps.ucsd.edu/ProteoSAFe/user/summary.jsp?user="
+                                       f"{obj.submituser.name}'>{obj.submituser.name}</a>")
 
 
         # Show spectrum
@@ -239,6 +244,7 @@ class ViewDatabasesDialog(ViewDatabasesDialogUI, ViewDatabasesDialogBase):
             else:
                 self.widgetStructure.load(QByteArray(b''))
         elif OPENBABEL_AVAILABLE:  # If RDkit not available, try to use OpenBabel
+            mol = None
             try:
                 if INCHI_AVAILABLE and obj.inchi:
                     mol = pybel.readstring('inchi', obj.inchi)
@@ -247,11 +253,12 @@ class ViewDatabasesDialog(ViewDatabasesDialogUI, ViewDatabasesDialogBase):
             except OSError:
                 self.widgetStructure.load(QByteArray(b''))
             else:
-                # Convert to svg, code loosely based on _repr_svg_ from pybel's Molecule
-                namespace = "http://www.w3.org/2000/svg"
-                tree = etree.fromstring(mol.write("svg"))
-                svg = tree.find(f"{{{namespace}}}g/{{{namespace}}}svg")
-                self.widgetStructure.load(QByteArray(etree.tostring(svg)))
+                if mol is not None:
+                    # Convert to svg, code loosely based on _repr_svg_ from pybel's Molecule
+                    namespace = "http://www.w3.org/2000/svg"
+                    tree = etree.fromstring(mol.write("svg"))
+                    svg = tree.find(f"{{{namespace}}}g/{{{namespace}}}svg")
+                    self.widgetStructure.load(QByteArray(etree.tostring(svg)))
 
     def on_bank_changed(self):
         bank = self.cbBanks.currentData(role=BanksModel.BankIdRole)

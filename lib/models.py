@@ -70,7 +70,7 @@ class Spectrum(Base):
     organism = relationship('Organism')
     name = Column(String, comment="Name")
     pi_id = Column(Integer, ForeignKey('investigators.id'), comment="Princ. Investigator")
-    pi = relationship('Organism')
+    pi = relationship('Investigator')
     datacollector_id = Column(Integer, ForeignKey('datacollectors.id'), comment="Data Collector")
     datacollector = relationship('DataCollector')
     smiles = Column(String, comment="SMILES")
@@ -79,6 +79,8 @@ class Spectrum(Base):
     pubmed = Column(String, comment="Pubmed id")
     submituser_id = Column(Integer, ForeignKey('submitters.id'), comment="Submit User")
     submituser = relationship('Submitter')
+    libraryquality = Column(Integer, comment="Library Quality")
+    spectrumid = Column(String, comment="Id")
     peaks = Column(NumpySpectrumArray, comment="Spectrum peaks")
 
     @hybrid_property

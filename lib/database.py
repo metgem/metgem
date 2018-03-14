@@ -98,7 +98,7 @@ class DataBaseBuilder:
 
                 params = entry['params']
 
-                # Set-up a dictionnary with all the values needed to build a Spectrum object
+                # Set-up a dictionary with all the values needed to build a Spectrum object
                 spectrum = {
                             'bank_id': self._indexes['bank'],
                             'pepmass': float(params.get('pepmass', [-1])[0]),
@@ -111,6 +111,8 @@ class DataBaseBuilder:
                             'smiles': clean_string(params.get('smiles', None)),
                             'pubmed': clean_string(params.get('pubmed', None)),
                             'submituser': clean_string(params.get('inchi', None)),
+                            'libraryquality': int(params.get('libraryquality', 0)),
+                            'spectrumid': clean_string(params.get('spectrumid', None))
                            }
 
                 # Add foreign keys
@@ -176,10 +178,20 @@ class SpectraLibrary:
 if __name__ == "__main__":
     import time
     import glob
+    import sys
+
+    if sys.platform.startswith('win'):
+        DATABASES_PATH = os.path.expandvars(r'%APPDATA%\tsne-network\databases')
+    elif sys.platform.startswith('darwin'):
+        DATABASES_PATH = os.path.expanduser(r'~/Library/tsne-network/databases')
+    elif sys.platform.startswith('linux'):
+        DATABASES_PATH = os.path.expanduser(r'~/.config/tsne-network/databases')
+    else:
+        DATABASES_PATH = 'databases'
 
     t00 = time.time()
-    with DataBaseBuilder('spectra', echo=False) as db:
-        for path in glob.glob(os.path.expanduser(r'~/.config/tsne-network/databases/*.mgf')):
+    with DataBaseBuilder(os.path.join(DATABASES_PATH, 'spectra'), echo=False) as db:
+        for path in glob.glob(os.path.join(DATABASES_PATH, '*.mgf')):
             if not path.endswith('ALL_GNPS.mgf'):
                 filename = os.path.basename(path)
                 print(f'Processing {filename}...')
