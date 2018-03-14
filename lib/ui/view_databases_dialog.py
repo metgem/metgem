@@ -32,7 +32,7 @@ UI_FILE = os.path.join(os.path.dirname(__file__), 'view_databases_dialog.ui')
 
 from ..database import SpectraLibrary
 from ..models import Bank, Spectrum, Base
-from .widgets import AutoToolTipItemDelegate
+from .widgets import AutoToolTipItemDelegate, LibraryQualityDelegate
 
 ViewDatabasesDialogUI, ViewDatabasesDialogBase = uic.loadUiType(UI_FILE,
                                                                 from_imports='lib.ui',
@@ -173,6 +173,10 @@ class ViewDatabasesDialog(ViewDatabasesDialogUI, ViewDatabasesDialogBase):
 
         model = SpectraModel(self.library.session,
                              self.cbBanks.currentData(role=BanksModel.BankIdRole))
+        for i in range(model.columnCount()):
+            if model.headerData(i, Qt.Horizontal) == Spectrum.libraryquality.comment:
+                self.tvSpectra.setItemDelegateForColumn(i, LibraryQualityDelegate())
+                break
         self.tvSpectra.setModel(model)
 
         # Connect events
@@ -197,18 +201,27 @@ class ViewDatabasesDialog(ViewDatabasesDialogUI, ViewDatabasesDialogBase):
             return
 
         # Update description labels
-        self.lblName.setText(obj.name)
-        self.lblInChI.setText(obj.inchi)
-        self.lblSmiles.setText(obj.smiles)
-        self.lblPubMed.setText(f"<a href='http://www.ncbi.nlm.nih.gov/pubmed/?term={obj.pubmed}'>{obj.pubmed}</a>")
-        self.lblPepmass.setText(str(obj.pepmass))
-        self.lblPolarity.setText(obj.polarity)
-        self.lblCharge.setText(str(obj.charge))
-        self.lblMSLevel.setText(str(obj.mslevel))
-        self.lblQuality.setText(str(obj.libraryquality))
-        self.lblLibraryId.setText(
-            f"<a href='https://gnps.ucsd.edu/ProteoSAFe/gnpslibraryspectrum.jsp?SpectrumID="
-            f"{obj.spectrumid}'>{obj.spectrumid}</a>")
+        if obj.name is not None:
+            self.lblName.setText(obj.name)
+        if obj.inchi is not None:
+            self.lblInChI.setText(obj.inchi)
+        if obj.smiles is not None:
+            self.lblSmiles.setText(obj.smiles)
+        if obj.pubmed is not None:
+            self.lblPubMed.setText(f"<a href='http://www.ncbi.nlm.nih.gov/pubmed/?term={obj.pubmed}'>{obj.pubmed}</a>")
+        if obj.pepmass is not None:
+            self.lblPepmass.setText(str(obj.pepmass))
+        if obj.polarity is not None:
+            self.lblPolarity.setText(obj.polarity)
+        if obj.charge is not None:
+            self.lblCharge.setText(str(obj.charge))
+        if obj.mslevel is not None:
+            self.lblMSLevel.setText(str(obj.mslevel))
+        if obj.libraryquality is not None:
+            self.lblQuality.setText(str(obj.libraryquality))
+        if obj.spectrumid is not None:
+            self.lblLibraryId.setText(f"<a href='https://gnps.ucsd.edu/ProteoSAFe/gnpslibraryspectrum.jsp?SpectrumID="
+                                      f"{obj.spectrumid}'>{obj.spectrumid}</a>")
         if obj.source_instrument is not None:
             self.lblSourceInstrument.setText(obj.source_instrument.name)
         if obj.pi is not None:

@@ -56,8 +56,8 @@ class Spectrum:
                     mz_ratios = data[:, Spectrum.MZ]
                     mask = np.logical_and(mz_ratios >= mz_ratios[:, None] - options.matched_peaks_window,
                                           mz_ratios <= mz_ratios[:, None] + options.matched_peaks_window)
-                    data = data[np.array(
-                        [mz_ratios[i] in mz_ratios[mask[i]][-options.min_matched_peaks_search:] for i in range(mask.shape[0])])]
+                    data = data[np.array([mz_ratios[i] in mz_ratios[mask[i]][-options.min_matched_peaks_search:]
+                                          for i in range(mask.shape[0])])]
                     del mask
 
                     if data.size > 0:
