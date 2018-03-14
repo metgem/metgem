@@ -44,23 +44,30 @@ class Spectrum:
         data = data[np.logical_or(data[:, Spectrum.MZ] <= self.mz_parent - options.parent_filter_tolerance,
                                   data[:, Spectrum.MZ] >= self.mz_parent + options.parent_filter_tolerance)]
 
-        # Keep only peaks higher than threshold
-        data = data[data[:, Spectrum.INTENSITY] >= options.min_intensity * data[:, Spectrum.INTENSITY].max() / 100]
+        if data.size > 0:
+            # Keep only peaks higher than threshold
+            data = data[data[:, Spectrum.INTENSITY] >= options.min_intensity * data[:, Spectrum.INTENSITY].max() / 100]
 
-        # Window rank filter
-        data = data[np.argsort(data[:, Spectrum.INTENSITY])]
-        mz_ratios = data[:, Spectrum.MZ]
-        mask = np.logical_and(mz_ratios >= mz_ratios[:, None] - options.matched_peaks_window,
-                              mz_ratios <= mz_ratios[:, None] + options.matched_peaks_window)
-        data = data[np.array(
-            [mz_ratios[i] in mz_ratios[mask[i]][-options.min_matched_peaks_search:] for i in range(mask.shape[0])])]
+            if data.size > 0:
+                # Window rank filter
+                data = data[np.argsort(data[:, Spectrum.INTENSITY])]
 
-        # Use square root of intensities to minimize/maximize effects of high/low intensity peaks
-        data[:, Spectrum.INTENSITY] = np.sqrt(data[:, Spectrum.INTENSITY]) * 10
+                if data.size > 0:
+                    mz_ratios = data[:, Spectrum.MZ]
+                    mask = np.logical_and(mz_ratios >= mz_ratios[:, None] - options.matched_peaks_window,
+                                          mz_ratios <= mz_ratios[:, None] + options.matched_peaks_window)
+                    data = data[np.array([mz_ratios[i] in mz_ratios[mask[i]][-options.min_matched_peaks_search:]
+                                          for i in range(mask.shape[0])])]
+                    del mask
 
-        # Normalize data to norm 1
-        data[:, Spectrum.INTENSITY] = data[:, Spectrum.INTENSITY] / np.sqrt(data[:, Spectrum.INTENSITY]
-                                                                            @ data[:, Spectrum.INTENSITY])
+                    if data.size > 0:
+                        # Use square root of intensities to minimize/maximize effects of high/low intensity peaks
+                        data[:, Spectrum.INTENSITY] = np.sqrt(data[:, Spectrum.INTENSITY]) * 10
+
+                        # Normalize data to norm 1
+                        data[:, Spectrum.INTENSITY] = data[:, Spectrum.INTENSITY] / \
+                                                      np.sqrt(data[:, Spectrum.INTENSITY]
+                                                              @ data[:, Spectrum.INTENSITY])
 
         self.data = data
 
