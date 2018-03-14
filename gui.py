@@ -13,9 +13,10 @@ import igraph as ig
 from PyQt5.QtWidgets import (QDialog, QFileDialog,
                              QMessageBox, QWidget, QGraphicsRectItem,
                              QMenu, QToolButton, QActionGroup,
-                             QAction, QDockWidget, QWIDGETSIZE_MAX)
+                             QAction, QDockWidget, QWIDGETSIZE_MAX, qApp)
 from PyQt5.QtCore import QSettings, Qt, QPointF, QSignalMapper, QSize, QPropertyAnimation, QEasingCurve
-from PyQt5.QtGui import QPainter, QImage
+from PyQt5.QtGui import QPainter, QImage, QCursor
+
 from PyQt5 import uic
 
 from lib import ui, config, utils, workers, errors
@@ -83,6 +84,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.network = utils.Network()
 
         # Add model to table views
+
         for table, Model, name in ((self.tvNodes, ui.widgets.NodesModel, "Nodes"),
                                    (self.tvEdges, ui.widgets.EdgesModel, "Edges")):
             table.setSortingEnabled(True)
@@ -135,6 +137,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
             kernel_manager.kernel.shell.push({'app': app, 'win': self})
 
         # Connect events
+        self.tvNodes.horizontalHeader().customContextMenuRequested.connect(self.select_tv_nodes_label)
+        self.tvNodes.clicked.connect(self.on_tv_selection_changed)
+        self.tvEdges.clicked.connect(self.on_tv_selection_changed)
+
         self.gvNetwork.scene().selectionChanged.connect(self.on_scene_selection_changed)
         self.gvTSNE.scene().selectionChanged.connect(self.on_scene_selection_changed)
         self.gvNetwork.showSpectrumTriggered.connect(lambda node: self.on_show_spectrum_triggered('show', node))
@@ -297,6 +303,16 @@ class MainWindow(MainWindowBase, MainWindowUI):
                     pass
                 self.gvNetwork.scene().selectionChanged.connect(self.on_scene_selection_changed)
 
+    def on_tv_selection_changed(self):
+    	selected_tv = self.sender()
+    	if selected_tv == self.tvNodes:
+    		self.gvNetwork.scene().clearSelection()
+    		self.gvTSNE.scene().clearSelection()
+    		selected_nodes_idx = [index.row() for index in selected_tv.selectedIndexes()]
+    		for idx in selected_nodes_idx:
+    			self.graph.vs['__tsne_gobj'][idx].setSelected(True)
+    			self.graph.vs['__tsne_gobj'][idx].update()
+
     def on_search_text_changed(self, value):
         self.tvNodes.model().setFilterRegExp(str(value))
 
@@ -454,6 +470,30 @@ class MainWindow(MainWindowBase, MainWindowUI):
                             v['__tsne_gobj'].setSelected(True)
                     except (KeyError, AttributeError):
                         pass
+
+    def select_tv_nodes_label(self, event):
+        """ A right click on a column name allows the info to be displayed in the graphView """
+        selected_column_index = self.tvNodes.columnAt(event.x())
+        if selected_column_index != -1:
+            menu = QMenu(self)
+            selectAction = QAction("Display on Nodes", self)
+            menu.addAction(selectAction)
+            menu.popup(QCursor.pos())
+            selectAction.triggered.connect(lambda: self.display_tv_nodes_label(selected_column_index))
+
+    def display_tv_nodes_label(self, column_index):
+        model = self.tvNodes.model().sourceModel()
+        for i, vertex in enumerate(self.graph.vs):
+            try:
+                label = model.index(i, column_index).data().astype('str')
+                if len(label) > 7:
+                    label = label[:7]
+                vertex['__tsne_gobj'].setLabel(label)
+                vertex['__tsne_gobj'].update()
+                vertex['__network_gobj'].setLabel(label)
+                vertex['__network_gobj'].update()
+            except (KeyError, AttributeError):
+                pass
 
     def on_current_parameters_triggered(self):
         dialog = ui.CurrentParametersDialog(self, options=self.options)

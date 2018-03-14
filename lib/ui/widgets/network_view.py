@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
 from PyQt5.QtCore import (QLineF, QPointF, QRectF, Qt, pyqtSignal,
-                          QAbstractTableModel, QModelIndex, QSortFilterProxyModel)
-from PyQt5.QtGui import (QPainter, QPainterPath, QPen, QSurfaceFormat)
+                          QAbstractTableModel, QModelIndex, QSortFilterProxyModel, Qt)
+from PyQt5.QtGui import (QPainter, QPainterPath, QPen, QSurfaceFormat, QCursor)
 from PyQt5.QtWidgets import (QGraphicsItem,
                              QGraphicsEllipseItem, QGraphicsPathItem,
                              QGraphicsScene, QGraphicsView,
                              QRubberBand, QStyle, QOpenGLWidget,
-                             QFormLayout, QSizePolicy, QMenu)
+                             QFormLayout, QSizePolicy, QMenu, QTableView, QAction)
 
 from ...config import RADIUS, NODE_BORDER_WIDTH, FONT_SIZE
 
@@ -149,6 +149,9 @@ class Node(QGraphicsEllipseItem):
         self.setColor(Qt.lightGray)
         self.setPen(QPen(Qt.black, NODE_BORDER_WIDTH))
     
+    def setLabel(self, label):
+        self.label = label
+
     def setColor(self, color):
         self._color = color
         
@@ -472,3 +475,20 @@ class ProxyModel(QSortFilterProxyModel):
             else:
                 self._selection = idx
             self.invalidateFilter()
+
+class NodeTableView(QTableView):
+    """ TableView to display Nodes information """
+    def __init__(self):
+        super().__init__()
+        self.horizontalHeader().setContextMenuPolicy(Qt.CustomContextMenu)
+            
+    def displayColumnInfo(self, column_index):
+        model = self.model()
+        print (column_index)
+
+    """def contextMenuEvent(self, event):
+        menu = QMenu(self)
+        selectAction = QAction("Show in graphs", self)
+        menu.addAction(selectAction)
+        menu.popup(QCursor.pos())
+        print(self.columnAt(QCursor.pos().x()))"""

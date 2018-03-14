@@ -206,7 +206,7 @@
       </widget>
       <widget class="QTabWidget" name="tabWidget">
        <property name="currentIndex">
-        <number>2</number>
+        <number>0</number>
        </property>
        <property name="documentMode">
         <bool>false</bool>
@@ -214,7 +214,7 @@
        <property name="movable">
         <bool>true</bool>
        </property>
-       <widget class="QTableView" name="tvNodes">
+       <widget class="NodeTableView" name="tvNodes">
         <attribute name="icon">
          <iconset resource="ui.qrc">
           <normaloff>:/icons/images/node.svg</normaloff>:/icons/images/node.svg</iconset>
@@ -749,6 +749,11 @@
    <extends>QWidget</extends>
    <header>lib/ui/widgets.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>NodeTableView</class>
+   <extends>QTableView</extends>
+   <header>lib/ui.h</header>
   </customwidget>
  </customwidgets>
  <resources>
