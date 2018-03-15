@@ -13,8 +13,8 @@ import igraph as ig
 from PyQt5.QtWidgets import (QDialog, QFileDialog,
                              QMessageBox, QWidget, QGraphicsRectItem,
                              QMenu, QToolButton, QActionGroup,
-                             QAction, QDockWidget, QWIDGETSIZE_MAX, qApp)
-from PyQt5.QtCore import QSettings, Qt, QPointF, QSignalMapper, QSize, QPropertyAnimation, QEasingCurve
+                             QAction, QDockWidget, QWIDGETSIZE_MAX)
+from PyQt5.QtCore import QSettings, Qt, QPointF, QSignalMapper, QSize
 from PyQt5.QtGui import QPainter, QImage, QCursor
 
 from PyQt5 import uic
@@ -928,7 +928,7 @@ if __name__ == '__main__':
     import logging
     from logging.handlers import RotatingFileHandler
 
-    from PyQt5.QtWidgets import QApplication, QMainWindow
+    from PyQt5.QtWidgets import QApplication
     from PyQt5.QtCore import QCoreApplication
 
 
@@ -996,7 +996,7 @@ if __name__ == '__main__':
 
     window = MainWindow()
 
-    # sys.excepthook = exceptionHandler
+    sys.excepthook = exceptionHandler
 
     window.show()
 
