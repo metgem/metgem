@@ -403,6 +403,7 @@ class GraphTableModel(QAbstractTableModel):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        self._attributes = None
 
     def rowCount(self, parent=QModelIndex()):
         if self._type == GraphTableModel.EdgesModelType:
@@ -433,13 +434,19 @@ class GraphTableModel(QAbstractTableModel):
             return self.attributes[section]
         else:
             return super().headerData(section, orientation, role)
-         
+
+    def beginResetModel(self):
+        self._attributes = None
+        super().beginResetModel()
+
     @property
     def attributes(self):
-        if self._type == GraphTableModel.EdgesModelType:
-            return [x for x in self.parent().graph.es.attributes() if not x.startswith('__')]
-        else:
-            return [x for x in self.parent().graph.vs.attributes() if not x.startswith('__')]
+        if self._attributes is None:
+            if self._type == GraphTableModel.EdgesModelType:
+                self._attributes = [x for x in self.parent().graph.es.attributes() if not x.startswith('__')]
+            else:
+                self._attributes = [x for x in self.parent().graph.vs.attributes() if not x.startswith('__')]
+        return self._attributes
             
             
 class NodesModel(GraphTableModel):
