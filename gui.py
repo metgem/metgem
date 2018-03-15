@@ -138,8 +138,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         # Connect events
         self.tvNodes.horizontalHeader().customContextMenuRequested.connect(self.on_nodes_header_contextmenu)
-        self.tvNodes.clicked.connect(self.on_tv_selection_changed)
-        self.tvEdges.clicked.connect(self.on_tv_selection_changed)
+        self.tvNodes.selectionModel().selectionChanged.connect(self.on_nodes_table_selection_changed)
 
         self.gvNetwork.scene().selectionChanged.connect(self.on_scene_selection_changed)
         self.gvTSNE.scene().selectionChanged.connect(self.on_scene_selection_changed)
@@ -302,19 +301,19 @@ class MainWindow(MainWindowBase, MainWindowUI):
                     pass
                 self.gvNetwork.scene().selectionChanged.connect(self.on_scene_selection_changed)
 
-    def on_tv_selection_changed(self):
-        selected_tv = self.sender()
-        if selected_tv == self.tvNodes:
-            self.gvNetwork.scene().selectionChanged.disconnect()
-            self.gvNetwork.scene().clearSelection()
-            self.gvTSNE.scene().selectionChanged.disconnect()
-            self.gvTSNE.scene().clearSelection()
-            selected_nodes_idx = [index.row() for index in selected_tv.selectedIndexes()]
-            for idx in selected_nodes_idx:
-                self.graph.vs['__tsne_gobj'][idx].setSelected(True)
-                self.graph.vs['__network_gobj'][idx].setSelected(True)
-            self.gvNetwork.scene().selectionChanged.connect(self.on_scene_selection_changed)
-            self.gvTSNE.scene().selectionChanged.connect(self.on_scene_selection_changed)
+    def on_nodes_table_selection_changed(self, selected, deselected):
+        selected = {index.row() for index in self.tvNodes.model().mapSelectionToSource(selected).indexes()}
+        deselected = {index.row() for index in self.tvNodes.model().mapSelectionToSource(deselected).indexes()} - selected
+        self.gvNetwork.scene().selectionChanged.disconnect()
+        self.gvTSNE.scene().selectionChanged.disconnect()
+        for index in deselected:
+            self.graph.vs['__tsne_gobj'][index].setSelected(False)
+            self.graph.vs['__network_gobj'][index].setSelected(False)
+        for index in selected:
+            self.graph.vs['__tsne_gobj'][index].setSelected(True)
+            self.graph.vs['__network_gobj'][index].setSelected(True)
+        self.gvNetwork.scene().selectionChanged.connect(self.on_scene_selection_changed)
+        self.gvTSNE.scene().selectionChanged.connect(self.on_scene_selection_changed)
 
     def on_search_text_changed(self, value):
         self.tvNodes.model().setFilterRegExp(str(value))
