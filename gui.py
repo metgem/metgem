@@ -91,7 +91,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             proxy = ui.widgets.ProxyModel()
             proxy.setSourceModel(model)
             table.setModel(proxy)
-            table.setItemDelegate(ui.widgets.NumberDelegate())
+            table.setItemDelegate(ui.widgets.EnsureStringItemDelegate())
 
         # Move search layout to search toolbar
         w = QWidget()
@@ -935,7 +935,6 @@ if __name__ == '__main__':
 
     from PyQt5.QtWidgets import QApplication
     from PyQt5.QtCore import QCoreApplication
-
 
     def exceptionHandler(exctype, value, trace):
         """
