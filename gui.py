@@ -209,13 +209,12 @@ class MainWindow(MainWindowBase, MainWindowUI):
     @has_unsaved_changes.setter
     def has_unsaved_changes(self, value):
         if value:
-            self.setWindowTitle(self.window_title)
             self.actionSave.setEnabled(True)
         else:
-            self.setWindowTitle(self.window_title)
             self.actionSave.setEnabled(False)
 
         self._has_unsaved_changes = value
+        self.setWindowTitle(self.window_title)
 
     @property
     def current_view(self):
