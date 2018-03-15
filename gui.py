@@ -138,7 +138,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         # Connect events
         self.tvNodes.horizontalHeader().customContextMenuRequested.connect(self.on_nodes_header_contextmenu)
-        self.tvNodes.selectionModel().selectionChanged.connect(self.on_nodes_table_selection_changed)
+        #self.tvNodes.selectionModel().selectionChanged.connect(self.on_nodes_table_selection_changed)
+        self.tvNodes.customContextMenuRequested.connect(self.on_nodes_table_contextmenu)
 
         self.gvNetwork.scene().selectionChanged.connect(self.on_scene_selection_changed)
         self.gvTSNE.scene().selectionChanged.connect(self.on_scene_selection_changed)
@@ -482,6 +483,30 @@ class MainWindow(MainWindowBase, MainWindowUI):
             menu.addAction(action)
             menu.popup(QCursor.pos())
             action.triggered.connect(lambda: self.set_nodes_label(selected_column_index))
+
+    def on_nodes_table_contextmenu(self, event):
+        selected_column_index = self.tvNodes.columnAt(event.x())
+        selected_row_index = self.tvNodes.rowAt(event.y())
+        if selected_column_index != -1 and selected_row_index != -1:
+            menu = QMenu(self)
+            action = QAction("Highlight selected nodes", self)
+            menu.addAction(action)
+            menu.popup(QCursor.pos())
+            action.triggered.connect(lambda: self.highlight_selected_nodes())
+
+    def highlight_selected_nodes(self):
+        selected = {index.row() for index in self.tvNodes.selectionModel().selectedIndexes()}
+        deselected = {index.index for index in self.gvNetwork.scene().selectedItems()} - selected
+        self.gvNetwork.scene().selectionChanged.disconnect()
+        self.gvTSNE.scene().selectionChanged.disconnect()
+        for index in deselected:
+            self.graph.vs['__tsne_gobj'][index].setSelected(False)
+            self.graph.vs['__network_gobj'][index].setSelected(False)
+        for index in selected:
+            self.graph.vs['__tsne_gobj'][index].setSelected(True)
+            self.graph.vs['__network_gobj'][index].setSelected(True)
+        self.gvNetwork.scene().selectionChanged.connect(self.on_scene_selection_changed)
+        self.gvTSNE.scene().selectionChanged.connect(self.on_scene_selection_changed)
 
     def on_current_parameters_triggered(self):
         dialog = ui.CurrentParametersDialog(self, options=self.options)
