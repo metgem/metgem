@@ -137,7 +137,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             kernel_manager.kernel.shell.push({'app': app, 'win': self})
 
         # Connect events
-        self.tvNodes.horizontalHeader().customContextMenuRequested.connect(self.on_nodes_contextmenu)
+        self.tvNodes.horizontalHeader().customContextMenuRequested.connect(self.on_nodes_header_contextmenu)
         self.tvNodes.clicked.connect(self.on_tv_selection_changed)
         self.tvEdges.clicked.connect(self.on_tv_selection_changed)
 
@@ -475,7 +475,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                     except (KeyError, AttributeError):
                         pass
 
-    def on_nodes_contextmenu(self, event):
+    def on_nodes_header_contextmenu(self, event):
         """ A right click on a column name allows the info to be displayed in the graphView """
         selected_column_index = self.tvNodes.columnAt(event.x())
         if selected_column_index != -1:
