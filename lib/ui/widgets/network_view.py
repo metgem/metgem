@@ -435,9 +435,9 @@ class GraphTableModel(QAbstractTableModel):
         else:
             return super().headerData(section, orientation, role)
 
-    def beginResetModel(self):
+    def endResetModel(self):
         self._attributes = None
-        super().beginResetModel()
+        super().endResetModel()
 
     @property
     def attributes(self):

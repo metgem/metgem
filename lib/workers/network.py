@@ -15,7 +15,6 @@ class NetworkWorker(BaseWorker):
         super().__init__()
         self.graph = graph
 
-
     def run(self):
         layout = np.zeros((self.graph.vcount(), 2))
         
@@ -38,7 +37,7 @@ class NetworkWorker(BaseWorker):
                 l = ig.Layout([(0, -2*RADIUS), (0, 2*RADIUS)])
                 border = 2*RADIUS
             else:
-                l = graph.layout_graphopt(node_mass=3)
+                l = graph.layout_graphopt(node_mass=3, niter=100)
                 l.scale(3)
                 border = 5*RADIUS
             
@@ -57,7 +56,6 @@ class NetworkWorker(BaseWorker):
                 dx = 0
                 dy += max_height
                 max_height = 0
-            
 
         self._result = layout
         self.finished.emit()

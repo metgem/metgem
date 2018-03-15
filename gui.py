@@ -84,7 +84,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.network = utils.Network()
 
         # Add model to table views
-
         for table, Model, name in ((self.tvNodes, ui.widgets.NodesModel, "Nodes"),
                                    (self.tvEdges, ui.widgets.EdgesModel, "Edges")):
             table.setSortingEnabled(True)
@@ -92,6 +91,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             proxy = ui.widgets.ProxyModel()
             proxy.setSourceModel(model)
             table.setModel(proxy)
+            table.setItemDelegate(ui.widgets.NumberDelegate())
 
         # Move search layout to search toolbar
         w = QWidget()
@@ -628,6 +628,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
     def create_graph(self, interactions, labels=None):
         # Delete all previously created edges and nodes
+        self.tvNodes.model().sourceModel().beginResetModel()
+        self.tvEdges.model().sourceModel().beginResetModel()
+
         self.graph.delete_edges(self.graph.es)
         self.graph.delete_vertices(self.graph.vs)
 
@@ -648,7 +651,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
         else:
             self.graph.vs['__label'] = nodes_idx.astype('str')
 
-    def draw(self, interactions=None, labels=None, compute_layouts=True, which='all'):  # TODO: Use infos and labels
+        self.tvNodes.model().sourceModel().endResetModel()
+        self.tvEdges.model().sourceModel().endResetModel()
+
+    def draw(self, interactions=None, compute_layouts=True, which='all'):
         if which == 'all':
             which = {'network', 't-sne'}
         elif isinstance(which, str):
