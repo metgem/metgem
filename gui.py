@@ -977,7 +977,7 @@ if __name__ == '__main__':
 
     logger = logging.getLogger()
     formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
-    file_handler = RotatingFileHandler(os.path.join(LOG_PATH, '{}.log'.format(__file__)), 'a', 1000000, 1)
+    file_handler = RotatingFileHandler(os.path.join(LOG_PATH, f'{os.path.basename(__file__)}.log'), 'a', 1000000, 1)
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
 
