@@ -709,7 +709,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
             else:
                 draw_tsne()
 
-        self._workers.add(worker)
+        if worker is not None:
+            self._workers.add(worker)
 
         self.tvNodes.model().sourceModel().endResetModel()
         self.tvEdges.model().sourceModel().endResetModel()
