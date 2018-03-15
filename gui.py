@@ -302,7 +302,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                     pass
                 self.gvNetwork.scene().selectionChanged.connect(self.on_scene_selection_changed)
 
-    def on_nodes_table_selection_changed(self, selected, deselected):
+    """def on_nodes_table_selection_changed(self, selected, deselected):
         selected = {index.row() for index in self.tvNodes.model().mapSelectionToSource(selected).indexes()}
         deselected = {index.row() for index in self.tvNodes.model().mapSelectionToSource(deselected).indexes()} - selected
         self.gvNetwork.scene().selectionChanged.disconnect()
@@ -314,7 +314,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.graph.vs['__tsne_gobj'][index].setSelected(True)
             self.graph.vs['__network_gobj'][index].setSelected(True)
         self.gvNetwork.scene().selectionChanged.connect(self.on_scene_selection_changed)
-        self.gvTSNE.scene().selectionChanged.connect(self.on_scene_selection_changed)
+        self.gvTSNE.scene().selectionChanged.connect(self.on_scene_selection_changed)"""
 
     def on_search_text_changed(self, value):
         self.tvNodes.model().setFilterRegExp(str(value))
