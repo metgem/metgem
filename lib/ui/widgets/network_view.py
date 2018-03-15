@@ -151,6 +151,7 @@ class Node(QGraphicsEllipseItem):
     
     def setLabel(self, label):
         self.label = label
+        self.update()
 
     def setColor(self, color):
         self._color = color

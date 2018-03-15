@@ -137,7 +137,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             kernel_manager.kernel.shell.push({'app': app, 'win': self})
 
         # Connect events
-        self.tvNodes.horizontalHeader().customContextMenuRequested.connect(self.select_tv_nodes_label)
+        self.tvNodes.horizontalHeader().customContextMenuRequested.connect(self.on_nodes_contextmenu)
         self.tvNodes.clicked.connect(self.on_tv_selection_changed)
         self.tvEdges.clicked.connect(self.on_tv_selection_changed)
 
@@ -304,14 +304,18 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 self.gvNetwork.scene().selectionChanged.connect(self.on_scene_selection_changed)
 
     def on_tv_selection_changed(self):
-    	selected_tv = self.sender()
-    	if selected_tv == self.tvNodes:
-    		self.gvNetwork.scene().clearSelection()
-    		self.gvTSNE.scene().clearSelection()
-    		selected_nodes_idx = [index.row() for index in selected_tv.selectedIndexes()]
-    		for idx in selected_nodes_idx:
-    			self.graph.vs['__tsne_gobj'][idx].setSelected(True)
-    			self.graph.vs['__tsne_gobj'][idx].update()
+        selected_tv = self.sender()
+        if selected_tv == self.tvNodes:
+            self.gvNetwork.scene().selectionChanged.disconnect()
+            self.gvNetwork.scene().clearSelection()
+            self.gvTSNE.scene().selectionChanged.disconnect()
+            self.gvTSNE.scene().clearSelection()
+            selected_nodes_idx = [index.row() for index in selected_tv.selectedIndexes()]
+            for idx in selected_nodes_idx:
+                self.graph.vs['__tsne_gobj'][idx].setSelected(True)
+                self.graph.vs['__network_gobj'][idx].setSelected(True)
+            self.gvNetwork.scene().selectionChanged.connect(self.on_scene_selection_changed)
+            self.gvTSNE.scene().selectionChanged.connect(self.on_scene_selection_changed)
 
     def on_search_text_changed(self, value):
         self.tvNodes.model().setFilterRegExp(str(value))
@@ -471,52 +475,19 @@ class MainWindow(MainWindowBase, MainWindowUI):
                     except (KeyError, AttributeError):
                         pass
 
-    def select_tv_nodes_label(self, event):
+    def on_nodes_contextmenu(self, event):
         """ A right click on a column name allows the info to be displayed in the graphView """
         selected_column_index = self.tvNodes.columnAt(event.x())
         if selected_column_index != -1:
             menu = QMenu(self)
-            selectAction = QAction("Display on Nodes", self)
-            menu.addAction(selectAction)
+            action = QAction("Use column as node labels", self)
+            menu.addAction(action)
             menu.popup(QCursor.pos())
-            selectAction.triggered.connect(lambda: self.display_tv_nodes_label(selected_column_index))
-
-    def display_tv_nodes_label(self, column_index):
-        model = self.tvNodes.model().sourceModel()
-        for i, vertex in enumerate(self.graph.vs):
-            try:
-                label = model.index(i, column_index).data().astype('str')
-                if len(label) > 7:
-                    label = label[:7]
-                vertex['__tsne_gobj'].setLabel(label)
-                vertex['__tsne_gobj'].update()
-                vertex['__network_gobj'].setLabel(label)
-                vertex['__network_gobj'].update()
-            except (KeyError, AttributeError):
-                pass
+            action.triggered.connect(lambda: self.set_nodes_label(selected_column_index))
 
     def on_current_parameters_triggered(self):
         dialog = ui.CurrentParametersDialog(self, options=self.options)
         dialog.exec_()
-
-    def show_items(self, items):
-        for item in items:
-            item.show()
-
-    def hide_items(self, items):
-        for item in items:
-            item.hide()
-
-    def minimize_tabwidget(self):
-        w = self.tabWidget.cornerWidget(Qt.TopRightCorner)
-        if w.arrowType() == Qt.DownArrow:
-            w.setArrowType(Qt.UpArrow)
-            self.tabWidget.setMaximumHeight(self.tabWidget.tabBar().height())
-            self.tabWidget.setDocumentMode(True)
-        else:
-            w.setArrowType(Qt.DownArrow)
-            self.tabWidget.setDocumentMode(False)
-            self.tabWidget.setMaximumHeight(QWIDGETSIZE_MAX)
 
     def on_full_screen_triggered(self):
         if not self.isFullScreen():
@@ -606,6 +577,36 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def on_view_databases_triggered(self):
         dialog = ui.ViewDatabasesDialog(self, base_path=DATABASES_PATH)
         dialog.exec_()
+
+    def show_items(self, items):
+        for item in items:
+            item.show()
+
+    def hide_items(self, items):
+        for item in items:
+            item.hide()
+
+    def minimize_tabwidget(self):
+        w = self.tabWidget.cornerWidget(Qt.TopRightCorner)
+        if w.arrowType() == Qt.DownArrow:
+            w.setArrowType(Qt.UpArrow)
+            self.tabWidget.setMaximumHeight(self.tabWidget.tabBar().height())
+            self.tabWidget.setDocumentMode(True)
+        else:
+            w.setArrowType(Qt.DownArrow)
+            self.tabWidget.setDocumentMode(False)
+            self.tabWidget.setMaximumHeight(QWIDGETSIZE_MAX)
+
+    def set_nodes_label(self, column_index):
+        model = self.tvNodes.model().sourceModel()
+        for i, vertex in enumerate(self.graph.vs):
+            try:
+                label = str(model.index(i, column_index).data())
+                vertex['__tsne_gobj'].setLabel(label)
+                vertex['__network_gobj'].setLabel(label)
+            except (KeyError, AttributeError):
+                pass
+        self.gvNetwork.scene().update()
 
     def save_settings(self):
         settings = QSettings()
@@ -995,7 +996,7 @@ if __name__ == '__main__':
 
     window = MainWindow()
 
-    sys.excepthook = exceptionHandler
+    # sys.excepthook = exceptionHandler
 
     window.show()
 
