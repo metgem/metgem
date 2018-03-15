@@ -207,10 +207,15 @@ class ComputeScoresWorker(BaseWorker):
 
         # Compute cosine scores
         if self.use_multiprocessing:
-            # for spectrum in self._spectra:
-            # spectrum.use_multiprocessing()
+            for spectrum in self._spectra:
+                spectrum.use_multiprocessing()
 
-            scores_matrix = mp.RawArray(c_float, num_spectra ** 2)
+            try:
+                scores_matrix = mp.RawArray(c_float, num_spectra ** 2)
+            except OSError as e:
+                self.error.emit(e)
+                del self._spectra
+                return False
             m = np.frombuffer(scores_matrix, dtype=np.float32)
             m[:] = 0
 

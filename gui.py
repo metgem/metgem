@@ -830,6 +830,13 @@ class MainWindow(MainWindowBase, MainWindowUI):
         def update_progress(i):
             self.progressBar.setValue(self.progressBar.value() + i)
 
+        def error(e):
+            if e.__class__ == OSError:
+                dialog = QMessageBox(self)
+                dialog.warning(self, None, str(e))
+            else:
+                raise e
+
         num_spectra = len(spectra)
         num_scores_to_compute = num_spectra * (num_spectra - 1) // 2
 
@@ -837,6 +844,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.progressBar.setMaximum(num_scores_to_compute)
         worker = workers.ComputeScoresWorker(spectra, use_multiprocessing, self.options.cosine)
         worker.updated.connect(update_progress)
+        worker.error.connect(error)
 
         return worker
 
