@@ -28,5 +28,5 @@ $ source bin/activate
 $ pip3 install -r ../requirements.txt
 $ pip3 install pyinstaller dmgbuild invoke==0.22.1
 $ invoke build
-$ source bin/deactivate
+$ deactivate
 ```
