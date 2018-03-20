@@ -70,8 +70,7 @@ a = Analysis(['../gui.py'],
              cipher=block_cipher)
              
 # Remove MKL binaries
-a.binaries = [bin for bin in a.binaries if not bin[0].startswith('mkl_')]
-# a.binaries = [bin for bin in a.binaries if not bin[0].startswith('api-ms-win-')]
+# a.binaries = [bin for bin in a.binaries if not bin[0].startswith('mkl_')]
 
 # Remove unused IPython data files
 a.datas = [dat for dat in a.datas if not dat[0].startswith('IPython')]
