@@ -498,7 +498,7 @@
              </widget>
             </item>
             <item row="8" column="1">
-             <widget class="QLabel" name="lblSubmitUser">
+             <widget class="SubmitUserLabel" name="lblSubmitUser">
               <property name="text">
                <string/>
               </property>
@@ -518,7 +518,7 @@
              </widget>
             </item>
             <item row="9" column="1">
-             <widget class="QLabel" name="lblQuality">
+             <widget class="QualityLabel" name="lblQuality">
               <property name="text">
                <string/>
               </property>
@@ -535,7 +535,7 @@
              </widget>
             </item>
             <item row="10" column="1">
-             <widget class="QLabel" name="lblLibraryId">
+             <widget class="SpectrumIdLabel" name="lblLibraryId">
               <property name="text">
                <string/>
               </property>
@@ -696,7 +696,7 @@
              </widget>
             </item>
             <item row="3" column="1">
-             <widget class="QLabel" name="lblPubMed">
+             <widget class="PubMedLabel" name="lblPubMed">
               <property name="text">
                <string/>
               </property>
@@ -821,6 +821,26 @@
    <extends>QWidget</extends>
    <header>lib/ui/widgets.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PubMedLabel</class>
+   <extends>QLabel</extends>
+   <header>lib/ui/widgets.h</header>
+  </customwidget>
+  <customwidget>
+   <class>SpectrumIdLabel</class>
+   <extends>QLabel</extends>
+   <header>lib/ui/widgets.h</header>
+  </customwidget>
+  <customwidget>
+   <class>SubmitUserLabel</class>
+   <extends>QLabel</extends>
+   <header>lib/ui/widgets.h</header>
+  </customwidget>
+  <customwidget>
+   <class>QualityLabel</class>
+   <extends>QLabel</extends>
+   <header>lib/ui/widgets.h</header>
   </customwidget>
  </customwidgets>
  <tabstops>

@@ -1,6 +1,6 @@
 import os
 
-from PyQt5.QtWidgets import QAbstractItemView
+from PyQt5.QtWidgets import QAbstractItemView, QDataWidgetMapper, QLabel
 
 try:
     from rdkit.Chem import MolFromSmiles, rdDepictor
@@ -32,7 +32,7 @@ UI_FILE = os.path.join(os.path.dirname(__file__), 'view_databases_dialog.ui')
 
 from ..database import SpectraLibrary
 from ..models import Bank, Spectrum, Base
-from .widgets import AutoToolTipItemDelegate, LibraryQualityDelegate
+from .widgets import AutoToolTipItemDelegate, LibraryQualityDelegate, SpectrumWidget, SpectrumCanvas
 
 ViewDatabasesDialogUI, ViewDatabasesDialogBase = uic.loadUiType(UI_FILE,
                                                                 from_imports='lib.ui',
@@ -78,8 +78,9 @@ class SpectraModel(QAbstractTableModel):
     BATCH_SIZE = 200
 
     def __init__(self, session, bank):
-        self._columns = [col for col in Spectrum.__table__.columns
-                         if col.name not in ('peaks', 'bank_id', 'id')]
+        columns = [col for col in Spectrum.__table__.columns]
+        self._columns = {index: col for index, col in enumerate(columns)}
+        self._rcolumns = {col.key: index for index, col in enumerate(columns)}
 
         super().__init__()
 
@@ -156,6 +157,29 @@ class SpectraModel(QAbstractTableModel):
         self.query_db()
         self.endResetModel()
 
+    def column_index(self, column):
+        return self._rcolumns[column.key]
+
+
+class SpectrumDataWidgetMapper(QDataWidgetMapper):
+
+    def addMapping(self, widget, section, property_name=None):
+        model = self.model()
+        if model is not None and not isinstance(section, int):
+            section = model.column_index(section)
+
+        if isinstance(widget, QLabel):
+            property_name = b'text'
+        elif isinstance(widget, (SpectrumWidget, SpectrumCanvas)):
+            if isinstance(widget, SpectrumWidget):
+                widget = widget.canvas
+            property_name = b'spectrum1'
+
+        if property_name is None:
+            super().addMapping(widget, section)
+        else:
+            super().addMapping(widget, section, property_name)
+
 
 class ViewDatabasesDialog(ViewDatabasesDialogUI, ViewDatabasesDialogBase):
 
@@ -178,6 +202,28 @@ class ViewDatabasesDialog(ViewDatabasesDialogUI, ViewDatabasesDialogBase):
                 self.tvSpectra.setItemDelegateForColumn(i, LibraryQualityDelegate())
                 break
         self.tvSpectra.setModel(model)
+        self.tvSpectra.setColumnHidden(model.column_index(Spectrum.id), True)
+        self.tvSpectra.setColumnHidden(model.column_index(Spectrum.bank_id), True)
+        self.tvSpectra.setColumnHidden(model.column_index(Spectrum.peaks), True)
+
+        self._mapper = SpectrumDataWidgetMapper()
+        self._mapper.setModel(model)
+        self._mapper.addMapping(self.lblName, Spectrum.name)
+        self._mapper.addMapping(self.lblInChI, Spectrum.inchi)
+        self._mapper.addMapping(self.lblSmiles, Spectrum.smiles)
+        self._mapper.addMapping(self.lblPubMed, Spectrum.pubmed)
+        self._mapper.addMapping(self.lblPepmass, Spectrum.pepmass)
+        self._mapper.addMapping(self.lblPolarity, Spectrum.positive)
+        self._mapper.addMapping(self.lblCharge, Spectrum.charge)
+        self._mapper.addMapping(self.lblMSLevel, Spectrum.mslevel)
+        self._mapper.addMapping(self.lblQuality, Spectrum.libraryquality)
+        self._mapper.addMapping(self.lblLibraryId, Spectrum.spectrumid)
+        self._mapper.addMapping(self.lblSourceInstrument, Spectrum.source_instrument_id)
+        self._mapper.addMapping(self.lblPi, Spectrum.pi_id)
+        self._mapper.addMapping(self.lblOrganism, Spectrum.organism_id)
+        self._mapper.addMapping(self.lblDataCollector, Spectrum.datacollector_id)
+        self._mapper.addMapping(self.lblSubmitUser, Spectrum.submituser_id)
+        self._mapper.addMapping(self.widgetSpectrum, Spectrum.peaks)
 
         # Connect events
         self.btRefresh.clicked.connect(self.on_refresh)
@@ -201,42 +247,7 @@ class ViewDatabasesDialog(ViewDatabasesDialogUI, ViewDatabasesDialogBase):
             return
 
         # Update description labels
-        if obj.name is not None:
-            self.lblName.setText(obj.name)
-        if obj.inchi is not None:
-            self.lblInChI.setText(obj.inchi)
-        if obj.smiles is not None:
-            self.lblSmiles.setText(obj.smiles)
-        if obj.pubmed is not None:
-            self.lblPubMed.setText(f"<a href='http://www.ncbi.nlm.nih.gov/pubmed/?term={obj.pubmed}'>{obj.pubmed}</a>")
-        if obj.pepmass is not None:
-            self.lblPepmass.setText(str(obj.pepmass))
-        if obj.polarity is not None:
-            self.lblPolarity.setText(obj.polarity)
-        if obj.charge is not None:
-            self.lblCharge.setText(str(obj.charge))
-        if obj.mslevel is not None:
-            self.lblMSLevel.setText(str(obj.mslevel))
-        if obj.libraryquality is not None:
-            self.lblQuality.setText(str(obj.libraryquality))
-        if obj.spectrumid is not None:
-            self.lblLibraryId.setText(f"<a href='https://gnps.ucsd.edu/ProteoSAFe/gnpslibraryspectrum.jsp?SpectrumID="
-                                      f"{obj.spectrumid}'>{obj.spectrumid}</a>")
-        if obj.source_instrument is not None:
-            self.lblSourceInstrument.setText(obj.source_instrument.name)
-        if obj.pi is not None:
-            self.lblPi.setText(obj.pi.name)
-        if obj.organism is not None:
-            self.lblOrganism.setText(obj.organism.name)
-        if obj.datacollector is not None:
-            self.lblDataCollector.setText(obj.datacollector.name)
-        if obj.submituser is not None:
-            self.lblSubmitUser.setText("<a href='https://gnps.ucsd.edu/ProteoSAFe/user/summary.jsp?user="
-                                       f"{obj.submituser.name}'>{obj.submituser.name}</a>")
-
-
-        # Show spectrum
-        self.widgetSpectrum.canvas.set_spectrum1(obj.peaks)
+        self._mapper.setCurrentIndex(index.row())
 
         # Try to render structure from InChI or SMILES
         if RDKIT_AVAILABLE:
@@ -272,6 +283,8 @@ class ViewDatabasesDialog(ViewDatabasesDialogUI, ViewDatabasesDialogBase):
                     tree = etree.fromstring(mol.write("svg"))
                     svg = tree.find(f"{{{namespace}}}g/{{{namespace}}}svg")
                     self.widgetStructure.load(QByteArray(etree.tostring(svg)))
+                else:
+                    self.widgetStructure.load(QByteArray(b''))
 
     def on_bank_changed(self):
         bank = self.cbBanks.currentData(role=BanksModel.BankIdRole)

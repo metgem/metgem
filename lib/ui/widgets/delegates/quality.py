@@ -42,7 +42,6 @@
 ##
 #############################################################################
 
-
 import math
 
 from PyQt5.QtCore import QPointF, QSize, Qt
@@ -51,7 +50,7 @@ from PyQt5.QtWidgets import (QAbstractItemView, QApplication, QStyle,
                              QStyledItemDelegate, QTableWidget, QTableWidgetItem)
 
 
-class LibraryQualityDelegate(QStyledItemDelegate):
+class StarRating:
 
     PAINTING_SCALE_FACTOR = 20
 
@@ -65,6 +64,43 @@ class LibraryQualityDelegate(QStyledItemDelegate):
             self.__polygon << QPointF(0.5 + 0.5 * math.cos(0.8 * i * math.pi),
                                       0.5 + 0.5 * math.sin(0.8 * i * math.pi))
 
+    def paint(self, painter, rect, value):
+        painter.save()
+
+        painter.setRenderHint(QPainter.Antialiasing, True)
+        painter.setPen(Qt.NoPen)
+
+        if value == 1:
+            painter.setBrush(QColor(255, 215, 0))
+        elif value == 2:
+            painter.setBrush(QColor(192, 192, 192))
+        elif value == 3:
+            painter.setBrush(QColor(205, 127, 50))
+
+        y_offset = (rect.height() - self.PAINTING_SCALE_FACTOR) / 2
+        painter.translate(rect.x(), rect.y() + y_offset)
+        painter.scale(self.PAINTING_SCALE_FACTOR, self.PAINTING_SCALE_FACTOR)
+
+        for i in range(self._max_rating):
+            if i < self._max_rating - value + 1 and self.__polygon.boundingRect().width() * (i+1) \
+                                                    * self.PAINTING_SCALE_FACTOR < rect.width():
+                painter.drawPolygon(self.__polygon, Qt.WindingFill)
+
+            painter.translate(1.0, 0.0)
+
+        painter.restore()
+
+    def sizeHint(self):
+        return self.PAINTING_SCALE_FACTOR * QSize(self._max_rating, 1)
+
+
+class LibraryQualityDelegate(QStyledItemDelegate):
+
+    def __init__(self):
+        super().__init__()
+
+        self._star_rating = StarRating()
+
     def paint(self, painter, option, index):
         rating = index.data()
 
@@ -76,32 +112,10 @@ class LibraryQualityDelegate(QStyledItemDelegate):
             if option.state & QStyle.State_Selected:
                 painter.fillRect(option.rect, option.palette.highlight())
 
-            painter.save()
-
-            painter.setRenderHint(QPainter.Antialiasing, True)
-            painter.setPen(Qt.NoPen)
-
-            if rating == 1:
-                painter.setBrush(QColor(255, 215, 0))
-            elif rating == 2:
-                painter.setBrush(QColor(192, 192, 192))
-            elif rating == 3:
-                painter.setBrush(QColor(205, 127, 50))
-
-            y_offset = (option.rect.height() - self.PAINTING_SCALE_FACTOR) / 2
-            painter.translate(option.rect.x(), option.rect.y() + y_offset)
-            painter.scale(self.PAINTING_SCALE_FACTOR, self.PAINTING_SCALE_FACTOR)
-
-            for i in range(self._max_rating):
-                if i < self._max_rating - rating + 1 and self.__polygon.boundingRect().width() * (i+1) * self.PAINTING_SCALE_FACTOR < option.rect.width():
-                    painter.drawPolygon(self.__polygon, Qt.WindingFill)
-
-                painter.translate(1.0, 0.0)
-
-            painter.restore()
+            self._star_rating.paint(painter, option.rect, rating)
 
     def sizeHint(self, option, index):
-        return self.PAINTING_SCALE_FACTOR * QSize(self._max_rating, 1)
+        return self._star_rating.sizeHint()
 
     def minimumSizeHint(self, option, index):
         return self.sizeHint(option, index)

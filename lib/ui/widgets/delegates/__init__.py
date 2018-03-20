@@ -1,3 +1,3 @@
 from .autotooltip import AutoToolTipItemDelegate
-from .quality import LibraryQualityDelegate
+from .quality import LibraryQualityDelegate, StarRating
 from .ensure_string import EnsureStringItemDelegate

@@ -1,9 +1,13 @@
+from PyQt5.QtCore import pyqtProperty
+
 from matplotlib.ticker import FuncFormatter, AutoMinorLocator
 
 import numpy as np
 
 if __name__ == '__main__':
     from base import BaseCanvas
+
+
     class Spectrum:
         MZ = 0
         INTENSITY = 1
@@ -28,8 +32,8 @@ class SpectrumCanvas(BaseCanvas):
             self.toolbar.setVisible(False)
 
         # Load data
-        self.set_spectrum1(spectrum1_data)
-        self.set_spectrum2(spectrum2_data)
+        self.spectrum1 = spectrum1_data
+        self.spectrum2 = spectrum2_data
 
         self.prepare_axes()
 
@@ -45,15 +49,13 @@ class SpectrumCanvas(BaseCanvas):
         # Place X minor ticks
         self.axes.xaxis.set_minor_locator(AutoMinorLocator())
 
-    def _set_data(self, type_, data, label=None):
+    def _set_data(self, type_, data):
         self.axes.clear()
 
         if type_ == 'spectrum1':
             self._spectrum1_data = data
-            self._spectrum1_label = label
         else:
             self._spectrum2_data = data
-            self._spectrum2_label = label
 
         if self._spectrum2_data is not None:
             self.axes.set_ylim(-100 - self.Y_SPACING, 100 + self.Y_SPACING)
@@ -68,14 +70,14 @@ class SpectrumCanvas(BaseCanvas):
             self._spectrum1_plot = self.plot_spectrum(self._spectrum1_data, colors='r', label=self._spectrum1_label)
             if self._spectrum2_data is not None:
                 self._spectrum2_plot = self.plot_spectrum(self._spectrum2_data, yinverted=True, colors='b',
-                                                   label=self._spectrum2_label)
+                                                          label=self._spectrum2_label)
             else:
                 self._spectrum2_plot = None
 
             self.axes.axhline(0, color='k', linewidth=0.5)
             handles = [handle for handle, label in ((self._spectrum1_plot, self._spectrum1_label),
                                                     (self._spectrum2_plot, self._spectrum2_label))
-                                      if handle is not None and label is not None]
+                       if handle is not None and label is not None]
             if len(handles) > 0:
                 self.axes.legend(handles=handles)
             self.dataLoaded.emit()
@@ -87,17 +89,41 @@ class SpectrumCanvas(BaseCanvas):
 
         self.draw()
 
+    @pyqtProperty(np.ndarray)
     def spectrum1(self):
-        return self._spectrum1_data, self._spectrum1_label
+        return self._spectrum1_data
 
-    def set_spectrum1(self, data, label=None):
-        self._set_data('spectrum1', data, label)
+    @spectrum1.setter
+    def spectrum1(self, data):
+        self._set_data('spectrum1', data)
 
+    @pyqtProperty(str)
+    def spectrum1_label(self):
+        return self._spectrum1_label
+
+    @spectrum1_label.setter
+    def spectrum1_label(self, label):
+        self._spectrum1_label = label
+        if self._spectrum1_plot is not None:
+            self._spectrum1_plot.set_label(label)
+
+    @pyqtProperty(np.ndarray)
     def spectrum2(self):
-        return self._spectrum2_data, self._spectrum2_label
+        return self._spectrum2_data
 
-    def set_spectrum2(self, data, label=None):
-        self._set_data('spectrum2', data, label)
+    @spectrum2.setter
+    def spectrum2(self, data):
+        self._set_data('spectrum2', data)
+
+    @pyqtProperty(str)
+    def spectrum2_label(self):
+        return self._spectrum2_label
+
+    @spectrum2_label.setter
+    def spectrum2_label(self, label):
+        self._spectrum2_label = label
+        if self._spectrum2_plot is not None:
+            self._spectrum2_plot.set_label(label)
 
     def auto_adjust_ylim(self):
         if self.has_data():
@@ -173,12 +199,13 @@ if __name__ == "__main__":
                           (1532.0906982421875, 3), (1539.0859375, 3),
                           (1541.09326171875, 5), (1554.1014404296875, 4)])
 
+
     def compare_spectra():
-        if canvas.spectrum2()[0] is None:
-            canvas.set_spectrum2(test_data)
+        if canvas.spectrum2() is None:
+            canvas.spectrum2 = test_data
             button.setText('Show single spectrum')
         else:
-            canvas.set_spectrum2(None)
+            canvas.spectrum2 = None
             button.setText('Compare spectra')
 
 
@@ -191,7 +218,7 @@ if __name__ == "__main__":
     widget.setLayout(layout)
 
     canvas = SpectrumCanvas(title='Long long name Test spectrum')
-    canvas.set_spectrum1(test_data)
+    canvas.spectrum1 = test_data
     layout.addWidget(canvas)
 
     button = QPushButton('Compare spectra')

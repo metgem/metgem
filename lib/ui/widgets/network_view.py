@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
-from PyQt5.QtCore import (QLineF, QPointF, QRectF, Qt, pyqtSignal,
+from PyQt5.QtCore import (QLineF, QPointF, QRectF, pyqtSignal,
                           QAbstractTableModel, QModelIndex, QSortFilterProxyModel, Qt)
-from PyQt5.QtGui import (QPainter, QPainterPath, QPen, QSurfaceFormat, QCursor)
+from PyQt5.QtGui import (QPainter, QPainterPath, QPen, QSurfaceFormat)
 from PyQt5.QtWidgets import (QGraphicsItem,
                              QGraphicsEllipseItem, QGraphicsPathItem,
                              QGraphicsScene, QGraphicsView,
                              QRubberBand, QStyle, QOpenGLWidget,
-                             QFormLayout, QSizePolicy, QMenu, QTableView, QAction)
+                             QFormLayout, QSizePolicy, QMenu, QTableView)
 
 from ...config import RADIUS, NODE_BORDER_WIDTH, FONT_SIZE
 
@@ -151,7 +151,7 @@ class Node(QGraphicsEllipseItem):
     
     def setLabel(self, label):
         self.label = label
-        self.update()
+        self.setCacheMode(self.cacheMode())  # Force redraw
 
     def setColor(self, color):
         self._color = color
@@ -206,7 +206,7 @@ class Node(QGraphicsEllipseItem):
             start = 0.
             for i, v in enumerate(self._pie):
                 painter.setPen(QPen(Qt.NoPen))
-                painter.setBrush(get_color(i))
+                # painter.setBrush(get_color(i))
                 painter.drawPie(rect, start*5760, v*5760)
                 start += v
                 

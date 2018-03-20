@@ -245,8 +245,8 @@ class SpectrumNavigationToolbar(NavigationToolbar):
         self.mouse_move(event)
 
     def reset_data(self):
-        self.canvas.set_spectrum1(None)
-        self.canvas.set_spectrum2(None)
+        self.canvas.spectrum1 = None
+        self.canvas.spectrum2 = None
 
     def enterEvent(self, event):
         super().enterEvent(event)

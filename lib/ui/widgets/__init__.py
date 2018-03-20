@@ -3,4 +3,6 @@ from .options_widgets import TSNEOptionsWidget, NetworkOptionsWidget, CosineOpti
 from .spectrum import SpectrumCanvas, SpectrumNavigationToolbar, SpectrumWidget, ExtendedSpectrumWidget
 from .delegates import AutoToolTipItemDelegate, LibraryQualityDelegate, EnsureStringItemDelegate
 from .loading_views import LoadingListView, LoadingListWidget, LoadingTableView, LoadingTableWidget
+from .view_databases import PubMedLabel, SpectrumIdLabel, SubmitUserLabel, QualityLabel
+
 from PyQt5.QtSvg import QSvgWidget
