@@ -451,7 +451,7 @@ class GraphTableModel(QAbstractTableModel):
             
 class NodesModel(GraphTableModel):
     _type = GraphTableModel.NodesModelType
-    
+
     
 class EdgesModel(GraphTableModel):
     _type = GraphTableModel.EdgesModelType

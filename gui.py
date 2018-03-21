@@ -9,6 +9,7 @@ from requests import ConnectionError
 
 import numpy as np
 import igraph as ig
+import pandas as pd
 
 from PyQt5.QtWidgets import (QDialog, QFileDialog,
                              QMessageBox, QWidget, QGraphicsRectItem,
@@ -528,7 +529,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.gvNetwork.scene().clear()
             self.gvTSNE.scene().clear()
 
-            process_file, metadata_file, compute_options, tsne_options, network_options = dialog.getValues()
+            process_file, metadata_file, csv_separator, compute_options, tsne_options, network_options = dialog.getValues() 
             self.options.cosine = compute_options
             self.options.tsne = tsne_options
             self.options.network = network_options
@@ -557,6 +558,16 @@ class MainWindow(MainWindowBase, MainWindowUI):
             if worker is not None:
                 worker.finished.connect(file_read)
                 self._workers.add(worker)
+
+            if metadata_file.endswith(".csv") or  metadata_file.endswith(".xls"):
+                if metadata_file.endswith(".csv"):
+                    data = pd.read_csv(metadata_file, sep=csv_separator)
+                else:
+                    data = pd.read_excel(metadata_file)
+                header = [x for x in data]
+                data_list = [[item for item in line] for line in data.values]
+                for column in data:
+                    self.graph.vs[column] = data[column]
 
     def on_edit_options_triggered(self, type_):
         if hasattr(self.network, 'scores'):

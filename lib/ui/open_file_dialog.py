@@ -63,7 +63,8 @@ class OpenFileDialog(OpenFileDialogBase, OpenFileDialogUI):
             edit.setText(QDir.currentPath())
             edit.setCompleter(completer)
 
-
+        self.labelCsvWarning.setStyleSheet("QLabel {color:red;}")
+        self.labelCsvWarning.setVisible(False)
         # Add options widgets
         self.cosine_widget = CosineOptionsWidget()
         self.tsne_widget = TSNEOptionsWidget()
@@ -92,7 +93,9 @@ class OpenFileDialog(OpenFileDialogBase, OpenFileDialogUI):
         self.btBrowseMetadataFile.clicked.connect(self._mapper.map)
         self._mapper.setMapping(self.btBrowseMetadataFile, 'metadata')
         self._mapper.mapped[str].connect(self.browse)
-
+        self.editMetadataFile.textChanged.connect(self.checkMetadataFileType)
+        self.editMetadataFile.textChanged.connect(self.checkMetadataFileType)
+        self.editCsvSeparator.textChanged.connect(self.checkCsvSeparator)
         self.btMore.clicked.connect(self.toggle_advanced_options)
 
     def done(self, r):
@@ -141,16 +144,28 @@ class OpenFileDialog(OpenFileDialogBase, OpenFileDialogUI):
                 self.editProcessFile.setPalette(self.style().standardPalette())
             else:
                 self.editMetadataFile.setText(filename)
-                self.editMetadataFile.setPalette(self.style().standardPalette())
+                self.editMetadataFile.setPalette(self.style().standardPalette())         
 
     def getValues(self):
         """Returns files to process and options"""
 
-        return (self.editProcessFile.text(), self.editMetadataFile.text(),
-                self.cosine_widget.getValues(), self.tsne_widget.getValues(),
-                self.network_widget.getValues())
+        return (self.editProcessFile.text(), self.editMetadataFile.text(), 
+                self.editCsvSeparator.text(), self.cosine_widget.getValues(), 
+                self.tsne_widget.getValues(), self.network_widget.getValues())
 
+    def checkMetadataFileType(self):
+        if self.editMetadataFile.text().endswith(".csv"):
+            self.editCsvSeparator.setEnabled(True)
+            self.labelCsvSeparator.setEnabled(True)
+        else:
+            self.editCsvSeparator.setDisabled(True)
+            self.labelCsvSeparator.setDisabled(True)
 
+    def checkCsvSeparator(self):
+        if len(self.editCsvSeparator.text()) != 1:
+            self.labelCsvWarning.setVisible(True)
+        else:
+            self.labelCsvWarning.setVisible(False)    
 if __name__ == "__main__":
     from PyQt5.QtWidgets import QApplication
 
