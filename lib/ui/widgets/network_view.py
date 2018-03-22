@@ -451,7 +451,7 @@ class GraphTableModel(QAbstractTableModel):
             
 class NodesModel(GraphTableModel):
     _type = GraphTableModel.NodesModelType
-    
+
     
 class EdgesModel(GraphTableModel):
     _type = GraphTableModel.EdgesModelType
@@ -489,14 +489,7 @@ class NodeTableView(QTableView):
     def __init__(self):
         super().__init__()
         self.horizontalHeader().setContextMenuPolicy(Qt.CustomContextMenu)
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
             
-    def displayColumnInfo(self, column_index):
-        model = self.model()
-        print (column_index)
 
-    """def contextMenuEvent(self, event):
-        menu = QMenu(self)
-        selectAction = QAction("Show in graphs", self)
-        menu.addAction(selectAction)
-        menu.popup(QCursor.pos())
-        print(self.columnAt(QCursor.pos().x()))"""
+

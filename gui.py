@@ -9,6 +9,7 @@ from requests import ConnectionError
 
 import numpy as np
 import igraph as ig
+import pandas as pd
 
 from PyQt5.QtWidgets import (QDialog, QFileDialog,
                              QMessageBox, QWidget, QGraphicsRectItem,
@@ -138,7 +139,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         # Connect events
         self.tvNodes.horizontalHeader().customContextMenuRequested.connect(self.on_nodes_header_contextmenu)
-        self.tvNodes.selectionModel().selectionChanged.connect(self.on_nodes_table_selection_changed)
+        #self.tvNodes.selectionModel().selectionChanged.connect(self.on_nodes_table_selection_changed)
+        self.tvNodes.customContextMenuRequested.connect(self.on_nodes_table_contextmenu)
 
         self.gvNetwork.scene().selectionChanged.connect(self.on_scene_selection_changed)
         self.gvTSNE.scene().selectionChanged.connect(self.on_scene_selection_changed)
@@ -301,7 +303,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                     pass
                 self.gvNetwork.scene().selectionChanged.connect(self.on_scene_selection_changed)
 
-    def on_nodes_table_selection_changed(self, selected, deselected):
+    """def on_nodes_table_selection_changed(self, selected, deselected):
         selected = {index.row() for index in self.tvNodes.model().mapSelectionToSource(selected).indexes()}
         deselected = {index.row() for index in self.tvNodes.model().mapSelectionToSource(deselected).indexes()} - selected
         self.gvNetwork.scene().selectionChanged.disconnect()
@@ -313,7 +315,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.graph.vs['__tsne_gobj'][index].setSelected(True)
             self.graph.vs['__network_gobj'][index].setSelected(True)
         self.gvNetwork.scene().selectionChanged.connect(self.on_scene_selection_changed)
-        self.gvTSNE.scene().selectionChanged.connect(self.on_scene_selection_changed)
+        self.gvTSNE.scene().selectionChanged.connect(self.on_scene_selection_changed)"""
 
     def on_search_text_changed(self, value):
         self.tvNodes.model().setFilterRegExp(str(value))
@@ -483,6 +485,30 @@ class MainWindow(MainWindowBase, MainWindowUI):
             menu.popup(QCursor.pos())
             action.triggered.connect(lambda: self.set_nodes_label(selected_column_index))
 
+    def on_nodes_table_contextmenu(self, event):
+        selected_column_index = self.tvNodes.columnAt(event.x())
+        selected_row_index = self.tvNodes.rowAt(event.y())
+        if selected_column_index != -1 and selected_row_index != -1:
+            menu = QMenu(self)
+            action = QAction("Highlight selected nodes", self)
+            menu.addAction(action)
+            menu.popup(QCursor.pos())
+            action.triggered.connect(lambda: self.highlight_selected_nodes())
+
+    def highlight_selected_nodes(self):
+        selected = {index.row() for index in self.tvNodes.selectionModel().selectedIndexes()}
+        deselected = {index.index for index in self.gvNetwork.scene().selectedItems()} - selected
+        self.gvNetwork.scene().selectionChanged.disconnect()
+        self.gvTSNE.scene().selectionChanged.disconnect()
+        for index in deselected:
+            self.graph.vs['__tsne_gobj'][index].setSelected(False)
+            self.graph.vs['__network_gobj'][index].setSelected(False)
+        for index in selected:
+            self.graph.vs['__tsne_gobj'][index].setSelected(True)
+            self.graph.vs['__network_gobj'][index].setSelected(True)
+        self.gvNetwork.scene().selectionChanged.connect(self.on_scene_selection_changed)
+        self.gvTSNE.scene().selectionChanged.connect(self.on_scene_selection_changed)
+
     def on_current_parameters_triggered(self):
         dialog = ui.CurrentParametersDialog(self, options=self.options)
         dialog.exec_()
@@ -503,7 +529,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.gvNetwork.scene().clear()
             self.gvTSNE.scene().clear()
 
-            process_file, metadata_file, compute_options, tsne_options, network_options = dialog.getValues()
+            process_file, metadata_file, csv_separator, compute_options, tsne_options, network_options = dialog.getValues() 
             self.options.cosine = compute_options
             self.options.tsne = tsne_options
             self.options.network = network_options
@@ -532,6 +558,16 @@ class MainWindow(MainWindowBase, MainWindowUI):
             if worker is not None:
                 worker.finished.connect(file_read)
                 self._workers.add(worker)
+
+            if metadata_file.endswith(".csv") or  metadata_file.endswith(".xls"):
+                if metadata_file.endswith(".csv"):
+                    data = pd.read_csv(metadata_file, sep=csv_separator)
+                else:
+                    data = pd.read_excel(metadata_file)
+                header = [x for x in data]
+                data_list = [[item for item in line] for line in data.values]
+                for column in data:
+                    self.graph.vs[column] = data[column]
 
     def on_edit_options_triggered(self, type_):
         if hasattr(self.network, 'scores'):
@@ -684,7 +720,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
             else:
                 draw_tsne()
 
-        self._workers.add(worker)
+        if worker is not None:
+            self._workers.add(worker)
 
         self.tvNodes.model().sourceModel().endResetModel()
         self.tvEdges.model().sourceModel().endResetModel()
