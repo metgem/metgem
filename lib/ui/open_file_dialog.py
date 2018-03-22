@@ -1,26 +1,16 @@
 import os
 import sys
+import csv
 
-from PyQt5.QtWidgets import QFileDialog, QDialog, QVBoxLayout, QDialogButtonBox, QCompleter, QFileSystemModel, QWidget
+from PyQt5.QtWidgets import QFileDialog, QDialog, QVBoxLayout, QDialogButtonBox, QCompleter, QFileSystemModel
 from PyQt5.QtGui import QPalette, QColor
 from PyQt5.QtCore import Qt, QDir, QSignalMapper
 from PyQt5 import uic
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'open_file_dialog.ui')
 
-if __name__ == '__main__':
-    sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-
-    OpenFileDialogUI, OpenFileDialogBase = uic.loadUiType(UI_FILE)
-    from widgets import TSNEOptionsWidget, NetworkOptionsWidget, CosineOptionsWidget
-
-
-    class CosineComputationOptions:
-        pass
-else:
-    OpenFileDialogUI, OpenFileDialogBase = uic.loadUiType(UI_FILE, from_imports='lib.ui', import_from='lib.ui')
-    from .widgets import TSNEOptionsWidget, NetworkOptionsWidget, CosineOptionsWidget
-    from ..workers import CosineComputationOptions
+OpenFileDialogUI, OpenFileDialogBase = uic.loadUiType(UI_FILE, from_imports='lib.ui', import_from='lib.ui')
+from .widgets import TSNEOptionsWidget, NetworkOptionsWidget, CosineOptionsWidget
 
 
 class OpenFileDialog(OpenFileDialogBase, OpenFileDialogUI):
@@ -63,8 +53,6 @@ class OpenFileDialog(OpenFileDialogBase, OpenFileDialogUI):
             edit.setText(QDir.currentPath())
             edit.setCompleter(completer)
 
-        self.labelCsvWarning.setStyleSheet("QLabel {color:red;}")
-        self.labelCsvWarning.setVisible(False)
         # Add options widgets
         self.cosine_widget = CosineOptionsWidget()
         self.tsne_widget = TSNEOptionsWidget()
@@ -93,9 +81,7 @@ class OpenFileDialog(OpenFileDialogBase, OpenFileDialogUI):
         self.btBrowseMetadataFile.clicked.connect(self._mapper.map)
         self._mapper.setMapping(self.btBrowseMetadataFile, 'metadata')
         self._mapper.mapped[str].connect(self.browse)
-        self.editMetadataFile.textChanged.connect(self.checkMetadataFileType)
-        self.editMetadataFile.textChanged.connect(self.checkMetadataFileType)
-        self.editCsvSeparator.textChanged.connect(self.checkCsvSeparator)
+        self.editMetadataFile.textChanged.connect(self.check_metadata_file_type)
         self.btMore.clicked.connect(self.toggle_advanced_options)
 
     def done(self, r):
@@ -137,6 +123,9 @@ class OpenFileDialog(OpenFileDialogBase, OpenFileDialogUI):
 
         if type_ == 'process':
             dialog.setNameFilters(["MGF Files (*.mgf)", "All files (*.*)"])
+        elif type_ == 'metadata':
+            dialog.setMimeTypeFilters(['text/plain', 'text/csv'])
+
         if dialog.exec_() == QDialog.Accepted:
             filename = dialog.selectedFiles()[0]
             if type_ == 'process':
@@ -153,24 +142,17 @@ class OpenFileDialog(OpenFileDialogBase, OpenFileDialogUI):
                 self.editCsvSeparator.text(), self.cosine_widget.getValues(), 
                 self.tsne_widget.getValues(), self.network_widget.getValues())
 
-    def checkMetadataFileType(self):
-        if self.editMetadataFile.text().endswith(".csv"):
-            self.editCsvSeparator.setEnabled(True)
-            self.labelCsvSeparator.setEnabled(True)
+    def check_metadata_file_type(self, text):
+        """Check that selected metadata file is a valid csv file and try to get delimiter"""
+        try:
+            with open(text, 'r') as f:
+                line = f.readline()
+            delimiter = csv.Sniffer().sniff(line).delimiter
+        except (OSError, FileNotFoundError):
+            enabled = False
         else:
-            self.editCsvSeparator.setDisabled(True)
-            self.labelCsvSeparator.setDisabled(True)
-
-    def checkCsvSeparator(self):
-        if len(self.editCsvSeparator.text()) != 1:
-            self.labelCsvWarning.setVisible(True)
-        else:
-            self.labelCsvWarning.setVisible(False)    
-if __name__ == "__main__":
-    from PyQt5.QtWidgets import QApplication
-
-    app = QApplication(sys.argv)
-    dlg = OpenFileDialog(folder=os.path.realpath(os.path.dirname(__file__)))
-
-    if dlg.exec_() == QDialog.Accepted:
-        print('You chose these files:', dlg.getValues())
+            enabled = True
+        finally:
+            self.editCsvSeparator.setText(delimiter)
+            self.editCsvSeparator.setEnabled(enabled)
+            self.labelCsvSeparator.setEnabled(enabled)

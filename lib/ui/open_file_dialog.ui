@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>337</width>
+    <width>354</width>
     <height>203</height>
    </rect>
   </property>
@@ -173,7 +173,13 @@
            <bool>false</bool>
           </property>
           <property name="text">
-           <string>CSV separator:</string>
+           <string>&amp;CSV separator: </string>
+          </property>
+          <property name="textFormat">
+           <enum>Qt::PlainText</enum>
+          </property>
+          <property name="buddy">
+           <cstring>editCsvSeparator</cstring>
           </property>
          </widget>
         </item>
@@ -197,18 +203,8 @@
           <property name="text">
            <string>,</string>
           </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="labelCsvWarning">
-          <property name="font">
-           <font>
-            <weight>50</weight>
-            <bold>false</bold>
-           </font>
-          </property>
-          <property name="text">
-           <string>  Warning: separator lenght is not 1 !</string>
+          <property name="maxLength">
+           <number>1</number>
           </property>
          </widget>
         </item>
