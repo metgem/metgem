@@ -223,6 +223,16 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 return view
         return self.gvNetwork
 
+    def load_project(self, filename):
+        worker = self.prepare_load_project_worker(filename)
+        if worker is not None:
+            self._workers.add(worker)
+
+    def save_project(self, filename):
+        worker = self.prepare_save_project_worker(filename)
+        if worker is not None:
+            self._workers.add(worker)
+
     def update_search_menu(self):
         menu = QMenu(self)
         group = QActionGroup(menu, exclusive=True)
@@ -293,17 +303,13 @@ class MainWindow(MainWindowBase, MainWindowUI):
                                "All files (*.*)"])
         if dialog.exec_() == QDialog.Accepted:
             filename = dialog.selectedFiles()[0]
-            worker = self.prepare_load_project_worker(filename)
-            if worker is not None:
-                self._workers.add(worker)
+            self.load_project(filename)
 
     def on_save_project_triggered(self):
         if self.fname is None:
-            self.saveProjectAs()
+            self.on_save_project_as_triggered()
         else:
-            worker = self.prepare_save_project_worker(self.fname)
-            if worker is not None:
-                self._workers.add(worker)
+            self.save_project(self.fname)
 
     def on_save_project_as_triggered(self):
         dialog = QFileDialog(self)
@@ -312,9 +318,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                                "All files (*.*)"])
         if dialog.exec_() == QDialog.Accepted:
             filename = dialog.selectedFiles()[0]
-            worker = self.prepare_save_project_worker(filename)
-            if worker is not None:
-                self._workers.add(worker)
+            self.save_project(filename)
 
     def on_about_triggered(self):
         dialog = QMessageBox(self)
@@ -1002,6 +1006,6 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         fname = sys.argv[1]
         if os.path.exists(fname) and os.path.splitext(fname)[1] == '.mnz':
-            window.load(fname)
+            window.load_project(fname)
 
     sys.exit(app.exec_())
