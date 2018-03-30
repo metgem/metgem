@@ -719,7 +719,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
     def apply_layout(self, layout, view):
         view.scene().setLayout(layout)
-        self.graph.network_layout = layout
 
         view.scene().setSceneRect(view.scene().itemsBoundingRect())
         view.zoomToFit()
