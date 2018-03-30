@@ -546,8 +546,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
             def metadata_file_read():
                 nonlocal worker
                 data = worker.result()
+                self.tvNodes.model.sourceModel().beginResetModel()
                 for column in data:
                     self.graph.vs[column] = data[column]
+                self.tvNodes.model.sourceModel().endResetModel()
 
             worker = self.prepare_read_mgf_worker(process_file)
             if worker is not None:
