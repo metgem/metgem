@@ -545,22 +545,22 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 self.draw(interactions=interactions)
 
             def metadata_file_read():
-                nonlocal worker
-                data = worker.result()
-                self.tvNodes.model.sourceModel().beginResetModel()
+                nonlocal metadata_worker
+                data = metadata_worker.result()
+                self.tvNodes.model().sourceModel().beginResetModel()
                 for column in data:
                     self.graph.vs[column] = data[column]
-                self.tvNodes.model.sourceModel().endResetModel()
+                self.tvNodes.model().sourceModel().endResetModel()
 
             worker = self.prepare_read_mgf_worker(process_file)
             if worker is not None:
                 worker.finished.connect(mgf_file_read)
                 self._workers.add(worker)
 
-            worker = self.prepare_read_metadata_worker(metadata_file, csv_separator)
-            if worker is not None:
-                worker.finished.connect(metadata_file_read)
-                self._workers.add(worker)
+            metadata_worker = self.prepare_read_metadata_worker(metadata_file, csv_separator)
+            if metadata_worker is not None:
+                metadata_worker.finished.connect(metadata_file_read)
+                self._workers.add(metadata_worker)
 
     def on_edit_options_triggered(self, type_):
         if hasattr(self.network, 'scores'):
@@ -878,6 +878,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         worker = workers.ReadMetadataWorker(filename, csv_separator)
         worker.updated.connect(update_progress)
+        
+        return worker
 
     def prepare_save_project_worker(self, fname):
         """Save current project to a file for future access"""

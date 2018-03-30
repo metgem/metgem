@@ -13,10 +13,10 @@ class ReadMetadataWorker(BaseWorker):
 
 
     def run(self):
-        if metadata_file.endswith(".csv"):
-            data = pd.read_csv(metadata_file, sep=self.csv_separator)
+        if self.filename.endswith(".csv"):
+            data = pd.read_csv(self.filename, sep=self.csv_separator)
         else:
-            data = pd.read_excel(metadata_file)
+            data = pd.read_excel(self.filename)
 
         self._result = data
         self.finished.emit()
