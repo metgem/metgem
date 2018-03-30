@@ -9,7 +9,6 @@ from requests import ConnectionError
 
 import numpy as np
 import igraph as ig
-import pandas as pd
 
 from PyQt5.QtWidgets import (QDialog, QFileDialog,
                              QMessageBox, QWidget, QGraphicsRectItem,
@@ -524,7 +523,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.options.tsne = tsne_options
             self.options.network = network_options
 
-            def file_read():
+            def mgf_file_read():
                 nonlocal worker
                 self.network.spectra = worker.result()
                 multiprocess = len(self.network.spectra) > 1000  # TODO: Tune this, arbitrary decision
@@ -544,20 +543,21 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 self.create_graph(interactions)
                 self.draw(interactions=interactions)
 
-            worker = self.prepare_read_mgf_worker(process_file)
-            if worker is not None:
-                worker.finished.connect(file_read)
-                self._workers.add(worker)
-
-            if metadata_file.endswith(".csv") or  metadata_file.endswith(".xls"):
-                if metadata_file.endswith(".csv"):
-                    data = pd.read_csv(metadata_file, sep=csv_separator)
-                else:
-                    data = pd.read_excel(metadata_file)
-                header = [x for x in data]
-                data_list = [[item for item in line] for line in data.values]
+            def metadata_file_read():
+                nonlocal worker
+                data = worker.result()
                 for column in data:
                     self.graph.vs[column] = data[column]
+
+            worker = self.prepare_read_mgf_worker(process_file)
+            if worker is not None:
+                worker.finished.connect(mgf_file_read)
+                self._workers.add(worker)
+
+            worker = self.prepare_read_metadata_worker(metadata_file, csv_separator)
+            if worker is not None:
+                worker.finished.connect(metadata_file_read)
+                self._workers.add(worker)
 
     def on_edit_options_triggered(self, type_):
         if hasattr(self.network, 'scores'):
@@ -863,6 +863,17 @@ class MainWindow(MainWindowBase, MainWindowUI):
         worker.updated.connect(update_progress)
 
         return worker
+
+    def prepare_read_metadata_worker(self, filename, csv_separator):
+        def update_progress(i):
+            self.progressBar.setValue(self.progressBar.value() + i)
+
+        self.progressBar.setFormat('Reading MetaData...')
+        self.progressBar.setMinimum(0)
+        self.progressBar.setMaximum(0)
+
+        worker = workers.ReadMetadataWorker(filename, csv_separator)
+        worker.updated.connect(update_progress)
 
     def prepare_save_project_worker(self, fname):
         """Save current project to a file for future access"""
