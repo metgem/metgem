@@ -59,6 +59,21 @@ class BoundingBox:
         self.width = self.right - self.left
 
 
+class SignalBlocker:
+    """Context Manager to temporarily block signals from given Qt's widgets"""
+
+    def __init__(self, *widgets):
+        self.widgets = widgets
+
+    def __enter__(self):
+        for widget in self.widgets:
+            widget.blockSignals(True)
+
+    def __exit__(self, *args):
+        for widget in self.widgets:
+            widget.blockSignals(False)
+
+
 class WorkerSet(set):
     """A set that manages itself visibility of it's parent's progressbar"""
 

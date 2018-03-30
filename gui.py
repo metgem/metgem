@@ -486,17 +486,18 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
     def highlight_selected_nodes(self):
         selected = {index.row() for index in self.tvNodes.selectionModel().selectedIndexes()}
-        deselected = {item.index() for item in self.gvNetwork.scene().selectedItems()} - selected
-        self.gvNetwork.scene().selectionChanged.disconnect()
-        self.gvTSNE.scene().selectionChanged.disconnect()
-        for index in deselected:
-            self.graph.vs['__tsne_gobj'][index].setSelected(False)
-            self.graph.vs['__network_gobj'][index].setSelected(False)
-        for index in selected:
-            self.graph.vs['__tsne_gobj'][index].setSelected(True)
-            self.graph.vs['__network_gobj'][index].setSelected(True)
-        self.gvNetwork.scene().selectionChanged.connect(self.on_scene_selection_changed)
-        self.gvTSNE.scene().selectionChanged.connect(self.on_scene_selection_changed)
+        network_deselected = {item.index() for item in self.gvNetwork.scene().selectedItems()} - selected
+        tsne_deselected = {item.index() for item in self.gvNetwork.scene().selectedItems()} - selected
+        with utils.SignalBlocker(self.gvNetwork.scene(), self.gvTSNE.scene()):
+            network_nodes = self.graph.vs['__network_gobj']
+            tsne_nodes = self.graph.vs['__tsne_gobj']
+            for index in network_deselected:
+                network_nodes[index].setSelected(False)
+            for index in tsne_deselected:
+                tsne_nodes[index].setSelected(False)
+            for index in selected:
+                network_nodes[index].setSelected(True)
+                tsne_nodes[index].setSelected(True)
 
     def on_current_parameters_triggered(self):
         dialog = ui.CurrentParametersDialog(self, options=self.options)
