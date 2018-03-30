@@ -1,14 +1,11 @@
 import numpy as np
 import igraph as ig
+import fa2
 
 from .base import BaseWorker
 from ..config import RADIUS
 
 
-class UserRequestedStopError(Exception):
-    '''Raised if user request to stop a worker's process'''
-    
-    
 class NetworkWorker(BaseWorker):
     
     def __init__(self, graph):
@@ -16,12 +13,16 @@ class NetworkWorker(BaseWorker):
         self.graph = graph
 
     def run(self):
-        layout = np.zeros((self.graph.vcount(), 2))
-        
+        total_vcount = self.graph.vcount()
+        layout = np.zeros((total_vcount, 2))
+
+        forceatlas2 = fa2.ForceAtlas2(adjustSizes=2*RADIUS, scalingRatio=RADIUS, verbose=False)
+
         clusters = sorted(self.graph.clusters(), key=len, reverse=True)
         dx, dy = 0, 0
         max_height = 0
         max_width = 0
+        processed_vcount = 0
         for i, ids in enumerate(clusters):
             if self._should_stop:
                 self.canceled.emit()
@@ -37,8 +38,7 @@ class NetworkWorker(BaseWorker):
                 l = ig.Layout([(0, -2*RADIUS), (0, 2*RADIUS)])
                 border = 2*RADIUS
             else:
-                l = graph.layout_graphopt(node_mass=3, niter=100)
-                l.scale(3)
+                l = forceatlas2.forceatlas2_igraph_layout(graph, pos=None, iterations=1000, weight_attr='__weight')
                 border = 5*RADIUS
             
             bb = l.bounding_box(border=border)
@@ -56,6 +56,9 @@ class NetworkWorker(BaseWorker):
                 dx = 0
                 dy += max_height
                 max_height = 0
+
+            processed_vcount += vcount
+            self.updated.emit(processed_vcount / total_vcount * 100)
 
         self._result = layout
         self.finished.emit()
