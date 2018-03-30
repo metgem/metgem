@@ -282,25 +282,26 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         if self.actionLinkViews.isChecked():
             if view == self.gvNetwork:
-                self.gvTSNE.scene().selectionChanged.disconnect()
-                self.gvTSNE.scene().clearSelection()
-                try:
-                    for idx in nodes_idx:
-                        self.graph.vs['__tsne_gobj'][idx].setSelected(True)
-                except (KeyError, AttributeError, RuntimeError):
-                    pass
-                self.gvTSNE.scene().selectionChanged.connect(self.on_scene_selection_changed)
+                with utils.SignalBlocker(self.gvTSNE.scene()):
+                    self.gvTSNE.scene().clearSelection()
+                    nodes = self.graph.vs['__tsne_gobj']
+                    try:
+                        for idx in nodes_idx:
+                            nodes[idx].setSelected(True)
+                    except (KeyError, AttributeError, RuntimeError):
+                        pass
             elif view == self.gvTSNE:
-                self.gvNetwork.scene().selectionChanged.disconnect()
-                self.gvNetwork.scene().clearSelection()
-                try:
-                    for idx in nodes_idx:
-                        self.graph.vs['__network_gobj'][idx].setSelected(True)
-                    for idx in edges_idx:
-                        self.graph.es['__network_gobj'][idx].setSelected(True)
-                except (KeyError, AttributeError, RuntimeError):
-                    pass
-                self.gvNetwork.scene().selectionChanged.connect(self.on_scene_selection_changed)
+                with utils.SignalBlocker(self.gvNetwork.scene()):
+                    self.gvNetwork.scene().clearSelection()
+                    nodes = self.graph.vs['__network_gobj']
+                    edges = self.graph.es['__network_gobj']
+                    try:
+                        for idx in nodes_idx:
+                            nodes[idx].setSelected(True)
+                        for idx in edges_idx:
+                            edges[idx].setSelected(True)
+                    except (KeyError, AttributeError, RuntimeError):
+                        pass
 
     def on_search_text_changed(self, value):
         self.tvNodes.model().setFilterRegExp(str(value))
@@ -372,9 +373,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
             # cy.layout.apply(name='force-directed', network=g_cy)
 
             layout = np.empty((g.vcount(), 2))
-            for item in self.current_view.scene().items():
-                if item.Type == ui.Node.Type:
-                    layout[item.index()] = (item.x(), item.y())
+            for item in self.current_view.scene().nodes():
+                layout[item.index()] = (item.x(), item.y())
             positions = [(suid, x, y) for suid, (x, y) in zip(g_cy.get_nodes()[::-1], layout)]
             cy.layout.apply_from_presets(network=g_cy, positions=positions)
 
@@ -557,10 +557,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 worker.finished.connect(mgf_file_read)
                 self._workers.add(worker)
 
-            worker = self.prepare_read_metadata_worker(metadata_file, csv_separator)
-            if worker is not None:
-                worker.finished.connect(metadata_file_read)
-                self._workers.add(worker)
+            # worker = self.prepare_read_metadata_worker(metadata_file, csv_separator)
+            # if worker is not None:
+            #     worker.finished.connect(metadata_file_read)
+            #     self._workers.add(worker)
 
     def on_edit_options_triggered(self, type_):
         if hasattr(self.network, 'scores'):
