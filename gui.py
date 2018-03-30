@@ -275,9 +275,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
         nodes_idx, edges_idx = [], []
         for item in items:
             if item.Type == ui.Node.Type:
-                nodes_idx.append(item.index)
+                nodes_idx.append(item.index())
             elif item.Type == ui.Edge.Type:
-                edges_idx.append(item.index)
+                edges_idx.append(item.index())
         self.tvNodes.model().setSelection(nodes_idx)
         self.tvEdges.model().setSelection(edges_idx)
 
@@ -302,20 +302,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 except (KeyError, AttributeError, RuntimeError):
                     pass
                 self.gvNetwork.scene().selectionChanged.connect(self.on_scene_selection_changed)
-
-    """def on_nodes_table_selection_changed(self, selected, deselected):
-        selected = {index.row() for index in self.tvNodes.model().mapSelectionToSource(selected).indexes()}
-        deselected = {index.row() for index in self.tvNodes.model().mapSelectionToSource(deselected).indexes()} - selected
-        self.gvNetwork.scene().selectionChanged.disconnect()
-        self.gvTSNE.scene().selectionChanged.disconnect()
-        for index in deselected:
-            self.graph.vs['__tsne_gobj'][index].setSelected(False)
-            self.graph.vs['__network_gobj'][index].setSelected(False)
-        for index in selected:
-            self.graph.vs['__tsne_gobj'][index].setSelected(True)
-            self.graph.vs['__network_gobj'][index].setSelected(True)
-        self.gvNetwork.scene().selectionChanged.connect(self.on_scene_selection_changed)
-        self.gvTSNE.scene().selectionChanged.connect(self.on_scene_selection_changed)"""
 
     def on_search_text_changed(self, value):
         self.tvNodes.model().setFilterRegExp(str(value))
@@ -389,7 +375,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             layout = np.empty((g.vcount(), 2))
             for item in self.current_view.scene().items():
                 if item.Type == ui.Node.Type:
-                    layout[item.index] = (item.x(), item.y())
+                    layout[item.index()] = (item.x(), item.y())
             positions = [(suid, x, y) for suid, (x, y) in zip(g_cy.get_nodes()[::-1], layout)]
             cy.layout.apply_from_presets(network=g_cy, positions=positions)
 
@@ -401,6 +387,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
             dialog = QMessageBox()
             dialog.information(self, None,
                                'Please launch Cytoscape before trying to export.')
+        except json.decoder.JSONDecodeError:
+            dialog = QMessageBox()
+            dialog.information(self, None,
+                               'Cytoscape was not ready to receive data. Please try again.')
         except ImportError:
             dialog = QMessageBox()
             dialog.information(self, None,
@@ -448,7 +438,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def on_show_spectrum_triggered(self, type_, node):
         if self.network.spectra is not None:
             try:
-                data = self.network.spectra[node.index].human_readable_data
+                data = self.network.spectra[node.index()].human_readable_data
             except KeyError:
                 dialog = QDialog(self)
                 dialog.warning(self, None, 'Selected spectrum does not exists.')
@@ -466,7 +456,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         view = self.current_view
         for item in items:
             if item.Type == ui.Node.Type:
-                for v in self.graph.vs[item.index].neighbors():
+                for v in self.graph.vs[item.index()].neighbors():
                     try:
                         if view == self.gvNetwork:
                             v['__network_gobj'].setSelected(True)
@@ -497,7 +487,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
     def highlight_selected_nodes(self):
         selected = {index.row() for index in self.tvNodes.selectionModel().selectedIndexes()}
-        deselected = {index.index for index in self.gvNetwork.scene().selectedItems()} - selected
+        deselected = {item.index() for item in self.gvNetwork.scene().selectedItems()} - selected
         self.gvNetwork.scene().selectionChanged.disconnect()
         self.gvTSNE.scene().selectionChanged.disconnect()
         for index in deselected:
@@ -586,7 +576,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                         self.create_graph(interactions)
                         self.draw(which='network', interactions=interactions)
                         try:
-                            self.graph.vs['__tsne_gobj'] = self.gvTSNE.nodes_group.childItems()
+                            self.graph.vs['__tsne_gobj'] = self.gvTSNE.nodes()
                         except AttributeError:
                             pass
                         self.update_search_menu()
@@ -727,31 +717,21 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.tvEdges.model().sourceModel().endResetModel()
         self.update_search_menu()
 
-    def apply_network_layout(self, layout):
-        try:
-            for coord, node in zip(layout, self.graph.vs):
-                node['__network_gobj'].setPos(QPointF(*coord))
-        except (KeyError, AttributeError):
-            pass
-
+    def apply_layout(self, layout, view):
+        view.scene().setLayout(layout)
         self.graph.network_layout = layout
 
-        self.gvNetwork.scene().setSceneRect(self.gvNetwork.scene().itemsBoundingRect())
-        self.gvNetwork.zoomToFit()
-        self.gvNetwork.minimap.zoomToFit()
+        view.scene().setSceneRect(view.scene().itemsBoundingRect())
+        view.zoomToFit()
+        view.minimap.zoomToFit()
+
+    def apply_network_layout(self, layout):
+        self.apply_layout(layout, self.gvNetwork)
+        self.graph.network_layout = layout
 
     def apply_tsne_layout(self, layout):
-        try:
-            for coord, node in zip(layout, self.graph.vs):
-                node['__tsne_gobj'].setPos(QPointF(*coord))
-        except (KeyError, AttributeError):
-            pass
-
+        self.apply_layout(layout, self.gvTSNE)
         self.graph.tsne_layout = layout
-
-        self.gvTSNE.scene().setSceneRect(self.gvTSNE.scene().itemsBoundingRect())
-        self.gvTSNE.zoomToFit()
-        self.gvTSNE.minimap.zoomToFit()
 
     def prepare_draw_network_worker(self, interactions=None, layout=None):
         self.gvNetwork.scene().clear()
@@ -768,25 +748,12 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.graph.es['__width'] = widths
 
         # Add nodes
-        group = QGraphicsRectItem()  # Create a pseudo-group, QGraphicsItemGroup is not used because it does not let children handle events
-        group.setZValue(1)  # Draw nodes on top of edges
-        for i, n in enumerate(self.graph.vs):
-            node = ui.Node(i, n['__label'])
-            node.setParentItem(group)
-        self.graph.vs['__network_gobj'] = group.childItems()
-        self.gvNetwork.scene().addItem(group)
-        self.gvNetwork.nodes_group = group
+        self.graph.vs['__network_gobj'] = nodes = self.gvNetwork.scene().addNodes(self.graph.vs.indices, self.graph.vs['__label'])
 
         # Add edges
-        group = QGraphicsRectItem()
-        group.setZValue(0)
-        for i, e in enumerate(self.graph.es):
-            edge = ui.Edge(i, self.graph.vs['__network_gobj'][e.source], self.graph.vs['__network_gobj'][e.target],
-                           e['__weight'], e['__width'])
-            edge.setParentItem(group)
-        self.graph.es['__network_gobj'] = group.childItems()
-        self.gvNetwork.scene().addItem(group)
-        self.gvNetwork.edges_group = group
+        edges_attr = [(e.index, nodes[e.source], nodes[e.target], e['__weight'], e['__width'])
+                      for e in self.graph.es if not e.is_loop()]
+        self.graph.es['__network_gobj'] = self.gvNetwork.scene().addEdges(*zip(*edges_attr))
 
         if layout is None:
             # Compute layout
@@ -814,13 +781,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.gvTSNE.scene().clear()
 
         # Add nodes
-        group = QGraphicsRectItem()  # Create a pseudo-group, QGraphicsItemGroup is not used because it does not let children handle events
-        for i, n in enumerate(self.graph.vs):
-            node = ui.Node(i, n['__label'])
-            node.setParentItem(group)
-        self.graph.vs['__tsne_gobj'] = group.childItems()
-        self.gvTSNE.scene().addItem(group)
-        self.gvTSNE.nodes_group = group
+        self.graph.vs['__tsne_gobj'] = self.gvTSNE.scene().addNodes(self.graph.vs.indices,
+                                                                    self.graph.vs['__label'])
 
         if layout is None:
             scores = self.network.scores.copy()
