@@ -56,8 +56,36 @@ except ImportError:
         def nodes(self):
             return self.nodesLayer.childItems()
 
+        def selectedNodes(self):
+            return [item for item in self.selectedItems() if self.nodesLayer.isAncestorOf(item)]
+
+        def setNodesSelection(self, items):
+            self.clearSelection()
+            nodes = self.nodes()
+            if len(items) > 0:
+                if isinstance(items[0], Node):
+                    for node in items:
+                        node.setSelected(True)
+                else:
+                    for index in items:
+                        nodes[index].setSelected(True)
+
         def edges(self):
             return self.edgesLayer.childItems()
+
+        def selectedEdges(self):
+            return [item for item in self.selectedItems() if self.edgesLayer.isAncestorOf(item)]
+
+        def setEdgesSelection(self, items):
+            self.clearSelection()
+            edges = self.edges()
+            if len(items) > 0:
+                if isinstance(items[0], Node):
+                    for edge in items:
+                        edge.setSelected(True)
+                else:
+                    for index in items:
+                        edges[index].setSelected(True)
 
         def setLayout(self, positions):
             for node, pos in zip(self.nodes(), positions):

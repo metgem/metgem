@@ -270,38 +270,18 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
     def on_scene_selection_changed(self):
         view = self.current_view
-        items = view.scene().selectedItems()
-        nodes_idx, edges_idx = [], []
-        for item in items:
-            if item.Type == ui.Node.Type:
-                nodes_idx.append(item.index())
-            elif item.Type == ui.Edge.Type:
-                edges_idx.append(item.index())
+        nodes_idx = [item.index() for item in view.scene().selectedNodes()]
+        edges_idx = [item.index() for item in view.scene().selectedEdges()]
         self.tvNodes.model().setSelection(nodes_idx)
         self.tvEdges.model().setSelection(edges_idx)
 
         if self.actionLinkViews.isChecked():
             if view == self.gvNetwork:
                 with utils.SignalBlocker(self.gvTSNE.scene()):
-                    self.gvTSNE.scene().clearSelection()
-                    nodes = self.graph.vs['__tsne_gobj']
-                    try:
-                        for idx in nodes_idx:
-                            nodes[idx].setSelected(True)
-                    except (KeyError, AttributeError, RuntimeError):
-                        pass
+                    self.gvTSNE.scene().setNodesSelection(nodes_idx)
             elif view == self.gvTSNE:
                 with utils.SignalBlocker(self.gvNetwork.scene()):
-                    self.gvNetwork.scene().clearSelection()
-                    nodes = self.graph.vs['__network_gobj']
-                    edges = self.graph.es['__network_gobj']
-                    try:
-                        for idx in nodes_idx:
-                            nodes[idx].setSelected(True)
-                        for idx in edges_idx:
-                            edges[idx].setSelected(True)
-                    except (KeyError, AttributeError, RuntimeError):
-                        pass
+                    self.gvNetwork.scene().setNodesSelection(nodes_idx)
 
     def on_search_text_changed(self, value):
         self.tvNodes.model().setFilterRegExp(str(value))
