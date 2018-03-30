@@ -44,8 +44,8 @@ class NetworkWorker(BaseWorker):
             bb = l.bounding_box(border=border)
             l.translate(dx-bb.left, dy-bb.top)
         
-            for coord, node in zip(l, graph.vs):
-                layout[node['__network_gobj'].index] = coord
+            for coord, node in zip(l, graph.vs['__network_gobj']):
+                layout[node.index()] = coord
                 
             if max_width == 0:
                 max_width = bb.width*2

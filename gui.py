@@ -12,10 +12,10 @@ import igraph as ig
 import pandas as pd
 
 from PyQt5.QtWidgets import (QDialog, QFileDialog,
-                             QMessageBox, QWidget, QGraphicsRectItem,
+                             QMessageBox, QWidget,
                              QMenu, QToolButton, QActionGroup,
                              QAction, QDockWidget, QWIDGETSIZE_MAX)
-from PyQt5.QtCore import QSettings, Qt, QPointF, QSignalMapper, QSize
+from PyQt5.QtCore import QSettings, Qt, QSignalMapper, QSize
 from PyQt5.QtGui import QPainter, QImage, QCursor
 
 from PyQt5 import uic
@@ -801,17 +801,18 @@ class MainWindow(MainWindowBase, MainWindowUI):
                     nonlocal layout
                     layout[mask] = worker.result()
 
-                    bb = ig.Layout(layout.tolist()).bounding_box()
+                    # Adjust scale
+                    layout *= config.RADIUS
+
+                    # Calculate positions for excluded nodes
+                    bb = utils.BoundingBox(layout)
                     dx, dy = 0, 0
                     for index in np.where(~mask)[0]:
                         layout[index] = (bb.left + dx, bb.height + dy)
-                        dx += 5
+                        dx += 5*config.RADIUS
                         if dx >= bb.width:
                             dx = 0
-                            dy += 5
-
-                    layout = ig.Layout(layout.tolist())
-                    layout.scale(config.RADIUS)
+                            dy += 5*config.RADIUS
 
                     self.apply_tsne_layout(layout)
 

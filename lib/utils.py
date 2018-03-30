@@ -51,6 +51,14 @@ def grouper(iterable, n, fillvalue=None):
     return itertools.zip_longest(*args, fillvalue=fillvalue)
 
 
+class BoundingBox:
+    def __init__(self, layout):
+        self.left, self.top = layout.min(axis=0)
+        self.right, self.bottom = layout.max(axis=0)
+        self.height = self.bottom - self.top
+        self.width = self.right - self.left
+
+
 class WorkerSet(set):
     """A set that manages itself visibility of it's parent's progressbar"""
 

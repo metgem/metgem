@@ -7,6 +7,7 @@ from .base import BaseWorker
 from ..utils import AttrDict
 from ..errors import UserRequestedStopError
 
+
 class TSNEVisualizationOptions(AttrDict):
     """Class containing TSNE visualization options.
 
@@ -52,7 +53,9 @@ class TSNEWorker(BaseWorker):
     def run(self):
         sys.stdout = ProgressStringIO(self)
         try:
-            self._result = TSNE(learning_rate=self.options.learning_rate, early_exaggeration=12, perplexity=self.options.perplexity, verbose=2, random_state=0, metric='precomputed', method='exact').fit_transform(self._scores)
+            self._result = TSNE(learning_rate=self.options.learning_rate, early_exaggeration=12,
+                                perplexity=self.options.perplexity, verbose=2,
+                                random_state=0, metric='precomputed', method='exact').fit_transform(self._scores)
         except UserRequestedStopError:
             sys.stdout = sys.__stdout__
             self.canceled.emit()
