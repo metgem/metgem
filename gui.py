@@ -99,13 +99,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
         w.setLayout(self.layoutSearch)
         self.tbSearch.addWidget(w)
 
-        # Move progressbar to the statusbar
-        self.widgetProgress = QWidget()
-        self.layoutProgress.setParent(None)
-        self.layoutProgress.setContentsMargins(0, 0, 0, 0)
-        self.widgetProgress.setLayout(self.layoutProgress)
-        self.widgetProgress.setVisible(False)
-
         # Add a Jupyter widget
         if EMBED_JUPYTER:
             from qtconsole.rich_jupyter_widget import RichJupyterWidget

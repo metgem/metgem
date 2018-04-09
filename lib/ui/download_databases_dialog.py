@@ -30,8 +30,7 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
         self.base_path = base_path
 
         self.setupUi(self)
-        self.setWindowFlags(Qt.Tool | Qt.CustomizeWindowHint  | Qt.WindowCloseButtonHint)
-        self.widgetProgress.hide()
+        self.setWindowFlags(Qt.Tool | Qt.CustomizeWindowHint | Qt.WindowCloseButtonHint)
 
         self.lstDatabases.setIconSize(QSize(12, 12))
         self.lstDatabases.setFocus()
@@ -192,16 +191,11 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
                            'Please select at least one database first.')
             return False
 
-        def update_filesizes(dict_sizes):
-            self.progressBar.setMaximum(sum(dict_sizes.values()))
-
         def clean_up():
             self.setEnabled(True)
             self.update_badges()
 
-        self.progressBar.setValue(0)
         worker = DownloadGNPSDatabasesWorker(ids, self.base_path)
-        worker.filesizes_ready.connect(update_filesizes)
         worker.error.connect(self.on_error)
         worker.finished.connect(clean_up)
         worker.canceled.connect(clean_up)

@@ -79,52 +79,6 @@
      </layout>
     </item>
     <item>
-     <layout class="QHBoxLayout" name="layoutProgress">
-      <property name="spacing">
-       <number>0</number>
-      </property>
-      <item>
-       <widget class="QProgressBar" name="progressBar">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>300</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="value">
-         <number>0</number>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QToolButton" name="btCancelProcess">
-        <property name="toolTip">
-         <string>Cancel current processing</string>
-        </property>
-        <property name="statusTip">
-         <string>Cancel current processing</string>
-        </property>
-        <property name="text">
-         <string>&amp;Cancel</string>
-        </property>
-        <property name="icon">
-         <iconset resource="ui.qrc">
-          <normaloff>:/icons/images/cancel.svg</normaloff>:/icons/images/cancel.svg</iconset>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item>
      <widget class="QSplitter" name="splitter">
       <property name="orientation">
        <enum>Qt::Vertical</enum>

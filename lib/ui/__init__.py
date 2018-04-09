@@ -4,4 +4,5 @@ from .current_parameters_dialog import CurrentParametersDialog
 from .widgets.network_view import Edge, Node, NetworkView, NodeTableView
 from .download_databases_dialog import DownloadDatabasesDialog
 from .view_databases_dialog import ViewDatabasesDialog
+from .progress_dialog import ProgressDialog
 

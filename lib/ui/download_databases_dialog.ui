@@ -140,45 +140,6 @@
     </widget>
    </item>
    <item>
-    <widget class="QWidget" name="widgetProgress" native="true">
-     <layout class="QHBoxLayout" name="layoutProgress">
-      <property name="leftMargin">
-       <number>0</number>
-      </property>
-      <property name="topMargin">
-       <number>0</number>
-      </property>
-      <property name="rightMargin">
-       <number>0</number>
-      </property>
-      <property name="bottomMargin">
-       <number>0</number>
-      </property>
-      <item>
-       <widget class="QProgressBar" name="progressBar">
-        <property name="value">
-         <number>0</number>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QToolButton" name="btCancelProcess">
-        <property name="text">
-         <string>&amp;Cancel</string>
-        </property>
-        <property name="icon">
-         <iconset resource="ui.qrc">
-          <normaloff>:/icons/images/cancel.svg</normaloff>:/icons/images/cancel.svg</iconset>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>

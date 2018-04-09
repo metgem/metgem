@@ -82,14 +82,13 @@ class GetGNPSDatabasesMtimeWorker(BaseWorker):
 
 
 class DownloadGNPSDatabasesWorker(BaseWorker):
-    filesizes_ready = pyqtSignal(dict)
 
     def __init__(self, ids, path):
         super().__init__()
         self.ids = ids
         self.path = path
         self._filesizes = {}
-        self.iterative_update = False
+        self.iterative_update = True
         self.max = 0
         self.desc = 'Downloading databases...'
 
@@ -107,7 +106,7 @@ class DownloadGNPSDatabasesWorker(BaseWorker):
                         self._filesizes[id_] = 0
                     else:
                         self._filesizes[id_] = size
-                self.filesizes_ready.emit(self._filesizes)
+                self.max = sum(self._filesizes.values())
 
                 # Then try to download files
                 for i, id_ in enumerate(self.ids):
