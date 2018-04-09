@@ -1,4 +1,5 @@
-from PyQt5.QtWidgets import QDialog, QGridLayout, QDialogButtonBox, QSpinBox, QAbstractSpinBox
+from PyQt5.QtWidgets import QDialog, QGridLayout, QDialogButtonBox, QSpinBox, QAbstractSpinBox, QAbstractButton, \
+    QGroupBox, QWidget, QLayout
 from PyQt5.QtCore import Qt
 
 from .widgets import TSNEOptionsWidget, NetworkOptionsWidget, CosineOptionsWidget
@@ -16,9 +17,16 @@ class CurrentParametersDialog(QDialog):
         for w, opt in ((CosineOptionsWidget(), options.cosine),
                        (NetworkOptionsWidget(), options.network),
                        (TSNEOptionsWidget(), options.tsne)):
+            # Set spin boxes readonly
             for child in w.findChildren(QAbstractSpinBox):
                 child.setReadOnly(True)
                 child.setButtonSymbols(QSpinBox.NoButtons)
+
+            # Set buttons and checkboxes readonly
+            for child in w.findChildren(QAbstractButton) + w.findChildren(QGroupBox):
+                child.setAttribute(Qt.WA_TransparentForMouseEvents)
+                child.setFocusPolicy(Qt.NoFocus)
+
             layout.addWidget(w)
             w.setValues(opt)
                 

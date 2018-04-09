@@ -3,7 +3,7 @@ import numpy as np
 from .base import BaseWorker
 from ..save import MnzFile, savez
 from ..utils import Network, AttrDict
-from ..workers import Spectrum
+from ..workers import Spectrum, NetworkVisualizationOptions, TSNEVisualizationOptions, CosineComputationOptions
 from ..graphml import GraphMLParser, GraphMLWriter
 from ..errors import UnsupportedVersionError
 
@@ -26,7 +26,7 @@ class LoadProjectWorker(BaseWorker):
                 except ValueError:
                     version = 1
 
-                if version == 1:
+                if version <= 2:
                     network = Network()
                     network.scores = fid['network/scores']
                     network.infos = fid['network/infos']
@@ -37,8 +37,14 @@ class LoadProjectWorker(BaseWorker):
 
                     # Load options
                     options = AttrDict(fid['options.json'])
-                    for k, v in options.items():
-                        options[k] = AttrDict(v)
+                    for opt, key in ((CosineComputationOptions(), 'cosine'),
+                                     (NetworkVisualizationOptions(), 'network'),
+                                     (TSNEVisualizationOptions(), 'tsne')):
+                        if key in options:
+                            opt.update(options[key])
+                        options[key] = opt
+                    if version == 1:
+                        options.tsne.barnes_hut = False
 
                     # Load graph
                     gxl = fid['graph.gxl']

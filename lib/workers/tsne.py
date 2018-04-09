@@ -10,16 +10,15 @@ from ..errors import UserRequestedStopError
 
 class TSNEVisualizationOptions(AttrDict):
     """Class containing TSNE visualization options.
-
-    Attributes:
-        perplexity (int): See TSNE documentation. Default value = 6 
-        learning_rate (int): See TSNE documentation. Default value = 200
-
     """
     
     def __init__(self):
         super().__init__(perplexity=6,
-                         learning_rate=200)
+                         learning_rate=200,
+                         early_exaggeration=12,
+                         barnes_hut=True,
+                         angle=0.5,
+                         random=False)
 
     
 class ProgressStringIO(io.StringIO):
@@ -49,9 +48,15 @@ class TSNEWorker(BaseWorker):
         super().__init__()
         self._scores = scores
         self.options = options
-        self._tsne = TSNE(learning_rate=self.options.learning_rate, early_exaggeration=12,
-                          perplexity=self.options.perplexity, verbose=2,
-                          random_state=0, metric='precomputed', method='exact')
+
+        method = 'barnes_hut' if options.barnes_hut else 'exact'
+        random_state = 0 if options.random else None
+        self._tsne = TSNE(learning_rate=options.learning_rate,
+                          early_exaggeration=options.early_exaggeration,
+                          perplexity=options.perplexity, verbose=2,
+                          random_state=random_state, metric='precomputed',
+                          method=method, angle=options.angle)
+
         self.max = self._tsne.n_iter
         self.iterative_update = False
         self.desc = 'TSNE: Iteration {value:d} of {max:d}'

@@ -54,6 +54,10 @@ class TSNEOptionsWidget(QGroupBox):
         options = TSNEVisualizationOptions()
         options.perplexity = self.spinTSNEPerplexity.value()
         options.learning_rate = self.spinTSNELearningRate.value()
+        options.early_exaggeration = self.spinTSNEEarlyExaggeration.value()
+        options.barnes_hut = self.gbBarnesHut.isChecked()
+        options.angle = self.spinAngle.value()
+        options.random = self.chkRandomState.isChecked()
         
         return options
 
@@ -61,12 +65,16 @@ class TSNEOptionsWidget(QGroupBox):
         """Modify t-SNE perplexity and learning rate options
 
         Args: 
-            t-SNE_visualization_options (t-SNEVisualizationOptions): Modifies the Widget's spinBoxes 
+            t-SNE_visualization_options (TSNEVisualizationOptions): Modifies the Widget's spinBoxes
             to match the t-SNE visualization options.  
         """
         
         self.spinTSNEPerplexity.setValue(options.perplexity)
         self.spinTSNELearningRate.setValue(options.learning_rate)
+        self.spinTSNEEarlyExaggeration.setValue(options.early_exaggeration)
+        self.gbBarnesHut.setChecked(options.barnes_hut)
+        self.spinAngle.setValue(options.angle)
+        self.chkRandomState.setChecked(options.random)
 
 
 class CosineOptionsWidget(QGroupBox):
