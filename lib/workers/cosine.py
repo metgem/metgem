@@ -200,10 +200,14 @@ class ComputeScoresWorker(BaseWorker):
         self._spectra = spectra
         self.use_multiprocessing = use_multiprocessing
         self.options = options
+        self._num_spectra = len(self._spectra)
+        self.max = self._num_spectra * (self._num_spectra - 1) // 2
+        self.iterative_update = True
+        self.desc = 'Computing scores...'
 
     def run(self):
-        num_spectra = len(self._spectra)
-        num_scores_to_compute = num_spectra * (num_spectra - 1) // 2
+        num_spectra = self._num_spectra
+        num_scores_to_compute = self.max
 
         # Compute cosine scores
         if self.use_multiprocessing:

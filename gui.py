@@ -56,7 +56,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.fname = None
 
         # Workers' references
-        self._workers = utils.WorkerSet(self)
+        self._workers = workers.WorkerSet(self)
 
         # Create graph
         self.graph = ig.Graph()
@@ -743,19 +743,12 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         if layout is None:
             # Compute layout
-            def update_progress(i):
-                self.progressBar.setFormat(f'Computing layout: {i:d}%')
-                self.progressBar.setValue(i)
-
             def process_finished():
                 layout = worker.result()
                 if layout is not None:
                     self.apply_network_layout(layout)
 
-            self.progressBar.setFormat('Computing layout...')
-            self.progressBar.setMaximum(100)
             worker = workers.NetworkWorker(self.graph)
-            worker.updated.connect(update_progress)
             worker.finished.connect(process_finished)
 
             return worker
@@ -780,10 +773,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
             layout = np.zeros((scores.shape[0], 2))
 
             if np.any(mask):
-                def update_progress(i):
-                    self.progressBar.setFormat(f'TSNE: Iteration {i:d} of {self.progressBar.maximum():d}')
-                    self.progressBar.setValue(i)
-
                 def process_finished():
                     nonlocal layout
                     layout[mask] = worker.result()
@@ -803,10 +792,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
                     self.apply_tsne_layout(layout)
 
-                self.progressBar.setFormat('Computing TSNE...')
-                self.progressBar.setMaximum(1000)  # TODO
                 worker = workers.TSNEWorker(1 - scores[mask][:, mask], self.options.tsne)
-                worker.updated.connect(update_progress)
                 worker.finished.connect(process_finished)
 
                 return worker
@@ -818,9 +804,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
             return worker
 
     def prepare_compute_scores_worker(self, spectra, use_multiprocessing):
-        def update_progress(i):
-            self.progressBar.setValue(self.progressBar.value() + i)
-
         def error(e):
             if e.__class__ == OSError:
                 dialog = QMessageBox(self)
@@ -828,42 +811,16 @@ class MainWindow(MainWindowBase, MainWindowUI):
             else:
                 raise e
 
-        num_spectra = len(spectra)
-        num_scores_to_compute = num_spectra * (num_spectra - 1) // 2
-
-        self.progressBar.setFormat('Computing scores...')
-        self.progressBar.setMaximum(num_scores_to_compute)
         worker = workers.ComputeScoresWorker(spectra, use_multiprocessing, self.options.cosine)
-        worker.updated.connect(update_progress)
         worker.error.connect(error)
 
         return worker
 
     def prepare_read_mgf_worker(self, filename):
-        def update_progress(i):
-            self.progressBar.setValue(self.progressBar.value() + i)
-
-        self.progressBar.setFormat('Reading MGF...')
-        self.progressBar.setMinimum(0)
-        self.progressBar.setMaximum(0)
-
-        worker = workers.ReadMGFWorker(filename, self.options.cosine)
-        worker.updated.connect(update_progress)
-
-        return worker
+        return workers.ReadMGFWorker(filename, self.options.cosine)
 
     def prepare_read_metadata_worker(self, filename, csv_separator):
-        def update_progress(i):
-            self.progressBar.setValue(self.progressBar.value() + i)
-
-        self.progressBar.setFormat('Reading MetaData...')
-        self.progressBar.setMinimum(0)
-        self.progressBar.setMaximum(0)
-
-        worker = workers.ReadMetadataWorker(filename, csv_separator)
-        worker.updated.connect(update_progress)
-        
-        return worker
+        return workers.ReadMetadataWorker(filename, csv_separator)
 
     def prepare_save_project_worker(self, fname):
         """Save current project to a file for future access"""
@@ -878,10 +835,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 dialog.warning(self, None, str(e))
             else:
                 raise e
-
-        self.progressBar.setFormat('Saving project...')
-        self.progressBar.setMinimum(0)
-        self.progressBar.setMaximum(0)
 
         worker = workers.SaveProjectWorker(fname, self.graph, self.network, self.options)
         worker.finished.connect(process_finished)
@@ -915,10 +868,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 dialog.warning(self, None, str(e))
             else:
                 raise e
-
-        self.progressBar.setFormat('Loading project...')
-        self.progressBar.setMinimum(0)
-        self.progressBar.setMaximum(0)
 
         worker = workers.LoadProjectWorker(fname)
         worker.finished.connect(process_finished)

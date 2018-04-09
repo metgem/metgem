@@ -12,7 +12,9 @@ class ReadMGFWorker(BaseWorker):
         super().__init__()
         self.filename = filename
         self.options = options
-
+        self.iterative_update = True
+        self.max = 0
+        self.desc = 'Reading MGF...'
 
     def run(self):
         spectra = []

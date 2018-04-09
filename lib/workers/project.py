@@ -15,6 +15,8 @@ class LoadProjectWorker(BaseWorker):
         super().__init__()
 
         self.filename = filename
+        self.max = 0
+        self.desc = 'Loading project...'
 
     def run(self):
         try:
@@ -66,6 +68,8 @@ class SaveProjectWorker(BaseWorker):
         self.graph = graph
         self.network = network
         self.options = options
+        self.max = 0
+        self.desc = 'Saving project...'
 
     def run(self):
         # Export graph to GraphML format

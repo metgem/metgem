@@ -13,7 +13,7 @@ UI_FILE = os.path.join(os.path.dirname(__file__), 'download_databases_dialog.ui'
 
 from .widgets import AutoToolTipItemDelegate
 from ..database import DataBaseBuilder
-from ..utils import WorkerSet
+from ..workers import WorkerSet
 from ..workers import ListGNPSDatabasesWorker, DownloadGNPSDatabasesWorker, GetGNPSDatabasesMtimeWorker
 
 DownloadDatabasesDialogUI, DownloadDatabasesDialogBase = uic.loadUiType(UI_FILE,
@@ -195,9 +195,6 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
         def update_filesizes(dict_sizes):
             self.progressBar.setMaximum(sum(dict_sizes.values()))
 
-        def update_progress(i):
-            self.progressBar.setValue(self.progressBar.value() + i)
-
         def clean_up():
             self.setEnabled(True)
             self.update_badges()
@@ -205,7 +202,6 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
         self.progressBar.setValue(0)
         worker = DownloadGNPSDatabasesWorker(ids, self.base_path)
         worker.filesizes_ready.connect(update_filesizes)
-        worker.updated.connect(update_progress)
         worker.error.connect(self.on_error)
         worker.finished.connect(clean_up)
         worker.canceled.connect(clean_up)

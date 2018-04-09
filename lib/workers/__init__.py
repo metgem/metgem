@@ -1,3 +1,4 @@
+from .set import WorkerSet
 from .generic import GenericWorker
 from .tsne import TSNEWorker, TSNEVisualizationOptions
 from .network import NetworkWorker

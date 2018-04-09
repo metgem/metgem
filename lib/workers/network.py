@@ -11,10 +11,12 @@ class NetworkWorker(BaseWorker):
     def __init__(self, graph):
         super().__init__()
         self.graph = graph
+        self.max = self.graph.vcount()
+        self.iterative_update = False
+        self.desc = 'Computing layout: {value:d}%'
 
     def run(self):
-        total_vcount = self.graph.vcount()
-        layout = np.zeros((total_vcount, 2))
+        layout = np.zeros((self.max, 2))
 
         forceatlas2 = fa2.ForceAtlas2(adjustSizes=2*RADIUS, scalingRatio=RADIUS, verbose=False)
 
@@ -58,7 +60,7 @@ class NetworkWorker(BaseWorker):
                 max_height = 0
 
             processed_vcount += vcount
-            self.updated.emit(processed_vcount / total_vcount * 100)
+            self.updated.emit(processed_vcount)
 
         self._result = layout
         self.finished.emit()

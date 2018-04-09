@@ -89,6 +89,9 @@ class DownloadGNPSDatabasesWorker(BaseWorker):
         self.ids = ids
         self.path = path
         self._filesizes = {}
+        self.iterative_update = False
+        self.max = 0
+        self.desc = 'Downloading databases...'
 
     def run(self):
         try:

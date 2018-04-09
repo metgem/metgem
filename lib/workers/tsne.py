@@ -29,7 +29,8 @@ class ProgressStringIO(io.StringIO):
         self.parent = parent
 
     def write(self, s):
-        '''Method used to follow progress of processing.'''
+        """Method used to follow progress of processing."""
+
         if self.parent._should_stop:
             raise UserRequestedStopError()
         elif 'Iteration' in s:
@@ -48,14 +49,17 @@ class TSNEWorker(BaseWorker):
         super().__init__()
         self._scores = scores
         self.options = options
-
+        self._tsne = TSNE(learning_rate=self.options.learning_rate, early_exaggeration=12,
+                          perplexity=self.options.perplexity, verbose=2,
+                          random_state=0, metric='precomputed', method='exact')
+        self.max = self._tsne.n_iter
+        self.iterative_update = False
+        self.desc = 'TSNE: Iteration {value:d} of {max:d}'
 
     def run(self):
         sys.stdout = ProgressStringIO(self)
         try:
-            self._result = TSNE(learning_rate=self.options.learning_rate, early_exaggeration=12,
-                                perplexity=self.options.perplexity, verbose=2,
-                                random_state=0, metric='precomputed', method='exact').fit_transform(self._scores)
+            self._result = self._tsne.fit_transform(self._scores)
         except UserRequestedStopError:
             sys.stdout = sys.__stdout__
             self.canceled.emit()

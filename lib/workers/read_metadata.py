@@ -9,6 +9,9 @@ class ReadMetadataWorker(BaseWorker):
         super().__init__()
         self.filename = filename
         self.csv_separator = csv_separator
+        self.iterative_update = True
+        self.max = 0
+        self.desc = 'Reading Metadata...'
 
     def run(self):
         if self.filename.endswith(".csv"):
