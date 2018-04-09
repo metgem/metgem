@@ -14,10 +14,19 @@ class ReadMetadataWorker(BaseWorker):
         self.desc = 'Reading Metadata...'
 
     def run(self):
-        if self.filename.endswith(".csv"):
-            data = pd.read_csv(self.filename, sep=self.csv_separator)
+        try:
+            if self.filename.endswith(".xls") or self.filename.endswith(".xlsx"):
+                data = pd.read_excel(self.filename)
+            else:
+                if self.csv_separator == r"\s+":
+                    data = pd.read_csv(self.filename, delim_whitespace=True)
+                else:
+                    data = pd.read_csv(self.filename, sep=self.csv_separator)
+            self._result = data
+            self.finished.emit()
+        except(FileNotFoundError, IOError) as e:
+            self.error.emit(e)
+            self._result = None
         else:
-            data = pd.read_excel(self.filename)
+            self.finished.emit()
 
-        self._result = data
-        self.finished.emit()
