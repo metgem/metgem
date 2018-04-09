@@ -48,6 +48,8 @@ class WorkerSet(set):
             self.widgetProgress.setValue(0)
             self.widgetProgress.setMinimum(0)
             self.widgetProgress.setMaximum(worker.max)
+            if worker.max == 0:
+                self.widgetProgress.setFormat(worker.desc)
 
             self.widgetProgress.rejected.connect(lambda: worker.stop())
 
