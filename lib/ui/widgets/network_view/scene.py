@@ -54,10 +54,16 @@ except ImportError:
             return edges
 
         def nodes(self):
-            return self.nodesLayer.childItems()
+            try:
+                return self.nodesLayer.childItems()
+            except RuntimeError:
+                return []
 
         def selectedNodes(self):
-            return [item for item in self.selectedItems() if self.nodesLayer.isAncestorOf(item)]
+            try:
+                return [item for item in self.selectedItems() if self.nodesLayer.isAncestorOf(item)]
+            except RuntimeError:
+                return []
 
         def setNodesSelection(self, items):
             self.clearSelection()
@@ -71,10 +77,17 @@ except ImportError:
                         nodes[index].setSelected(True)
 
         def edges(self):
-            return self.edgesLayer.childItems()
+            try:
+                return self.edgesLayer.childItems()
+            except RuntimeError:
+                return []
 
         def selectedEdges(self):
-            return [item for item in self.selectedItems() if self.edgesLayer.isAncestorOf(item)]
+            try:
+                return [item for item in self.selectedItems() if self.edgesLayer.isAncestorOf(item)]
+            except RuntimeError:
+                return []
+
 
         def setEdgesSelection(self, items):
             self.clearSelection()
