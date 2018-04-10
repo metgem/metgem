@@ -82,10 +82,11 @@ class TSNEWorker(BaseWorker):
                 return False
             else:
                 # Adjust scale
-                layout *= RADIUS
+                bb = BoundingBox(layout[mask])
+                layout *= (2*RADIUS**2 / bb.width)
 
                 # Calculate positions for excluded nodes
-                bb = BoundingBox(layout)
+                bb = BoundingBox(layout[mask])
                 dx, dy = 0, 5 * RADIUS
                 for index in np.where(~mask)[0]:
                     layout[index] = (bb.left + dx, bb.bottom + dy)
