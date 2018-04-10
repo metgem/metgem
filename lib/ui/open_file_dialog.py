@@ -33,6 +33,7 @@ class OpenFileDialog(OpenFileDialogBase, OpenFileDialogUI):
 
         self.setupUi(self)
         self.btBrowseProcessFile.setFocus()
+        self.gbMetadata.setChecked(False)
 
         # Create palette used when validating input files
         self._error_palette = QPalette()
@@ -89,7 +90,7 @@ class OpenFileDialog(OpenFileDialogBase, OpenFileDialogUI):
             process_file = self.editProcessFile.text()
             metadata_file = self.editMetadataFile.text()
             if len(process_file) > 0 and os.path.exists(process_file) and os.path.splitext(process_file)[1] == '.mgf':
-                if len(metadata_file) == 0 or os.path.exists(metadata_file):
+                if not self.gbMetadata.isChecked() or (os.path.exists(metadata_file) and os.path.isfile(metadata_file)):
                     super().done(r)
                 else:
                     self.editMetadataFile.setPalette(self._error_palette)
@@ -138,7 +139,8 @@ class OpenFileDialog(OpenFileDialogBase, OpenFileDialogUI):
     def getValues(self):
         """Returns files to process and options"""
 
-        return (self.editProcessFile.text(), self.editMetadataFile.text(), 
+        return (self.editProcessFile.text(),
+                self.gbMetadata.isChecked(),  self.editMetadataFile.text(),
                 self.editCsvSeparator.text(), self.cosine_widget.getValues(), 
                 self.tsne_widget.getValues(), self.network_widget.getValues())
 

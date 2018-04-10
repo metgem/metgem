@@ -496,7 +496,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.gvNetwork.scene().clear()
             self.gvTSNE.scene().clear()
 
-            process_file, metadata_file, csv_separator, compute_options, tsne_options, network_options = dialog.getValues() 
+            process_file, use_metadata, metadata_file, csv_separator,\
+                compute_options, tsne_options, network_options = dialog.getValues()
             self.options.cosine = compute_options
             self.options.tsne = tsne_options
             self.options.network = network_options
@@ -534,10 +535,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 worker.finished.connect(mgf_file_read)
                 self._workers.add(worker)
 
-            metadata_worker = self.prepare_read_metadata_worker(metadata_file, csv_separator)
-            if metadata_worker is not None:
-                metadata_worker.finished.connect(metadata_file_read)
-                self._workers.add(metadata_worker)
+            if use_metadata:
+                metadata_worker = self.prepare_read_metadata_worker(metadata_file, csv_separator)
+                if metadata_worker is not None:
+                    metadata_worker.finished.connect(metadata_file_read)
+                    self._workers.add(metadata_worker)
 
     def on_edit_options_triggered(self, type_):
         if hasattr(self.network, 'scores'):
