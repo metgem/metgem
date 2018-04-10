@@ -18,12 +18,12 @@ class WorkerSet(set):
     def show_progressbar(self):
         if not self:  # dict is empty, so we are going to create the first entry. Show the progress bar
             self.widgetProgress = ProgressDialog(self._parent)
-            self.widgetProgress.show()
+            self.widgetProgress.open()
 
     def hide_progressbar(self):
         if not self:  # dict is now empty, hide the progress bar
             if self.widgetProgress is not None:
-                self.widgetProgress.hide()
+                self.widgetProgress.close()
                 self.widgetProgress.deleteLater()
                 self.widgetProgress = None
 
