@@ -107,6 +107,10 @@ class NetworkView(QGraphicsView):
         super().setScene(scene)
         self.minimap.setScene(scene)
 
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_M:
+            self.minimap.setVisible(not self.minimap.isVisible())
+
     def contextMenuEvent(self, event):
         menu = QMenu(self)
         pos = self.mapToScene(event.pos()).toPoint()
