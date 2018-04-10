@@ -56,6 +56,11 @@ class BoundingBox:
         self.height = self.bottom - self.top
         self.width = self.right - self.left
 
+    def __repr__(self):
+        return f"{self.__class__.__name__}-> left:{self.left}, right:{self.right}, " \
+               f"top:{self.top}, bottom: {self.bottom}, " \
+               f"height:{self.height}, width: {self.width}"
+
 
 class SignalBlocker:
     """Context Manager to temporarily block signals from given Qt's widgets"""
