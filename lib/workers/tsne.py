@@ -87,7 +87,7 @@ class TSNEWorker(BaseWorker):
                 bb = BoundingBox(layout)
                 dx, dy = 0, 5 * RADIUS
                 for index in np.where(~mask)[0]:
-                    layout[index] = (bb.left + dx, bb.height + dy)
+                    layout[index] = (bb.left + dx, bb.bottom + dy)
                     dx += 5 * RADIUS
                     if dx >= bb.width:
                         dx = 0
