@@ -88,7 +88,6 @@ except ImportError:
             except RuntimeError:
                 return []
 
-
         def setEdgesSelection(self, items):
             self.clearSelection()
             edges = self.edges()
