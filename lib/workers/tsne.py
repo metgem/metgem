@@ -1,11 +1,14 @@
 import sys
 import io
 
+import numpy as np
+
 from sklearn.manifold import TSNE
 
 from .base import BaseWorker
-from ..utils import AttrDict
+from ..utils import AttrDict, BoundingBox
 from ..errors import UserRequestedStopError
+from ..config import RADIUS
 
 
 class TSNEVisualizationOptions(AttrDict):
@@ -46,7 +49,7 @@ class TSNEWorker(BaseWorker):
     
     def __init__(self, scores, options):
         super().__init__()
-        self._scores = scores
+        self._scores = scores.copy()
         self.options = options
 
         method = 'barnes_hut' if options.barnes_hut else 'exact'
@@ -63,12 +66,34 @@ class TSNEWorker(BaseWorker):
 
     def run(self):
         sys.stdout = ProgressStringIO(self)
-        try:
-            self._result = self._tsne.fit_transform(self._scores)
-        except UserRequestedStopError:
-            sys.stdout = sys.__stdout__
-            self.canceled.emit()
-            return False
+
+        # Compute layout
+        self._scores[self._scores < 0.65] = 0
+
+        mask = self._scores.sum(axis=0) > 1
+        layout = np.zeros((self._scores.shape[0], 2))
+        if np.any(mask):
+            try:
+                layout[mask] = self._tsne.fit_transform(1 - self._scores[mask][:, mask])
+            except UserRequestedStopError:
+                sys.stdout = sys.__stdout__
+                self.canceled.emit()
+                return False
+            else:
+                # Adjust scale
+                layout *= RADIUS
+
+                # Calculate positions for excluded nodes
+                bb = BoundingBox(layout)
+                dx, dy = 0, 5 * RADIUS
+                for index in np.where(~mask)[0]:
+                    layout[index] = (bb.left + dx, bb.height + dy)
+                    dx += 5 * RADIUS
+                    if dx >= bb.width:
+                        dx = 0
+                        dy += 5 * RADIUS
+
+        self._result = layout
             
         sys.stdout = sys.__stdout__
         self.finished.emit()

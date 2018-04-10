@@ -729,7 +729,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.graph.es['__width'] = widths
 
         # Add nodes
-        self.graph.vs['__network_gobj'] = nodes = self.gvNetwork.scene().addNodes(self.graph.vs.indices, self.graph.vs['__label'])
+        self.graph.vs['__network_gobj'] = nodes = self.gvNetwork.scene().addNodes(self.graph.vs.indices,
+                                                                                  self.graph.vs['__label'])
 
         # Add edges
         edges_attr = [(e.index, nodes[e.source], nodes[e.target], e['__weight'], e['__width'])
@@ -759,41 +760,16 @@ class MainWindow(MainWindowBase, MainWindowUI):
                                                                     self.graph.vs['__label'])
 
         if layout is None:
-            scores = self.network.scores.copy()
-
             # Compute layout
-            scores[scores < 0.65] = 0
-
-            mask = scores.sum(axis=0) > 1
-            layout = np.zeros((scores.shape[0], 2))
-
-            if np.any(mask):
-                def process_finished():
-                    nonlocal layout
-                    layout[mask] = worker.result()
-
-                    # Adjust scale
-                    layout *= config.RADIUS
-
-                    # Calculate positions for excluded nodes
-                    bb = utils.BoundingBox(layout)
-                    dx, dy = 0, 0
-                    for index in np.where(~mask)[0]:
-                        layout[index] = (bb.left + dx, bb.height + dy)
-                        dx += 5*config.RADIUS
-                        if dx >= bb.width:
-                            dx = 0
-                            dy += 5*config.RADIUS
-
+            def process_finished():
+                layout = worker.result()
+                if layout is not None:
                     self.apply_tsne_layout(layout)
 
-                worker = workers.TSNEWorker(1 - scores[mask][:, mask], self.options.tsne)
-                worker.finished.connect(process_finished)
+            worker = workers.TSNEWorker(self.network.scores, self.options.tsne)
+            worker.finished.connect(process_finished)
 
-                return worker
-            else:
-                worker = workers.GenericWorker(self.apply_tsne_layout, layout)
-                return worker
+            return worker
         else:
             worker = workers.GenericWorker(self.apply_tsne_layout, layout)
             return worker
