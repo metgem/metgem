@@ -54,7 +54,7 @@ class TSNEWorker(BaseWorker):
         self.options = options
 
         method = 'barnes_hut' if options.barnes_hut else 'exact'
-        random_state = 0 if options.random else None
+        random_state = None if options.random else 0
         self._tsne = TSNE(learning_rate=options.learning_rate,
                           early_exaggeration=options.early_exaggeration,
                           perplexity=options.perplexity, verbose=2,
