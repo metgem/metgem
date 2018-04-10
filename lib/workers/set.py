@@ -1,5 +1,6 @@
 from PyQt5.QtCore import QThread
 
+from .generic import GenericWorker
 from ..ui.progress_dialog import ProgressDialog
 
 
@@ -41,8 +42,11 @@ class WorkerSet(set):
             self.widgetProgress.setMaximum(maximum)
 
     def connect_events(self, worker):
-        thread = QThread(self.parent())
-        worker.moveToThread(thread)
+        use_thread = not isinstance(worker, GenericWorker)
+
+        if use_thread:
+            thread = QThread(self.parent())
+            worker.moveToThread(thread)
 
         if self.widgetProgress is not None:
             self.widgetProgress.setValue(0)
@@ -58,9 +62,12 @@ class WorkerSet(set):
         worker.error.connect(lambda: self.remove(worker))
         worker.updated.connect(lambda i: self.update_progress(i, worker))
         worker.maximumChanged.connect(self.update_maximum)
-        thread.started.connect(worker.run)
 
-        thread.start()
+        if use_thread:
+            thread.started.connect(worker.run)
+            thread.start()
+        else:
+            worker.run()
 
     def add(self, worker):
         if worker.track_progress:
