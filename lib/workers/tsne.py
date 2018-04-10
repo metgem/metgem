@@ -18,6 +18,7 @@ class TSNEVisualizationOptions(AttrDict):
     def __init__(self):
         super().__init__(perplexity=6,
                          learning_rate=200,
+                         min_score=0.65,
                          early_exaggeration=12,
                          barnes_hut=True,
                          angle=0.5,
@@ -62,13 +63,13 @@ class TSNEWorker(BaseWorker):
 
         self.max = self._tsne.n_iter
         self.iterative_update = False
-        self.desc = 'TSNE: Iteration {value:d} of {max:d}'
+        self.desc = 't-SNE: Iteration {value:d} of {max:d}'
 
     def run(self):
         sys.stdout = ProgressStringIO(self)
 
         # Compute layout
-        self._scores[self._scores < 0.65] = 0
+        self._scores[self._scores < self.options.min_score] = 0
 
         mask = self._scores.sum(axis=0) > 1
         layout = np.zeros((self._scores.shape[0], 2))

@@ -52,6 +52,7 @@ class TSNEOptionsWidget(QGroupBox):
         """Return t-SNE options"""
         
         options = TSNEVisualizationOptions()
+        options.min_score = self.spinMinScore.value()
         options.perplexity = self.spinTSNEPerplexity.value()
         options.learning_rate = self.spinTSNELearningRate.value()
         options.early_exaggeration = self.spinTSNEEarlyExaggeration.value()
@@ -68,7 +69,8 @@ class TSNEOptionsWidget(QGroupBox):
             t-SNE_visualization_options (TSNEVisualizationOptions): Modifies the Widget's spinBoxes
             to match the t-SNE visualization options.  
         """
-        
+
+        self.spinMinScore.setValue(options.min_score)
         self.spinTSNEPerplexity.setValue(options.perplexity)
         self.spinTSNELearningRate.setValue(options.learning_rate)
         self.spinTSNEEarlyExaggeration.setValue(options.early_exaggeration)
