@@ -11,35 +11,32 @@ class WorkerSet(set):
         super().__init__(*args, **kwargs)
         self._parent = parent
 
-        self.widgetProgress = None
+        self.widgetProgress = ProgressDialog(self._parent)
 
     def parent(self):
         return self._parent
 
     def show_progressbar(self):
         if not self:  # dict is empty, so we are going to create the first entry. Show the progress bar
-            self.widgetProgress = ProgressDialog(self._parent)
-            self.widgetProgress.open()
+            self.widgetProgress.show()
+            self.widgetProgress.setModal(True)
 
     def hide_progressbar(self):
         if not self:  # dict is now empty, hide the progress bar
             if self.widgetProgress is not None:
+                self.widgetProgress.setModal(False)
                 self.widgetProgress.close()
-                self.widgetProgress.deleteLater()
-                self.widgetProgress = None
 
     def update_progress(self, i, worker):
-        if self.widgetProgress is not None:
-            if worker.iterative_update:
-                self.widgetProgress.setValue(self.widgetProgress.value() + i)
-            else:
-                self.widgetProgress.setValue(i)
+        if worker.iterative_update:
+            self.widgetProgress.setValue(self.widgetProgress.value() + i)
+        else:
+            self.widgetProgress.setValue(i)
 
-            self.widgetProgress.setFormat(worker.desc.format(value=i, max=worker.max))
+        self.widgetProgress.setFormat(worker.desc.format(value=i, max=worker.max))
 
     def update_maximum(self, maximum):
-        if self.widgetProgress is not None:
-            self.widgetProgress.setMaximum(maximum)
+        self.widgetProgress.setMaximum(maximum)
 
     def connect_events(self, worker):
         use_thread = not isinstance(worker, GenericWorker)
@@ -48,14 +45,13 @@ class WorkerSet(set):
             thread = QThread(self.parent())
             worker.moveToThread(thread)
 
-        if self.widgetProgress is not None:
-            self.widgetProgress.setValue(0)
-            self.widgetProgress.setMinimum(0)
-            self.widgetProgress.setMaximum(worker.max)
-            if worker.max == 0:
-                self.widgetProgress.setFormat(worker.desc)
+        self.widgetProgress.setValue(0)
+        self.widgetProgress.setMinimum(0)
+        self.widgetProgress.setMaximum(worker.max)
+        if worker.max == 0:
+            self.widgetProgress.setFormat(worker.desc)
 
-            self.widgetProgress.rejected.connect(lambda: worker.stop())
+        self.widgetProgress.rejected.connect(lambda: worker.stop())
 
         worker.finished.connect(lambda: self.remove(worker))
         worker.canceled.connect(lambda: self.remove(worker))
