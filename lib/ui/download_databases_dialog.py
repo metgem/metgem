@@ -111,12 +111,10 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
     def on_error(self, e):
         if isinstance(e, ConnectionError):
             self.close()
-            dialog = QMessageBox()
-            dialog.warning(self, None,
+            QMessageBox.warning(self, None,
                            'Connection failed. Please check your network connection.')
         elif isinstance(e, ftplib.all_errors):
-            dialog = QMessageBox()
-            dialog.warning(self, None,
+            QMessageBox.warning(self, None,
                            f'Connection failed. Please check your network connection.\n{str(e)}')
 
     def select(self, type_):
@@ -186,8 +184,7 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
 
         ids = self.get_ids(selected_only=True)
         if len(ids) == 0:
-            dialog = QMessageBox()
-            dialog.warning(self, None,
+            QMessageBox.warning(self, None,
                            'Please select at least one database first.')
             return False
 

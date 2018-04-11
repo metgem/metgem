@@ -314,16 +314,14 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.save_project(filename)
 
     def on_about_triggered(self):
-        dialog = QMessageBox(self)
         message = (f'Version: {QCoreApplication.applicationVersion()}',
                    '',
                    'Should say something here.')
-        dialog.about(self, f'About {QCoreApplication.applicationName()}',
+        QMessageBox.about(self, f'About {QCoreApplication.applicationName()}',
                      '\n'.join(message))
 
     def on_about_qt_triggered(self):
-        dialog = QMessageBox(self)
-        dialog.aboutQt(self)
+        QMessageBox.aboutQt(self)
 
     def on_export_to_cytoscape_triggered(self):
         try:
@@ -360,20 +358,16 @@ class MainWindow(MainWindowBase, MainWindowUI):
             style = cy.style.create('cyREST style', style_js)
             cy.style.apply(style, g_cy)
         except (ConnectionRefusedError, ConnectionError):
-            dialog = QMessageBox()
-            dialog.information(self, None,
+            QMessageBox.information(self, None,
                                'Please launch Cytoscape before trying to export.')
         except json.decoder.JSONDecodeError:
-            dialog = QMessageBox()
-            dialog.information(self, None,
+            QMessageBox.information(self, None,
                                'Cytoscape was not ready to receive data. Please try again.')
         except ImportError:
-            dialog = QMessageBox()
-            dialog.information(self, None,
+            QMessageBox.information(self, None,
                                'py2tocytoscape is required for this action (https://pypi.python.org/pypi/py2cytoscape).')
         except FileNotFoundError:
-            dialog = QMessageBox()
-            dialog.warning(self, None,
+            QMessageBox.warning(self, None,
                            f'styles.json not found. You may have to reinstall {QCoreApplication.applicationName()}')
 
         # for c in g_cy.get_view(g_cy.get_views()[0])['elements']['nodes']:
@@ -573,8 +567,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                         self.draw(which='t-sne')
                         self.update_search_menu()
         else:
-            dialog = QMessageBox()
-            dialog.information(self, None, "No network found, please open a file first.")
+            QMessageBox.information(self, None, "No network found, please open a file first.")
 
     def on_download_databases_triggered(self):
         dialog = ui.DownloadDatabasesDialog(self, base_path=DATABASES_PATH)
@@ -777,8 +770,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def prepare_compute_scores_worker(self, spectra, use_multiprocessing):
         def error(e):
             if e.__class__ == OSError:
-                dialog = QMessageBox(self)
-                dialog.warning(self, None, str(e))
+                QMessageBox.warning(self, None, str(e))
             else:
                 raise e
 
@@ -802,8 +794,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         def error(e):
             if e.__class__ == PermissionError:
-                dialog = QMessageBox(self)
-                dialog.warning(self, None, str(e))
+                QMessageBox.warning(self, None, str(e))
             else:
                 raise e
 
@@ -832,11 +823,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         def error(e):
             if isinstance(e, FileNotFoundError):
-                dialog = QMessageBox(self)
-                dialog.warning(self, None, f"File '{self.filename}' not found.")
+                QMessageBox.warning(self, None, f"File '{self.filename}' not found.")
             elif isinstance(e, errors.UnsupportedVersionError):
-                dialog = QMessageBox(self)
-                dialog.warning(self, None, str(e))
+                QMessageBox.warning(self, None, str(e))
             else:
                 raise e
 
