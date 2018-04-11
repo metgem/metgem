@@ -50,7 +50,7 @@ class TSNEWorker(BaseWorker):
     
     def __init__(self, scores, options):
         super().__init__()
-        self._scores = scores.copy()
+        self._scores = scores
         self.options = options
 
         method = 'barnes_hut' if options.barnes_hut else 'exact'
@@ -69,9 +69,7 @@ class TSNEWorker(BaseWorker):
         sys.stdout = ProgressStringIO(self)
 
         # Compute layout
-        self._scores[self._scores < self.options.min_score] = 0
-
-        mask = self._scores.sum(axis=0) > 1
+        mask = (self._scores >= self.options.min_score).sum(axis=0) > 1
         layout = np.zeros((self._scores.shape[0], 2))
         if np.any(mask):
             try:
