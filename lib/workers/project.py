@@ -29,6 +29,8 @@ class LoadProjectWorker(BaseWorker):
                 if version <= 2:
                     network = Network()
                     network.scores = fid['network/scores']
+                    if version == 1:  # There was a bug in version 1 that result in scores' diagonal filled with 0
+                        np.fill_diagonal(network.scores, 1)
                     network.infos = fid['network/infos']
 
                     spec_infos = fid['network/spectra/index.json']
