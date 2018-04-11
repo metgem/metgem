@@ -132,7 +132,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         # Connect events
         self.tvNodes.horizontalHeader().customContextMenuRequested.connect(self.on_nodes_header_contextmenu)
-        #self.tvNodes.selectionModel().selectionChanged.connect(self.on_nodes_table_selection_changed)
         self.tvNodes.customContextMenuRequested.connect(self.on_nodes_table_contextmenu)
 
         self.gvNetwork.scene().selectionChanged.connect(self.on_scene_selection_changed)
@@ -177,6 +176,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self._mapper.mapped[str].connect(self.on_edit_options_triggered)
 
         self.tabWidget.cornerWidget(Qt.TopRightCorner).clicked.connect(self.minimize_tabwidget)
+        self.tabWidget.currentChanged.connect(self.update_search_menu)
 
         # Add a menu to show/hide toolbars
         popup_menu = self.createPopupMenu()
@@ -228,10 +228,13 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self._workers.add(worker)
 
     def update_search_menu(self):
+        table = self.tabWidget.currentWidget()
+        if table not in (self.tvNodes, self.tvEdges):
+            return False
+        model = table.model()
+
         menu = QMenu(self)
         group = QActionGroup(menu, exclusive=True)
-
-        model = self.tvNodes.model()
 
         for index in range(model.columnCount() + 1):
             text = "All" if index == 0 else model.headerData(index - 1, Qt.Horizontal, Qt.DisplayRole)
@@ -244,8 +247,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         self.btSearch.setMenu(menu)
         self.btSearch.setPopupMode(QToolButton.InstantPopup)
-        group.triggered.connect(lambda: self.tvNodes.model().setFilterKeyColumn(action.data()-1))
-        self.tvNodes.model().setFilterKeyColumn(-1)
+        group.triggered.connect(lambda: table.model().setFilterKeyColumn(action.data()-1))
+        table.model().setFilterKeyColumn(-1)
 
     def keyPressEvent(self, event):
         key = event.key()
@@ -288,7 +291,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
                     self.gvNetwork.scene().setNodesSelection(nodes_idx)
 
     def on_search_text_changed(self, value):
-        self.tvNodes.model().setFilterRegExp(str(value))
+        table = self.tabWidget.currentWidget()
+        if table in (self.tvNodes, self.tvEdges):
+            table.model().setFilterRegExp(str(value))
 
     def on_open_project_triggered(self):
         dialog = QFileDialog(self)
