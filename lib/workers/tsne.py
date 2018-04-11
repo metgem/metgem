@@ -18,7 +18,7 @@ class TSNEVisualizationOptions(AttrDict):
     def __init__(self):
         super().__init__(perplexity=6,
                          learning_rate=200,
-                         min_score=0.65,
+                         min_score=0.70,
                          early_exaggeration=12,
                          barnes_hut=True,
                          angle=0.5,
