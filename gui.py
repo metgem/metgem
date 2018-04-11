@@ -5,6 +5,7 @@ import os
 import traceback
 import json
 
+from pyteomics.auxiliary import PyteomicsError
 from requests import ConnectionError
 
 import numpy as np
@@ -756,6 +757,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 worker.finished.connect(scores_computed)
                 self._workers.add(worker)
 
+        def mgf_error(e):
+            if e.__class__ == PyteomicsError:
+                QMessageBox.warning(self, None, e.message)
+
         def scores_computed():
             nonlocal worker
             self.network.scores = worker.result()
@@ -782,6 +787,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.tvNodes.model().sourceModel().endResetModel()
 
         worker.finished.connect(mgf_file_read)
+        worker.error.connect(mgf_error)
         return worker
 
     def prepare_save_project_worker(self, fname):
