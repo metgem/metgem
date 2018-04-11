@@ -496,44 +496,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.options.tsne = tsne_options
             self.options.network = network_options
 
-            def mgf_file_read():
-                nonlocal worker
-                self.network.spectra = worker.result()
-                multiprocess = len(self.network.spectra) > 1000  # TODO: Tune this, arbitrary decision
-                worker = self.prepare_compute_scores_worker(self.network.spectra, multiprocess)
-                if worker is not None:
-                    worker.finished.connect(scores_computed)
-                    self._workers.add(worker)
-
-            def scores_computed():
-                self.network.scores = worker.result()
-                interactions = workers.generate_network(self.network.scores,
-                                                        self.network.spectra,
-                                                        self.options.network,
-                                                        use_self_loops=True)
-                self.network.infos = np.array([(spectrum.mz_parent,) for spectrum in self.network.spectra],
-                                              dtype=[('m/z parent', np.float32)])
-                self.create_graph(interactions)
-                self.draw(interactions=interactions)
-
-            def metadata_file_read():
-                nonlocal metadata_worker
-                data = metadata_worker.result()
-                self.tvNodes.model().sourceModel().beginResetModel()
-                for column in data:
-                    self.graph.vs[column] = data[column]
-                self.tvNodes.model().sourceModel().endResetModel()
-
-            worker = self.prepare_read_mgf_worker(process_file)
+            worker = self.prepare_read_mgf_worker(process_file, metadata_file, csv_separator)
             if worker is not None:
-                worker.finished.connect(mgf_file_read)
                 self._workers.add(worker)
-
-            if use_metadata:
-                metadata_worker = self.prepare_read_metadata_worker(metadata_file, csv_separator)
-                if metadata_worker is not None:
-                    metadata_worker.finished.connect(metadata_file_read)
-                    self._workers.add(metadata_worker)
 
     def on_edit_options_triggered(self, type_):
         if hasattr(self.network, 'scores'):
@@ -779,11 +744,45 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         return worker
 
-    def prepare_read_mgf_worker(self, filename):
-        return workers.ReadMGFWorker(filename, self.options.cosine)
+    def prepare_read_mgf_worker(self, mgf_filename, metadata_filename = None, csv_separator = None):
+        worker = workers.ReadMGFWorker(mgf_filename, self.options.cosine)
 
-    def prepare_read_metadata_worker(self, filename, csv_separator):
-        return workers.ReadMetadataWorker(filename, csv_separator)
+        def mgf_file_read():
+            nonlocal worker
+            self.network.spectra = worker.result()
+            multiprocess = len(self.network.spectra) > 1000  # TODO: Tune this, arbitrary decision
+            worker = self.prepare_compute_scores_worker(self.network.spectra, multiprocess)
+            if worker is not None:
+                worker.finished.connect(scores_computed)
+                self._workers.add(worker)
+
+        def scores_computed():
+            nonlocal worker
+            self.network.scores = worker.result()
+            interactions = workers.generate_network(self.network.scores,
+                                                    self.network.spectra,
+                                                    self.options.network,
+                                                    use_self_loops=True)
+            self.network.infos = np.array([(spectrum.mz_parent,) for spectrum in self.network.spectra],
+                                          dtype=[('m/z parent', np.float32)])
+            self.create_graph(interactions)
+            self.draw(interactions=interactions)
+            if metadata_filename is not None:
+                worker = workers.ReadMetadataWorker(metadata_filename, csv_separator)
+                if worker is not None:
+                    worker.finished.connect(metadata_file_read)
+                    self._workers.add(worker)
+
+        def metadata_file_read():
+            nonlocal worker
+            data = worker.result()
+            self.tvNodes.model().sourceModel().beginResetModel()
+            for column in data:
+                self.graph.vs[column] = data[column]
+            self.tvNodes.model().sourceModel().endResetModel()
+
+        worker.finished.connect(mgf_file_read)
+        return worker
 
     def prepare_save_project_worker(self, fname):
         """Save current project to a file for future access"""
