@@ -27,15 +27,42 @@ class LoadProjectWorker(BaseWorker):
                     version = 1
 
                 if version <= 2:
+                    if self._should_stop:
+                        self.canceled.emit()
+                        return False
+
+                    # Create network object
                     network = Network()
+
+                    # Load scores matrix
                     network.scores = fid['network/scores']
                     if version == 1:  # There was a bug in version 1 that result in scores' diagonal filled with 0
                         np.fill_diagonal(network.scores, 1)
+
+                    if self._should_stop:
+                        self.canceled.emit()
+                        return False
+
+                    # Load infos
                     network.infos = fid['network/infos']
 
+                    if self._should_stop:
+                        self.canceled.emit()
+                        return False
+
+                    # Load table of spectra
                     spec_infos = fid['network/spectra/index.json']
-                    network.spectra = [Spectrum(s['id'], s['mz_parent'], fid[f'network/spectra/{s["id"]}']) for
-                                       s in spec_infos]
+                    spectra = []
+                    for s in spec_infos:
+                        if self._should_stop:
+                            self.canceled.emit()
+                            return False
+
+                        spectra.append(Spectrum(s['id'], s['mz_parent'], fid[f'network/spectra/{s["id"]}']))
+
+                    if self._should_stop:
+                        self.canceled.emit()
+                        return False
 
                     # Load options
                     options = AttrDict(fid['options.json'])
@@ -48,13 +75,32 @@ class LoadProjectWorker(BaseWorker):
                     if version == 1:
                         options.tsne.barnes_hut = False
 
+                    if self._should_stop:
+                        self.canceled.emit()
+                        return False
+
                     # Load graph
                     gxl = fid['graph.gxl']
                     parser = GraphMLParser()
                     graph = parser.fromstring(gxl)
 
+                    if self._should_stop:
+                        self.canceled.emit()
+                        return False
+
+                    # Load network layout
                     graph.network_layout = fid['network_layout']
+
+                    if self._should_stop:
+                        self.canceled.emit()
+                        return False
+
+                    # Load t-SNE layout
                     graph.tsne_layout = fid['tsne_layout']
+
+                    if self._should_stop:
+                        self.canceled.emit()
+                        return False
 
                     self._result = graph, network, options
                 else:
