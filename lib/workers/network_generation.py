@@ -25,8 +25,7 @@ class NetworkVisualizationOptions(AttrDict):
 def generate_network(scores_matrix, spectra, options, use_self_loops=True): #TODO: change this in worker
     interactions = []
     num_spectra = len(spectra)
-    
-    np.fill_diagonal(scores_matrix, 0)
+
     triu = np.triu(scores_matrix)
     triu[triu<=options.pairs_min_cosine] = 0
     for i in range(num_spectra):
