@@ -4,6 +4,7 @@ from PyQt5.QtCore import (Qt, QRectF)
 
 from ....config import RADIUS, NODE_BORDER_WIDTH, FONT_SIZE
 
+
 class Node(QGraphicsEllipseItem):
     Type = QGraphicsItem.UserType + 1
 
@@ -18,7 +19,7 @@ class Node(QGraphicsEllipseItem):
 
         self.setFlag(QGraphicsItem.ItemIsMovable)
         self.setFlag(QGraphicsItem.ItemIsSelectable)
-        self.setFlag(QGraphicsItem.ItemSendsGeometryChanges)
+        self.setFlag(QGraphicsItem.ItemSendsScenePositionChanges)
         self.setCacheMode(QGraphicsItem.DeviceCoordinateCache)
 
         self.setColor(Qt.lightGray)
@@ -46,7 +47,7 @@ class Node(QGraphicsEllipseItem):
         return self._edge_list
 
     def itemChange(self, change, value):
-        if change == QGraphicsItem.ItemPositionHasChanged:
+        if change == QGraphicsItem.ItemScenePositionHasChanged:
             for edge in self._edge_list:
                 edge.adjust()
         elif change == QGraphicsItem.ItemSelectedChange:

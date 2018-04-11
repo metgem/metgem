@@ -1,6 +1,6 @@
 import itertools
 
-from PyQt5.QtWidgets import QGraphicsScene
+from PyQt5.QtWidgets import QGraphicsScene, QGraphicsItem
 
 try:
     from .NetworkView import Node, Edge, NetworkScene as BaseNetworkScene
@@ -92,7 +92,7 @@ except ImportError:
             self.clearSelection()
             edges = self.edges()
             if len(items) > 0:
-                if isinstance(items[0], Node):
+                if isinstance(items[0], Edge):
                     for edge in items:
                         edge.setSelected(True)
                 else:
@@ -101,4 +101,27 @@ except ImportError:
 
         def setLayout(self, positions):
             for node, pos in zip(self.nodes(), positions):
+                node.setFlag(QGraphicsItem.ItemSendsScenePositionChanges, False)
                 node.setPos(*pos)
+                node.setFlag(QGraphicsItem.ItemSendsScenePositionChanges)
+
+            for edge in self.edges():
+                edge.adjust()
+
+        def hideItems(self, items):
+            for item in items:
+                item.hide()
+
+        def showItems(self, items):
+            for item in items:
+                item.show()
+
+        def hideSelectedItems(self):
+            items = self.selectedItems()
+            self.clearSelection()
+            for item in items:
+                item.hide()
+
+        def showAllItems(self):
+            for item in self.items():
+                item.show()
