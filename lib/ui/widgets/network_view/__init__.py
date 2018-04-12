@@ -1,2 +1,2 @@
 from .scene import Node, Edge, NetworkScene
-from .view import NetworkView, MiniMapGraphicsView, NodeTableView
+from .view import NetworkView, MiniMapGraphicsView
