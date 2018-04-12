@@ -35,7 +35,7 @@ except ImportError:
             self.addItem(self.edgesLayer)
             self.edgesLayer.setZValue(0)
 
-        def addNodes(self, indexes, labels, positions=[]):
+        def addNodes(self, indexes, labels=[], positions=[]):
             nodes = []
             for index, label, pos in itertools.zip_longest(indexes, labels, positions):
                 node = Node(index, label)

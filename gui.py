@@ -683,9 +683,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.network.graph.es['__width'] = widths
 
         # Add nodes
-        self.network.graph.vs['__network_gobj'] = nodes = self.gvNetwork.scene().addNodes(self.network.graph.vs.indices,
-                                                                                  [str(index) for index in self.network.graph.vs.indices]) #TODO
-                                                                                  # self.network.graph.vs['__label'])
+        self.network.graph.vs['__network_gobj'] = nodes = self.gvNetwork.scene().addNodes(self.network.graph.vs.indices)
 
         # Add edges
         edges_attr = [(e.index, nodes[e.source], nodes[e.target], e['__weight'], e['__width'])
@@ -711,9 +709,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.gvTSNE.scene().clear()
 
         # Add nodes
-        self.network.graph.vs['__tsne_gobj'] = self.gvTSNE.scene().addNodes(self.network.graph.vs.indices,
-                                                                    [str(index) for index in self.network.graph.vs.indices]) #TODO
-                                                                    # self.network.graph.vs['__label'])
+        self.network.graph.vs['__tsne_gobj'] = self.gvTSNE.scene().addNodes(self.network.graph.vs.indices)
 
         if layout is None:
             # Compute layout

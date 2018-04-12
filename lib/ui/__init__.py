@@ -6,4 +6,3 @@ from .widgets.network_view import Edge, Node, NetworkView
 from .download_databases_dialog import DownloadDatabasesDialog
 from .view_databases_dialog import ViewDatabasesDialog
 from .progress_dialog import ProgressDialog
-

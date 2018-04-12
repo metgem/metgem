@@ -8,13 +8,15 @@ from ....config import RADIUS, NODE_BORDER_WIDTH, FONT_SIZE
 class Node(QGraphicsEllipseItem):
     Type = QGraphicsItem.UserType + 1
 
-    def __init__(self, index, label=''):
+    def __init__(self, index, label=None):
         super().__init__(-RADIUS, -RADIUS, 2 * RADIUS, 2 * RADIUS)
 
         self._edge_list = []
         self._pie = []
 
         self.id = index
+        if label is None:
+            label = str(index)
         self._label = label
 
         self.setFlag(QGraphicsItem.ItemIsMovable)
