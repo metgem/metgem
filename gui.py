@@ -152,7 +152,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.actionZoomSelectedRegion.triggered.connect(
             lambda: self.current_view.fitInView(self.current_view.scene().selectionArea().boundingRect(),
                                                 Qt.KeepAspectRatio))
-        self.leSearch.textChanged.connect(self.on_search_text_changed)
+        self.leSearch.textChanged.connect(self.on_do_search)
+        self.leSearch.returnPressed.connect(self.on_do_search)
         self.actionOpen.triggered.connect(self.on_open_project_triggered)
         self.actionSave.triggered.connect(self.on_save_project_triggered)
         self.actionSaveAs.triggered.connect(self.on_save_project_as_triggered)
@@ -247,7 +248,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         self.btSearch.setMenu(menu)
         self.btSearch.setPopupMode(QToolButton.InstantPopup)
-        group.triggered.connect(lambda: table.model().setFilterKeyColumn(action.data()-1))
+        group.triggered.connect(lambda action: table.model().setFilterKeyColumn(action.data()-1))
         table.model().setFilterKeyColumn(-1)
 
     def keyPressEvent(self, event):
@@ -290,10 +291,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 with utils.SignalBlocker(self.gvNetwork.scene()):
                     self.gvNetwork.scene().setNodesSelection(nodes_idx)
 
-    def on_search_text_changed(self, value):
+    def on_do_search(self):
         table = self.tabWidget.currentWidget()
         if table in (self.tvNodes, self.tvEdges):
-            table.model().setFilterRegExp(str(value))
+            table.model().setFilterRegExp(str(self.leSearch.text()))
 
     def on_open_project_triggered(self):
         dialog = QFileDialog(self)
