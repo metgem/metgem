@@ -1,6 +1,6 @@
 from PyQt5.QtCore import QRectF, pyqtSignal, Qt
 from PyQt5.QtGui import QPainter, QSurfaceFormat
-from PyQt5.QtWidgets import QGraphicsView, QRubberBand, QOpenGLWidget, QFormLayout, QSizePolicy, QMenu, QTableView
+from PyQt5.QtWidgets import QGraphicsView, QRubberBand, QOpenGLWidget, QFormLayout, QSizePolicy, QMenu
 
 from .scene import Node, NetworkScene
 
@@ -179,14 +179,6 @@ class NetworkView(QGraphicsView):
             return
 
         self.scale(scaleFactor, scaleFactor)
-
-
-class NodeTableView(QTableView):
-    """ TableView to display Nodes information """
-    def __init__(self):
-        super().__init__()
-        self.horizontalHeader().setContextMenuPolicy(Qt.CustomContextMenu)
-        self.setContextMenuPolicy(Qt.CustomContextMenu)
             
 
 
