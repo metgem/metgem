@@ -2,8 +2,7 @@ from PyQt5.QtCore import QRectF, pyqtSignal, Qt
 from PyQt5.QtGui import QPainter, QSurfaceFormat
 from PyQt5.QtWidgets import QGraphicsView, QRubberBand, QOpenGLWidget, QFormLayout, QSizePolicy, QMenu, QTableView
 
-from .node import Node
-from .scene import NetworkScene
+from .scene import Node, NetworkScene
 
 
 class MiniMapGraphicsView(QGraphicsView):
@@ -114,21 +113,21 @@ class NetworkView(QGraphicsView):
     def contextMenuEvent(self, event):
         menu = QMenu(self)
         pos = self.mapToScene(event.pos()).toPoint()
-        item = self.scene().itemAt(pos, self.transform())
-        if item is not None and isinstance(item, Node):
+        node = self.scene().nodeAt(pos, self.transform())
+        if node is not None:
             action = menu.addAction('Show spectrum')
-            action.triggered.connect(lambda: self.showSpectrumTriggered.emit(item))
+            action.triggered.connect(lambda: self.showSpectrumTriggered.emit(node))
             action = menu.addAction('Set as compare spectrum')
-            action.triggered.connect(lambda: self.compareSpectrumTriggered.emit(item))
+            action.triggered.connect(lambda: self.compareSpectrumTriggered.emit(node))
 
         if len(menu.actions()) > 0:
             menu.exec(event.globalPos())
 
     def mouseDoubleClickEvent(self, event):
         pos = self.mapToScene(event.pos()).toPoint()
-        item = self.scene().itemAt(pos, self.transform())
-        if item is not None and isinstance(item, Node):
-            self.showSpectrumTriggered.emit(item)
+        node = self.scene().nodeAt(pos, self.transform())
+        if node is not None:
+            self.showSpectrumTriggered.emit(node)
             
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton and not self.itemAt(event.pos()):

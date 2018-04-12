@@ -125,3 +125,13 @@ except ImportError:
         def showAllItems(self):
             for item in self.items():
                 item.show()
+
+        def nodeAt(self, *args, **kwargs):
+            item = self.itemAt(*args, **kwargs)
+            if isinstance(item, Node):
+                return item
+
+        def edgeAt(self, *args, **kwargs):
+            item = self.itemAt(*args, **kwargs)
+            if isinstance(item, Edge):
+                return item

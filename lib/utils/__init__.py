@@ -1,6 +1,5 @@
 import itertools
 
-
 class AttrDict(dict):
     """A frozen dictionary where item can be accessed as attributes."""
     
@@ -36,10 +35,6 @@ class AttrDict(dict):
 
     def copy(self):
         return AttrDict(self)
-
-
-class Network:
-    __slots__ = 'spectra', 'scores', 'infos'
 
 
 def grouper(iterable, n, fillvalue=None):

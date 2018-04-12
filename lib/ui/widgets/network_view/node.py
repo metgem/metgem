@@ -15,7 +15,7 @@ class Node(QGraphicsEllipseItem):
         self._pie = []
 
         self.id = index
-        self.label = label
+        self._label = label
 
         self.setFlag(QGraphicsItem.ItemIsMovable)
         self.setFlag(QGraphicsItem.ItemIsSelectable)
@@ -28,11 +28,17 @@ class Node(QGraphicsEllipseItem):
     def index(self):
         return self.id
 
+    def color(self):
+        return self._color
+
     def setColor(self, color):
         self._color = color
 
+    def label(self):
+        return self._label
+
     def setLabel(self, label):
-        self.label = label
+        self._label = label
         self.setCacheMode(self.cacheMode())  # Force redraw
 
     def setPie(self, values):
@@ -91,12 +97,8 @@ class Node(QGraphicsEllipseItem):
 
         # Draw text
         if lod > 0.4:
-            # font = painter.font()
-            # fm = painter.fontMetrics()
-            # factor = self.rect().width() / fm.width(self.label)
-            # font.setPointSize(font.pointSizeF()*factor)
             font = painter.font()
             font.setPixelSize(FONT_SIZE)
             painter.setFont(font)
             painter.setPen(QPen(Qt.black, 0))
-            painter.drawText(self.rect(), Qt.AlignCenter, self.label)
+            painter.drawText(self.rect(), Qt.AlignCenter, self._label)

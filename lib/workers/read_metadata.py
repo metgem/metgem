@@ -22,7 +22,7 @@ class ReadMetadataWorker(BaseWorker):
                     data = pd.read_csv(self.filename, delim_whitespace=True)
                 else:
                     data = pd.read_csv(self.filename, sep=self.csv_separator)
-            self._result = data
+            self._result = data.to_records()
             self.finished.emit()
         except(FileNotFoundError, IOError) as e:
             self.error.emit(e)

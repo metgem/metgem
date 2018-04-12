@@ -21,6 +21,7 @@ from PyQt5.QtGui import QPainter, QImage, QCursor
 from PyQt5 import uic
 
 from lib import ui, config, utils, workers, errors
+from lib.utils.network import Network
 
 MAIN_UI_FILE = os.path.join('lib', 'ui', 'main_window.ui')
 if getattr(sys, 'frozen', False):
@@ -59,9 +60,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
         # Workers' references
         self._workers = workers.WorkerSet(self)
 
-        # Create graph
-        self.graph = ig.Graph()
-
         # Setup User interface
         self.setupUi(self)
         self.gvNetwork.setFocus()
@@ -76,13 +74,16 @@ class MainWindow(MainWindowBase, MainWindowUI):
         w.setAutoRaise(True)
         self.tabWidget.setCornerWidget(w, Qt.TopRightCorner)
 
-        # Assigning cosine computation and visualization default options
-        self.options = utils.AttrDict({'cosine': workers.CosineComputationOptions(),
-                                       'network': workers.NetworkVisualizationOptions(),
-                                       'tsne': workers.TSNEVisualizationOptions()})
-
         # Create an object to store all computed objects
-        self.network = utils.Network()
+        self._network = Network()
+
+        # Create graph
+        self._network.graph = ig.Graph()
+
+        # Set default options
+        self._network.options = utils.AttrDict({'cosine': workers.CosineComputationOptions(),
+                                                'network': workers.NetworkVisualizationOptions(),
+                                                'tsne': workers.TSNEVisualizationOptions()})
 
         # Add model to table views
         for table, Model, name in ((self.tvNodes, ui.widgets.NodesModel, "Nodes"),
@@ -218,6 +219,18 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 return view
         return self.gvNetwork
 
+    @property
+    def network(self):
+        return self._network
+
+    @network.setter
+    def network(self, network):
+        network.infosAboutToChange.connect(self.tvNodes.model().sourceModel().beginResetModel)
+        network.infosChanged.connect(self.tvNodes.model().sourceModel().endResetModel)
+        network.interactionsAboutToChange.connect(self.tvEdges.model().sourceModel().beginResetModel)
+        network.interactionsChanged.connect(self.tvEdges.model().sourceModel().endResetModel)
+        self._network = network
+
     def load_project(self, filename):
         worker = self.prepare_load_project_worker(filename)
         if worker is not None:
@@ -337,7 +350,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             cy = CyRestClient()
 
             # Create exportable copy of the graph object
-            g = self.graph.copy()
+            g = self.network.graph.copy()
             for attr in g.vs.attributes():
                 if attr.startswith('__'):
                     del g.vs[attr]
@@ -422,9 +435,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
             else:
                 # Set data as first or second spectrum
                 if type_ == 'compare':
-                    self.cvSpectrum.set_spectrum2(data, node.label)
+                    self.cvSpectrum.set_spectrum2(data, node.label())
                 else:
-                    self.cvSpectrum.set_spectrum1(data, node.label)
+                    self.cvSpectrum.set_spectrum1(data, node.label())
 
                 # Show spectrum tab
                 self.tabWidget.setCurrentIndex(self.tabWidget.indexOf(self.cvSpectrum))
@@ -433,7 +446,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         view = self.current_view
         for item in items:
             if item.Type == ui.Node.Type:
-                for v in self.graph.vs[item.index()].neighbors():
+                for v in self.network.graph.vs[item.index()].neighbors():
                     try:
                         if view == self.gvNetwork:
                             v['__network_gobj'].setSelected(True)
@@ -469,8 +482,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
         network_deselected = {item.index() for item in self.gvNetwork.scene().selectedItems()} - selected
         tsne_deselected = {item.index() for item in self.gvNetwork.scene().selectedItems()} - selected
         with utils.SignalBlocker(self.gvNetwork.scene(), self.gvTSNE.scene()):
-            network_nodes = self.graph.vs['__network_gobj']
-            tsne_nodes = self.graph.vs['__tsne_gobj']
+            network_nodes = self.network.graph.vs['__network_gobj']
+            tsne_nodes = self.network.graph.vs['__tsne_gobj']
             for index in network_deselected:
                 network_nodes[index].setSelected(False)
             for index in tsne_deselected:
@@ -480,7 +493,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 tsne_nodes[index].setSelected(True)
 
     def on_current_parameters_triggered(self):
-        dialog = ui.CurrentParametersDialog(self, options=self.options)
+        dialog = ui.CurrentParametersDialog(self, options=self.network.options)
         dialog.exec_()
 
     def on_full_screen_triggered(self):
@@ -492,7 +505,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.showNormal()
 
     def on_process_file_triggered(self):
-        dialog = ui.OpenFileDialog(self, options=self.options)
+        dialog = ui.OpenFileDialog(self, options=self.network.options)
         if dialog.exec_() == QDialog.Accepted:
             self.fname = None
             self.has_unsaved_changes = True
@@ -501,9 +514,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
             process_file, use_metadata, metadata_file, csv_separator,\
                 compute_options, tsne_options, network_options = dialog.getValues()
-            self.options.cosine = compute_options
-            self.options.tsne = tsne_options
-            self.options.network = network_options
+            self.network.options.cosine = compute_options
+            self.network.options.tsne = tsne_options
+            self.network.options.network = network_options
 
             worker = self.prepare_read_mgf_worker(process_file, metadata_file, csv_separator)
             if worker is not None:
@@ -512,30 +525,27 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def on_edit_options_triggered(self, type_):
         if hasattr(self.network, 'scores'):
             if type_ == 'network':
-                dialog = ui.EditNetworkOptionsDialog(self, options=self.options)
+                dialog = ui.EditNetworkOptionsDialog(self, options=self.network.options)
                 if dialog.exec_() == QDialog.Accepted:
                     options = dialog.getValues()
-                    if options != self.options.network:
-                        self.options.network = options
+                    if options != self.network.options.network:
+                        self.network.options.network = options
                         self.has_unsaved_changes = True
 
-                        interactions = workers.generate_network(self.network.scores,
-                                                        self.network.spectra,
-                                                        self.options.network,
-                                                        use_self_loops=True)
-                        self.create_graph(interactions)
-                        self.draw(which='network', interactions=interactions)
+                        self.network.interactions = None
+                        self.create_graph()
+                        self.draw(which='network')
                         try:
-                            self.graph.vs['__tsne_gobj'] = self.gvTSNE.nodes()
+                            self.network.graph.vs['__tsne_gobj'] = self.gvTSNE.nodes()
                         except AttributeError:
                             pass
                         self.update_search_menu()
             elif type_ == 't-sne':
-                dialog = ui.EditTSNEOptionsDialog(self, options=self.options)
+                dialog = ui.EditTSNEOptionsDialog(self, options=self.network.options)
                 if dialog.exec_() == QDialog.Accepted:
                     options = dialog.getValues()
-                    if options != self.options.tsne:
-                        self.options.tsne = options
+                    if options != self.network.options.tsne:
+                        self.network.options.tsne = options
                         self.has_unsaved_changes = True
 
                         self.draw(which='t-sne')
@@ -572,7 +582,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
     def set_nodes_label(self, column_index):
         model = self.tvNodes.model().sourceModel()
-        for i, vertex in enumerate(self.graph.vs):
+        for i, vertex in enumerate(self.network.graph.vs):
             try:
                 label = str(model.index(i, column_index).data())
                 vertex['__tsne_gobj'].setLabel(label)
@@ -600,49 +610,27 @@ class MainWindow(MainWindowBase, MainWindowUI):
         if setting:
             self.minimize_tabwidget()
 
-    def create_graph(self, interactions, labels=None):
+    def create_graph(self):
         # Delete all previously created edges and nodes
-        self.tvNodes.model().sourceModel().beginResetModel()
-        self.tvEdges.model().sourceModel().beginResetModel()
-
-        self.graph.delete_edges(self.graph.es)
-        self.graph.delete_vertices(self.graph.vs)
+        self.network.graph.delete_edges(self.network.graph.es)
+        self.network.graph.delete_vertices(self.network.graph.vs)
 
         nodes_idx = np.arange(self.network.scores.shape[0])
-        self.graph.add_vertices(nodes_idx.tolist())
-        self.graph.add_edges(zip(interactions['Source'], interactions['Target']))
+        self.network.graph.add_vertices(nodes_idx.tolist())
+        self.network.graph.add_edges(zip(self.network.interactions['Source'], self.network.interactions['Target']))
 
-        if self.network.infos is not None:
-            for col in self.network.infos.dtype.names:
-                self.graph.vs[col] = self.network.infos[col]
-
-        if interactions is not None:
-            for col in interactions.dtype.names:
-                self.graph.es[col] = interactions[col]
-
-        if labels is not None:
-            self.graph.vs['__label'] = labels.astype('str')
-        else:
-            self.graph.vs['__label'] = nodes_idx.astype('str')
-
-        self.tvNodes.model().sourceModel().endResetModel()
-        self.tvEdges.model().sourceModel().endResetModel()
-
-    def draw(self, interactions=None, compute_layouts=True, which='all'):
+    def draw(self, compute_layouts=True, which='all'):
         if which == 'all':
             which = {'network', 't-sne'}
         elif isinstance(which, str):
             which = set((which,))
 
-        self.tvNodes.model().sourceModel().beginResetModel()
-        self.tvEdges.model().sourceModel().beginResetModel()
-
         worker = None
         if 'network' in which:
-            if not compute_layouts and self.graph.network_layout is not None:
-                worker = self.prepare_draw_network_worker(layout=self.graph.network_layout)
+            if not compute_layouts and self.network.graph.network_layout is not None:
+                worker = self.prepare_draw_network_worker(layout=self.network.graph.network_layout)
             else:
-                worker = self.prepare_draw_network_worker(interactions=interactions)
+                worker = self.prepare_draw_network_worker()
 
         if 't-sne' in which:
             layout = None
@@ -651,8 +639,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 worker = self.prepare_draw_tsne_worker(layout=layout)
                 self._workers.add(worker)
 
-            if not compute_layouts and self.graph.tsne_layout is not None:
-                layout = self.graph.tsne_layout
+            if not compute_layouts and self.network.graph.tsne_layout is not None:
+                layout = self.network.graph.tsne_layout
 
             if worker is not None:
                 worker.finished.connect(draw_tsne)
@@ -662,8 +650,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
         if worker is not None:
             self._workers.add(worker)
 
-        self.tvNodes.model().sourceModel().endResetModel()
-        self.tvEdges.model().sourceModel().endResetModel()
         self.update_search_menu()
 
     def apply_layout(self, layout, view):
@@ -675,34 +661,36 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
     def apply_network_layout(self, layout):
         self.apply_layout(layout, self.gvNetwork)
-        self.graph.network_layout = layout
+        self.network.graph.network_layout = layout
 
     def apply_tsne_layout(self, layout):
         self.apply_layout(layout, self.gvTSNE)
-        self.graph.tsne_layout = layout
+        self.network.graph.tsne_layout = layout
 
-    def prepare_draw_network_worker(self, interactions=None, layout=None):
+    def prepare_draw_network_worker(self, layout=None):
         self.gvNetwork.scene().clear()
 
-        if interactions is not None:
-            widths = np.array(interactions['Cosine'])
-            min_ = max(0, widths.min() - 0.1)
-            if min_ != widths.max():
-                widths = (config.RADIUS - 1) * (widths - min_) / (widths.max() - min_) + 1
-            else:
-                widths = config.RADIUS
+        interactions = self.network.interactions
 
-            self.graph.es['__weight'] = interactions['Cosine']
-            self.graph.es['__width'] = widths
+        widths = np.array(interactions['Cosine'])
+        min_ = max(0, widths.min() - 0.1)
+        if min_ != widths.max():
+            widths = (config.RADIUS - 1) * (widths - min_) / (widths.max() - min_) + 1
+        else:
+            widths = config.RADIUS
+
+        self.network.graph.es['__weight'] = interactions['Cosine']
+        self.network.graph.es['__width'] = widths
 
         # Add nodes
-        self.graph.vs['__network_gobj'] = nodes = self.gvNetwork.scene().addNodes(self.graph.vs.indices,
-                                                                                  self.graph.vs['__label'])
+        self.network.graph.vs['__network_gobj'] = nodes = self.gvNetwork.scene().addNodes(self.network.graph.vs.indices,
+                                                                                  [str(index) for index in self.network.graph.vs.indices]) #TODO
+                                                                                  # self.network.graph.vs['__label'])
 
         # Add edges
         edges_attr = [(e.index, nodes[e.source], nodes[e.target], e['__weight'], e['__width'])
-                      for e in self.graph.es if not e.is_loop()]
-        self.graph.es['__network_gobj'] = self.gvNetwork.scene().addEdges(*zip(*edges_attr))
+                      for e in self.network.graph.es if not e.is_loop()]
+        self.network.graph.es['__network_gobj'] = self.gvNetwork.scene().addEdges(*zip(*edges_attr))
 
         if layout is None:
             # Compute layout
@@ -711,7 +699,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 if layout is not None:
                     self.apply_network_layout(layout)
 
-            worker = workers.NetworkWorker(self.graph)
+            worker = workers.NetworkWorker(self.network.graph)
             worker.finished.connect(process_finished)
 
             return worker
@@ -723,8 +711,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.gvTSNE.scene().clear()
 
         # Add nodes
-        self.graph.vs['__tsne_gobj'] = self.gvTSNE.scene().addNodes(self.graph.vs.indices,
-                                                                    self.graph.vs['__label'])
+        self.network.graph.vs['__tsne_gobj'] = self.gvTSNE.scene().addNodes(self.network.graph.vs.indices,
+                                                                    [str(index) for index in self.network.graph.vs.indices]) #TODO
+                                                                    # self.network.graph.vs['__label'])
 
         if layout is None:
             # Compute layout
@@ -733,7 +722,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 if layout is not None:
                     self.apply_tsne_layout(layout)
 
-            worker = workers.TSNEWorker(self.network.scores, self.options.tsne)
+            worker = workers.TSNEWorker(self.network.scores, self.network.options.tsne)
             worker.finished.connect(process_finished)
 
             return worker
@@ -748,13 +737,13 @@ class MainWindow(MainWindowBase, MainWindowUI):
             else:
                 raise e
 
-        worker = workers.ComputeScoresWorker(spectra, use_multiprocessing, self.options.cosine)
+        worker = workers.ComputeScoresWorker(spectra, use_multiprocessing, self.network.options.cosine)
         worker.error.connect(error)
 
         return worker
 
-    def prepare_read_mgf_worker(self, mgf_filename, metadata_filename = None, csv_separator = None):
-        worker = workers.ReadMGFWorker(mgf_filename, self.options.cosine)
+    def prepare_read_mgf_worker(self, mgf_filename, metadata_filename=None, csv_separator=None):
+        worker = workers.ReadMGFWorker(mgf_filename, self.network.options.cosine)
 
         def mgf_file_read():
             nonlocal worker
@@ -772,14 +761,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
         def scores_computed():
             nonlocal worker
             self.network.scores = worker.result()
-            interactions = workers.generate_network(self.network.scores,
-                                                    self.network.spectra,
-                                                    self.options.network,
-                                                    use_self_loops=True)
-            self.network.infos = np.array([(spectrum.mz_parent,) for spectrum in self.network.spectra],
-                                          dtype=[('m/z parent', np.float32)])
-            self.create_graph(interactions)
-            self.draw(interactions=interactions)
+            self.network.interactions = None
+            # self.network.infos = np.array([(spectrum.mz_parent,) for spectrum in self.network.spectra],
+            #                               dtype=[('m/z parent', np.float32)])
+            self.create_graph()
+            self.draw()
             if metadata_filename is not None:
                 worker = workers.ReadMetadataWorker(metadata_filename, csv_separator)
                 if worker is not None:
@@ -788,10 +774,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         def metadata_file_read():
             nonlocal worker
-            data = worker.result()
+            # data = worker.result()
             self.tvNodes.model().sourceModel().beginResetModel()
-            for column in data:
-                self.graph.vs[column] = data[column]
+            self.network.infos = worker.result()
+            # for column in data:
+            #     self.network.graph.vs[column] = data[column]
             self.tvNodes.model().sourceModel().endResetModel()
 
         worker.finished.connect(mgf_file_read)
@@ -811,7 +798,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             else:
                 raise e
 
-        worker = workers.SaveProjectWorker(fname, self.graph, self.network, self.options)
+        worker = workers.SaveProjectWorker(fname, self.network.graph, self.network, self.network.options)
         worker.finished.connect(process_finished)
         worker.error.connect(error)
 
@@ -821,11 +808,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
         """Load project from a previously saved file"""
 
         def process_finished():
-            graph, network, options = worker.result()
-
-            self.options = options
-            self.graph = graph
-            self.network = network
+            self.tvNodes.model().sourceModel().beginResetModel()
+            self.network = worker.result()
+            self.tvNodes.model().sourceModel().endResetModel()
 
             # Draw
             self.draw(compute_layouts=False)
@@ -839,6 +824,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 QMessageBox.warning(self, None, f"File '{self.filename}' not found.")
             elif isinstance(e, errors.UnsupportedVersionError):
                 QMessageBox.warning(self, None, str(e))
+            elif isinstance(e, KeyError):
+                QMessageBox.critical(self, None, str(e))
             else:
                 raise e
 

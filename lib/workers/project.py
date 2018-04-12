@@ -2,11 +2,13 @@ import numpy as np
 
 from .base import BaseWorker
 from ..save import MnzFile, savez
-from ..utils import Network, AttrDict
+from ..utils import AttrDict
+from ..utils.network import Network
 from ..workers import Spectrum, NetworkVisualizationOptions, TSNEVisualizationOptions, CosineComputationOptions
 from ..graphml import GraphMLParser, GraphMLWriter
 from ..errors import UnsupportedVersionError
 
+CURRENT_FORMAT_VERSION = 2
 
 class LoadProjectWorker(BaseWorker):
     """Load project from a previously saved file"""
@@ -26,7 +28,12 @@ class LoadProjectWorker(BaseWorker):
                 except ValueError:
                     version = 1
 
-                if version <= 2:
+                if version == 1:
+                    raise UnsupportedVersionError("This file was saved with a development version of the software.\n"
+                                                  + "This file format is not supported anymore.\n"
+                                                  + "Please generate networks from raw data again")
+
+                if version == CURRENT_FORMAT_VERSION:
                     if self._should_stop:
                         self.canceled.emit()
                         return False
@@ -35,79 +42,75 @@ class LoadProjectWorker(BaseWorker):
                     network = Network()
 
                     # Load scores matrix
-                    network.scores = fid['network/scores']
-                    if version == 1:  # There was a bug in version 1 that result in scores' diagonal filled with 0
-                        np.fill_diagonal(network.scores, 1)
+                    network.scores = fid['0/scores']
 
                     if self._should_stop:
                         self.canceled.emit()
                         return False
 
                     # Load infos
-                    network.infos = fid['network/infos']
+                    network.infos = fid['0/infos']
 
                     if self._should_stop:
                         self.canceled.emit()
                         return False
 
                     # Load table of spectra
-                    spec_infos = fid['network/spectra/index.json']
-                    spectra = []
+                    spec_infos = fid['0/spectra/index.json']
+                    network.spectra = []
                     for s in spec_infos:
                         if self._should_stop:
                             self.canceled.emit()
                             return False
 
-                        spectra.append(Spectrum(s['id'], s['mz_parent'], fid[f'network/spectra/{s["id"]}']))
+                        network.spectra.append(Spectrum(s['id'], s['mz_parent'], fid[f'0/spectra/{s["id"]}']))
 
                     if self._should_stop:
                         self.canceled.emit()
                         return False
 
                     # Load options
-                    options = AttrDict(fid['options.json'])
+                    network.options = AttrDict(fid['0/options.json'])
                     for opt, key in ((CosineComputationOptions(), 'cosine'),
                                      (NetworkVisualizationOptions(), 'network'),
                                      (TSNEVisualizationOptions(), 'tsne')):
-                        if key in options:
-                            opt.update(options[key])
-                        options[key] = opt
-                    if version == 1:
-                        options.tsne.barnes_hut = False
+                        if key in network.options:
+                            opt.update(network.options[key])
+                        network.options[key] = opt
 
                     if self._should_stop:
                         self.canceled.emit()
                         return False
 
                     # Load graph
-                    gxl = fid['graph.gxl']
+                    gxl = fid['0/graph.graphml']
                     parser = GraphMLParser()
-                    graph = parser.fromstring(gxl)
+                    network.graph = parser.fromstring(gxl)
 
                     if self._should_stop:
                         self.canceled.emit()
                         return False
 
                     # Load network layout
-                    graph.network_layout = fid['network_layout']
+                    network.graph.network_layout = fid['0/network_layout']
 
                     if self._should_stop:
                         self.canceled.emit()
                         return False
 
                     # Load t-SNE layout
-                    graph.tsne_layout = fid['tsne_layout']
+                    network.graph.tsne_layout = fid['0/tsne_layout']
 
                     if self._should_stop:
                         self.canceled.emit()
                         return False
 
-                    self._result = graph, network, options
+                    self._result = network
                 else:
                     raise UnsupportedVersionError(f"Unrecognized file format version (version={version}).")
-        except (FileNotFoundError, UnsupportedVersionError) as e:
+        except (FileNotFoundError, KeyError, UnsupportedVersionError) as e:
             self.error.emit(e)
-            self._result = None, None, None
+            self._result = None
         else:
             self.finished.emit()
 
@@ -133,20 +136,20 @@ class SaveProjectWorker(BaseWorker):
         # Convert list of Spectrum objects to something that be saved
         spectra = getattr(self.network, 'spectra', [])
         spec_infos = [{'id': s.id, 'mz_parent': s.mz_parent} for s in spectra]
-        spec_data = {'network/spectra/{}'.format(s.id): s.data for s in spectra}
+        spec_data = {'0/spectra/{}'.format(s.id): s.data for s in spectra}
 
         # Create dict for saving
-        d = {'network/scores': getattr(self.network, 'scores', np.array([])),
-             'network/spectra/index.json': spec_infos,
-             'network/infos': getattr(self.network, 'infos', np.array([])),
-             'graph.gxl': gxl,
-             'network_layout': getattr(self.graph, 'network_layout', np.array([])),
-             'tsne_layout': getattr(self.graph, 'tsne_layout', np.array([])),
-             'options.json': self.options}
+        d = {'0/scores': getattr(self.network, 'scores', np.array([])),
+             '0/spectra/index.json': spec_infos,
+             '0/infos': getattr(self.network, 'infos', np.array([])),
+             '0/graph.graphml': gxl,
+             '0/network_layout': getattr(self.graph, 'network_layout', np.array([])),
+             '0/tsne_layout': getattr(self.graph, 'tsne_layout', np.array([])),
+             '0/options.json': self.options}
         d.update(spec_data)
 
         try:
-            savez(self.filename, version=1, **d)
+            savez(self.filename, version=CURRENT_FORMAT_VERSION, **d)
         except PermissionError as e:
             self.error.emit(e)
         else:

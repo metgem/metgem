@@ -2,8 +2,7 @@ import itertools
 
 import numpy as np
 
-from .base import BaseWorker
-from ..utils import AttrDict    
+from ..utils import AttrDict
 
     
 class NetworkVisualizationOptions(AttrDict):
@@ -27,7 +26,7 @@ def generate_network(scores_matrix, spectra, options, use_self_loops=True): #TOD
     num_spectra = len(spectra)
 
     triu = np.triu(scores_matrix)
-    triu[triu<=options.pairs_min_cosine] = 0
+    triu[triu <= options.pairs_min_cosine] = 0
     for i in range(num_spectra):
         # indexes = np.argpartition(triu[i,], -options.top_k)[-options.top_k:] # Should be faster and give the same results
         indexes = np.argsort(triu[i,])[-options.top_k:]
