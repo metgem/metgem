@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QTableView
-
+from PyQt5.QtCore import Qt
 
 class NodeTableView(QTableView):
     """ TableView to display Nodes information """
