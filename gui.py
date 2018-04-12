@@ -463,7 +463,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
             action.triggered.connect(lambda: self.highlight_selected_nodes())
 
     def highlight_selected_nodes(self):
-        selected = {index.row() for index in self.tvNodes.selectionModel().selectedIndexes()}
+        selected_indexes = self.tvNodes.model().mapSelectionToSource(
+                                    self.tvNodes.selectionModel().selection()).indexes()
+        selected = {index.row() for index in selected_indexes}
         network_deselected = {item.index() for item in self.gvNetwork.scene().selectedItems()} - selected
         tsne_deselected = {item.index() for item in self.gvNetwork.scene().selectedItems()} - selected
         with utils.SignalBlocker(self.gvNetwork.scene(), self.gvTSNE.scene()):
