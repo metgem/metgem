@@ -743,7 +743,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         def mgf_file_read():
             nonlocal worker
+            self.tvNodes.model().sourceModel().beginResetModel()
             self.network.spectra = worker.result()
+            self.tvNodes.model().sourceModel().endResetModel()
             multiprocess = len(self.network.spectra) > 1000  # TODO: Tune this, arbitrary decision
             worker = self.prepare_compute_scores_worker(self.network.spectra, multiprocess)
             if worker is not None:
@@ -756,10 +758,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         def scores_computed():
             nonlocal worker
+            self.tvEdges.model().sourceModel().beginResetModel()
             self.network.scores = worker.result()
             self.network.interactions = None
-            # self.network.infos = np.array([(spectrum.mz_parent,) for spectrum in self.network.spectra],
-            #                               dtype=[('m/z parent', np.float32)])
+            self.tvEdges.model().sourceModel().endResetModel()
             self.create_graph()
             self.draw()
             if metadata_filename is not None:
@@ -770,11 +772,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         def metadata_file_read():
             nonlocal worker
-            # data = worker.result()
             self.tvNodes.model().sourceModel().beginResetModel()
             self.network.infos = worker.result()
-            # for column in data:
-            #     self.network.graph.vs[column] = data[column]
             self.tvNodes.model().sourceModel().endResetModel()
 
         worker.finished.connect(mgf_file_read)
