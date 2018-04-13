@@ -27,7 +27,7 @@ class NodesModel(QAbstractTableModel):
                 if spectra is not None:
                     return spectra[row].mz_parent
             else:
-                return self.table[row][column - 1].item()
+                return self.table[row][column - 1]
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if role == Qt.DisplayRole and orientation == Qt.Horizontal:
@@ -60,7 +60,7 @@ class EdgesModel(QAbstractTableModel):
         column = index.column()
         row = index.row()
         if role in (Qt.DisplayRole, Qt.EditRole):
-            return self.table[row][column].item()
+            return self.table[row][column]
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if role == Qt.DisplayRole and orientation == Qt.Horizontal:
@@ -84,6 +84,14 @@ class ProxyModel(QSortFilterProxyModel):
             return False
 
         return super().filterAcceptsRow(source_row, source_parent)
+
+    def lessThan(self, left: QModelIndex, right: QModelIndex):
+        l = self.sourceModel().data(left)
+        r = self.sourceModel().data(right)
+
+        if type(l).__module__ == type(r).__module__ == "numpy":
+            return l.item() < r.item()
+        return super().lessThan(left, right)
 
     def setSelection(self, idx):
         """Display only selected items from the scene"""
