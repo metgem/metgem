@@ -16,9 +16,9 @@ class NetworkVisualizationOptions(AttrDict):
     """
     
     def __init__(self):
-        super().__init__(top_k = 10,
-                         pairs_min_cosine = 0.65,
-                         max_connected_nodes = 1000)
+        super().__init__(top_k=10,
+                         pairs_min_cosine=0.65,
+                         max_connected_nodes=1000)
         
     
 def generate_network(scores_matrix, spectra, options, use_self_loops=True): #TODO: change this in worker

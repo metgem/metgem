@@ -4,14 +4,7 @@ from PyQt5 import uic
 
 import os
 
-try:
-    from ...workers import NetworkVisualizationOptions, TSNEVisualizationOptions, CosineComputationOptions
-except ValueError:
-    class NetworkVisualizationOptions:
-        pass
-        
-    class TSNEVisualizationOptions:
-        pass
+from ...workers import NetworkVisualizationOptions, TSNEVisualizationOptions, CosineComputationOptions
 
 
 class NetworkOptionsWidget(QGroupBox):
