@@ -5,11 +5,11 @@ class NodesModel(QAbstractTableModel):
 
     def rowCount(self, parent=QModelIndex()):
         data = self.table
-        return data.size if data is not None else 0
+        return data.size if data is not None else len(getattr(self.parent().network, 'spectra', []))
 
     def columnCount(self, parent=QModelIndex()):
         data = self.table
-        return len(data[0]) + 1 if data is not None else 0
+        return len(data[0]) + 1 if data is not None else 1
 
     @property
     def table(self):
