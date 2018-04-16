@@ -155,6 +155,8 @@ databases/
 *.zip
 *.ico
 *.icns
+*.xlsx
+*.parquet
 /clusterinfosummarygroup_attributes*
 /networkedges_*
 /test_*.py
