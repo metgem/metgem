@@ -16,7 +16,7 @@ class Node(QGraphicsEllipseItem):
 
         self.id = index
         if label is None:
-            label = str(index)
+            label = str(index+1)
         self._label = label
 
         self.setFlag(QGraphicsItem.ItemIsMovable)
