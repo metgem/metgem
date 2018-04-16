@@ -88,7 +88,10 @@ class WorkerSet(set):
             self.connect_events(worker)
 
     def remove(self, worker):
+        if worker.thread() != self.parent().thread():
+            worker.thread().quit()
         if worker in self:
             super().remove(worker)
 
             self.hide_progressbar()
+

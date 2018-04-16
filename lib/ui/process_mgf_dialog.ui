@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>OpenFileDialog</class>
- <widget class="QDialog" name="OpenFileDialog">
+ <class>ProcessFileDialog</class>
+ <widget class="QDialog" name="ProcessFileDialog">
   <property name="windowModality">
    <enum>Qt::ApplicationModal</enum>
   </property>
@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>354</width>
-    <height>215</height>
+    <height>195</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -20,7 +20,7 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>Open File</string>
+   <string>Process File</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
    <item row="7" column="0" colspan="2">
@@ -87,23 +87,7 @@
       <bool>true</bool>
      </property>
      <layout class="QGridLayout" name="gridLayout">
-      <item row="1" column="0">
-       <widget class="QLabel" name="labelCsvSeparator">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="text">
-         <string>&amp;CSV separator: </string>
-        </property>
-        <property name="textFormat">
-         <enum>Qt::PlainText</enum>
-        </property>
-        <property name="buddy">
-         <cstring>editCsvSeparator</cstring>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0" colspan="2">
+      <item row="0" column="0" colspan="3">
        <widget class="QLineEdit" name="editMetadataFile">
         <property name="enabled">
          <bool>true</bool>
@@ -119,32 +103,34 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
-       <widget class="QLineEdit" name="editCsvSeparator">
+      <item row="1" column="3">
+       <widget class="QPushButton" name="btOptions">
+        <property name="text">
+         <string>Options...</string>
+        </property>
+        <property name="icon">
+         <iconset resource="ui.qrc">
+          <normaloff>:/icons/images/preferences-system.svg</normaloff>:/icons/images/preferences-system.svg</iconset>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="QLineEdit" name="editCsvDelimiter">
         <property name="enabled">
          <bool>false</bool>
         </property>
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
         <property name="maximumSize">
          <size>
-          <width>25</width>
+          <width>37</width>
           <height>16777215</height>
          </size>
-        </property>
-        <property name="text">
-         <string>,</string>
         </property>
         <property name="maxLength">
          <number>1</number>
         </property>
        </widget>
       </item>
-      <item row="0" column="2">
+      <item row="0" column="3">
        <widget class="QPushButton" name="btBrowseMetadataFile">
         <property name="enabled">
          <bool>true</bool>
@@ -158,6 +144,16 @@
         </property>
        </widget>
       </item>
+      <item row="1" column="1">
+       <widget class="CsvDelimiterCombo" name="cbCsvDelimiter"/>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>Separator</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>
@@ -166,6 +162,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>CsvDelimiterCombo</class>
+   <extends>QComboBox</extends>
+   <header>lib/ui/widgets.h</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="ui.qrc"/>
  </resources>
@@ -173,7 +176,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>OpenFileDialog</receiver>
+   <receiver>ProcessFileDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -189,7 +192,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>OpenFileDialog</receiver>
+   <receiver>ProcessFileDialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

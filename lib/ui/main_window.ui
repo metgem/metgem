@@ -160,7 +160,7 @@
       </widget>
       <widget class="QTabWidget" name="tabWidget">
        <property name="currentIndex">
-        <number>0</number>
+        <number>1</number>
        </property>
        <property name="documentMode">
         <bool>false</bool>
@@ -177,7 +177,7 @@
          <string>Nodes</string>
         </attribute>
        </widget>
-       <widget class="QTableView" name="tvEdges">
+       <widget class="EdgeTableView" name="tvEdges">
         <attribute name="icon">
          <iconset resource="ui.qrc">
           <normaloff>:/icons/images/edge.svg</normaloff>:/icons/images/edge.svg</iconset>
@@ -253,6 +253,7 @@
    <addaction name="actionSaveAs"/>
    <addaction name="separator"/>
    <addaction name="actionProcessFile"/>
+   <addaction name="actionImportMetadata"/>
    <addaction name="actionCurrentParameters"/>
   </widget>
   <widget class="QToolBar" name="tbView">
@@ -337,7 +338,7 @@
     <string>&amp;Process New MGF File...</string>
    </property>
    <property name="toolTip">
-    <string>Open and procress a new MGF file</string>
+    <string>Open and process a new MGF file</string>
    </property>
    <property name="statusTip">
     <string>Open and procress a new MGF file</string>
@@ -691,6 +692,21 @@
     <string>Show Current Parameters</string>
    </property>
   </action>
+  <action name="actionImportMetadata">
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/import-metadata.svg</normaloff>:/icons/images/import-metadata.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Import &amp;Metadata</string>
+   </property>
+   <property name="toolTip">
+    <string>Import nodes metadata</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+M</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -707,7 +723,12 @@
   <customwidget>
    <class>NodeTableView</class>
    <extends>QTableView</extends>
-   <header>lib/ui.h</header>
+   <header>lib/ui/widgets.h</header>
+  </customwidget>
+  <customwidget>
+   <class>EdgeTableView</class>
+   <extends>QTableView</extends>
+   <header>lib/ui/widgets.h</header>
   </customwidget>
  </customwidgets>
  <resources>

@@ -90,9 +90,12 @@ class MainWindow(MainWindowBase, MainWindowUI):
                                    (self.tvEdges, ui.widgets.EdgesModel, "Edges")):
             table.setSortingEnabled(True)
             model = Model(self)
+            # if table != self.tvNodes:
             proxy = ui.widgets.ProxyModel()
             proxy.setSourceModel(model)
             table.setModel(proxy)
+            # else:
+            #     table.setModel(model)
             table.setItemDelegate(ui.widgets.EnsureStringItemDelegate())
 
         # Move search layout to search toolbar
@@ -146,6 +149,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.actionAbout.triggered.connect(self.on_about_triggered)
         self.actionAboutQt.triggered.connect(self.on_about_qt_triggered)
         self.actionProcessFile.triggered.connect(self.on_process_file_triggered)
+        self.actionImportMetadata.triggered.connect(self.on_import_metadata_triggered)
         self.actionCurrentParameters.triggered.connect(self.on_current_parameters_triggered)
         self.actionZoomIn.triggered.connect(lambda: self.current_view.scaleView(1.2))
         self.actionZoomOut.triggered.connect(lambda: self.current_view.scaleView(1 / 1.2))
@@ -262,7 +266,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.btSearch.setMenu(menu)
         self.btSearch.setPopupMode(QToolButton.InstantPopup)
         group.triggered.connect(lambda action: table.model().setFilterKeyColumn(action.data()-1))
-        table.model().setFilterKeyColumn(-1)
+        # table.model().setFilterKeyColumn(-1)
 
     def keyPressEvent(self, event):
         key = event.key()
@@ -505,20 +509,28 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.showNormal()
 
     def on_process_file_triggered(self):
-        dialog = ui.OpenFileDialog(self, options=self.network.options)
+        dialog = ui.ProcessMgfDialog(self, options=self.network.options)
         if dialog.exec_() == QDialog.Accepted:
             self.fname = None
             self.has_unsaved_changes = True
             self.gvNetwork.scene().clear()
             self.gvTSNE.scene().clear()
 
-            process_file, use_metadata, metadata_file, csv_separator,\
+            process_file, use_metadata, metadata_file, metadata_options,\
                 compute_options, tsne_options, network_options = dialog.getValues()
             self.network.options.cosine = compute_options
             self.network.options.tsne = tsne_options
             self.network.options.network = network_options
 
-            worker = self.prepare_read_mgf_worker(process_file, metadata_file, csv_separator)
+            worker = self.prepare_read_mgf_worker(process_file, metadata_file, metadata_options)
+            if worker is not None:
+                self._workers.add(worker)
+
+    def on_import_metadata_triggered(self):
+        dialog = ui.ImportMetadataDialog(self)
+        if dialog.exec_() == QDialog.Accepted:
+            metadata_file, options = dialog.getValues()
+            worker = self.prepare_read_metadata_worker(metadata_file, options)
             if worker is not None:
                 self._workers.add(worker)
 
@@ -738,10 +750,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         return worker
 
-    def prepare_read_mgf_worker(self, mgf_filename, metadata_filename=None, csv_separator=None):
+    def prepare_read_mgf_worker(self, mgf_filename, metadata_filename=None,
+                                metadata_options=workers.ReadMetadataOptions()):
         worker = workers.ReadMGFWorker(mgf_filename, self.network.options.cosine)
 
-        def mgf_file_read():
+        def file_read():
             nonlocal worker
             self.tvNodes.model().sourceModel().beginResetModel()
             self.network.spectra = worker.result()
@@ -752,7 +765,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 worker.finished.connect(scores_computed)
                 self._workers.add(worker)
 
-        def mgf_error(e):
+        def error(e):
             if e.__class__ == PyteomicsError:
                 QMessageBox.warning(self, None, e.message)
 
@@ -765,19 +778,29 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.create_graph()
             self.draw()
             if metadata_filename is not None:
-                worker = workers.ReadMetadataWorker(metadata_filename, csv_separator)
+                worker = self.prepare_read_metadata_worker(metadata_filename, metadata_options)
                 if worker is not None:
-                    worker.finished.connect(metadata_file_read)
                     self._workers.add(worker)
 
-        def metadata_file_read():
+        worker.finished.connect(file_read)
+        worker.error.connect(error)
+        return worker
+
+    def prepare_read_metadata_worker(self, filename, options):
+        def file_read():
             nonlocal worker
             self.tvNodes.model().sourceModel().beginResetModel()
-            self.network.infos = worker.result()
+            self.network.infos = worker.result()  # TODO: Append metadata instead of overriding
+            self.has_unsaved_changes = True
             self.tvNodes.model().sourceModel().endResetModel()
 
-        worker.finished.connect(mgf_file_read)
-        worker.error.connect(mgf_error)
+        def error(e):
+            QMessageBox.warning(self, None, str(e))
+
+        worker = workers.ReadMetadataWorker(filename, options)
+        worker.finished.connect(file_read)
+        worker.error.connect(error)
+
         return worker
 
     def prepare_save_project_worker(self, fname):

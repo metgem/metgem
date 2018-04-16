@@ -133,7 +133,7 @@ class SaveProjectWorker(BaseWorker):
         writer = GraphMLWriter()
         gxl = writer.tostring(self.graph).decode()
 
-        # Convert list of Spectrum objects to something that be saved
+        # Convert list of Spectrum objects to something that be can be saved
         spectra = getattr(self.network, 'spectra', [])
         spec_infos = [{'id': s.id, 'mz_parent': s.mz_parent} for s in spectra]
         spec_data = {'0/spectra/{}'.format(s.id): s.data for s in spectra}

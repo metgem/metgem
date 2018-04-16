@@ -1,10 +1,13 @@
 import zipfile
 import json
+import io
 
 import numpy as np
 from numpy.compat import is_pathlib_path, basestring
 from numpy.lib import format
 from numpy.lib.npyio import NpzFile
+import pyarrow as pa
+import pyarrow.parquet as pq
 
 from .config import FILE_EXTENSION
 
@@ -25,9 +28,18 @@ from .config import FILE_EXTENSION
 
 class MnzFile(NpzFile):
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.parquet_files = [x[:-8] for x in self._files if x.endswith('.parquet')]
+
     def __getitem__(self, key):
+        if key in self.parquet_files:
+            with self.zip.open(key + '.parquet') as f:
+                table = pq.read_table(io.BytesIO(f.read()))
+            return table.to_pandas()
+
         val = super().__getitem__(key)
-        
+
         if isinstance(val, bytes):
             try:
                 return json.loads(val)
@@ -86,11 +98,16 @@ def savez(file, version, *args, compress=True, **kwargs):
                 try:
                     s = json.dumps(val, indent=4)
                 except TypeError:
-                    fname = key + '.npy'
-                    val = np.asanyarray(val)
-                    force_zip64 = val.nbytes >= 2**30
-                    with zipf.open(fname, 'w', force_zip64=force_zip64) as fid:
-                        format.write_array(fid, val,
-                                           allow_pickle=False)
+                    if type(val).__module__ == 'pandas.core.frame':
+                        fname = key + '.parquet'
+                        force_zip64 = val.values.nbytes >= 2 ** 30
+                        with zipf.open(fname, 'w', force_zip64=force_zip64) as fid:
+                            pq.write_table(pa.Table.from_pandas(val), fid)
+                    else:
+                        fname = key + '.npy'
+                        val = np.asanyarray(val)
+                        force_zip64 = val.nbytes >= 2**30
+                        with zipf.open(fname, 'w', force_zip64=force_zip64) as fid:
+                            format.write_array(fid, val, allow_pickle=False)
                 else:
                     zipf.writestr(key, s)

@@ -1,4 +1,4 @@
-from .metadata import NodesModel, EdgesModel, ProxyModel
+from .metadata import NodesModel, EdgesModel, ProxyModel, CsvDelimiterCombo, NodeTableView, EdgeTableView
 from .network_view import NetworkView
 from .options_widgets import TSNEOptionsWidget, NetworkOptionsWidget, CosineOptionsWidget
 from .spectrum import SpectrumCanvas, SpectrumNavigationToolbar, SpectrumWidget, ExtendedSpectrumWidget

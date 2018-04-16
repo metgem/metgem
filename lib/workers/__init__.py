@@ -5,6 +5,6 @@ from .network import NetworkWorker
 from .network_generation import NetworkVisualizationOptions, generate_network
 from .cosine import ComputeScoresWorker, CosineComputationOptions, Spectrum
 from .read_mgf import ReadMGFWorker
-from .read_metadata import ReadMetadataWorker
+from .read_metadata import ReadMetadataOptions, ReadMetadataWorker
 from .project import LoadProjectWorker, SaveProjectWorker
 from .databases import ListGNPSDatabasesWorker, DownloadGNPSDatabasesWorker, GetGNPSDatabasesMtimeWorker

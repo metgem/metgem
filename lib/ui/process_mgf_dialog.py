@@ -7,13 +7,15 @@ from PyQt5.QtGui import QPalette, QColor
 from PyQt5.QtCore import Qt, QDir, QSignalMapper
 from PyQt5 import uic
 
-UI_FILE = os.path.join(os.path.dirname(__file__), 'open_file_dialog.ui')
+UI_FILE = os.path.join(os.path.dirname(__file__), 'process_mgf_dialog.ui')
 
-OpenFileDialogUI, OpenFileDialogBase = uic.loadUiType(UI_FILE, from_imports='lib.ui', import_from='lib.ui')
+ProcessMgfDialogUI, ProcessMgfDialogBase = uic.loadUiType(UI_FILE, from_imports='lib.ui', import_from='lib.ui')
 from .widgets import TSNEOptionsWidget, NetworkOptionsWidget, CosineOptionsWidget
+from ..ui.import_metadata_dialog import ImportMetadataDialog
+from ..workers.read_metadata import ReadMetadataOptions
 
 
-class OpenFileDialog(OpenFileDialogBase, OpenFileDialogUI):
+class ProcessMgfDialog(ProcessMgfDialogBase, ProcessMgfDialogUI):
     """Create and open a dialog to process a new .mgf file.
 
     Creates a dialog containing 4 widgets:
@@ -30,6 +32,8 @@ class OpenFileDialog(OpenFileDialogBase, OpenFileDialogUI):
 
     def __init__(self, *args, options=None, **kwargs):
         super().__init__(*args, **kwargs)
+
+        self._metadata_options = ReadMetadataOptions()
 
         self.setupUi(self)
         self.btBrowseProcessFile.setFocus()
@@ -82,8 +86,34 @@ class OpenFileDialog(OpenFileDialogBase, OpenFileDialogUI):
         self.btBrowseMetadataFile.clicked.connect(self._mapper.map)
         self._mapper.setMapping(self.btBrowseMetadataFile, 'metadata')
         self._mapper.mapped[str].connect(self.browse)
-        self.editMetadataFile.textChanged.connect(self.check_metadata_file_type)
+        self.editMetadataFile.textChanged.connect(self.on_metadata_file_changed)
         self.btMore.clicked.connect(self.toggle_advanced_options)
+        self.btOptions.clicked.connect(self.on_show_options_dialog)
+        self.cbCsvDelimiter.delimiterChanged.connect(self.on_delimiter_changed)
+
+    def on_delimiter_changed(self, delimiter):
+        self._metadata_options.sep = delimiter
+
+    def on_show_options_dialog(self):
+        delimiter = self.cbCsvDelimiter.delimiter()
+        dialog = ImportMetadataDialog(self, filename=self.editMetadataFile.text(), delimiter=delimiter)
+        if dialog.exec_() == QDialog.Accepted:
+            filename, options = dialog.getValues()
+            self.editMetadataFile.setText(filename)
+            self.cbCsvDelimiter.setDelimiter(options.sep)
+            self._metadata_options = options
+
+    def on_metadata_file_changed(self, text):
+        # Check that selected metadata file is a valid csv file and try to get delimiter
+        try:
+            with open(text, 'r') as f:
+                line = f.read(2048)
+            sniffer = csv.Sniffer()
+            delimiter = sniffer.sniff(line).delimiter
+        except (OSError, FileNotFoundError, csv.Error, UnicodeDecodeError):
+            return
+        else:
+            self.cbCsvDelimiter.setDelimiter(delimiter)
 
     def done(self, r):
         if r == QDialog.Accepted:
@@ -125,7 +155,7 @@ class OpenFileDialog(OpenFileDialogBase, OpenFileDialogUI):
         if type_ == 'process':
             dialog.setNameFilters(["MGF Files (*.mgf)", "All files (*.*)"])
         elif type_ == 'metadata':
-            dialog.setMimeTypeFilters(['text/plain', 'text/csv'])
+            dialog.setNameFilters(["Metadata File (*.csv; *.tsv; *.txt)", "All files (*.*)"])
 
         if dialog.exec_() == QDialog.Accepted:
             filename = dialog.selectedFiles()[0]
@@ -134,27 +164,12 @@ class OpenFileDialog(OpenFileDialogBase, OpenFileDialogUI):
                 self.editProcessFile.setPalette(self.style().standardPalette())
             else:
                 self.editMetadataFile.setText(filename)
-                self.editMetadataFile.setPalette(self.style().standardPalette())         
+                self.editMetadataFile.setPalette(self.style().standardPalette())
 
     def getValues(self):
         """Returns files to process and options"""
 
         return (self.editProcessFile.text(),
                 self.gbMetadata.isChecked(),  self.editMetadataFile.text(),
-                self.editCsvSeparator.text(), self.cosine_widget.getValues(), 
+                self._metadata_options, self.cosine_widget.getValues(),
                 self.tsne_widget.getValues(), self.network_widget.getValues())
-
-    def check_metadata_file_type(self, text):
-        """Check that selected metadata file is a valid csv file and try to get delimiter"""
-        try:
-            with open(text, 'r') as f:
-                line = f.readline()
-            delimiter = csv.Sniffer().sniff(line).delimiter
-        except (OSError, FileNotFoundError):
-            enabled = False
-        else:
-            enabled = True
-        finally:
-            self.editCsvSeparator.setText(delimiter)
-            self.editCsvSeparator.setEnabled(enabled)
-            self.labelCsvSeparator.setEnabled(enabled)
