@@ -25,14 +25,17 @@ class NodesModel(QAbstractTableModel):
     def list(self):
         return getattr(self.parent().network, 'spectra', [])
 
+    def index(self, row: int, column: int, parent: QModelIndex=QModelIndex()):
+        table = self.table
+        if table is not None:
+            row = table.index[row]
+        return super().index(row, column, parent)
+
     def data(self, index, role=Qt.DisplayRole):
         if not index.isValid():
             return None
 
-        table = self.table
         row = index.row()
-        if table is not None:
-            row = self.table.index[row]
         column = index.column()
         if role in (Qt.DisplayRole, Qt.EditRole):
             if column == 0:
@@ -53,11 +56,7 @@ class NodesModel(QAbstractTableModel):
             else:
                 return self.table.columns[section-1]
         elif orientation == Qt.Vertical:
-            table = self.table
-            if table is not None:
-                return str(self.table.index[section])
-            else:
-                return section
+            return str(section+1)
 
     def sort(self, column_id, order=Qt.AscendingOrder):
         self.beginResetModel()
@@ -92,14 +91,17 @@ class EdgesModel(QAbstractTableModel):
     def table(self):
         return getattr(self.parent().network, 'interactions', None)
 
+    def index(self, row: int, column: int, parent: QModelIndex=QModelIndex()):
+        if self._sort is not None:
+            row = self._sort[row]
+        return super().index(row, column, parent)
+
     def data(self, index, role=Qt.DisplayRole):
         if not index.isValid():
             return None
 
         column = index.column()
         row = index.row()
-        if self._sort is not None:
-            row = self._sort[row]
         if role in (Qt.DisplayRole, Qt.EditRole):
             return str(self.table[row][column])
 
@@ -110,10 +112,7 @@ class EdgesModel(QAbstractTableModel):
         if orientation == Qt.Horizontal:
             return self.table.dtype.names[section]
         elif orientation == Qt.Vertical:
-            if self._sort is not None:
-                return str(self._sort[section]+1)
-            else:
-                return str(section+1)
+            return str(section+1)
 
     def sort(self, column_id, order=Qt.AscendingOrder):
         self.beginResetModel()
