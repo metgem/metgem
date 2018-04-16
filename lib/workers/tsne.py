@@ -35,7 +35,7 @@ class ProgressStringIO(io.StringIO):
     def write(self, s):
         """Method used to follow progress of processing."""
 
-        if self.parent._should_stop:
+        if self.parent.isStopped():
             raise UserRequestedStopError()
         elif 'Iteration' in s:
             s = s.split(' Iteration ')[1]
@@ -79,7 +79,7 @@ class TSNEWorker(BaseWorker):
             except UserRequestedStopError:
                 sys.stdout = sys.__stdout__
                 self.canceled.emit()
-                return False
+                return
             else:
                 # Adjust scale
                 bb = BoundingBox(layout[mask])
@@ -95,7 +95,5 @@ class TSNEWorker(BaseWorker):
                         dx = 0
                         dy += 5 * RADIUS
 
-        self._result = layout
-            
         sys.stdout = sys.__stdout__
-        self.finished.emit()
+        return layout

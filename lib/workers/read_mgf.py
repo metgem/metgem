@@ -21,9 +21,9 @@ class ReadMGFWorker(BaseWorker):
         spectra = []
         try:
             for id, entry in enumerate(mgf.read(self.filename, convert_arrays=1, read_charges=False, dtype=np.float32)):
-                if self._should_stop:
+                if self.isStopped():
                     self.canceled.emit()
-                    return False
+                    return
 
                 mz_parent = entry['params']['pepmass']
                 mz_parent = mz_parent[0] if type(mz_parent) is tuple else mz_parent  # Parent ion mass is read as a tuple
@@ -35,7 +35,6 @@ class ReadMGFWorker(BaseWorker):
                 self.updated.emit(1)
         except PyteomicsError as e:
             self.error.emit(e)
-            return False
+            return
             
-        self._result = spectra
-        self.finished.emit()
+        return spectra

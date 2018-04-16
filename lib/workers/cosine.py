@@ -219,7 +219,7 @@ class ComputeScoresWorker(BaseWorker):
             except OSError as e:
                 self.error.emit(e)
                 del self._spectra
-                return False
+                return
             m = np.frombuffer(scores_matrix, dtype=np.float32)
             m[:] = 0
 
@@ -232,18 +232,18 @@ class ComputeScoresWorker(BaseWorker):
                              fillvalue=(None, None))
             compute = partial(batch_cosine_scores, options=self.options)
             for result in pool.imap_unordered(compute, groups):
-                if self._should_stop:
+                if self.isStopped():
                     self.canceled.emit()
-                    return False
+                    return
                 self.updated.emit(result)
         else:
             scores_matrix = np.zeros((num_spectra, num_spectra), dtype=np.float32)
 
             combinations = itertools.combinations(self._spectra, 2)
             for spectrum1, spectrum2 in combinations:
-                if self._should_stop:
+                if self.isStopped():
                     self.canceled.emit()
-                    return False
+                    return
 
                 score = cosine_score(spectrum1, spectrum2, self.options)
 
@@ -261,5 +261,4 @@ class ComputeScoresWorker(BaseWorker):
         np.fill_diagonal(scores_matrix, 1)
         scores_matrix[scores_matrix > 1] = 1
 
-        self._result = scores_matrix
-        self.finished.emit()
+        return scores_matrix

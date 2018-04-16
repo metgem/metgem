@@ -3,6 +3,7 @@ from PyQt5.QtCore import QObject, pyqtSignal
 
 class BaseWorker(QObject):
 
+    started = pyqtSignal()
     finished = pyqtSignal()
     canceled = pyqtSignal()
     updated = pyqtSignal(int)
@@ -21,6 +22,14 @@ class BaseWorker(QObject):
         self.iterative_update = True
 
         self.desc = ''
+
+    def start(self):
+        self.started.emit()
+        self._result = self.run()
+        self.finished.emit()
+
+    def isStopped(self):
+        return self._should_stop
 
     def run(self):
         pass

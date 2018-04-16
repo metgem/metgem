@@ -50,9 +50,10 @@ class WorkerSet(set):
         self.widgetProgress.setMaximum(worker.max)
         if worker.max == 0:
             self.widgetProgress.setFormat(worker.desc)
+        else:
+            worker.started.connect(lambda: self.widgetProgress.setFormat(worker.desc.format(value=0, max=worker.max)))
 
         self.widgetProgress.rejected.connect(lambda: worker.stop())
-
         worker.finished.connect(lambda: self.remove(worker))
         worker.canceled.connect(lambda: self.remove(worker))
         worker.error.connect(lambda: self.remove(worker))
@@ -60,10 +61,10 @@ class WorkerSet(set):
         worker.maximumChanged.connect(self.update_maximum)
 
         if use_thread:
-            thread.started.connect(worker.run)
+            thread.started.connect(worker.start)
             thread.start()
         else:
-            worker.run()
+            worker.start()
 
     def add(self, worker):
         if worker.track_progress:

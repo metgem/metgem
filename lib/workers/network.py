@@ -25,7 +25,7 @@ class NetworkWorker(BaseWorker):
         max_height = 0
         max_width = 0
         for i, ids in enumerate(clusters):
-            if self._should_stop:
+            if self.isStopped():
                 self.canceled.emit()
                 return False
                 
@@ -60,5 +60,4 @@ class NetworkWorker(BaseWorker):
 
             self.updated.emit(vcount)
 
-        self._result = layout
-        self.finished.emit()
+        return layout

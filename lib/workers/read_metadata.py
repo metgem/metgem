@@ -42,11 +42,8 @@ class ReadMetadataWorker(BaseWorker):
             elif ext in (".csv", ".txt", ".tsv"):
                 data = pd.read_csv(self.filename, **kwargs)
             if data is not None and data.size > 0:
-                self._result = data
-            self.finished.emit()
+                return data
         except(FileNotFoundError, IOError, pd.errors.ParserError, pd.errors.EmptyDataError) as e:
             self.error.emit(e)
-            self._result = None
-        else:
-            self.finished.emit()
+            return
 

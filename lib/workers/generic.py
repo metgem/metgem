@@ -10,5 +10,4 @@ class GenericWorker(BaseWorker):
         self.kwargs = kwargs
 
     def run(self):
-        self.callback(*self.args, **self.kwargs)
-        self.finished.emit()
+        return self.callback(*self.args, **self.kwargs)

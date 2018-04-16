@@ -67,7 +67,7 @@ class GetGNPSDatabasesMtimeWorker(BaseWorker):
 
                 # Then try to download files
                 for i, id_ in enumerate(self.ids):
-                    if self._should_stop:
+                    if self.isStopped():
                         self.canceled.emit()
                         return False
 
@@ -110,9 +110,9 @@ class DownloadGNPSDatabasesWorker(BaseWorker):
 
                 # Then try to download files
                 for i, id_ in enumerate(self.ids):
-                    if self._should_stop:
+                    if self.isStopped():
                         self.canceled.emit()
-                        return False
+                        return
 
                     path = os.path.join(self.path, f'{id_}.mgf')
                     offset = 0
@@ -136,13 +136,11 @@ class DownloadGNPSDatabasesWorker(BaseWorker):
                                 f.write(chunk)
                                 self.updated.emit(len(chunk))
 
-                                if self._should_stop:
+                                if self.isStopped():
                                     ftp.abort()
                                     self.canceled.emit()
 
                             ftp.retrbinary(f'RETR {id_}.mgf', write_callback, rest=offset)
         except ftplib.all_errors as e:
             self.error.emit(e)
-            return False
-        else:
-            self.finished.emit()
+            return

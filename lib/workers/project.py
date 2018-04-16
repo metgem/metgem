@@ -34,9 +34,9 @@ class LoadProjectWorker(BaseWorker):
                                                   + "Please generate networks from raw data again")
 
                 if version == CURRENT_FORMAT_VERSION:
-                    if self._should_stop:
+                    if self.isStopped():
                         self.canceled.emit()
-                        return False
+                        return
 
                     # Create network object
                     network = Network()
@@ -44,30 +44,30 @@ class LoadProjectWorker(BaseWorker):
                     # Load scores matrix
                     network.scores = fid['0/scores']
 
-                    if self._should_stop:
+                    if self.isStopped():
                         self.canceled.emit()
-                        return False
+                        return
 
                     # Load infos
                     network.infos = fid['0/infos']
 
-                    if self._should_stop:
+                    if self.isStopped():
                         self.canceled.emit()
-                        return False
+                        return
 
                     # Load table of spectra
                     spec_infos = fid['0/spectra/index.json']
                     network.spectra = []
                     for s in spec_infos:
-                        if self._should_stop:
+                        if self.isStopped():
                             self.canceled.emit()
-                            return False
+                            return
 
                         network.spectra.append(Spectrum(s['id'], s['mz_parent'], fid[f'0/spectra/{s["id"]}']))
 
-                    if self._should_stop:
+                    if self.isStopped():
                         self.canceled.emit()
-                        return False
+                        return
 
                     # Load options
                     network.options = AttrDict(fid['0/options.json'])
@@ -78,41 +78,39 @@ class LoadProjectWorker(BaseWorker):
                             opt.update(network.options[key])
                         network.options[key] = opt
 
-                    if self._should_stop:
+                    if self.isStopped():
                         self.canceled.emit()
-                        return False
+                        return
 
                     # Load graph
                     gxl = fid['0/graph.graphml']
                     parser = GraphMLParser()
                     network.graph = parser.fromstring(gxl)
 
-                    if self._should_stop:
+                    if self.isStopped():
                         self.canceled.emit()
-                        return False
+                        return
 
                     # Load network layout
                     network.graph.network_layout = fid['0/network_layout']
 
-                    if self._should_stop:
+                    if self.isStopped():
                         self.canceled.emit()
-                        return False
+                        return
 
                     # Load t-SNE layout
                     network.graph.tsne_layout = fid['0/tsne_layout']
 
-                    if self._should_stop:
+                    if self.isStopped():
                         self.canceled.emit()
-                        return False
+                        return
 
-                    self._result = network
+                    return network
                 else:
                     raise UnsupportedVersionError(f"Unrecognized file format version (version={version}).")
         except (FileNotFoundError, KeyError, UnsupportedVersionError) as e:
             self.error.emit(e)
-            self._result = None
-        else:
-            self.finished.emit()
+            return
 
 
 class SaveProjectWorker(BaseWorker):
