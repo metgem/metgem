@@ -22,6 +22,7 @@ class TSNEVisualizationOptions(AttrDict):
                          early_exaggeration=12,
                          barnes_hut=True,
                          angle=0.5,
+                         n_iter=1000,
                          random=False)
 
     
@@ -55,9 +56,10 @@ class TSNEWorker(BaseWorker):
 
         method = 'barnes_hut' if options.barnes_hut else 'exact'
         random_state = None if options.random else 0
+        n_iter = options.n_iter if options.n_iter >= 250 else 250  # Number of iterations should be at least 250
         self._tsne = TSNE(learning_rate=options.learning_rate,
                           early_exaggeration=options.early_exaggeration,
-                          perplexity=options.perplexity, verbose=2,
+                          perplexity=options.perplexity, verbose=2, n_iter=n_iter,
                           random_state=random_state, metric='precomputed',
                           method=method, angle=options.angle)
 
