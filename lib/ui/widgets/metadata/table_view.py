@@ -1,5 +1,5 @@
-from PyQt5.QtWidgets import QTableView, QAbstractButton
-from PyQt5.QtCore import Qt, QObject, QEvent
+from PyQt5.QtWidgets import QTableView, QAbstractButton, QHeaderView
+from PyQt5.QtCore import Qt, QObject, QEvent, QSize
 
 
 class MetadataTableView(QTableView):
@@ -35,4 +35,20 @@ class NodeTableView(MetadataTableView):
 
 
 class EdgeTableView(MetadataTableView):
-    pass
+
+    def __init__(self):
+        super().__init__()
+
+        # Last column is virtual (content is generated on demand),
+        # so we don't want to sort or resize column from content
+        self.horizontalHeader().sortIndicatorChanged.connect(self.on_sort_indicator_changed)
+        self.horizontalHeader().setStretchLastSection(True)
+
+    def sizeHintForColumn(self, column: int):
+        if column == self.model().columnCount() - 1:
+            return 0
+        return super().sizeHintForColumn(column)
+
+    def on_sort_indicator_changed(self, index: int, order):
+        if index == self.model().columnCount() - 1:
+            self.horizontalHeader().setSortIndicator(-1, Qt.AscendingOrder)
