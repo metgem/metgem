@@ -437,9 +437,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
             else:
                 # Set data as first or second spectrum
                 if type_ == 'compare':
-                    self.cvSpectrum.set_spectrum2(data, node.label())
+                    self.cvSpectrum.set_spectrum2(data, node.index()+1)
                 else:
-                    self.cvSpectrum.set_spectrum1(data, node.label())
+                    self.cvSpectrum.set_spectrum1(data, node.index()+1)
 
                 # Show spectrum tab
                 self.tabWidget.setCurrentIndex(self.tabWidget.indexOf(self.cvSpectrum))
