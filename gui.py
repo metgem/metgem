@@ -165,7 +165,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.actionHideSelected.triggered.connect(self.current_view.scene().hideSelectedItems)
         self.actionShowAll.triggered.connect(self.current_view.scene().showAllItems)
         self.actionNeighbors.triggered.connect(
-            lambda: self.on_select_first_neighbors_triggered(self.current_view.scene().selectedItems()))
+            lambda: self.on_select_first_neighbors_triggered(self.current_view.scene().selectedNodes()))
         self.actionExportToCytoscape.triggered.connect(self.on_export_to_cytoscape_triggered)
         self.actionExportAsImage.triggered.connect(self.on_export_as_image_triggered)
 
@@ -444,18 +444,13 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 # Show spectrum tab
                 self.tabWidget.setCurrentIndex(self.tabWidget.indexOf(self.cvSpectrum))
 
-    def on_select_first_neighbors_triggered(self, items):
+    def on_select_first_neighbors_triggered(self, nodes):
         view = self.current_view
-        for item in items:
-            if item.Type == ui.Node.Type:
-                for v in self.network.graph.vs[item.index()].neighbors():
-                    try:
-                        if view == self.gvNetwork:
-                            v['__network_gobj'].setSelected(True)
-                        elif view == self.gvTSNE:
-                            v['__tsne_gobj'].setSelected(True)
-                    except (KeyError, AttributeError):
-                        pass
+        neighbors = [v.index for node in nodes for v in self.network.graph.vs[node.index()].neighbors()]
+        if view == self.gvNetwork:
+            self.gvNetwork.scene().setNodesSelection(neighbors)
+        elif view == self.gvTSNE:
+            self.gvTSNE.scene().setNodesSelection(neighbors)
 
     def on_nodes_header_contextmenu(self, event):
         """ A right click on a column name allows the info to be displayed in the graphView """
@@ -480,19 +475,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def highlight_selected_nodes(self):
         selected_indexes = self.tvNodes.model().mapSelectionToSource(
             self.tvNodes.selectionModel().selection()).indexes()
-        selected = {index.row() for index in selected_indexes}
-        network_deselected = {item.index() for item in self.gvNetwork.scene().selectedItems()} - selected
-        tsne_deselected = {item.index() for item in self.gvNetwork.scene().selectedItems()} - selected
+        selected = (index.row() for index in selected_indexes)
         with utils.SignalBlocker(self.gvNetwork.scene(), self.gvTSNE.scene()):
-            network_nodes = self.network.graph.vs['__network_gobj']
-            tsne_nodes = self.network.graph.vs['__tsne_gobj']
-            for index in network_deselected:
-                network_nodes[index].setSelected(False)
-            for index in tsne_deselected:
-                tsne_nodes[index].setSelected(False)
-            for index in selected:
-                network_nodes[index].setSelected(True)
-                tsne_nodes[index].setSelected(True)
+            self.gvNetwork.scene().setNodesSelection(selected)
+            self.gvTSNE.scene().setNodesSelection(selected)
 
     def on_current_parameters_triggered(self):
         dialog = ui.CurrentParametersDialog(self, options=self.network.options)
@@ -545,10 +531,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
                         self.network.interactions = None
                         self.create_graph()
                         self.draw(which='network')
-                        try:
-                            self.network.graph.vs['__tsne_gobj'] = self.gvTSNE.nodes()
-                        except AttributeError:
-                            pass
                         self.update_search_menu()
             elif type_ == 't-sne':
                 dialog = ui.EditTSNEOptionsDialog(self, options=self.network.options)
@@ -687,12 +669,12 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.network.graph.es['__width'] = widths
 
         # Add nodes
-        self.network.graph.vs['__network_gobj'] = nodes = self.gvNetwork.scene().addNodes(self.network.graph.vs.indices)
+        nodes = self.gvNetwork.scene().addNodes(self.network.graph.vs.indices)
 
         # Add edges
         edges_attr = [(e.index, nodes[e.source], nodes[e.target], e['__weight'], e['__width'])
                       for e in self.network.graph.es if not e.is_loop()]
-        self.network.graph.es['__network_gobj'] = self.gvNetwork.scene().addEdges(*zip(*edges_attr))
+        self.gvNetwork.scene().addEdges(*zip(*edges_attr))
 
         if layout is None:
             # Compute layout
@@ -713,7 +695,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.gvTSNE.scene().clear()
 
         # Add nodes
-        self.network.graph.vs['__tsne_gobj'] = self.gvTSNE.scene().addNodes(self.network.graph.vs.indices)
+        self.gvTSNE.scene().addNodes(self.network.graph.vs.indices)
 
         if layout is None:
             # Compute layout
