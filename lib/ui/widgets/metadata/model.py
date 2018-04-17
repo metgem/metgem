@@ -162,6 +162,11 @@ class EdgesProxyModel(ProxyModel):
         super().__init__(*args, **kwargs)
         self._sort = None
 
+    def lessThan(self, left: QModelIndex, right: QModelIndex):
+        if self._sort is not None:
+            return self._sort[left.row()] < self._sort[right.row()]
+        return super().lessThan(left, right)
+
     def index(self, row: int, column: int, parent:QModelIndex=QModelIndex()):
         index = super().index(row, column, parent)
         if self._sort is not None:
