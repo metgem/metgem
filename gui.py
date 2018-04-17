@@ -264,7 +264,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.btSearch.setMenu(menu)
         self.btSearch.setPopupMode(QToolButton.InstantPopup)
         group.triggered.connect(lambda action: table.model().setFilterKeyColumn(action.data() - 1))
-        # table.model().setFilterKeyColumn(-1)
+        model.setFilterKeyColumn(-1)
 
     def keyPressEvent(self, event):
         key = event.key()
