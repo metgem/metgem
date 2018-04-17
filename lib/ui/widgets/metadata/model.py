@@ -18,8 +18,7 @@ class ProxyModel(QSortFilterProxyModel):
 
     def filterAcceptsRow(self, source_row: int, source_parent: QModelIndex):
         if self._selection is not None:
-            index = self.sourceModel().index(source_row, 0)
-            if index.row() in self._selection:
+            if source_row in self._selection:
                 return True
             return False
 
@@ -27,7 +26,6 @@ class ProxyModel(QSortFilterProxyModel):
 
     def setSelection(self, idx):
         """Display only selected items from the scene"""
-
         if len(idx) == 0:
             self._selection = None
         else:
@@ -88,15 +86,11 @@ class NodesModel(QAbstractTableModel):
 
 class NodesProxyModel(ProxyModel):
 
-    def index(self, row: int, column: int, parent: QModelIndex=QModelIndex()):
-        table = self.sourceModel().table
-        if table is not None:
-            row = table.index[row]
-        return super().index(row, column, parent)
+    def lessThan(self, left: QModelIndex, right: QModelIndex):
+        return left.row() < right.row()
 
     def sort(self, column_id, order=Qt.AscendingOrder):
         model = self.sourceModel()
-        model.beginResetModel()
         if column_id == 0:
             l = model.list
             indexes = sorted(range(len(l)), key=lambda k: l[k].mz_parent, reverse=bool(order))
@@ -106,15 +100,11 @@ class NodesProxyModel(ProxyModel):
         else:
             column = model.table.columns[column_id - 1]
             model.table.sort_values(column, ascending=not bool(order), inplace=True)
-        model.endResetModel()
+        super().sort(column_id, order)
 
 
 class EdgesModel(QAbstractTableModel):
     """Model with sort functionality based on a numpy record array"""
-
-    def __init__(self, parent):
-        super().__init__(parent)
-        self._sort = None
 
     def rowCount(self, parent=QModelIndex()):
         data = self.table
@@ -129,9 +119,6 @@ class EdgesModel(QAbstractTableModel):
                 return len(data[0])
         else:
             return 0
-
-    def sortOrder(self):
-        return self._sort
 
     @property
     def table(self):
@@ -171,15 +158,18 @@ class EdgesModel(QAbstractTableModel):
 
 class EdgesProxyModel(ProxyModel):
 
-    def index(self, row: int, column: int, parent: QModelIndex=QModelIndex()):
-        _sort = self.sourceModel()._sort
-        if _sort is not None:
-            row = _sort[row]
-        return super().index(row, column, parent)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._sort = None
+
+    def index(self, row: int, column: int, parent:QModelIndex=QModelIndex()):
+        index = super().index(row, column, parent)
+        if self._sort is not None:
+            index = index.sibling(self._row[row], column)
+        return index
 
     def sort(self, column_id, order=Qt.AscendingOrder):
         model = self.sourceModel()
-        model.beginResetModel()
         if column_id == -1:
             model._sort = None
         elif column_id == model.columnCount()-1:
@@ -189,4 +179,4 @@ class EdgesProxyModel(ProxyModel):
             model._sort = np.argsort(model.table, order=column)
             if order == Qt.DescendingOrder:
                 model._sort = model._sort[::-1]
-        model.endResetModel()
+        super().sort(column_id, order)
