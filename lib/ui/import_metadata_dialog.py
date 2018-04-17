@@ -134,14 +134,20 @@ class ImportMetadataDialog(ImportMetadataDialogBase, ImportMetadataDialogUI):
                 self.twMetadata.setLoading(False)
                 return
 
-            self.twMetadata.setRowCount(data.shape[0])
-            self.twMetadata.setColumnCount(data.shape[1])
-            self.twMetadata.setHorizontalHeaderLabels(data.columns)
-            for row in range(data.shape[0]):
-                for column in range(data.shape[1]):
-                    item = QTableWidgetItem(str(data.loc[row][column]))
-                    self.twMetadata.setItem(row, column, item)
-            self.twMetadata.setLoading(False)
+            try:
+                self.twMetadata.setRowCount(data.shape[0])
+                self.twMetadata.setColumnCount(data.shape[1])
+                self.twMetadata.setHorizontalHeaderLabels(data.columns)
+                for row in range(data.shape[0]):
+                    for column in range(data.shape[1]):
+                        item = QTableWidgetItem(str(data.loc[row][column]))
+                        self.twMetadata.setItem(row, column, item)
+            except KeyError:
+                self.twMetadata.clear()
+                self.twMetadata.setRowCount(0)
+                self.twMetadata.setColumnCount(0)
+            finally:
+                self.twMetadata.setLoading(False)
 
         options = self.prepare_options(preview=True)
         if options is not None:
@@ -165,7 +171,8 @@ class ImportMetadataDialog(ImportMetadataDialogBase, ImportMetadataDialogUI):
             if preview:
                 options.nrows = 100
             else:
-                options.usecols = self.selected_columns()
+                selected_cols = self.selected_columns()
+                options.usecols = selected_cols if len(selected_cols) > 0 else None
             return options
 
     def getValues(self):
