@@ -108,6 +108,12 @@ except ImportError:
             for edge in self.edges():
                 edge.adjust()
 
+        def setLabelsFromModel(self, model, column_id):
+            for node in self.nodes():
+                label = model.index(node.index(), column_id).data()
+                node.setLabel(str(label))
+            self.update()
+
         def hideItems(self, items):
             for item in items:
                 item.hide()

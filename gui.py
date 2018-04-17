@@ -86,16 +86,14 @@ class MainWindow(MainWindowBase, MainWindowUI):
                                                 'tsne': workers.TSNEVisualizationOptions()})
 
         # Add model to table views
-        for table, Model, name in ((self.tvNodes, ui.widgets.NodesModel, "Nodes"),
-                                   (self.tvEdges, ui.widgets.EdgesModel, "Edges")):
+        for table, Model, ProxyModel, name in \
+                ((self.tvNodes, ui.widgets.NodesModel, ui.widgets.NodesProxyModel, "Nodes"),
+                 (self.tvEdges, ui.widgets.EdgesModel, ui.widgets.EdgesProxyModel, "Edges")):
             table.setSortingEnabled(True)
             model = Model(self)
-            # if table != self.tvNodes:
-            proxy = ui.widgets.ProxyModel()
+            proxy = ProxyModel()
             proxy.setSourceModel(model)
             table.setModel(proxy)
-            # else:
-            #     table.setModel(model)
             table.setItemDelegate(ui.widgets.EnsureStringItemDelegate())
 
         # Move search layout to search toolbar
@@ -265,7 +263,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         self.btSearch.setMenu(menu)
         self.btSearch.setPopupMode(QToolButton.InstantPopup)
-        group.triggered.connect(lambda action: table.model().setFilterKeyColumn(action.data()-1))
+        group.triggered.connect(lambda action: table.model().setFilterKeyColumn(action.data() - 1))
         # table.model().setFilterKeyColumn(-1)
 
     def keyPressEvent(self, event):
@@ -342,7 +340,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                    '',
                    'Should say something here.')
         QMessageBox.about(self, f'About {QCoreApplication.applicationName()}',
-                     '\n'.join(message))
+                          '\n'.join(message))
 
     def on_about_qt_triggered(self):
         QMessageBox.aboutQt(self)
@@ -383,16 +381,16 @@ class MainWindow(MainWindowBase, MainWindowUI):
             cy.style.apply(style, g_cy)
         except (ConnectionRefusedError, ConnectionError):
             QMessageBox.information(self, None,
-                               'Please launch Cytoscape before trying to export.')
+                                    'Please launch Cytoscape before trying to export.')
         except json.decoder.JSONDecodeError:
             QMessageBox.information(self, None,
-                               'Cytoscape was not ready to receive data. Please try again.')
+                                    'Cytoscape was not ready to receive data. Please try again.')
         except ImportError:
             QMessageBox.information(self, None,
-                               'py2tocytoscape is required for this action (https://pypi.python.org/pypi/py2cytoscape).')
+                                    'py2tocytoscape is required for this action (https://pypi.python.org/pypi/py2cytoscape).')
         except FileNotFoundError:
             QMessageBox.warning(self, None,
-                           f'styles.json not found. You may have to reinstall {QCoreApplication.applicationName()}')
+                                f'styles.json not found. You may have to reinstall {QCoreApplication.applicationName()}')
 
         # for c in g_cy.get_view(g_cy.get_views()[0])['elements']['nodes']:
         # pos = c['position']
@@ -481,7 +479,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
     def highlight_selected_nodes(self):
         selected_indexes = self.tvNodes.model().mapSelectionToSource(
-                                    self.tvNodes.selectionModel().selection()).indexes()
+            self.tvNodes.selectionModel().selection()).indexes()
         selected = {index.row() for index in selected_indexes}
         network_deselected = {item.index() for item in self.gvNetwork.scene().selectedItems()} - selected
         tsne_deselected = {item.index() for item in self.gvNetwork.scene().selectedItems()} - selected
@@ -516,8 +514,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.gvNetwork.scene().clear()
             self.gvTSNE.scene().clear()
 
-            process_file, use_metadata, metadata_file, metadata_options,\
-                compute_options, tsne_options, network_options = dialog.getValues()
+            process_file, use_metadata, metadata_file, metadata_options, \
+            compute_options, tsne_options, network_options = dialog.getValues()
             self.network.options.cosine = compute_options
             self.network.options.tsne = tsne_options
             self.network.options.network = network_options
@@ -592,16 +590,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.tabWidget.setDocumentMode(False)
             self.tabWidget.setMaximumHeight(QWIDGETSIZE_MAX)
 
-    def set_nodes_label(self, column_index):
+    def set_nodes_label(self, column_id):
         model = self.tvNodes.model().sourceModel()
-        for i, vertex in enumerate(self.network.graph.vs):
-            try:
-                label = str(model.index(i, column_index).data())
-                vertex['__tsne_gobj'].setLabel(label)
-                vertex['__network_gobj'].setLabel(label)
-            except (KeyError, AttributeError):
-                pass
-        self.gvNetwork.scene().update()
+        self.gvNetwork.scene().setLabelsFromModel(model, column_id)
+        self.gvTSNE.scene().setLabelsFromModel(model, column_id)
 
     def save_settings(self):
         settings = QSettings()
@@ -860,6 +852,7 @@ if __name__ == '__main__':
 
     from PyQt5.QtWidgets import QApplication
     from PyQt5.QtCore import QCoreApplication
+
 
     def exceptionHandler(exctype, value, trace):
         """

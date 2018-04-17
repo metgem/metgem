@@ -1,3 +1,3 @@
-from .model import EdgesModel, NodesModel, ProxyModel
+from .model import NodesModel, NodesProxyModel, EdgesModel, EdgesProxyModel
 from .table_view import NodeTableView, EdgeTableView
 from .import_ import CsvDelimiterCombo
