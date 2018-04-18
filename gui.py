@@ -74,16 +74,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         w.setAutoRaise(True)
         self.tabWidget.setCornerWidget(w, Qt.TopRightCorner)
 
-        # Create an object to store all computed objects
-        self._network = Network()
-
-        # Create graph
-        self._network.graph = ig.Graph()
-
-        # Set default options
-        self._network.options = utils.AttrDict({'cosine': workers.CosineComputationOptions(),
-                                                'network': workers.NetworkVisualizationOptions(),
-                                                'tsne': workers.TSNEVisualizationOptions()})
+        self.init_project()
 
         # Add model to table views
         for table, Model, name in ((self.tvNodes, ui.widgets.NodesModel, "Nodes"),
@@ -189,6 +180,18 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         # Build research bar
         self.update_search_menu()
+
+    def init_project(self):
+        # Create an object to store all computed objects
+        self._network = Network()
+
+        # Create graph
+        self._network.graph = ig.Graph()
+
+        # Set default options
+        self._network.options = utils.AttrDict({'cosine': workers.CosineComputationOptions(),
+                                                'network': workers.NetworkVisualizationOptions(),
+                                                'tsne': workers.TSNEVisualizationOptions()})
 
     @property
     def window_title(self):
@@ -314,9 +317,12 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def on_new_project_triggered(self):
         reply = QMessageBox.Yes
         if self.has_unsaved_changes:
+            if self.fname is not None:
+                message = f"There is unsaved changes in {self.fname}. Would you like to save them?"
+            else:
+                message = f"Current work has not been saved. Would you like to save now?"
             reply = QMessageBox.question(self, QCoreApplication.applicationName(),
-                                         f"There is unsaved changes in {self.fname}. Would you like to save them?",
-                                          QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)
+                                         message, QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)
 
             if reply == QMessageBox.Yes:
                 self.on_save_project_triggered()
@@ -326,7 +332,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.has_unsaved_changes = False
             self.tvNodes.model().sourceModel().beginResetModel()
             self.tvEdges.model().sourceModel().beginResetModel()
-            self.network = Network()
+            self.init_project()
             self.tvNodes.model().sourceModel().endResetModel()
             self.tvEdges.model().sourceModel().endResetModel()
             self.gvNetwork.scene().clear()

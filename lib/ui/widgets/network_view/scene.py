@@ -7,8 +7,8 @@ try:
     from .NetworkView import Node, Edge, NetworkScene as BaseNetworkScene
 
     class NetworkScene(BaseNetworkScene):
-        def setLayout(self, layout):
-            super().setLayout(layout.ravel())
+        def setLayout(self, layout, scale=1):
+            super().setLayout(layout.ravel(), scale)
 
 except ImportError:
     print('Warning: Using Python fallback NetworkView')
