@@ -507,7 +507,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def highlight_selected_nodes(self):
         selected_indexes = self.tvNodes.model().mapSelectionToSource(
             self.tvNodes.selectionModel().selection()).indexes()
-        selected = (index.row() for index in selected_indexes)
+        selected = tuple(index.row() for index in selected_indexes)
         with utils.SignalBlocker(self.gvNetwork.scene(), self.gvTSNE.scene()):
             self.gvNetwork.scene().setNodesSelection(selected)
             self.gvTSNE.scene().setNodesSelection(selected)
