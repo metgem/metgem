@@ -135,7 +135,7 @@ class EdgesModel(QAbstractTableModel):
             if column == self.columnCount()-1:
                 if role in (FilterRole, LabelRole):
                     return
-                d_exp = self.table[row]['Delta MZ']
+                d_exp = abs(self.table[row]['Delta MZ'])
                 interpretations = []
                 if NEUTRAL_LOSSES is not None:
                     for _, r in NEUTRAL_LOSSES.iterrows():
