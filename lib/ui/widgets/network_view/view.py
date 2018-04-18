@@ -86,7 +86,7 @@ class NetworkView(QGraphicsView):
         self.setLayout(layout)
         
         scene = NetworkScene(self)
-        self.setScene(scene)        
+        self.setScene(scene)
         
         self.setCacheMode(QGraphicsView.CacheBackground)
         self.setRenderHint(QPainter.Antialiasing)
@@ -101,6 +101,10 @@ class NetworkView(QGraphicsView):
             """NetworkView:focus {
                 border: 3px solid palette(highlight);
             }""")
+
+        # Connect events
+        self.scene().scaleChanged.connect(self.on_scale_changed)
+        self.scene().layoutChanged.connect(self.on_layout_changed)
         
     def setScene(self, scene):
         super().setScene(scene)
@@ -155,6 +159,15 @@ class NetworkView(QGraphicsView):
     def resizeEvent(self, event):
         super().resizeEvent(event)
         self.minimap.adjustRubberband()
+
+    def on_scale_changed(self):
+        self.scene().setSceneRect(self.scene().itemsBoundingRect())
+        self.minimap.zoomToFit()
+
+    def on_layout_changed(self):
+        self.scene().setSceneRect(self.scene().itemsBoundingRect())
+        self.zoomToFit()
+        self.minimap.zoomToFit()
         
     def translate(self, x, y):
         super().translate(x, y)

@@ -1,8 +1,3 @@
-import itertools
-
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QGraphicsScene, QGraphicsItem
-
 try:
     from .NetworkView import Node, Edge, NetworkScene as BaseNetworkScene
 
@@ -12,6 +7,12 @@ try:
 
 except ImportError:
     print('Warning: Using Python fallback NetworkView')
+
+    import itertools
+
+    from PyQt5.QtCore import Qt, pyqtSignal
+    from PyQt5.QtWidgets import QGraphicsScene, QGraphicsItem
+
     from .node import Node
     from .edge import Edge
 
@@ -19,6 +20,8 @@ except ImportError:
 
 
     class NetworkScene(QGraphicsScene):
+        scaleChanged = pyqtSignal(float)
+        layoutChanged = pyqtSignal()
 
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
@@ -27,6 +30,8 @@ except ImportError:
 
         def clear(self):
             super().clear()
+
+            self._scale = 1
 
             self.nodesLayer = GraphicsItemLayer()
             self.addItem(self.nodesLayer)
@@ -100,7 +105,8 @@ except ImportError:
                     for index in items:
                         edges[index].setSelected(True)
 
-        def setLayout(self, positions, scale=1):
+        def setLayout(self, positions, scale=None):
+            scale = scale if scale is not None else self._scale
             for node, pos in zip(self.nodes(), positions):
                 node.setFlag(QGraphicsItem.ItemSendsScenePositionChanges, False)
                 node.setPos(*pos * scale)
@@ -108,6 +114,23 @@ except ImportError:
 
             for edge in self.edges():
                 edge.adjust()
+
+            self.layoutChanged.emit()
+
+        def scale(self):
+            return self._scale
+
+        def setScale(self, scale=1):
+            for node in self.nodes():
+                node.setFlag(QGraphicsItem.ItemSendsScenePositionChanges, False)
+                node.setPos(node.pos() * scale / self._scale)
+                node.setFlag(QGraphicsItem.ItemSendsScenePositionChanges)
+
+            for edge in self.edges():
+                edge.adjust()
+
+            self._scale = scale
+            self.scaleChanged.emit(scale)
 
         def setLabelsFromModel(self, model, column_id, role=Qt.DisplayRole):
             for node in self.nodes():

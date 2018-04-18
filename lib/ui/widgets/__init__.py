@@ -5,5 +5,6 @@ from .spectrum import SpectrumCanvas, SpectrumNavigationToolbar, SpectrumWidget,
 from .delegates import AutoToolTipItemDelegate, LibraryQualityDelegate, EnsureStringItemDelegate
 from .loading_views import LoadingListView, LoadingListWidget, LoadingTableView, LoadingTableWidget
 from .view_databases import PubMedLabel, SpectrumIdLabel, SubmitUserLabel, QualityLabel
+from .slider import Slider
 
 from PyQt5.QtSvg import QSvgWidget

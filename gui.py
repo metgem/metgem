@@ -174,6 +174,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.tabWidget.cornerWidget(Qt.TopRightCorner).clicked.connect(self.minimize_tabwidget)
         self.tabWidget.currentChanged.connect(self.update_search_menu)
 
+        self.sliderNetworkScale.valueChanged.connect(lambda val: self.on_scale_changed('network', val))
+        self.sliderTSNEScale.valueChanged.connect(lambda val: self.on_scale_changed('t-sne', val))
+
         # Add a menu to show/hide toolbars
         popup_menu = self.createPopupMenu()
         popup_menu.setTitle("Toolbars")
@@ -336,6 +339,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.init_project()
             self.tvNodes.model().sourceModel().endResetModel()
             self.tvEdges.model().sourceModel().endResetModel()
+            self.sliderNetworkScale.resetValue()
+            self.sliderTSNEScale.resetValue()
             self.gvNetwork.scene().clear()
             self.gvTSNE.scene().clear()
             self.cvSpectrum.set_spectrum1(None)
@@ -584,6 +589,12 @@ class MainWindow(MainWindowBase, MainWindowUI):
         dialog = ui.ViewDatabasesDialog(self, base_path=DATABASES_PATH)
         dialog.exec_()
 
+    def on_scale_changed(self, type_, scale):
+        if type_ == 'network':
+            self.gvNetwork.scene().setScale(scale / self.sliderNetworkScale.defaultValue())
+        elif type_ == 't-sne':
+                self.gvTSNE.scene().setScale(scale / self.sliderNetworkScale.defaultValue())
+
     def show_items(self, items):
         for item in items:
             item.show()
@@ -831,6 +842,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
         """Load project from a previously saved file"""
 
         def process_finished():
+            self.sliderNetworkScale.resetValue()
+            self.sliderTSNEScale.resetValue()
+
             self.tvNodes.model().sourceModel().beginResetModel()
             self.network = worker.result()
             self.tvNodes.model().sourceModel().endResetModel()
