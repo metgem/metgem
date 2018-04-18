@@ -86,12 +86,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
                                                 'tsne': workers.TSNEVisualizationOptions()})
 
         # Add model to table views
-        for table, Model, ProxyModel, name in \
-                ((self.tvNodes, ui.widgets.NodesModel, ui.widgets.NodesProxyModel, "Nodes"),
-                 (self.tvEdges, ui.widgets.EdgesModel, ui.widgets.EdgesProxyModel, "Edges")):
+        for table, Model, name in ((self.tvNodes, ui.widgets.NodesModel, "Nodes"),
+                                   (self.tvEdges, ui.widgets.EdgesModel, "Edges")):
             table.setSortingEnabled(True)
             model = Model(self)
-            proxy = ProxyModel()
+            proxy = ui.widgets.ProxyModel()
             proxy.setSourceModel(model)
             table.setModel(proxy)
             table.setItemDelegate(ui.widgets.EnsureStringItemDelegate())
@@ -574,8 +573,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
     def set_nodes_label(self, column_id):
         model = self.tvNodes.model().sourceModel()
-        self.gvNetwork.scene().setLabelsFromModel(model, column_id)
-        self.gvTSNE.scene().setLabelsFromModel(model, column_id)
+        self.gvNetwork.scene().setLabelsFromModel(model, column_id, ui.widgets.LabelRole)
+        self.gvTSNE.scene().setLabelsFromModel(model, column_id, ui.widgets.LabelRole)
 
     def save_settings(self):
         settings = QSettings()

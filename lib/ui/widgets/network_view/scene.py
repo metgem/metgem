@@ -1,5 +1,6 @@
 import itertools
 
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QGraphicsScene, QGraphicsItem
 
 try:
@@ -108,9 +109,9 @@ except ImportError:
             for edge in self.edges():
                 edge.adjust()
 
-        def setLabelsFromModel(self, model, column_id):
+        def setLabelsFromModel(self, model, column_id, role=Qt.DisplayRole):
             for node in self.nodes():
-                label = model.index(node.index(), column_id).data()
+                label = model.index(node.index(), column_id).data(role)
                 node.setLabel(str(label))
             self.update()
 
