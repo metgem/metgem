@@ -582,7 +582,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
         dialog.exec_()
 
     def on_view_databases_triggered(self):
-        if os.path.exists(DATABASES_PATH) and os.path.isfile(DATABASES_PATH) and os.path.getsize(DATABASES_PATH) > 0:
+        path = os.path.join(DATABASES_PATH, 'spectra.sqlite')
+        if os.path.exists(path) and os.path.isfile(path) and os.path.getsize(path) > 0:
             dialog = ui.ViewDatabasesDialog(self, base_path=DATABASES_PATH)
             dialog.exec_()
         else:
