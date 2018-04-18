@@ -15,7 +15,7 @@ from PyQt5.QtWidgets import (QDialog, QFileDialog,
                              QMessageBox, QWidget,
                              QMenu, QToolButton, QActionGroup,
                              QAction, QDockWidget, QWIDGETSIZE_MAX)
-from PyQt5.QtCore import QSettings, Qt, QSignalMapper, QSize
+from PyQt5.QtCore import QSettings, Qt, QSize
 from PyQt5.QtGui import QPainter, QImage, QCursor
 
 from PyQt5 import uic
@@ -164,12 +164,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.actionDownloadDatabases.triggered.connect(self.on_download_databases_triggered)
         self.actionViewDatabases.triggered.connect(self.on_view_databases_triggered)
 
-        self._mapper = QSignalMapper(self)
-        self.btNetworkOptions.clicked.connect(self._mapper.map)
-        self._mapper.setMapping(self.btNetworkOptions, 'network')
-        self.btTSNEOptions.clicked.connect(self._mapper.map)
-        self._mapper.setMapping(self.btTSNEOptions, 't-sne')
-        self._mapper.mapped[str].connect(self.on_edit_options_triggered)
+        self.btNetworkOptions.clicked.connect(lambda: self.on_edit_options_triggered('network'))
+        self.btTSNEOptions.clicked.connect(lambda: self.on_edit_options_triggered('t-sne'))
 
         self.tabWidget.cornerWidget(Qt.TopRightCorner).clicked.connect(self.minimize_tabwidget)
         self.tabWidget.currentChanged.connect(self.update_search_menu)
@@ -680,20 +676,13 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         self.update_search_menu()
 
-    def apply_layout(self, layout, view):
-        view.scene().setLayout(layout)
-
-        view.scene().setSceneRect(view.scene().itemsBoundingRect())
-        view.zoomToFit()
-        view.minimap.zoomToFit()
-
-    def apply_network_layout(self, layout):
-        self.apply_layout(layout, self.gvNetwork)
-        self.network.graph.network_layout = layout
-
-    def apply_tsne_layout(self, layout):
-        self.apply_layout(layout, self.gvTSNE)
-        self.network.graph.tsne_layout = layout
+    def apply_layout(self, type_, layout):
+        if type_ == 'network':
+            self.gvNetwork.scene().setLayout(layout)
+            self.network.graph.network_layout = layout
+        elif type_ == 't-sne':
+            self.gvTSNE.scene().setLayout(layout)
+            self.network.graph.tsne_layout = layout
 
     def prepare_draw_network_worker(self, layout=None):
         self.gvNetwork.scene().clear()
@@ -723,14 +712,14 @@ class MainWindow(MainWindowBase, MainWindowUI):
             def process_finished():
                 layout = worker.result()
                 if layout is not None:
-                    self.apply_network_layout(layout)
+                    self.apply_layout('network', layout)
 
             worker = workers.NetworkWorker(self.network.graph)
             worker.finished.connect(process_finished)
 
             return worker
         else:
-            worker = workers.GenericWorker(self.apply_network_layout, layout)
+            worker = workers.GenericWorker(self.apply_layout, 'network', layout)
             return worker
 
     def prepare_draw_tsne_worker(self, layout=None):
@@ -744,14 +733,14 @@ class MainWindow(MainWindowBase, MainWindowUI):
             def process_finished():
                 layout = worker.result()
                 if layout is not None:
-                    self.apply_tsne_layout(layout)
+                    self.apply_layout(layout, 't-sne')
 
             worker = workers.TSNEWorker(self.network.scores, self.network.options.tsne)
             worker.finished.connect(process_finished)
 
             return worker
         else:
-            worker = workers.GenericWorker(self.apply_tsne_layout, layout)
+            worker = workers.GenericWorker(self.apply_layout, 't-sne', layout)
             return worker
 
     def prepare_compute_scores_worker(self, spectra, use_multiprocessing):
