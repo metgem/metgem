@@ -74,8 +74,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
         w.setAutoRaise(True)
         self.tabWidget.setCornerWidget(w, Qt.TopRightCorner)
 
-        self.init_project()
-
         # Add model to table views
         for table, Model, name in ((self.tvNodes, ui.widgets.NodesModel, "Nodes"),
                                    (self.tvEdges, ui.widgets.EdgesModel, "Edges")):
@@ -85,6 +83,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
             proxy.setSourceModel(model)
             table.setModel(proxy)
             table.setItemDelegate(ui.widgets.EnsureStringItemDelegate())
+
+        # Init project's objects
+        self.init_project()
 
         # Move search layout to search toolbar
         w = QWidget()
@@ -183,7 +184,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
     def init_project(self):
         # Create an object to store all computed objects
-        self._network = Network()
+        self.network = Network()
 
         # Create graph
         self._network.graph = ig.Graph()
