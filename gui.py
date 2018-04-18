@@ -736,7 +736,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             def process_finished():
                 layout = worker.result()
                 if layout is not None:
-                    self.apply_layout(layout, 't-sne')
+                    self.apply_layout('t-sne', layout)
 
             worker = workers.TSNEWorker(self.network.scores, self.network.options.tsne)
             worker.finished.connect(process_finished)
