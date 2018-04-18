@@ -156,6 +156,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                                                 Qt.KeepAspectRatio))
         self.leSearch.textChanged.connect(self.on_do_search)
         self.leSearch.returnPressed.connect(self.on_do_search)
+        self.actionNewProject.triggered.connect(self.on_new_project_triggered)
         self.actionOpen.triggered.connect(self.on_open_project_triggered)
         self.actionSave.triggered.connect(self.on_save_project_triggered)
         self.actionSaveAs.triggered.connect(self.on_save_project_as_triggered)
@@ -309,6 +310,30 @@ class MainWindow(MainWindowBase, MainWindowUI):
         table = self.tabWidget.currentWidget()
         if table in (self.tvNodes, self.tvEdges):
             table.model().setFilterRegExp(str(self.leSearch.text()))
+
+    def on_new_project_triggered(self):
+        reply = QMessageBox.Yes
+        if self.has_unsaved_changes:
+            reply = QMessageBox.question(self, QCoreApplication.applicationName(),
+                                         f"There is unsaved changes in {self.fname}. Would you like to save them?",
+                                          QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)
+
+            if reply == QMessageBox.Yes:
+                self.on_save_project_triggered()
+
+        if reply != QMessageBox.Cancel:
+            self.fname = None
+            self.has_unsaved_changes = False
+            self.tvNodes.model().sourceModel().beginResetModel()
+            self.tvEdges.model().sourceModel().beginResetModel()
+            self.network = Network()
+            self.tvNodes.model().sourceModel().endResetModel()
+            self.tvEdges.model().sourceModel().endResetModel()
+            self.gvNetwork.scene().clear()
+            self.gvTSNE.scene().clear()
+            self.cvSpectrum.set_spectrum1(None)
+            self.cvSpectrum.set_spectrum2(None)
+            self.update_search_menu()
 
     def on_open_project_triggered(self):
         dialog = QFileDialog(self)

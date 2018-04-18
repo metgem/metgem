@@ -100,10 +100,10 @@ except ImportError:
                     for index in items:
                         edges[index].setSelected(True)
 
-        def setLayout(self, positions):
+        def setLayout(self, positions, scale=1):
             for node, pos in zip(self.nodes(), positions):
                 node.setFlag(QGraphicsItem.ItemSendsScenePositionChanges, False)
-                node.setPos(*pos)
+                node.setPos(*pos * scale)
                 node.setFlag(QGraphicsItem.ItemSendsScenePositionChanges)
 
             for edge in self.edges():

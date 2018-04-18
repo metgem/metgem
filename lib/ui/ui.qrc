@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="icons">
+    <file>images/new-document.svg</file>
     <file>images/import-metadata.svg</file>
     <file>images/go-jump.svg</file>
     <file>images/go-last.svg</file>

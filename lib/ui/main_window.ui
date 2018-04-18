@@ -160,7 +160,7 @@
       </widget>
       <widget class="QTabWidget" name="tabWidget">
        <property name="currentIndex">
-        <number>1</number>
+        <number>0</number>
        </property>
        <property name="documentMode">
         <bool>false</bool>
@@ -248,6 +248,7 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="actionNewProject"/>
    <addaction name="actionOpen"/>
    <addaction name="actionSave"/>
    <addaction name="actionSaveAs"/>
@@ -705,6 +706,21 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+M</string>
+   </property>
+  </action>
+  <action name="actionNewProject">
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/new-document.svg</normaloff>:/icons/images/new-document.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;New project</string>
+   </property>
+   <property name="toolTip">
+    <string>Create a new project</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
    </property>
   </action>
  </widget>

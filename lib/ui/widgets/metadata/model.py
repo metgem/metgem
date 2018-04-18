@@ -65,6 +65,8 @@ class NodesModel(QAbstractTableModel):
         if table is not None:
             self.table = table.values
             self.headers = np.array(table.columns)
+        else:
+            self.table = None
         self.list = getattr(self.parent().network, 'spectra', [])
         super().endResetModel()
 
