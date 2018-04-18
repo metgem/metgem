@@ -582,8 +582,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
         dialog.exec_()
 
     def on_view_databases_triggered(self):
-        dialog = ui.ViewDatabasesDialog(self, base_path=DATABASES_PATH)
-        dialog.exec_()
+        if os.path.exists(DATABASES_PATH) and os.path.isfile(DATABASES_PATH) and os.path.getsize(DATABASES_PATH) > 0:
+            dialog = ui.ViewDatabasesDialog(self, base_path=DATABASES_PATH)
+            dialog.exec_()
+        else:
+            QMessageBox.information(self, None, "No databases found, please download one or more database first.")
 
     def on_scale_changed(self, type_, scale):
         if type_ == 'network':
