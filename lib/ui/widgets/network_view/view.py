@@ -96,7 +96,6 @@ class NetworkView(QGraphicsView):
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
-        self.setMinimumSize(640, 480)
         self.setStyleSheet(
             """NetworkView:focus {
                 border: 3px solid palette(highlight);
