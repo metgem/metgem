@@ -2,37 +2,14 @@ import os
 
 from PyQt5.QtWidgets import QAbstractItemView, QDataWidgetMapper, QLabel
 
-try:
-    from rdkit.Chem import MolFromSmiles, rdDepictor
-    from rdkit.Chem.Draw import rdMolDraw2D
-    from rdkit.Chem.inchi import INCHI_AVAILABLE
-    if INCHI_AVAILABLE:
-        from rdkit.Chem.inchi import MolFromInchi
-except ImportError:
-    RDKIT_AVAILABLE = False
-    INCHI_AVAILABLE = False
-else:
-    RDKIT_AVAILABLE = True
-
-try:
-    import pybel
-    from lxml import etree
-except ImportError:
-    OPENBABEL_AVAILABLE = False
-    INCHI_AVAILABLE = False
-else:
-    OPENBABEL_AVAILABLE = True
-    INCHI_AVAILABLE = 'inchi' in pybel.informats.keys()
-
-from PyQt5.QtCore import (Qt, QAbstractListModel, QModelIndex,
-                          QByteArray, QAbstractTableModel)
+from PyQt5.QtCore import (Qt, QAbstractListModel, QModelIndex, QAbstractTableModel)
 from PyQt5 import uic
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'view_databases_dialog.ui')
 
 from ..database import SpectraLibrary
 from ..models import Bank, Spectrum, Base
-from .widgets import AutoToolTipItemDelegate, LibraryQualityDelegate, SpectrumWidget, SpectrumCanvas
+from .widgets import AutoToolTipItemDelegate, LibraryQualityDelegate, SpectrumWidget, SpectrumCanvas, StructureSvgWidget
 
 ViewDatabasesDialogUI, ViewDatabasesDialogBase = uic.loadUiType(UI_FILE,
                                                                 from_imports='lib.ui',
@@ -164,16 +141,21 @@ class SpectraModel(QAbstractTableModel):
 class SpectrumDataWidgetMapper(QDataWidgetMapper):
 
     def addMapping(self, widget, section, property_name=None):
+        if isinstance(widget, QLabel):
+            property_name = b'text'
+        elif section == Spectrum.peaks:
+            property_name = b'spectrum1'
+            if isinstance(widget, SpectrumWidget):
+                widget = widget.canvas
+        elif section == Spectrum.inchi:
+            property_name = b'inchi'
+        elif section == Spectrum.smiles:
+            widget = widget.second_mapping
+            property_name = b'smiles'
+
         model = self.model()
         if model is not None and not isinstance(section, int):
             section = model.column_index(section)
-
-        if isinstance(widget, QLabel):
-            property_name = b'text'
-        elif isinstance(widget, (SpectrumWidget, SpectrumCanvas)):
-            if isinstance(widget, SpectrumWidget):
-                widget = widget.canvas
-            property_name = b'spectrum1'
 
         if property_name is None:
             super().addMapping(widget, section)
@@ -224,6 +206,8 @@ class ViewDatabasesDialog(ViewDatabasesDialogUI, ViewDatabasesDialogBase):
         self._mapper.addMapping(self.lblDataCollector, Spectrum.datacollector_id)
         self._mapper.addMapping(self.lblSubmitUser, Spectrum.submituser_id)
         self._mapper.addMapping(self.widgetSpectrum, Spectrum.peaks)
+        self._mapper.addMapping(self.widgetStructure, Spectrum.inchi)
+        self._mapper.addMapping(self.widgetStructure, Spectrum.smiles)
 
         # Connect events
         self.btRefresh.clicked.connect(self.on_refresh)
@@ -248,43 +232,6 @@ class ViewDatabasesDialog(ViewDatabasesDialogUI, ViewDatabasesDialogBase):
 
         # Update description labels
         self._mapper.setCurrentIndex(index.row())
-
-        # Try to render structure from InChI or SMILES
-        if RDKIT_AVAILABLE:
-            mol = None
-            if INCHI_AVAILABLE and obj.inchi:  # Use InChI first
-                mol = MolFromInchi(obj.inchi)
-            elif obj.smiles:                   # If InChI not available, use SMILES as a fallback
-                mol = MolFromSmiles(obj.smiles)
-            if mol is not None:
-                if not mol.GetNumConformers():
-                    rdDepictor.Compute2DCoords(mol)
-                drawer = rdMolDraw2D.MolDraw2DSVG(self.widgetStructure.size().width(),
-                                                  self.widgetStructure.size().height())
-                drawer.DrawMolecule(mol)
-                drawer.FinishDrawing()
-                svg = drawer.GetDrawingText().replace('svg:', '')
-                self.widgetStructure.load(QByteArray(svg.encode()))
-            else:
-                self.widgetStructure.load(QByteArray(b''))
-        elif OPENBABEL_AVAILABLE:  # If RDkit not available, try to use OpenBabel
-            mol = None
-            try:
-                if INCHI_AVAILABLE and obj.inchi:
-                    mol = pybel.readstring('inchi', obj.inchi)
-                elif obj.smiles:
-                    mol = pybel.readstring('smiles', obj.smiles)
-            except OSError:
-                self.widgetStructure.load(QByteArray(b''))
-            else:
-                if mol is not None:
-                    # Convert to svg, code loosely based on _repr_svg_ from pybel's Molecule
-                    namespace = "http://www.w3.org/2000/svg"
-                    tree = etree.fromstring(mol.write("svg"))
-                    svg = tree.find(f"{{{namespace}}}g/{{{namespace}}}svg")
-                    self.widgetStructure.load(QByteArray(etree.tostring(svg)))
-                else:
-                    self.widgetStructure.load(QByteArray(b''))
 
     def on_bank_changed(self):
         bank = self.cbBanks.currentData(role=BanksModel.BankIdRole)

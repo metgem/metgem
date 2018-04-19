@@ -6,5 +6,4 @@ from .delegates import AutoToolTipItemDelegate, LibraryQualityDelegate, EnsureSt
 from .loading_views import LoadingListView, LoadingListWidget, LoadingTableView, LoadingTableWidget
 from .view_databases import PubMedLabel, SpectrumIdLabel, SubmitUserLabel, QualityLabel
 from .slider import Slider
-
-from PyQt5.QtSvg import QSvgWidget
+from .structure import StructureSvgWidget

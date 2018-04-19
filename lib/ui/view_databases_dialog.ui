@@ -577,10 +577,22 @@
           <item row="0" column="0" rowspan="2">
            <widget class="QFrame" name="frame">
             <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>302</width>
+              <height>274</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>302</width>
+              <height>274</height>
+             </size>
             </property>
             <property name="frameShape">
              <enum>QFrame::StyledPanel</enum>
@@ -605,7 +617,7 @@
               <number>0</number>
              </property>
              <item>
-              <widget class="QSvgWidget" name="widgetStructure" native="true">
+              <widget class="StructureSvgWidget" name="widgetStructure" native="true">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                  <horstretch>0</horstretch>
@@ -613,6 +625,12 @@
                 </sizepolicy>
                </property>
                <property name="minimumSize">
+                <size>
+                 <width>300</width>
+                 <height>272</height>
+                </size>
+               </property>
+               <property name="maximumSize">
                 <size>
                  <width>300</width>
                  <height>272</height>
@@ -817,7 +835,7 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>QSvgWidget</class>
+   <class>StructureSvgWidget</class>
    <extends>QWidget</extends>
    <header>lib/ui/widgets.h</header>
    <container>1</container>
