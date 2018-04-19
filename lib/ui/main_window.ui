@@ -84,6 +84,12 @@
        <enum>Qt::Vertical</enum>
       </property>
       <widget class="QSplitter" name="splitter2">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="minimumSize">
         <size>
          <width>0</width>
@@ -311,7 +317,9 @@
    <addaction name="separator"/>
    <addaction name="actionProcessFile"/>
    <addaction name="actionImportMetadata"/>
+   <addaction name="separator"/>
    <addaction name="actionCurrentParameters"/>
+   <addaction name="actionSettings"/>
   </widget>
   <widget class="QToolBar" name="tbView">
    <property name="windowTitle">
@@ -777,6 +785,18 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+N</string>
+   </property>
+  </action>
+  <action name="actionSettings">
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/preferences-system.svg</normaloff>:/icons/images/preferences-system.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Settings</string>
+   </property>
+   <property name="toolTip">
+    <string>Change application settings</string>
    </property>
   </action>
  </widget>

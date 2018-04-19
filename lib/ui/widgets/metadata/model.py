@@ -1,5 +1,5 @@
 import numpy as np
-from PyQt5.QtCore import Qt, QAbstractTableModel, QModelIndex, QSortFilterProxyModel
+from PyQt5.QtCore import Qt, QAbstractTableModel, QModelIndex, QSortFilterProxyModel, QSettings
 
 try:
     import os
@@ -107,6 +107,8 @@ class EdgesModel(QAbstractTableModel):
         super().__init__(*args, **kwargs)
         self.table = None
 
+        self.settings = QSettings()
+
     def rowCount(self, parent=QModelIndex()):
         data = self.table
         return data.size if data is not None else 0
@@ -140,9 +142,9 @@ class EdgesModel(QAbstractTableModel):
                 if NEUTRAL_LOSSES is not None:
                     for _, r in NEUTRAL_LOSSES.iterrows():
                         d_th = r['Mass difference']
-                        if abs((d_exp - d_th) / d_th) * 10**6 < 200:  # 200 ppm
+                        if abs((d_exp - d_th) / d_th) * 10**6 < self.settings.value('Metadata/neutral_tolerance'):
                             interpretations.append(r['Origin'])
-                    return ','.join(interpretations)
+                    return ' ; '.join(interpretations)
                 else:
                     return None
             elif role in (FilterRole, LabelRole):

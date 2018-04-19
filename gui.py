@@ -140,6 +140,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.actionProcessFile.triggered.connect(self.on_process_file_triggered)
         self.actionImportMetadata.triggered.connect(self.on_import_metadata_triggered)
         self.actionCurrentParameters.triggered.connect(self.on_current_parameters_triggered)
+        self.actionSettings.triggered.connect(self.on_settings_triggered)
         self.actionZoomIn.triggered.connect(lambda: self.current_view.scaleView(1.2))
         self.actionZoomOut.triggered.connect(lambda: self.current_view.scaleView(1 / 1.2))
         self.actionZoomToFit.triggered.connect(self.current_view.zoomToFit)
@@ -516,6 +517,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
         dialog = ui.CurrentParametersDialog(self, options=self.network.options)
         dialog.exec_()
 
+    def on_settings_triggered(self):
+        dialog = ui.SettingsDialog(self)
+        dialog.exec_()
+
     def on_full_screen_triggered(self):
         if not self.isFullScreen():
             self.setWindowFlags(Qt.Window)
@@ -621,20 +626,23 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
     def save_settings(self):
         settings = QSettings()
-        settings.setValue('MainWindow.Geometry', self.saveGeometry())
-        settings.setValue('MainWindow.State', self.saveState())
-        settings.setValue('MainWindow.TabWidget.State',
+        settings.beginGroup('MainWindow')
+        settings.setValue('Geometry', self.saveGeometry())
+        settings.setValue('State', self.saveState())
+        settings.setValue('TabWidget/State',
                           self.tabWidget.cornerWidget(Qt.TopRightCorner).arrowType() == Qt.UpArrow)
+        settings.endGroup()
 
     def load_settings(self):
         settings = QSettings()
-        setting = settings.value('MainWindow.Geometry')
+        settings.beginGroup('MainWindow')
+        setting = settings.value('Geometry')
         if setting is not None:
             self.restoreGeometry(setting)
-            setting = settings.value('MainWindow.State')
+        setting = settings.value('State')
         if setting is not None:
             self.restoreState(setting)
-        setting = settings.value('MainWindow.TabWidget.State', type=bool)
+        setting = settings.value('TabWidget/State', type=bool)
         if setting:
             self.minimize_tabwidget()
 
