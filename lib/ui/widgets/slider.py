@@ -6,7 +6,7 @@ class Slider(QSlider):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._default_value = self.minimum() + round((self.maximum() - self.minimum()) / 2)
+        self._default_value = self.minimum() + round((self.maximum() - self.minimum()) / 10)
 
     def resetValue(self):
         self.setValue(self._default_value)
@@ -14,8 +14,8 @@ class Slider(QSlider):
     def defaultValue(self):
         return self._default_value
 
-    def showEvent(self, avent: QShowEvent):
-        self._default_value = self.minimum() + round((self.maximum() - self.minimum())/2)
+    def showEvent(self, event: QShowEvent):
+        self._default_value = self.minimum() + round((self.maximum() - self.minimum()) / 10)
         self.resetValue()
 
     def mouseDoubleClickEvent(self, event: QMouseEvent):
