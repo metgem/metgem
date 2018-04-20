@@ -2,7 +2,7 @@ try:
     from .NetworkView import Node, Edge, NetworkScene as BaseNetworkScene
 
     class NetworkScene(BaseNetworkScene):
-        def setLayout(self, layout, scale=1):
+        def setLayout(self, layout, scale=None):
             super().setLayout(layout.ravel(), scale)
 
 except ImportError:
@@ -27,12 +27,12 @@ except ImportError:
             super().__init__(*args, **kwargs)
             self._colors = []
 
+            self._scale = 1
+
             self.clear()
 
         def clear(self):
             super().clear()
-
-            self._scale = 1
 
             self.nodesLayer = GraphicsItemLayer()
             self.addItem(self.nodesLayer)
