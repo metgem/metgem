@@ -1,5 +1,4 @@
 import os
-from collections import OrderedDict
 
 import numpy as np
 
@@ -52,13 +51,46 @@ class DataBaseBuilder:
         self.name = name
         self.echo = echo
 
-        self.session = None
+        fname = f'{self.name}.sqlite'
+        self.bases = {'bank': Bank, 'organism': Organism, 'pi': Investigator,
+                      'submituser': Submitter, 'datacollector': DataCollector,
+                      'source_instrument': Instrument}
 
-        keys = ('bank', 'organism', 'pi', 'submituser', 'datacollector', 'source_instrument', 'spectrum')
-        self._uniques = {k: OrderedDict() for k in keys if k != 'spectrum'}
-        self._indexes = {k: 1 for k in keys}
+        self._uniques = {k: {} for k in self.bases.keys()}
+        self._indexes = {k: 1 for k in self.bases.keys()}
+        self._used_pkeys = None
+        self._free_pkeys = []
 
-        self.session = create_session(f'{self.name}.sqlite', echo=self.echo, drop_all=True)
+        if os.path.exists(fname) and os.path.isfile(fname) and os.path.getsize(fname) > 0:
+            self.session = create_session(fname, echo=self.echo)
+            for k, v in self.bases.items():
+                records = self.session.query(v).all()
+                self._uniques[k] = {x.name: x.id for x in records}
+                self._indexes[k] = records[-1].id + 1
+            self._used_pkeys = (self.session.query(Spectrum).first().id,
+                                self.session.query(Spectrum).order_by(Spectrum.id.desc()).first().id)
+        else:
+            self.session = create_session(fname, echo=self.echo, drop_all=True)
+
+        # Create a generator for spectrum primary to make sure we don't use an already use primary key
+        # We don't use auto-increment because, otherwise, primary keys will increase for each update
+        # (and can quickly overflow)
+        def gen_pkey():
+            key = 1
+            while True:
+                if self._used_pkeys is not None and self._used_pkeys[0] <= key <= self._used_pkeys[1]:
+                    use_key = False
+                    for start, stop in self._free_pkeys:
+                        if start <= key <= stop:
+                            use_key = True
+                            break
+                    if use_key:
+                        yield key
+                    key += 1
+                else:
+                    yield key
+                    key += 1
+        self.spectrum_pkey = gen_pkey()
 
     def __enter__(self):
         return self
@@ -67,18 +99,11 @@ class DataBaseBuilder:
         self.close()
 
     def close(self):
-        self.session.execute(Bank.__table__.insert(),
-                             [{'name': k} for k in self._uniques['bank']])
-        self.session.execute(Organism.__table__.insert(),
-                             [{'name': k} for k in self._uniques['organism']])
-        self.session.execute(Investigator.__table__.insert(),
-                             [{'name': k} for k in self._uniques['pi']])
-        self.session.execute(Instrument.__table__.insert(),
-                             [{'name': k} for k in self._uniques['source_instrument']])
-        self.session.execute(DataCollector.__table__.insert(),
-                             [{'name': k} for k in self._uniques['datacollector']])
-        self.session.execute(Submitter.__table__.insert(),
-                             [{'name': k} for k in self._uniques['submituser']])
+        for key, base in self.bases.items():
+            self.session.query(base).delete()
+            self.session.execute(base.__table__.insert(),
+                                 [{'id': v, 'name': k} for k, v in self._uniques[key].items()])
+
         self.session.commit()
         self.session.execute('vacuum')
         self.session.close()
@@ -86,7 +111,16 @@ class DataBaseBuilder:
 
     def add_bank(self, mgf_path):
         bank = os.path.splitext(os.path.basename(mgf_path))[0]
-        self._uniques['bank'][bank] = self._indexes['bank']
+        if bank in self._uniques['bank']:
+            print(bank, self._uniques['bank'][bank])
+            q = self.session.query(Spectrum).filter(Spectrum.bank_id == self._uniques['bank'][bank])
+            if q.count() > 0:
+                self._free_pkeys.append((q.first().id, q.order_by(Spectrum.id.desc()).first().id))
+                q.delete()
+                self.session.flush()
+        else:
+            print('new bank', bank, self._indexes['bank'])
+            self._uniques['bank'][bank] = self._indexes['bank']
 
         for batch in chunk_read_mgf(mgf_path, 1000):  # Read mgf file by batch of 1000 spectra
             spectra = []
@@ -100,7 +134,8 @@ class DataBaseBuilder:
 
                 # Set-up a dictionary with all the values needed to build a Spectrum object
                 spectrum = {
-                            'bank_id': self._indexes['bank'],
+                            'id': next(self.spectrum_pkey),
+                            'bank_id': self._uniques['bank'][bank],
                             'pepmass': float(params.get('pepmass', [-1])[0]),
                             'mslevel': int(params.get('mslevel', 0)),
                             'positive': params.get('ionmode', 'Positive').lower() == 'positive',
@@ -137,7 +172,6 @@ class DataBaseBuilder:
                     spectrum['peaks'] = np.array([], dtype=np.float32)
 
                 spectra.append(spectrum)
-                self._indexes['spectrum'] += 1
 
             # Add spectra and peaks
             # We can't use ORM because we have a lot of insertions to do
@@ -201,8 +235,3 @@ if __name__ == "__main__":
             # if path.endswith('GNPS-EMBL-MCF.mgf'):
             #     break
     print(f'Total time: {time.time()-t00:.2f}s.')
-
-    # with Library('spectra', echo=True) as l:
-    #     query = l.session.query(Spectrum)
-    #     for obj in query:
-    #         spectrum = l.spectrum_array(obj.id, cache=True)

@@ -57,7 +57,7 @@ class Bank(Base):
 
 class Spectrum(Base):
     __tablename__ = 'spectra'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=False)
     bank_id = Column(Integer, ForeignKey('banks.id'), nullable=False, comment="Source")
     bank = relationship('Bank')
     pepmass = Column(Float, nullable=False, index=True, comment="m/z parent")
