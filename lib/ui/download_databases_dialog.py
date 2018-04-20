@@ -6,7 +6,7 @@ import ftplib
 
 from PyQt5.QtWidgets import QListWidgetItem, QDialogButtonBox, QMessageBox
 from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import Qt, QSignalMapper, QSize
+from PyQt5.QtCore import Qt, QSize
 from PyQt5 import uic
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'download_databases_dialog.ui')
@@ -51,17 +51,13 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
             btClose.setDefault(True)
 
         # Connect events
-        self._mapper = QSignalMapper(self)
-        self.btSelectAll.clicked.connect(self._mapper.map)
-        self._mapper.setMapping(self.btSelectAll, 'all')
-        self.btSelectNone.clicked.connect(self._mapper.map)
-        self._mapper.setMapping(self.btSelectNone, 'none')
-        self.btSelectInvert.clicked.connect(self._mapper.map)
-        self._mapper.setMapping(self.btSelectInvert, 'invert')
-        self._mapper.mapped[str].connect(self.select)
-
+        self.btSelectAll.clicked.connect(lambda: self.select('all'))
+        self.btSelectNone.clicked.connect(lambda: self.select('none'))
+        self.btSelectInvert.clicked.connect(lambda: self.select('invert'))
         self.lstDatabases.currentItemChanged.connect(self.update_description)
         self.lstDatabases.itemChanged.connect(self.check_selection)
+        self.lstDatabases.itemDoubleClicked.connect(
+            lambda item: item.setCheckState(Qt.Checked if item.checkState() == Qt.Unchecked else Qt.Unchecked))
         self.btDownload.clicked.connect(self.download_databases)
         self.btRefresh.clicked.connect(self.refresh_list)
 
@@ -91,7 +87,7 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
             self._workers.add(worker)
 
         worker = ListGNPSDatabasesWorker()
-        worker.updated.connect(update_list)
+        worker.itemReady.connect(update_list)
         worker.error.connect(self.on_error)
         worker.finished.connect(process_finished)
 
@@ -112,10 +108,10 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
         if isinstance(e, ConnectionError):
             self.close()
             QMessageBox.warning(self, None,
-                           'Connection failed. Please check your network connection.')
+                                'Connection failed. Please check your network connection.')
         elif isinstance(e, ftplib.all_errors):
             QMessageBox.warning(self, None,
-                           f'Connection failed. Please check your network connection.\n{str(e)}')
+                                f'Connection failed. Please check your network connection.\n{str(e)}')
 
     def select(self, type_):
         for i in range(self.lstDatabases.count()):
@@ -131,7 +127,7 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
         items = [self.lstDatabases.item(i) for i in range(self.lstDatabases.count())
                  if not selected_only or self.lstDatabases.item(i).checkState() == Qt.Checked]
         ids = [id_ for item in items for id_ in item.data(DownloadDatabasesDialog.IDS_ROLE)
-                 if item.data(DownloadDatabasesDialog.IDS_ROLE) is not None]
+               if item.data(DownloadDatabasesDialog.IDS_ROLE) is not None]
         return ids
 
     def check_selection(self, item):
@@ -146,8 +142,9 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
             self.btDownload.setEnabled(enabled)
 
     def update_description(self, current, previous):
-        desc = current.data(DownloadDatabasesDialog.DESC_ROLE)
-        self.labelDesc.setText(desc)
+        if current is not None:
+            desc = current.data(DownloadDatabasesDialog.DESC_ROLE)
+            self.labelDesc.setText(desc)
 
     def update_badges(self):
         if self._mtimes is None:
@@ -185,7 +182,7 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
         ids = self.get_ids(selected_only=True)
         if len(ids) == 0:
             QMessageBox.warning(self, None,
-                           'Please select at least one database first.')
+                                'Please select at least one database first.')
             return False
 
         def clean_up():

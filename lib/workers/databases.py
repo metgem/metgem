@@ -15,7 +15,7 @@ FTP_URL = "ccms-ftp.ucsd.edu"
 
 class ListGNPSDatabasesWorker(BaseWorker):
 
-    updated = pyqtSignal(dict)
+    itemReady = pyqtSignal(dict)
 
     def __init__(self):
         super().__init__(track_progress=False)
@@ -46,7 +46,7 @@ class ListGNPSDatabasesWorker(BaseWorker):
                         if len(ids) > 0 and not ids[0] == 'all':
                             item = {'name': name, 'ids': ids, 'desc': desc}
                             items.append(item)
-                            self.updated.emit(item)
+                            self.itemReady.emit(item)
 
             self._result = items
             self.finished.emit()
@@ -119,16 +119,6 @@ class DownloadGNPSDatabasesWorker(BaseWorker):
                     if os.path.exists(path):
                         offset = os.path.getsize(path)
                         self.updated.emit(offset)
-                        #
-                        # try:
-                        #     rd = ftp.sendcmd(f'MDTM {id_}.mgf')
-                        #     rd = datetime.strptime(rd[4:], '%Y%m%d%H%M%S')
-                        #     if rd <= datetime.fromtimestamp(os.path.getmtime(path)):
-                        #         self.updated.emit(self._filesizes[id_])
-                        #         continue
-                        # except error_perm:
-                        #     self.updated.emit(self._filesizes[id_])
-                        #     continue
 
                     if offset < self._filesizes[id_]:
                         with open(path, 'ab') as f:
