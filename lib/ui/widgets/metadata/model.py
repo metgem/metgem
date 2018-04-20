@@ -53,6 +53,7 @@ class NodesModel(QAbstractTableModel):
         self.table = None
         self.list = []
         self.headers = None
+        self.headers_colors = None
 
     def rowCount(self, parent=QModelIndex()):
         return self.table.shape[0] if self.table is not None else len(self.list)
@@ -65,14 +66,17 @@ class NodesModel(QAbstractTableModel):
         if table is not None:
             self.table = table.values
             self.headers = np.array(table.columns)
+            self.headers_colors = [None] * self.columnCount()
         else:
             self.table = None
+            self.headers = None
+            self.headers_colors = None
         self.list = getattr(self.parent().network, 'spectra', [])
         super().endResetModel()
 
     def data(self, index: QModelIndex, role=Qt.DisplayRole):
         if not index.isValid():
-            return None
+            return
 
         row = index.row()
         column = index.column()
@@ -87,17 +91,28 @@ class NodesModel(QAbstractTableModel):
             else:
                 return self.table[row, column - 1]
 
-    def headerData(self, section, orientation, role=Qt.DisplayRole):
-        if role != Qt.DisplayRole:
-            return None
+    def headerData(self, section: int, orientation: int, role=Qt.DisplayRole):
+        if role in (Qt.DisplayRole, Qt.ToolTipRole):
+            if orientation == Qt.Horizontal:
+                if section == 0:
+                    return "m/z parent"
+                elif self.headers is not None:
+                    return self.headers[section-1]
+            elif orientation == Qt.Vertical:
+                return str(section+1)
+        elif role == Qt.BackgroundColorRole:
+            if self.headers_colors is not None and section < len(self.headers_colors):
+                return self.headers_colors[section]
+        else:
+            super().headerData(section, orientation, role)
 
-        if orientation == Qt.Horizontal:
-            if section == 0:
-                return "m/z parent"
-            elif self.headers is not None:
-                return self.headers[section-1]
-        elif orientation == Qt.Vertical:
-            return str(section+1)
+    def setHeaderData(self, section: int, orientation: int, value, role=Qt.EditRole):
+        if role == Qt.BackgroundColorRole:
+            self.headers_colors[section] = value
+            self.headerDataChanged.emit(orientation, section, section)
+            return True
+        else:
+            super().setHeaderData(section, orientation, value, role)
 
 
 class EdgesModel(QAbstractTableModel):
@@ -129,7 +144,7 @@ class EdgesModel(QAbstractTableModel):
 
     def data(self, index, role=Qt.DisplayRole):
         if not index.isValid():
-            return None
+            return
 
         column = index.column()
         row = index.row()
@@ -146,7 +161,7 @@ class EdgesModel(QAbstractTableModel):
                             interpretations.append(r['Origin'])
                     return ' ; '.join(interpretations)
                 else:
-                    return None
+                    return
             elif role in (FilterRole, LabelRole):
                 return str(self.table[row][column])
             else:
@@ -154,7 +169,7 @@ class EdgesModel(QAbstractTableModel):
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if role != Qt.DisplayRole:
-            return None
+            return
 
         if orientation == Qt.Horizontal:
             if section == self.columnCount()-1:

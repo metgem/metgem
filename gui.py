@@ -16,7 +16,7 @@ from PyQt5.QtWidgets import (QDialog, QFileDialog,
                              QMenu, QToolButton, QActionGroup,
                              QAction, QDockWidget, QWIDGETSIZE_MAX)
 from PyQt5.QtCore import QSettings, Qt, QSize
-from PyQt5.QtGui import QPainter, QImage, QCursor
+from PyQt5.QtGui import QPainter, QImage, QCursor, QColor
 
 from PyQt5 import uic
 
@@ -75,14 +75,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.tabWidget.setCornerWidget(w, Qt.TopRightCorner)
 
         # Add model to table views
-        for table, Model, name in ((self.tvNodes, ui.widgets.NodesModel, "Nodes"),
-                                   (self.tvEdges, ui.widgets.EdgesModel, "Edges")):
-            table.setSortingEnabled(True)
-            model = Model(self)
-            proxy = ui.widgets.ProxyModel()
-            proxy.setSourceModel(model)
-            table.setModel(proxy)
-            table.setItemDelegate(ui.widgets.EnsureStringItemDelegate())
+        self.tvNodes.setModel(ui.widgets.NodesModel(self))
+        self.tvEdges.setModel(ui.widgets.EdgesModel(self))
 
         # Init project's objects
         self.init_project()
@@ -623,6 +617,25 @@ class MainWindow(MainWindowBase, MainWindowUI):
         model = self.tvNodes.model().sourceModel()
         self.gvNetwork.scene().setLabelsFromModel(model, column_id, ui.widgets.LabelRole)
         self.gvTSNE.scene().setLabelsFromModel(model, column_id, ui.widgets.LabelRole)
+
+    def set_nodes_pie_chart_values(self, column_ids):
+        model = self.tvNodes.model().sourceModel()
+        if column_ids is not None:
+            colors = utils.generate_colors(len(column_ids))
+            self.gvNetwork.scene().setPieColors(colors)
+            self.gvTSNE.scene().setPieColors(colors)
+            for column, color in zip(column_ids, colors):
+                color = QColor(color)
+                color.setAlpha(128)
+                model.setHeaderData(column, Qt.Horizontal, color, role=Qt.BackgroundColorRole)
+            self.gvNetwork.scene().setPieChartsFromModel(model, column_ids)
+            self.gvTSNE.scene().setPieChartsFromModel(model, column_ids)
+        else:
+            self.gvNetwork.scene().resetPieCharts()
+            self.gvTSNE.scene().resetPieCharts()
+            self.gvNetwork.scene().setPieColors(None)
+            self.gvTSNE.scene().setPieColors(None)
+
 
     def save_settings(self):
         settings = QSettings()

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1089</width>
-    <height>669</height>
+    <height>768</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -90,12 +90,6 @@
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>400</height>
-        </size>
-       </property>
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
@@ -130,7 +124,20 @@
           </layout>
          </item>
          <item>
-          <widget class="NetworkView" name="gvNetwork"/>
+          <widget class="NetworkView" name="gvNetwork">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>1</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>400</height>
+            </size>
+           </property>
+          </widget>
          </item>
          <item>
           <widget class="Slider" name="sliderNetworkScale">
@@ -231,6 +238,9 @@
         <bool>true</bool>
        </property>
        <widget class="NodeTableView" name="tvNodes">
+        <property name="alternatingRowColors">
+         <bool>true</bool>
+        </property>
         <attribute name="icon">
          <iconset resource="ui.qrc">
           <normaloff>:/icons/images/node.svg</normaloff>:/icons/images/node.svg</iconset>
@@ -240,6 +250,9 @@
         </attribute>
        </widget>
        <widget class="EdgeTableView" name="tvEdges">
+        <property name="alternatingRowColors">
+         <bool>true</bool>
+        </property>
         <attribute name="icon">
          <iconset resource="ui.qrc">
           <normaloff>:/icons/images/edge.svg</normaloff>:/icons/images/edge.svg</iconset>

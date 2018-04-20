@@ -25,6 +25,7 @@ except ImportError:
 
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
+            self._colors = []
 
             self.clear()
 
@@ -136,7 +137,24 @@ except ImportError:
             for node in self.nodes():
                 label = model.index(node.index(), column_id).data(role)
                 node.setLabel(str(label))
-            self.update()
+
+        def pieColors(self):
+            return self._colors
+
+        def setPieColors(self, colors):
+            self._colors = colors
+
+        def setPieChartsFromModel(self, model, column_ids, role=Qt.DisplayRole):
+            if len(column_ids) != len(self._colors):
+                return False
+
+            for node in self.nodes():
+                values = [model.index(node.index(), cid).data(role) for cid in column_ids]
+                node.setPie(values)
+
+        def resetPieCharts(self):
+            for node in self.nodes():
+                node.setPie(None)
 
         def hideItems(self, items):
             for item in items:

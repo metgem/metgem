@@ -1,4 +1,4 @@
-from PyQt5.QtGui import QPen
+from PyQt5.QtGui import QPen, QBrush
 from PyQt5.QtWidgets import (QGraphicsItem, QGraphicsEllipseItem, QStyle)
 from PyQt5.QtCore import (Qt, QRectF)
 
@@ -41,11 +41,14 @@ class Node(QGraphicsEllipseItem):
 
     def setLabel(self, label):
         self._label = label
-        self.setCacheMode(self.cacheMode())  # Force redraw
+        if self.isVisible():
+            self.update()
 
     def setPie(self, values):
+        values = [v / sum(values) for v in values]
         self._pie = values
-        self.setCacheMode(self.cacheMode())  # Force redraw
+        if self.isVisible():
+            self.update()
 
     def addEdge(self, edge):
         self._edge_list.append(edge)
@@ -91,9 +94,10 @@ class Node(QGraphicsEllipseItem):
         if lod > 0.1 and len(self._pie) > 0:
             rect = QRectF(-0.85 * RADIUS, -0.85 * RADIUS, 1.7 * RADIUS, 1.7 * RADIUS)
             start = 0.
+            colors = self.scene().pieColors()
+            painter.setPen(QPen(Qt.NoPen))
             for i, v in enumerate(self._pie):
-                painter.setPen(QPen(Qt.NoPen))
-                # painter.setBrush(get_color(i))
+                painter.setBrush(colors[i])
                 painter.drawPie(rect, start * 5760, v * 5760)
                 start += v
 
