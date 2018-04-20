@@ -45,8 +45,10 @@ class Node(QGraphicsEllipseItem):
             self.update()
 
     def setPie(self, values):
-        values = [v / sum(values) for v in values]
+        sum_ = sum(values)
+        values = [v / sum_ for v in values] if sum_ > 0 else []
         self._pie = values
+
         if self.isVisible():
             self.update()
 
