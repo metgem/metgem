@@ -8,6 +8,7 @@ from lxml import html, etree
 from PyQt5.QtCore import pyqtSignal
 
 from .base import BaseWorker
+from ..database import DataBaseBuilder
 
 LIB_URL = "https://gnps.ucsd.edu/ProteoSAFe/libraries.jsp"
 FTP_URL = "ccms-ftp.ucsd.edu"
@@ -115,22 +116,36 @@ class DownloadGNPSDatabasesWorker(BaseWorker):
                         return
 
                     path = os.path.join(self.path, f'{id_}.mgf')
-                    offset = 0
-                    if os.path.exists(path):
-                        offset = os.path.getsize(path)
-                        self.updated.emit(offset)
+                    with open(path, 'wb') as f:
+                        def write_callback(chunk):
+                            f.write(chunk)
+                            self.updated.emit(len(chunk))
 
-                    if offset < self._filesizes[id_]:
-                        with open(path, 'ab') as f:
-                            def write_callback(chunk):
-                                f.write(chunk)
-                                self.updated.emit(len(chunk))
+                            if self.isStopped():
+                                ftp.abort()
+                                self.canceled.emit()
 
-                                if self.isStopped():
-                                    ftp.abort()
-                                    self.canceled.emit()
-
-                            ftp.retrbinary(f'RETR {id_}.mgf', write_callback, rest=offset)
+                        ftp.retrbinary(f'RETR {id_}.mgf', write_callback)
         except ftplib.all_errors as e:
             self.error.emit(e)
             return
+
+
+class ConvertDatabasesWorker(BaseWorker):
+
+    def __init__(self, ids, path):
+        super().__init__()
+        self.ids = ids
+        self.path = path
+        self.iterative_update = False
+        self.max = len(self.ids)
+        self.desc = 'Converting databases...'
+
+    def run(self):
+        print(self.ids)
+        with DataBaseBuilder(os.path.join(self.path, 'spectra')) as db:
+            for i, id_ in enumerate(self.ids):
+                path = os.path.join(self.path, f'{id_}.mgf')
+                if os.path.exists(path):
+                    db.add_bank(path)
+                self.updated.emit(i)

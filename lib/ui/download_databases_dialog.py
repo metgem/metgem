@@ -12,9 +12,9 @@ from PyQt5 import uic
 UI_FILE = os.path.join(os.path.dirname(__file__), 'download_databases_dialog.ui')
 
 from .widgets import AutoToolTipItemDelegate
-from ..database import DataBaseBuilder
 from ..workers import WorkerSet
-from ..workers import ListGNPSDatabasesWorker, DownloadGNPSDatabasesWorker, GetGNPSDatabasesMtimeWorker
+from ..workers import (ListGNPSDatabasesWorker, DownloadGNPSDatabasesWorker,
+                       GetGNPSDatabasesMtimeWorker, ConvertDatabasesWorker)
 
 DownloadDatabasesDialogUI, DownloadDatabasesDialogBase = uic.loadUiType(UI_FILE,
                                                                         from_imports='lib.ui',
@@ -185,34 +185,39 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
                                 'Please select at least one database first.')
             return False
 
+        worker = self.prepare_download_databases_worker(ids)
+        if worker is not None:
+            self._workers.add(worker)
+
+    def prepare_download_databases_worker(self, ids):
         def clean_up():
             self.setEnabled(True)
             self.update_badges()
 
+        def download_finished():
+            self.update_badges()
+            worker = self.prepare_convert_databases_worker(ids)
+            if worker is not None:
+                self._workers.add(worker)
+
         worker = DownloadGNPSDatabasesWorker(ids, self.base_path)
+        worker.error.connect(clean_up)
         worker.error.connect(self.on_error)
-        worker.finished.connect(clean_up)
+        worker.finished.connect(download_finished)
         worker.canceled.connect(clean_up)
-        self._workers.add(worker)
+        return worker
 
-        # self.convert_databases()
+    def prepare_convert_databases_worker(self, ids):
+        def clean_up():
+            self.setEnabled(True)
+            self.update_badges()
 
-    def convert_databases(self):
-        with DataBaseBuilder(os.path.join(self.base_path, 'spectra')) as db:
-            items = [self.lstDatabases.item(i) for i in range(self.lstDatabases.count())
-                     if self.lstDatabases.item(i).checkState() == Qt.Checked]
-            ids = [id_ for item in items for id_ in item.data(DownloadDatabasesDialog.IDS_ROLE)
-                   if item.data(DownloadDatabasesDialog.IDS_ROLE) is not None]
-            self.progressBar.setMinimum(0)
-            self.progressBar.setMaximum(len(ids))
-            self.progressBar.setValue(0)
-
-            for i, id_ in enumerate(ids):
-                path = f'databases/{id_}.mgf'
-                if os.path.exists(path):
-                    db.add_bank(path)
-                self.progressBar.setFormat(f'Converting: {id_}')
-                self.progressBar.setValue(i)
+        worker = ConvertDatabasesWorker(ids, self.base_path)
+        worker.error.connect(clean_up)
+        worker.error.connect(self.on_error)
+        worker.canceled.connect(clean_up)
+        worker.finished.connect(clean_up)
+        return worker
 
     def getValues(self):
         return None

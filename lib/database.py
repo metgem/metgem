@@ -7,12 +7,8 @@ from sqlalchemy.orm import sessionmaker
 
 from pyteomics import mgf
 
-try:
-    from .utils import grouper
-    from .models import Base, Spectrum, Organism, Submitter, DataCollector, Instrument, Bank, Investigator
-except ImportError:
-    from utils import grouper
-    from models import Base, Spectrum, Organism, Submitter, DataCollector, Instrument, Bank, Investigator
+from .utils import grouper
+from .models import Base, Spectrum, Organism, Submitter, DataCollector, Instrument, Bank, Investigator
 
 
 def create_session(filename=None, echo=False, drop_all=False):
@@ -67,13 +63,15 @@ class DataBaseBuilder:
                 records = self.session.query(v).all()
                 self._uniques[k] = {x.name: x.id for x in records}
                 self._indexes[k] = records[-1].id + 1
-            self._used_pkeys = (self.session.query(Spectrum).first().id,
-                                self.session.query(Spectrum).order_by(Spectrum.id.desc()).first().id)
+            first_spec = self.session.query(Spectrum).first()
+            last_spec = self.session.query(Spectrum).order_by(Spectrum.id.desc()).first()
+            if first_spec is not None and last_spec is not None:
+                self._used_pkeys = (first_spec.id, last_spec.id)
         else:
             self.session = create_session(fname, echo=self.echo, drop_all=True)
 
-        # Create a generator for spectrum primary to make sure we don't use an already use primary key
-        # We don't use auto-increment because, otherwise, primary keys will increase for each update
+        # Create a generator for spectrum primary key to make sure we don't use an already used primary key.
+        # We don't use auto-increment because, otherwise, primary keys will increase on each update
         # (and can quickly overflow)
         def gen_pkey():
             key = 1
@@ -112,14 +110,12 @@ class DataBaseBuilder:
     def add_bank(self, mgf_path):
         bank = os.path.splitext(os.path.basename(mgf_path))[0]
         if bank in self._uniques['bank']:
-            print(bank, self._uniques['bank'][bank])
             q = self.session.query(Spectrum).filter(Spectrum.bank_id == self._uniques['bank'][bank])
             if q.count() > 0:
                 self._free_pkeys.append((q.first().id, q.order_by(Spectrum.id.desc()).first().id))
                 q.delete()
                 self.session.flush()
         else:
-            print('new bank', bank, self._indexes['bank'])
             self._uniques['bank'][bank] = self._indexes['bank']
 
         for batch in chunk_read_mgf(mgf_path, 1000):  # Read mgf file by batch of 1000 spectra
@@ -207,31 +203,3 @@ class SpectraLibrary:
         if self._session is None:
             self._session = create_session(f'{self.database}.sqlite', echo=self.echo)
         return self._session
-
-
-if __name__ == "__main__":
-    import time
-    import glob
-    import sys
-
-    if sys.platform.startswith('win'):
-        DATABASES_PATH = os.path.expandvars(r'%APPDATA%\tsne-network\databases')
-    elif sys.platform.startswith('darwin'):
-        DATABASES_PATH = os.path.expanduser(r'~/Library/tsne-network/databases')
-    elif sys.platform.startswith('linux'):
-        DATABASES_PATH = os.path.expanduser(r'~/.config/tsne-network/databases')
-    else:
-        DATABASES_PATH = 'databases'
-
-    t00 = time.time()
-    with DataBaseBuilder(os.path.join(DATABASES_PATH, 'spectra'), echo=False) as db:
-        for path in glob.glob(os.path.join(DATABASES_PATH, '*.mgf')):
-            if not path.endswith('ALL_GNPS.mgf'):
-                filename = os.path.basename(path)
-                print(f'Processing {filename}...')
-                t0 = time.time()
-                db.add_bank(path)
-                print(f'{filename} processed in {time.time()-t0:.2f}s.')
-            # if path.endswith('GNPS-EMBL-MCF.mgf'):
-            #     break
-    print(f'Total time: {time.time()-t00:.2f}s.')

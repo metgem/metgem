@@ -7,4 +7,5 @@ from .cosine import ComputeScoresWorker, CosineComputationOptions, Spectrum
 from .read_mgf import ReadMGFWorker
 from .read_metadata import ReadMetadataOptions, ReadMetadataWorker
 from .project import LoadProjectWorker, SaveProjectWorker
-from .databases import ListGNPSDatabasesWorker, DownloadGNPSDatabasesWorker, GetGNPSDatabasesMtimeWorker
+from .databases import (ListGNPSDatabasesWorker, DownloadGNPSDatabasesWorker,
+                        GetGNPSDatabasesMtimeWorker, ConvertDatabasesWorker)
