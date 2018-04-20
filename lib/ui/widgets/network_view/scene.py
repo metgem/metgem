@@ -2,7 +2,7 @@ try:
     from .NetworkView import Node, Edge, NetworkScene as BaseNetworkScene
 
     class NetworkScene(BaseNetworkScene):
-        def setLayout(self, layout, scale=None):
+        def setLayout(self, layout, scale=0):
             super().setLayout(layout.ravel(), scale)
 
 except ImportError:
