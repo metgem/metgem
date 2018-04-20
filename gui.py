@@ -481,13 +481,22 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
     def on_nodes_header_contextmenu(self, event):
         """ A right click on a column name allows the info to be displayed in the graphView """
-        selected_column_index = self.tvNodes.columnAt(event.x())
-        if selected_column_index != -1:
+        selected_columns_ids = self.tvNodes.selectionModel().selectedColumns(0)
+        if len(selected_columns_ids) > 0:
             menu = QMenu(self)
-            action = QAction("Use column as node labels", self)
+            action = QAction("Use selected columns as nodes' pie charts", self)
             menu.addAction(action)
             menu.popup(QCursor.pos())
-            action.triggered.connect(lambda: self.set_nodes_label(selected_column_index))
+            ids = [index.column() for index in selected_columns_ids]
+            action.triggered.connect(lambda: self.set_nodes_pie_chart_values(ids))
+        else:
+            column_index = self.tvNodes.columnAt(event.x())
+            if column_index != -1:
+                menu = QMenu(self)
+                action = QAction("Use column as nodes' labels", self)
+                menu.addAction(action)
+                menu.popup(QCursor.pos())
+                action.triggered.connect(lambda: self.set_nodes_label(column_index))
 
     def on_nodes_table_contextmenu(self, event):
         selected_column_index = self.tvNodes.columnAt(event.x())
@@ -624,6 +633,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
             colors = utils.generate_colors(len(column_ids))
             self.gvNetwork.scene().setPieColors(colors)
             self.gvTSNE.scene().setPieColors(colors)
+            for column in range(model.columnCount()):
+                model.setHeaderData(column, Qt.Horizontal, None, role=Qt.BackgroundColorRole)
             for column, color in zip(column_ids, colors):
                 color = QColor(color)
                 color.setAlpha(128)
@@ -631,6 +642,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.gvNetwork.scene().setPieChartsFromModel(model, column_ids)
             self.gvTSNE.scene().setPieChartsFromModel(model, column_ids)
         else:
+            for column in range(model.columnCount()):
+                model.setHeaderData(column, Qt.Horizontal, None, role=Qt.BackgroundColorRole)
             self.gvNetwork.scene().resetPieCharts()
             self.gvTSNE.scene().resetPieCharts()
             self.gvNetwork.scene().setPieColors(None)

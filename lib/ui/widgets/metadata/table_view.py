@@ -1,20 +1,24 @@
-from PyQt5.QtGui import QPainter, QKeyEvent
+from PyQt5.QtGui import QPainter, QKeyEvent, QMouseEvent
 from PyQt5.QtWidgets import QTableView, QAbstractButton, QHeaderView
-from PyQt5.QtCore import Qt, QObject, QEvent, QRect, QItemSelectionModel
+from PyQt5.QtCore import Qt, QObject, QEvent, QRect, QItemSelectionModel, pyqtSignal
 
 from .model import ProxyModel
 from ..delegates import EnsureStringItemDelegate
+from ....utils import SignalBlocker
 
 
 class HeaderView(QHeaderView):
-    """QHeaderView that can have a different color background for each section"""
+    """QHeaderView that can have a different color background for each section and selection of columns with
+    right mouse button."""
+
+    sectionPressedRight = pyqtSignal(int)
+    sectionEnteredRight = pyqtSignal(int)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._selection_state = False
-
-        self._saved_sort_section = self.sortIndicatorSection()
-        self._saved_sort_order = self.sortIndicatorOrder()
+        self._right_selection_active = False
+        self._selection_running = False
+        self._right_pressed_section = -1
 
     def paintSection(self, painter: QPainter, rect: QRect, logical_index: int):
         bg = self.model().headerData(logical_index, Qt.Horizontal, Qt.BackgroundColorRole)
@@ -25,6 +29,60 @@ class HeaderView(QHeaderView):
 
         if bg is not None and bg.isValid():
             painter.fillRect(rect, bg)
+
+    def allowRightMouseSelection(self):
+        return self._right_selection_active
+
+    def setAllowRightMouseSelection(self, value):
+        self._right_selection_active = bool(value)
+
+    def mousePressEvent(self, event: QMouseEvent):
+        if not self._right_selection_active or event.buttons() != Qt.RightButton:
+            return super().mousePressEvent(event)
+
+        if self._selection_running:
+            return
+
+        pos = event.x() if self.orientation() == Qt.Horizontal else event.y()
+        self._right_pressed_section = self.logicalIndexAt(pos)
+        if self.sectionsClickable():
+            self.sectionPressedRight.emit(self._right_pressed_section)
+            if self._right_pressed_section != -1:
+                self.updateSection(self._right_pressed_section)
+                self._selection_running = True
+
+    def mouseMoveEvent(self, event: QMouseEvent):
+        if not self._right_selection_active or event.buttons() != Qt.RightButton:
+            return super().mouseMoveEvent(event)
+
+        pos = event.x() if self.orientation() == Qt.Horizontal else event.y()
+
+        if pos < 0:
+            return
+
+        if self._selection_running:
+            logical = self.logicalIndexAt(pos)
+            if logical == self._right_pressed_section:
+                return  # Nothing to do
+            elif self._right_pressed_section != -1:
+                self.updateSection(self._right_pressed_section)
+            self._right_pressed_section = logical
+            if self.sectionsClickable() and logical != -1:
+                self.sectionEnteredRight.emit(self._right_pressed_section)
+                self.updateSection(self._right_pressed_section)
+            return
+
+    def mouseReleaseEvent(self, event: QMouseEvent):
+        super().mouseReleaseEvent(event)
+
+        pos = event.x() if self.orientation() == Qt.Horizontal else event.y()
+
+        if self._selection_running and self.sectionsClickable():
+            section = self.logicalIndex(pos)
+            self.updateSection(section)
+
+        self._selection_running = False
+        self._right_pressed_section = -1
 
 
 class MetadataTableView(QTableView):
@@ -67,12 +125,34 @@ class NodeTableView(MetadataTableView):
         self._sort_allowed = True
 
         header = HeaderView(Qt.Horizontal, self)
-        header.setSectionsClickable(True)
         header.setHighlightSections(True)
+        header.setSectionsClickable(True)
         self.setHorizontalHeader(header)
 
         self.horizontalHeader().setContextMenuPolicy(Qt.CustomContextMenu)
         self.setContextMenuPolicy(Qt.CustomContextMenu)
+
+        self.horizontalHeader().sectionPressedRight.connect(self.selectColumn)
+        self.horizontalHeader().sectionEnteredRight.connect(self.on_section_entered)
+
+    def keyPressEvent(self, event: QKeyEvent):
+        if event.key() == Qt.Key_Control:
+            self.horizontalHeader().setAllowRightMouseSelection(True)
+            self.horizontalHeader().setContextMenuPolicy(Qt.PreventContextMenu)
+        super().keyPressEvent(event)
+
+    def keyReleaseEvent(self, event: QKeyEvent):
+        if event.key() == Qt.Key_Control:
+            self.horizontalHeader().setAllowRightMouseSelection(False)
+            self.horizontalHeader().setContextMenuPolicy(Qt.CustomContextMenu)
+        super().keyReleaseEvent(event)
+
+    def on_section_entered(self, logical_index):
+        index = self.model().index(0, logical_index)
+        model = self.selectionModel()
+        selection = model.selection()
+        selection.select(index, index)
+        model.select(selection, QItemSelectionModel.Select | QItemSelectionModel.Columns)
 
 
 class EdgeTableView(MetadataTableView):
@@ -90,6 +170,7 @@ class EdgeTableView(MetadataTableView):
             return 0
         return super().sizeHintForColumn(column)
 
-    def on_sort_indicator_changed(self, index: int, order):
+    def on_sort_indicator_changed(self, index: int, order: int):
         if index == self.model().columnCount() - 1:
-            self.horizontalHeader().setSortIndicator(-1, Qt.AscendingOrder)
+            with SignalBlocker(self.horizontalHeader()):
+                self.horizontalHeader().setSortIndicator(-1, Qt.AscendingOrder)
