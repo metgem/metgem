@@ -482,7 +482,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def on_nodes_header_contextmenu(self, event):
         """ A right click on a column name allows the info to be displayed in the graphView """
         selected_columns_ids = self.tvNodes.selectionModel().selectedColumns(0)
-        if len(selected_columns_ids) > 0:
+        if len(selected_columns_ids) > 1:
             menu = QMenu(self)
             action = QAction("Use selected columns as nodes' pie charts", self)
             menu.addAction(action)

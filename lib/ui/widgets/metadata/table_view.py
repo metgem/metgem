@@ -127,6 +127,7 @@ class NodeTableView(MetadataTableView):
         header = HeaderView(Qt.Horizontal, self)
         header.setHighlightSections(True)
         header.setSectionsClickable(True)
+        header.setAllowRightMouseSelection(True)
         self.setHorizontalHeader(header)
 
         self.horizontalHeader().setContextMenuPolicy(Qt.CustomContextMenu)
@@ -136,14 +137,12 @@ class NodeTableView(MetadataTableView):
         self.horizontalHeader().sectionEnteredRight.connect(self.on_section_entered)
 
     def keyPressEvent(self, event: QKeyEvent):
-        if event.key() == Qt.Key_Control:
-            self.horizontalHeader().setAllowRightMouseSelection(True)
+        if event.key() in (Qt.Key_Control, Qt.Key_Shift):
             self.horizontalHeader().setContextMenuPolicy(Qt.PreventContextMenu)
         super().keyPressEvent(event)
 
     def keyReleaseEvent(self, event: QKeyEvent):
-        if event.key() == Qt.Key_Control:
-            self.horizontalHeader().setAllowRightMouseSelection(False)
+        if event.key() in (Qt.Key_Control, Qt.Key_Shift):
             self.horizontalHeader().setContextMenuPolicy(Qt.CustomContextMenu)
         super().keyReleaseEvent(event)
 
