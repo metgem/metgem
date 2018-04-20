@@ -376,6 +376,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
         try:
             from py2cytoscape.data.cyrest_client import CyRestClient
 
+            view = self.current_view
+
             cy = CyRestClient()
 
             # Create exportable copy of the graph object
@@ -385,19 +387,20 @@ class MainWindow(MainWindowBase, MainWindowUI):
                     del g.vs[attr]
                 else:
                     g.vs[attr] = [str(x) for x in g.vs[attr]]
-            for attr in g.es.attributes():
-                if attr.startswith('__'):
-                    del g.es[attr]
-                else:
-                    g.es[attr] = [str(x) for x in g.es[attr]]
+            if view == self.gvTSNE:
+                g.delete_edges(g.es)  # in a t-SNE layout, edges does not makes any sense
+            else:
+                for attr in g.es.attributes():
+                    if attr.startswith('__'):
+                        del g.es[attr]
+                    else:
+                        g.es[attr] = [str(x) for x in g.es[attr]]
 
             # cy.session.delete()
             g_cy = cy.network.create_from_igraph(g)
 
-            # cy.layout.apply(name='force-directed', network=g_cy)
-
             layout = np.empty((g.vcount(), 2))
-            for item in self.current_view.scene().nodes():
+            for item in view.scene().nodes():
                 layout[item.index()] = (item.x(), item.y())
             positions = [(suid, x, y) for suid, (x, y) in zip(g_cy.get_nodes()[::-1], layout)]
             cy.layout.apply_from_presets(network=g_cy, positions=positions)
@@ -419,16 +422,12 @@ class MainWindow(MainWindowBase, MainWindowUI):
             QMessageBox.warning(self, None,
                                 f'styles.json not found. You may have to reinstall {QCoreApplication.applicationName()}')
 
-        # for c in g_cy.get_view(g_cy.get_views()[0])['elements']['nodes']:
-        # pos = c['position']
-        # id_ = int(c['data']['id_original'])
-        # nodes[id_].setPos(QPointF(pos['x'], pos['y']))
-
     def on_export_as_image_triggered(self):
         filename, filter_ = QFileDialog.getSaveFileName(self, "Save image",
-                                                        filter=("SVG Files (*.svg);;BMP Files (*.bmp);;"
-                                                                "JPEG (*.JPEG);;PNG (*.png)"))
+                                                        filter=("PNG Files (*.png);;JPEG (*.JPEG);;"
+                                                                "SVG Files (*.svg);;BMP Files (*.bmp)"))
         if filename:
+            view = self.current_view
             if filter_ == 'SVG Files (*.svg)':
                 try:
                     from PyQt5.QtSvg import QSvgGenerator
@@ -438,20 +437,20 @@ class MainWindow(MainWindowBase, MainWindowUI):
                     svg_gen = QSvgGenerator()
 
                     svg_gen.setFileName(filename)
-                    svg_gen.setSize(self.size())
-                    svg_gen.setViewBox(self.scene().sceneRect())
+                    svg_gen.setSize(view.size())
+                    svg_gen.setViewBox(view.scene().sceneRect())
                     svg_gen.setTitle("SVG Generator Example Drawing")
                     svg_gen.setDescription("An SVG drawing created by the SVG Generator.")
 
                     painter = QPainter(svg_gen)
-                    self.current_view.scene().render(painter)
+                    view.scene().render(painter)
                     painter.end()
             else:
-                image = QImage(self.view.scene().sceneRect().size().toSize(), QImage.Format_ARGB32)
+                image = QImage(view.scene().sceneRect().size().toSize(), QImage.Format_ARGB32)
                 image.fill(Qt.transparent)
 
                 painter = QPainter(image)
-                self.current_view.scene().render(painter)
+                view.scene().render(painter)
                 image.save(filename)
 
     def on_show_spectrum_triggered(self, type_, node):
