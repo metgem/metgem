@@ -10,7 +10,7 @@ except ImportError:
 
     import itertools
 
-    from PyQt5.QtCore import Qt, pyqtSignal
+    from PyQt5.QtCore import Qt, pyqtSignal, QRectF
     from PyQt5.QtWidgets import QGraphicsScene, QGraphicsItem
 
     from .node import Node
@@ -82,6 +82,12 @@ except ImportError:
                 else:
                     for index in items:
                         nodes[index].setSelected(True)
+
+        def selectedNodesBoundingRect(self):
+            boundingRect = QRectF()
+            for node in self.selectedNodes():
+                boundingRect |= node.sceneBoundingRect()
+            return boundingRect
 
         def edges(self):
             try:

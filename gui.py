@@ -138,9 +138,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.actionSettings.triggered.connect(self.on_settings_triggered)
         self.actionZoomIn.triggered.connect(lambda: self.current_view.scaleView(1.2))
         self.actionZoomOut.triggered.connect(lambda: self.current_view.scaleView(1 / 1.2))
-        self.actionZoomToFit.triggered.connect(self.current_view.zoomToFit)
+        self.actionZoomToFit.triggered.connect(lambda: self.current_view.zoomToFit())
         self.actionZoomSelectedRegion.triggered.connect(
-            lambda: self.current_view.fitInView(self.current_view.scene().selectionArea().boundingRect(),
+            lambda: self.current_view.fitInView(self.current_view.scene().selectedNodesBoundingRect(),
                                                 Qt.KeepAspectRatio))
         self.leSearch.textChanged.connect(self.on_do_search)
         self.leSearch.returnPressed.connect(self.on_do_search)
