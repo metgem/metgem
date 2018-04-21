@@ -100,7 +100,7 @@ class NodesModel(QAbstractTableModel):
             elif orientation == Qt.Vertical:
                 return str(section+1)
         elif role == Qt.BackgroundColorRole:
-            if self.headers_colors is not None and section < len(self.headers_colors):
+            if orientation == Qt.Horizontal and self.headers_colors is not None and section < len(self.headers_colors):
                 return self.headers_colors[section]
         else:
             super().headerData(section, orientation, role)
