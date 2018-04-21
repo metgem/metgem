@@ -73,10 +73,10 @@ class NetworkView(QGraphicsView):
         
         self._minimum_zoom = 0
         
-        fmt = QSurfaceFormat()
-        fmt.setSamples(4)
-        self.setViewport(QOpenGLWidget())
-        self.viewport().setFormat(fmt)
+        # fmt = QSurfaceFormat()
+        # fmt.setSamples(4)
+        # self.setViewport(QOpenGLWidget())
+        # self.viewport().setFormat(fmt)
 
         layout = QFormLayout(self)
         layout.setContentsMargins(0, 0, 6, 0)

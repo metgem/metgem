@@ -66,11 +66,10 @@ class NodesModel(QAbstractTableModel):
         if table is not None:
             self.table = table.values
             self.headers = np.array(table.columns)
-            self.headers_colors = [None] * self.columnCount()
         else:
             self.table = None
             self.headers = None
-            self.headers_colors = None
+        self.headers_colors = [None] * self.columnCount()
         self.list = getattr(self.parent().network, 'spectra', [])
         super().endResetModel()
 
@@ -108,9 +107,10 @@ class NodesModel(QAbstractTableModel):
 
     def setHeaderData(self, section: int, orientation: int, value, role=Qt.EditRole):
         if role == Qt.BackgroundColorRole:
-            self.headers_colors[section] = value
-            self.headerDataChanged.emit(orientation, section, section)
-            return True
+            if self.headers_colors is not None:
+                self.headers_colors[section] = value
+                self.headerDataChanged.emit(orientation, section, section)
+                return True
         else:
             super().setHeaderData(section, orientation, value, role)
 

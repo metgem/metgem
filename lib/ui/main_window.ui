@@ -237,10 +237,7 @@
        <property name="movable">
         <bool>true</bool>
        </property>
-       <widget class="NodeTableView" name="tvNodes">
-        <property name="alternatingRowColors">
-         <bool>true</bool>
-        </property>
+       <widget class="QWidget" name="tab">
         <attribute name="icon">
          <iconset resource="ui.qrc">
           <normaloff>:/icons/images/node.svg</normaloff>:/icons/images/node.svg</iconset>
@@ -248,11 +245,68 @@
         <attribute name="title">
          <string>Nodes</string>
         </attribute>
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout">
+           <item>
+            <widget class="QPushButton" name="btUseColumnForLabels">
+             <property name="toolTip">
+              <string>Use selected column as source for nodes' labels</string>
+             </property>
+             <property name="statusTip">
+              <string>Use selected column as source for nodes' labels</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="ui.qrc">
+               <normaloff>:/icons/images/label.svg</normaloff>:/icons/images/label.svg</iconset>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="btUseColumnsForPieCharts">
+             <property name="toolTip">
+              <string>Use selected columns as source for nodes' pie charts</string>
+             </property>
+             <property name="statusTip">
+              <string>Use selected columns as source for nodes' pie charts</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="ui.qrc">
+               <normaloff>:/icons/images/pie.svg</normaloff>:/icons/images/pie.svg</iconset>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="verticalSpacer">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>40</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="NodeTableView" name="tvNodes">
+           <property name="alternatingRowColors">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </widget>
-       <widget class="EdgeTableView" name="tvEdges">
-        <property name="alternatingRowColors">
-         <bool>true</bool>
-        </property>
+       <widget class="QWidget" name="tab">
         <attribute name="icon">
          <iconset resource="ui.qrc">
           <normaloff>:/icons/images/edge.svg</normaloff>:/icons/images/edge.svg</iconset>
@@ -260,6 +314,15 @@
         <attribute name="title">
          <string>Edges</string>
         </attribute>
+        <layout class="QHBoxLayout" name="horizontalLayout_4">
+         <item>
+          <widget class="EdgeTableView" name="tvEdges">
+           <property name="alternatingRowColors">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </widget>
        <widget class="ExtendedSpectrumWidget" name="cvSpectrum">
         <attribute name="icon">

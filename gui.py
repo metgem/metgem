@@ -118,8 +118,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
             kernel_manager.kernel.shell.push({'app': app, 'win': self})
 
         # Connect events
-        self.tvNodes.horizontalHeader().customContextMenuRequested.connect(self.on_nodes_header_contextmenu)
         self.tvNodes.customContextMenuRequested.connect(self.on_nodes_table_contextmenu)
+        self.btUseColumnsForPieCharts.clicked.connect(lambda: self.on_use_columns_for('pie charts'))
+        self.btUseColumnForLabels.clicked.connect(lambda: self.on_use_columns_for('labels'))
 
         self.gvNetwork.scene().selectionChanged.connect(self.on_scene_selection_changed)
         self.gvTSNE.scene().selectionChanged.connect(self.on_scene_selection_changed)
@@ -279,7 +280,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         if not DEBUG and self._workers:
             reply = QMessageBox.question(self, None,
                                          "There is process running. Do you really want to exit?",
-                                         QMessageBox.Close, QMessageBox.Cancel)
+                                         QMessageBox.Close | QMessageBox.Cancel)
         else:
             reply = QMessageBox.Close
 
@@ -478,24 +479,31 @@ class MainWindow(MainWindowBase, MainWindowUI):
         elif view == self.gvTSNE:
             self.gvTSNE.scene().setNodesSelection(neighbors)
 
-    def on_nodes_header_contextmenu(self, event):
-        """ A right click on a column name allows the info to be displayed in the graphView """
+    def on_use_columns_for(self, type_):
         selected_columns_ids = self.tvNodes.selectionModel().selectedColumns(0)
-        if len(selected_columns_ids) > 1:
-            menu = QMenu(self)
-            action = QAction("Use selected columns as nodes' pie charts", self)
-            menu.addAction(action)
-            menu.popup(QCursor.pos())
-            ids = [index.column() for index in selected_columns_ids]
-            action.triggered.connect(lambda: self.set_nodes_pie_chart_values(ids))
-        else:
-            column_index = self.tvNodes.columnAt(event.x())
-            if column_index != -1:
-                menu = QMenu(self)
-                action = QAction("Use column as nodes' labels", self)
-                menu.addAction(action)
-                menu.popup(QCursor.pos())
-                action.triggered.connect(lambda: self.set_nodes_label(column_index))
+        len_ = len(selected_columns_ids)
+        if type_ == "pie charts":
+            if len_ > 0:
+                ids = [index.column() for index in selected_columns_ids]
+                self.set_nodes_pie_chart_values(ids)
+            else:
+                reply = QMessageBox.question(self, None,
+                                             "No column selected. Do you want to remove pie charts?",
+                                             QMessageBox.Yes | QMessageBox.No)
+                if reply == QMessageBox.Yes:
+                    self.set_nodes_pie_chart_values(None)
+        elif type_ == "labels":
+            if len_ > 1:
+              QMessageBox.information(self, None, "Please select only one column.")
+            elif len_ == 1:
+                id_ = selected_columns_ids[0].column()
+                self.set_nodes_label(id_)
+            else:
+                reply = QMessageBox.question(self, None,
+                                             "No column selected. Do you want to reset labels?",
+                                             QMessageBox.Yes | QMessageBox.No)
+                if reply == QMessageBox.Yes:
+                    self.set_nodes_label(None)
 
     def on_nodes_table_contextmenu(self, event):
         selected_column_index = self.tvNodes.columnAt(event.x())
@@ -622,9 +630,13 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.tabWidget.setMaximumHeight(QWIDGETSIZE_MAX)
 
     def set_nodes_label(self, column_id):
-        model = self.tvNodes.model().sourceModel()
-        self.gvNetwork.scene().setLabelsFromModel(model, column_id, ui.widgets.LabelRole)
-        self.gvTSNE.scene().setLabelsFromModel(model, column_id, ui.widgets.LabelRole)
+        if column_id is not None:
+            model = self.tvNodes.model().sourceModel()
+            self.gvNetwork.scene().setLabelsFromModel(model, column_id, ui.widgets.LabelRole)
+            self.gvTSNE.scene().setLabelsFromModel(model, column_id, ui.widgets.LabelRole)
+        else:
+            self.gvNetwork.scene().resetLabels()
+            self.gvTSNE.scene().resetLabels()
 
     def set_nodes_pie_chart_values(self, column_ids):
         model = self.tvNodes.model().sourceModel()
@@ -645,8 +657,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 model.setHeaderData(column, Qt.Horizontal, None, role=Qt.BackgroundColorRole)
             self.gvNetwork.scene().resetPieCharts()
             self.gvTSNE.scene().resetPieCharts()
-            self.gvNetwork.scene().setPieColors(None)
-            self.gvTSNE.scene().setPieColors(None)
 
 
     def save_settings(self):

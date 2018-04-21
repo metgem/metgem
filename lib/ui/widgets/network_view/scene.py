@@ -138,6 +138,11 @@ except ImportError:
                 label = model.index(node.index(), column_id).data(role)
                 node.setLabel(str(label))
 
+        def resetLabels(self):
+            for node in self.nodes():
+                label = str(node.index() + 1)
+                node.setLabel(label)
+
         def pieColors(self):
             return self._colors
 
@@ -146,7 +151,7 @@ except ImportError:
 
         def setPieChartsFromModel(self, model, column_ids, role=Qt.DisplayRole):
             if len(column_ids) != len(self._colors):
-                return False
+                return
 
             for node in self.nodes():
                 values = [model.index(node.index(), cid).data(role) for cid in column_ids]

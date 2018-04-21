@@ -88,8 +88,8 @@ class HeaderView(QHeaderView):
 class MetadataTableView(QTableView):
     """ TableView to display metadata"""
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
         self.setItemDelegate(EnsureStringItemDelegate())
 
@@ -119,8 +119,8 @@ class MetadataTableView(QTableView):
 
 
 class NodeTableView(MetadataTableView):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
         self._sort_allowed = True
 
@@ -128,23 +128,11 @@ class NodeTableView(MetadataTableView):
         header.setHighlightSections(True)
         header.setSectionsClickable(True)
         header.setAllowRightMouseSelection(True)
+        header.sectionPressedRight.connect(self.selectColumn)
+        header.sectionEnteredRight.connect(self.on_section_entered)
         self.setHorizontalHeader(header)
 
-        self.horizontalHeader().setContextMenuPolicy(Qt.CustomContextMenu)
         self.setContextMenuPolicy(Qt.CustomContextMenu)
-
-        self.horizontalHeader().sectionPressedRight.connect(self.selectColumn)
-        self.horizontalHeader().sectionEnteredRight.connect(self.on_section_entered)
-
-    def keyPressEvent(self, event: QKeyEvent):
-        if event.key() in (Qt.Key_Control, Qt.Key_Shift):
-            self.horizontalHeader().setContextMenuPolicy(Qt.PreventContextMenu)
-        super().keyPressEvent(event)
-
-    def keyReleaseEvent(self, event: QKeyEvent):
-        if event.key() in (Qt.Key_Control, Qt.Key_Shift):
-            self.horizontalHeader().setContextMenuPolicy(Qt.CustomContextMenu)
-        super().keyReleaseEvent(event)
 
     def on_section_entered(self, logical_index):
         index = self.model().index(0, logical_index)
@@ -156,8 +144,8 @@ class NodeTableView(MetadataTableView):
 
 class EdgeTableView(MetadataTableView):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
         # Last column is virtual (content is generated on demand),
         # so we don't want to sort or resize column from content
