@@ -344,7 +344,7 @@
      <x>0</x>
      <y>0</y>
      <width>1089</width>
-     <height>21</height>
+     <height>30</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -442,6 +442,7 @@
    </attribute>
    <addaction name="actionExportToCytoscape"/>
    <addaction name="actionExportAsImage"/>
+   <addaction name="actionExportCurrentViewAsImage"/>
   </widget>
   <widget class="QToolBar" name="tbDatabase">
    <property name="windowTitle">
@@ -873,6 +874,21 @@
    </property>
    <property name="toolTip">
     <string>Change application settings</string>
+   </property>
+  </action>
+  <action name="actionExportCurrentViewAsImage">
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/emblem-photos.svg</normaloff>:/icons/images/emblem-photos.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Export Current &amp;View As Image</string>
+   </property>
+   <property name="toolTip">
+    <string>Export current view of network as image</string>
+   </property>
+   <property name="statusTip">
+    <string>Export current view of network as image</string>
    </property>
   </action>
  </widget>

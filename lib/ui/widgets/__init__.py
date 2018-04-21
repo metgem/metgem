@@ -7,3 +7,4 @@ from .loading_views import LoadingListView, LoadingListWidget, LoadingTableView,
 from .view_databases import PubMedLabel, SpectrumIdLabel, SubmitUserLabel, QualityLabel
 from .slider import Slider
 from .structure import StructureSvgWidget
+from .toolbar_menu import ToolBarMenu

@@ -87,6 +87,15 @@ class MainWindow(MainWindowBase, MainWindowUI):
         w.setLayout(self.layoutSearch)
         self.tbSearch.addWidget(w)
 
+        # Reorganise export as image actions
+        self.tbExport.removeAction(self.actionExportAsImage)
+        self.tbExport.removeAction(self.actionExportCurrentViewAsImage)
+        export_button = ui.widgets.ToolBarMenu()
+        export_button.setDefaultAction(self.actionExportAsImage)
+        export_button.addAction(self.actionExportAsImage)
+        export_button.addAction(self.actionExportCurrentViewAsImage)
+        self.tbExport.addWidget(export_button)
+
         # Add a Jupyter widget
         if EMBED_JUPYTER:
             from qtconsole.rich_jupyter_widget import RichJupyterWidget
@@ -155,7 +164,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.actionNeighbors.triggered.connect(
             lambda: self.on_select_first_neighbors_triggered(self.current_view.scene().selectedNodes()))
         self.actionExportToCytoscape.triggered.connect(self.on_export_to_cytoscape_triggered)
-        self.actionExportAsImage.triggered.connect(self.on_export_as_image_triggered)
+        self.actionExportAsImage.triggered.connect(lambda: self.on_export_as_image_triggered('full'))
+        self.actionExportCurrentViewAsImage.triggered.connect(lambda: self.on_export_as_image_triggered('current'))
 
         self.actionDownloadDatabases.triggered.connect(self.on_download_databases_triggered)
         self.actionViewDatabases.triggered.connect(self.on_view_databases_triggered)
@@ -423,35 +433,44 @@ class MainWindow(MainWindowBase, MainWindowUI):
             QMessageBox.warning(self, None,
                                 f'styles.json not found. You may have to reinstall {QCoreApplication.applicationName()}')
 
-    def on_export_as_image_triggered(self):
+    def on_export_as_image_triggered(self, type_):
+        filter_ = ["PNG - Portable Network Graphics (*.png)",
+                   "JPEG - Joint Photographic Experts Group (*.JPEG)",
+                   "SVG - Scalable Vector Graphics (*.svg)",
+                   "BMP - Windows Bitmap (*.bmp)"]
+        if type_ == 'current':
+            filter_.remove("SVG - Scalable Vector Graphics (*.svg)")
+
         filename, filter_ = QFileDialog.getSaveFileName(self, "Save image",
-                                                        filter=("PNG Files (*.png);;JPEG (*.JPEG);;"
-                                                                "SVG Files (*.svg);;BMP Files (*.bmp)"))
+                                                        filter=";;".join(filter_))
         if filename:
             view = self.current_view
-            if filter_ == 'SVG Files (*.svg)':
+            if filter_.endswith("(*.svg)"):
                 try:
                     from PyQt5.QtSvg import QSvgGenerator
                 except ImportError:
                     print('QtSvg was not found on your system. It is needed for SVG export.')
                 else:
+
                     svg_gen = QSvgGenerator()
 
                     svg_gen.setFileName(filename)
-                    svg_gen.setSize(view.size())
-                    svg_gen.setViewBox(view.scene().sceneRect())
+                    rect = view.scene().sceneRect()
+                    svg_gen.setViewBox(rect)
+                    svg_gen.setSize(rect.size().toSize())
                     svg_gen.setTitle("SVG Generator Example Drawing")
                     svg_gen.setDescription("An SVG drawing created by the SVG Generator.")
 
                     painter = QPainter(svg_gen)
-                    view.scene().render(painter)
+                    view.scene().render(painter, target=rect)
                     painter.end()
             else:
-                image = QImage(view.scene().sceneRect().size().toSize(), QImage.Format_ARGB32)
+                rect = view.viewport().rect() if type_ == 'current' else view.scene().sceneRect().toRect()
+                image = QImage(rect.size(), QImage.Format_ARGB32)
                 image.fill(Qt.transparent)
-
                 painter = QPainter(image)
-                view.scene().render(painter)
+                painter.setRenderHint(QPainter.Antialiasing)
+                view.render(painter, source=rect) if type_ == 'current' else view.scene().render(painter)
                 image.save(filename)
 
     def on_show_spectrum_triggered(self, type_, node):
