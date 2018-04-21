@@ -950,6 +950,10 @@ if __name__ == '__main__':
             
             """
 
+        if exctype == KeyboardInterrupt:
+            sys.__excepthook__(exctype, value, trace)
+            sys.exit()
+
         if trace is not None:
             msg = f"{exctype.__name__} in {trace.tb_frame.f_code.co_name}"
         else:
