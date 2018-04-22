@@ -1,3 +1,4 @@
+from .main_window import MainWindow
 from .process_mgf_dialog import ProcessMgfDialog
 from .edit_options_dialog import EditTSNEOptionsDialog, EditNetworkOptionsDialog
 from .current_parameters_dialog import CurrentParametersDialog
