@@ -334,7 +334,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def on_open_project_triggered(self):
         dialog = QFileDialog(self)
         dialog.setFileMode(QFileDialog.ExistingFile)
-        dialog.setNameFilters([f"{QCoreApplication.applicationName()} Files (*{FILE_EXTENSION})",
+        dialog.setNameFilters([f"{QCoreApplication.applicationName()} Files (*{config.FILE_EXTENSION})",
                                "All files (*.*)"])
         if dialog.exec_() == QDialog.Accepted:
             filename = dialog.selectedFiles()[0]
@@ -349,7 +349,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def on_save_project_as_triggered(self):
         dialog = QFileDialog(self)
         dialog.setAcceptMode(QFileDialog.AcceptSave)
-        dialog.setNameFilters([f"{QCoreApplication.applicationName()} Files (*{FILE_EXTENSION})",
+        dialog.setNameFilters([f"{QCoreApplication.applicationName()} Files (*{config.FILE_EXTENSION})",
                                "All files (*.*)"])
         if dialog.exec_() == QDialog.Accepted:
             filename = dialog.selectedFiles()[0]
