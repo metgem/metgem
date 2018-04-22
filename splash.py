@@ -4,8 +4,6 @@ from PyQt5.QtWidgets import QSplashScreen, QProgressBar, qApp
 
 
 class SplashScreen(QSplashScreen):
-    __instance = None
-
     def __init__(self):
         splash_pix = QPixmap('splash.svg')
         super().__init__(splash_pix, Qt.WindowStaysOnTopHint)
@@ -17,12 +15,6 @@ class SplashScreen(QSplashScreen):
         palette = QPalette()
         palette.setBrush(QPalette.Highlight, QBrush(Qt.black))
         self.pbar.setPalette(palette)
-
-    def __new__(cls, *args, **kwargs):
-        # Allow only one instance
-        if cls.__instance is None:
-            cls.__instance = super().__new__(cls, *args, **kwargs)
-        return cls.__instance
 
     def setValue(self, value):
         self.pbar.setValue(value)

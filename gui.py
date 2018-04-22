@@ -9,7 +9,7 @@ if __name__ == '__main__':
 
     app = QApplication(sys.argv)
 
-    from lib.splash import splash
+    from splash import splash
 
     QCoreApplication.setOrganizationDomain("CNRS")
     QCoreApplication.setOrganizationName("ICSN")
