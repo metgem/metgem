@@ -235,8 +235,12 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self._workers.add(worker)
 
     def update_search_menu(self):
-        table = self.tabWidget.currentWidget()
-        if table not in (self.tvNodes, self.tvEdges):
+        childs = self.tabWidget.currentWidget().children()
+        if self.tvNodes in childs:
+            table = self.tvNodes
+        elif self.tvEdges in childs:
+            table = self.tvEdges
+        else:
             return False
         model = table.model()
 
@@ -298,9 +302,14 @@ class MainWindow(MainWindowBase, MainWindowUI):
                     self.gvNetwork.scene().setNodesSelection(nodes_idx)
 
     def on_do_search(self):
-        table = self.tabWidget.currentWidget()
-        if table in (self.tvNodes, self.tvEdges):
-            table.model().setFilterRegExp(str(self.leSearch.text()))
+        childs = self.tabWidget.currentWidget().children()
+        if self.tvNodes in childs:
+            table = self.tvNodes
+        elif self.tvEdges in childs:
+            table = self.tvEdges
+        else:
+            return False
+        table.model().setFilterRegExp(str(self.leSearch.text()))
 
     def on_new_project_triggered(self):
         reply = QMessageBox.Yes
