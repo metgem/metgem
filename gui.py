@@ -25,10 +25,12 @@ if __name__ == '__main__':
     window.show()
     splash.finish(window)
 
+    from lib.config import FILE_EXTENSION
+
     # Support for file association
     if len(sys.argv) > 1:
         fname = sys.argv[1]
-        if os.path.exists(fname) and os.path.splitext(fname)[1] == '.mnz':
+        if os.path.exists(fname) and os.path.splitext(fname)[1] == FILE_EXTENSION:
             window.load_project(fname)
 
     sys.exit(app.exec_())
