@@ -17,9 +17,8 @@ from PyQt5.QtGui import QPainter, QImage, QCursor, QColor
 
 from PyQt5 import uic
 
-from .. import config, ui, utils, workers
+from .. import config, ui, utils, workers, errors
 from ..utils.network import Network
-from .. import errors
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'main_window.ui')
 if getattr(sys, 'frozen', False):
@@ -40,7 +39,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.fname = None
 
         # Workers' references
-        self._workers = workers.WorkerSet(self)
+        self._workers = workers.WorkerSet(self, ui.ProgressDialog(self))
 
         # Setup User interface
         self.setupUi(self)
@@ -442,7 +441,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 except ImportError:
                     print('QtSvg was not found on your system. It is needed for SVG export.')
                 else:
-
                     svg_gen = QSvgGenerator()
 
                     svg_gen.setFileName(filename)

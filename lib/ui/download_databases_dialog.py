@@ -15,6 +15,7 @@ from .widgets import AutoToolTipItemDelegate
 from ..workers import WorkerSet
 from ..workers import (ListGNPSDatabasesWorker, DownloadGNPSDatabasesWorker,
                        GetGNPSDatabasesMtimeWorker, ConvertDatabasesWorker)
+from .progress_dialog import ProgressDialog
 
 DownloadDatabasesDialogUI, DownloadDatabasesDialogBase = uic.loadUiType(UI_FILE,
                                                                         from_imports='lib.ui',
@@ -37,7 +38,7 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
         self.lstDatabases.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.lstDatabases.setItemDelegate(AutoToolTipItemDelegate())
 
-        self._workers = WorkerSet(self)
+        self._workers = WorkerSet(self, ProgressDialog(self))
         self._mtimes = None
 
         # Add download button

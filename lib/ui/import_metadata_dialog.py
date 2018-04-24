@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import QCompleter, QFileSystemModel, QDialog, QFileDialog, 
 
 from ..utils import SignalBlocker
 from ..workers import WorkerSet, ReadMetadataWorker, ReadMetadataOptions
+from .progress_dialog import ProgressDialog
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'import_metadata_dialog.ui')
 
@@ -25,7 +26,7 @@ class ImportMetadataDialog(ImportMetadataDialogBase, ImportMetadataDialogUI):
 
         self.setupUi(self)
 
-        self._workers = WorkerSet(self)
+        self._workers = WorkerSet(self, ProgressDialog(self))
 
         # Set completer for input files
         completer = QCompleter(self.editMetadataFile)

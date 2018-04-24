@@ -4,14 +4,7 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from PyQt5.QtCore import pyqtSignal, Qt
 from PyQt5.QtWidgets import QSizePolicy
 
-try:
-    from .axes import SpectrumAxes
-    from ....workers import Spectrum
-except:
-    from axes import SpectrumAxes
-    class Spectrum:
-        MZ = 0
-        INTENSITY = 1
+from ....workers.cosine import Spectrum
 
 import numpy as np
 

@@ -1,17 +1,16 @@
 from PyQt5.QtCore import QThread
 
 from .generic import GenericWorker
-from ..ui.progress_dialog import ProgressDialog
 
 
 class WorkerSet(set):
     """A set that manages itself visibility of it's parent's progressbar"""
 
-    def __init__(self, parent, *args, **kwargs):
+    def __init__(self, parent, widget, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._parent = parent
 
-        self.widgetProgress = ProgressDialog(self._parent)
+        self.widgetProgress = widget
 
     def parent(self):
         return self._parent
