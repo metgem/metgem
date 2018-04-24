@@ -454,9 +454,12 @@ class MainWindow(MainWindowBase, MainWindowUI):
                     view.scene().render(painter, target=rect)
                     painter.end()
             else:
+                use_transparency = filter_.endswith('(*.png)')
                 rect = view.viewport().rect() if type_ == 'current' else view.scene().sceneRect().toRect()
-                image = QImage(rect.size(), QImage.Format_ARGB32)
-                image.fill(Qt.transparent)
+                format = QImage.Format_ARGB32 if use_transparency else QImage.Format_RGB32
+                size = rect.size() * 4 if type_ == 'current' else rect.size()
+                image = QImage(size, format)
+                image.fill(Qt.transparent) if use_transparency else image.fill(Qt.white)
                 painter = QPainter(image)
                 painter.setRenderHint(QPainter.Antialiasing)
                 view.render(painter, source=rect) if type_ == 'current' else view.scene().render(painter)
