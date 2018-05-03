@@ -25,8 +25,10 @@ class BaseWorker(QObject):
 
     def start(self):
         self.started.emit()
-        self._result = self.run()
-        self.finished.emit()
+        result = self.run()
+        if result is not None:
+            self._result = result
+            self.finished.emit()
 
     def isStopped(self):
         return self._should_stop
