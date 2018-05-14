@@ -33,7 +33,8 @@ if sys.platform.startswith('win'):
     pathex.append(sys.prefix + r'\Lib\site-packages\scipy\extra-dll')
 
 # Gather data files
-datas = [('../LICENSE', ''),
+datas = [('../splash.svg', ''),
+         ('../LICENSE', ''),
          ('../lib/ui/*_rc.py', 'lib/ui'),
          ('../lib/ui/*.ui', 'lib/ui'),
          ('../lib/ui/widgets/images/*', 'lib/ui/widgets/images'),
@@ -44,6 +45,9 @@ if not sys.platform.startswith('darwin'):
          
 # Get Qt styles dll
 binaries.extend(qt_plugins_binaries('styles', namespace='PyQt5'))
+
+# Adds compiled modules
+hiddenimports.extend(['fa2'])
 
 # Adds Qt OpenGL
 hiddenimports.extend(['PyQt5.QtOpenGL'])

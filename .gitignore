@@ -165,3 +165,5 @@ databases/
 /lib/ui/images/main.ico
 /log/
 packaging/share/
+packaging/sip/
+lib/workers/ext/

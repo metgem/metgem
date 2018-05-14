@@ -1,0 +1,9 @@
+[submodule "cosine-cython"]
+	path = cosine-cython
+	url = http://hanmais.icsn.cnrs-gif.fr/molecular-networking/cosine-cython.git
+[submodule "NetworkView"]
+	path = NetworkView
+	url = http://hanmais.icsn.cnrs-gif.fr/molecular-networking/NetworkView.git
+[submodule "forceatlas2"]
+	path = forceatlas2
+	url = http://hanmais.icsn.cnrs-gif.fr/molecular-networking/forceatlas2.git

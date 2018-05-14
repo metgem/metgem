@@ -1,5 +1,6 @@
 import os
 import sys
+import glob
 import pkg_resources
 import shutil
 
@@ -31,7 +32,7 @@ if sys.platform.startswith('win'):
 
 @task
 def check_dependencies(ctx, build=False):
-    if build and (sys.prefix == sys.base_prefix and not os.environ.get('CONDA_DEFAULT_ENV', False)):
+    if build and sys.prefix == sys.base_prefix:
         raise RuntimeError("Build should be done in a virtual env.")
 
     with open('../requirements.txt', 'r') as f:
@@ -74,6 +75,32 @@ def build(ctx, clean=False):
     exe(ctx, clean)
     installer(ctx)
 
+@task
+def build_modules(ctx):
+    if sys.platform.startswith('win'):
+        packaging_dir = os.path.dirname(__file__)
+
+        # Build cosine-cython extension
+        path = os.path.join(packaging_dir, '..', 'cosine-cython')
+        ctx.run(rf'cd /d {path} & python setup.py build_ext --inplace')
+        dest = os.path.join(packaging_dir, '..', 'lib', 'workers', 'ext')
+        if not os.path.exists(dest):
+            os.makedirs(dest)
+        for module in glob.glob(os.path.join(path, '*.pyd')):
+            shutil.copy(module, dest)
+
+        # Build force atlas 2 extension
+        path = os.path.join(packaging_dir, '..', 'forceatlas2')
+        dest = os.path.join(packaging_dir, '..', 'lib', 'workers', 'ext', 'fa2')
+        if not os.path.exists(dest):
+            os.makedirs(dest)
+        ctx.run(rf'cd /d {path} & python setup.py build_ext --inplace')
+        for module in glob.glob(os.path.join(path, 'fa2', '*.py*')):
+            shutil.copy(module, dest)
+    else:
+        pass  # TODO: Allow packaging of dependencies on other platforms
+
+
 @task(check_dependencies)
 def icon(ctx):
     if sys.platform.startswith('win'):
@@ -89,6 +116,7 @@ def rc(ctx):
 
 @task(call(check_dependencies, build=True))
 def exe(ctx, clean=False):
+    build_modules(ctx)
     icon(ctx)
     rc(ctx)
     switchs = "--clean" if clean else ""
