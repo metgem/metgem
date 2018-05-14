@@ -1,3 +1,5 @@
+import os
+
 from PyQt5.QtGui import QPixmap, QBrush, QPalette
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QSplashScreen, QProgressBar, qApp
@@ -5,7 +7,7 @@ from PyQt5.QtWidgets import QSplashScreen, QProgressBar, qApp
 
 class SplashScreen(QSplashScreen):
     def __init__(self):
-        splash_pix = QPixmap('splash.svg')
+        splash_pix = QPixmap(os.path.join(os.path.dirname(__file__), 'splash.svg'))
         super().__init__(splash_pix, Qt.WindowStaysOnTopHint)
         self.setMask(splash_pix.mask())
 
@@ -63,10 +65,8 @@ splash.showMessage("Loading sklearn library...")
 import sklearn
 splash.setValue(40)
 
-splash.showMessage("Loading Qt library...")
-import PyQt5.QtCore
-import PyQt5.QtGui
-import PyQt5.QtWidgets
+splash.showMessage("Loading matplotlib library...")
+import matplotlib
 splash.setValue(50)
 
 splash.showMessage("Loading Configuration module...")
