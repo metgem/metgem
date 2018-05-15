@@ -33,10 +33,10 @@ def icon_from_app(app_path):
 # .. Basics ....................................................................
 
 # Uncomment to override the output filename
-filename = 'tsne-network.dmg'
+filename = 'HDiSpeC.dmg'
 
 # Uncomment to override the output volume name
-volume_name = 'tsne-network'
+volume_name = 'HDiSpeC'
 
 # Volume format (see hdiutil create -help)
 format = defines.get('format', 'UDBZ')

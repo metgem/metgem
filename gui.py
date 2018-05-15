@@ -13,7 +13,7 @@ if __name__ == '__main__':
 
     QCoreApplication.setOrganizationDomain("CNRS")
     QCoreApplication.setOrganizationName("ICSN")
-    QCoreApplication.setApplicationName("tsne-network")
+    QCoreApplication.setApplicationName("HDiSpeC")
     QCoreApplication.setApplicationVersion("0.1")
 
     from lib.ui import MainWindow

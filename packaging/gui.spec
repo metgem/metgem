@@ -91,7 +91,7 @@ pyz = PYZ(a.pure, a.zipped_data,
 exe = EXE(pyz,
           a.scripts,
           exclude_binaries=True,
-          name='gui',
+          name='HDiSpeC',
           debug=DEBUG,
           strip=False,
           upx=False,
@@ -103,10 +103,10 @@ coll = COLLECT(exe,
                a.datas,
                strip=False,
                upx=False,
-               name='gui')
+               name='HDiSpeC')
                
 if sys.platform.startswith('darwin'):
     app = BUNDLE(coll,
-                 name='gui.app',
+                 name='HDiSpeC.app',
                  icon='main.icns',
                  bundle_identifier=None)
