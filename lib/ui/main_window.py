@@ -140,8 +140,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.actionSaveAs.triggered.connect(self.on_save_project_as_triggered)
 
         self.actionFullScreen.triggered.connect(self.on_full_screen_triggered)
-        self.actionHideSelected.triggered.connect(self.current_view.scene().hideSelectedItems)
-        self.actionShowAll.triggered.connect(self.current_view.scene().showAllItems)
+        self.actionHideSelected.triggered.connect(lambda: self.current_view.scene().hideSelectedItems())
+        self.actionShowAll.triggered.connect(lambda: self.current_view.scene().showAllItems())
         self.actionNeighbors.triggered.connect(
             lambda: self.on_select_first_neighbors_triggered(self.current_view.scene().selectedNodes()))
         self.actionExportToCytoscape.triggered.connect(self.on_export_to_cytoscape_triggered)
