@@ -1,85 +1,83 @@
 import operator
-import itertools
-from ctypes import c_float
-from functools import partial
-
 import numpy as np
-import multiprocessing as mp
 
 from .base import BaseWorker
-from ..utils import AttrDict, grouper
+from ..utils import AttrDict
+from ..errors import UserRequestedStopError
+
+try:
+    from cosinelib.cosine import compute_distance_matrix
+except ImportError:
+    def cosine_score(spectrum1_mz, spectrum1_data, spectrum2_mz, spectrum2_data, mz_tolerance, min_matched_peaks):
+        """Compute cosine score from two spectra.
+
+        Returns:
+            float: Cosine similarity between spectrum1 and spectrum2."""
+
+        dm = spectrum1_mz - spectrum2_mz
+
+        diff_matrix = spectrum2_data[:, 0] - spectrum1_data[:, 0][:, None]
+        if dm != 0.:
+            idxMatched1, idxMatched2 = np.where( \
+                np.logical_or(np.abs(diff_matrix) <= mz_tolerance,
+                              np.abs(diff_matrix + dm) <= mz_tolerance))
+        else:
+            idxMatched1, idxMatched2 = np.where(np.abs(diff_matrix) <= mz_tolerance)
+        del diff_matrix
+
+        if idxMatched1.size + idxMatched2.size == 0:
+            return 0.
+
+        peakUsed1 = [False] * spectrum1_data.size
+        peakUsed2 = [False] * spectrum2_data.size
+
+        peakMatches = []
+        for i in range(idxMatched1.size):
+            peakMatches.append((idxMatched1[i], idxMatched2[i],
+                                spectrum1_data[idxMatched1[i], 1] * spectrum2_data[
+                                    idxMatched2[i], 1]))
+
+        peakMatches = sorted(peakMatches, key=operator.itemgetter(2), reverse=True)
+
+        score = 0.
+        numMatchedPeaks = 0
+        for i in range(len(peakMatches)):
+            if not peakUsed1[peakMatches[i][0]] and not peakUsed2[peakMatches[i][1]]:
+                score += peakMatches[i][2]
+                peakUsed1[peakMatches[i][0]] = True
+                peakUsed2[peakMatches[i][1]] = True
+                numMatchedPeaks += 1
+
+        if numMatchedPeaks < min_matched_peaks:
+            return 0.
+
+        return score
+
+    def compute_distance_matrix(mzs, spectra, mz_tolerance, min_matched_peaks, callback=None):
+        size = len(mzs)
+        has_callback = callback is not None
+        matrix = np.empty((len(spectra), len(spectra)), dtype=np.float32)
+        for i in range(len(spectra)):
+            for j in range(i):
+                matrix[i, j] = matrix[j, i] = cosine_score(mzs[i], spectra[i], mzs[j], spectra[j],
+                                                           mz_tolerance, min_matched_peaks)
+                if has_callback:
+                    callback(size-1)
+        np.fill_diagonal(matrix, 1)
+        if has_callback:
+            callback(size)
+        matrix[matrix > 1] = 1
+        return matrix
+
+MZ = 0
+INTENSITY = 1
 
 
-class Spectrum:
-    """Object representing a MS/MS spectrum.
-
-    Attributes:
-        data (np.array): 2D-array of floats with 2 columns holding m/z values and intensities, respectively.
-        mz_parent (float): m/z ratio of parent ion.
-    """
-
-    # Indexes for array
-    MZ = 0
-    INTENSITY = 1
-
-    def __init__(self, id, mz_parent, data):
-        self.id = id
-        self.mz_parent = mz_parent
-        self.data = data
-
-    @property
-    def human_readable_data(self):
-        data = self.data.copy()
-        data[:, Spectrum.INTENSITY] = data[:, Spectrum.INTENSITY] ** 2
-        data[:, Spectrum.INTENSITY] = data[:, Spectrum.INTENSITY] / data[:, Spectrum.INTENSITY].max() * 100
-        return data
-
-    def filter_data(self, options):
-        data = self.data
-
-        # Filter low mass peaks
-        data = data[data[:, Spectrum.MZ] >= 50]
-
-        # Filter peaks close to the parent ion's m/z
-        data = data[np.logical_or(data[:, Spectrum.MZ] <= self.mz_parent - options.parent_filter_tolerance,
-                                  data[:, Spectrum.MZ] >= self.mz_parent + options.parent_filter_tolerance)]
-
-        if data.size > 0:
-            # Keep only peaks higher than threshold
-            data = data[data[:, Spectrum.INTENSITY] >= options.min_intensity * data[:, Spectrum.INTENSITY].max() / 100]
-
-            if data.size > 0:
-                # Window rank filter
-                data = data[np.argsort(data[:, Spectrum.INTENSITY])]
-
-                if data.size > 0:
-                    mz_ratios = data[:, Spectrum.MZ]
-                    mask = np.logical_and(mz_ratios >= mz_ratios[:, None] - options.matched_peaks_window,
-                                          mz_ratios <= mz_ratios[:, None] + options.matched_peaks_window)
-                    data = data[np.array([mz_ratios[i] in mz_ratios[mask[i]][-options.min_matched_peaks_search:]
-                                          for i in range(mask.shape[0])])]
-                    del mask
-
-                    if data.size > 0:
-                        # Use square root of intensities to minimize/maximize effects of high/low intensity peaks
-                        data[:, Spectrum.INTENSITY] = np.sqrt(data[:, Spectrum.INTENSITY]) * 10
-
-                        # Normalize data to norm 1
-                        data[:, Spectrum.INTENSITY] = data[:, Spectrum.INTENSITY] / \
-                                                      np.sqrt(data[:, Spectrum.INTENSITY]
-                                                              @ data[:, Spectrum.INTENSITY])
-
-        self.data = data
-
-    def use_multiprocessing(self):
-        data = self.data
-        self._data = mp.RawArray(c_float, data.size)
-        self.data = np.frombuffer(self._data, dtype=np.float32)
-        self.data[:] = data.ravel()
-        self.data = self.data.reshape(data.shape)
-
-    def __repr__(self):
-        return 'Spectrum({}, {:.2f})'.format(self.id, self.mz_parent)
+def human_readable_data(data):
+    data = data.copy()
+    data[:, INTENSITY] = data[:, INTENSITY] ** 2
+    data[:, INTENSITY] = data[:, INTENSITY] / data[:, INTENSITY].max() * 100
+    return data
 
 
 class CosineComputationOptions(AttrDict):
@@ -106,99 +104,14 @@ class CosineComputationOptions(AttrDict):
                          matched_peaks_window=50)
 
 
-def init(spectra, num, matrix):
-    """Initialization function for multiprocessing"""
-    global spec_list, num_spectra, scores_matrix
-
-    spec_list = spectra
-    num_spectra = num
-    scores_matrix = matrix
-
-
-def batch_cosine_scores(ids, options):
-    """Compute a bach of cosine scores and write them directly into the results matrix.
-
-    Args:
-        ids (list of int): ids of spectra to process.
-        options (CosineComputationOptions)
-
-    Returns:
-        int: Number of scores calculated"""
-
-    m = np.frombuffer(scores_matrix, dtype=np.float32)
-    m = m.reshape((num_spectra, num_spectra))
-
-    counter = 0
-    for spec_id, ref_id in ids:
-        if spec_id is None or ref_id is None:
-            break
-
-        m[spec_id, ref_id] = cosine_score(spec_list[spec_id],
-                                          spec_list[ref_id], options)
-        counter += 1
-
-    return counter
-
-
-def cosine_score(spectrum1, spectrum2, options):
-    """Compute cosine score from two spectra and a given m/z tolerance.
-
-    Args:
-        spectrum1 (Spectrum): First spectrum to compare.
-        spectrum2 (Spectrum): Second spectrum to compare.
-        options (CosineComputationOptions)
-
-    Returns:
-        float: Cosine similarity between spectrum1 and spectrum2."""
-
-    dm = spectrum1.mz_parent - spectrum2.mz_parent
-
-    diff_matrix = spectrum2.data[:, Spectrum.MZ] - spectrum1.data[:, Spectrum.MZ][:, None]
-    if dm != 0.:
-        idxMatched1, idxMatched2 = np.where( \
-            np.logical_or(np.abs(diff_matrix) <= options.mz_tolerance,
-                          np.abs(diff_matrix + dm) <= options.mz_tolerance))
-    else:
-        idxMatched1, idxMatched2 = np.where(np.abs(diff_matrix) <= options.mz_tolerance)
-    del diff_matrix
-
-    if idxMatched1.size + idxMatched2.size == 0:
-        return 0.
-
-    peakUsed1 = [False] * spectrum1.data.size
-    peakUsed2 = [False] * spectrum2.data.size
-
-    peakMatches = []
-    for i in range(idxMatched1.size):
-        peakMatches.append((idxMatched1[i], idxMatched2[i],
-                            spectrum1.data[idxMatched1[i], Spectrum.INTENSITY] * spectrum2.data[
-                                idxMatched2[i], Spectrum.INTENSITY]))
-
-    peakMatches = sorted(peakMatches, key=operator.itemgetter(2), reverse=True)
-
-    score = 0.
-    numMatchedPeaks = 0
-    for i in range(len(peakMatches)):
-        if not peakUsed1[peakMatches[i][0]] and not peakUsed2[peakMatches[i][1]]:
-            score += peakMatches[i][2]
-            peakUsed1[peakMatches[i][0]] = True
-            peakUsed2[peakMatches[i][1]] = True
-            numMatchedPeaks += 1
-
-    if numMatchedPeaks < options.min_matched_peaks:
-        return 0.
-
-    return score
-
-
 class ComputeScoresWorker(BaseWorker):
     """Generate a network from a MGF file.
     """
 
-    def __init__(self, spectra, use_multiprocessing, options):
+    def __init__(self, mzs, spectra, options):
         super().__init__()
+        self._mzs = mzs
         self._spectra = spectra
-        self.use_multiprocessing = use_multiprocessing
         self.options = options
         self._num_spectra = len(self._spectra)
         self.max = self._num_spectra * (self._num_spectra - 1) // 2
@@ -206,59 +119,17 @@ class ComputeScoresWorker(BaseWorker):
         self.desc = 'Computing scores...'
 
     def run(self):
-        num_spectra = self._num_spectra
-        num_scores_to_compute = self.max
+        def callback(value):
+            self.updated.emit(value)
+            if self.isStopped():
+                raise UserRequestedStopError()
 
-        # Compute cosine scores
-        if self.use_multiprocessing:
-            for spectrum in self._spectra:
-                spectrum.use_multiprocessing()
-
-            try:
-                scores_matrix = mp.RawArray(c_float, num_spectra ** 2)
-            except OSError as e:
-                self.error.emit(e)
-                del self._spectra
-                return
-            m = np.frombuffer(scores_matrix, dtype=np.float32)
-            m[:] = 0
-
-            combinations = itertools.combinations(range(num_spectra), 2)
-            max_workers = mp.cpu_count()
-            pool = mp.Pool(max_workers, initializer=init, initargs=(self._spectra, num_spectra, scores_matrix))
-
-            groups = grouper(combinations,
-                             min(10000, num_scores_to_compute // max_workers),
-                             fillvalue=(None, None))
-            compute = partial(batch_cosine_scores, options=self.options)
-            for result in pool.imap_unordered(compute, groups):
-                if self.isStopped():
-                    self.canceled.emit()
-                    return
-                self.updated.emit(result)
-        else:
-            scores_matrix = np.zeros((num_spectra, num_spectra), dtype=np.float32)
-
-            combinations = itertools.combinations(self._spectra, 2)
-            for spectrum1, spectrum2 in combinations:
-                if self.isStopped():
-                    self.canceled.emit()
-                    return
-
-                score = cosine_score(spectrum1, spectrum2, self.options)
-
-                scores_matrix[spectrum1.id, spectrum2.id] = score
-                self.updated.emit(1)
-
-        # Fill matrice with predictable values
-        # We compute only the upper triangle of the matrix as the matrix is symmetric
-        # We also do not need to compute identity scores as, by definition, it has to be 1
-        if self.use_multiprocessing:
-            scores_matrix = np.frombuffer(scores_matrix, dtype=np.float32)
-            scores_matrix = scores_matrix.reshape((num_spectra, num_spectra))
-
-        scores_matrix = scores_matrix + scores_matrix.T
-        np.fill_diagonal(scores_matrix, 1)
-        scores_matrix[scores_matrix > 1] = 1
+        try:
+            scores_matrix = compute_distance_matrix(self._mzs, self._spectra,
+                                                    self.options.mz_tolerance, self.options.min_matched_peaks,
+                                                    callback=callback)
+        except UserRequestedStopError:
+            self.canceled.emit()
+            return
 
         return scores_matrix

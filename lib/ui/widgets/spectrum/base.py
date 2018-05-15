@@ -4,7 +4,7 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from PyQt5.QtCore import pyqtSignal, Qt
 from PyQt5.QtWidgets import QSizePolicy
 
-from ....workers.cosine import Spectrum
+from ....workers.cosine import MZ, INTENSITY
 
 import numpy as np
 
@@ -61,8 +61,8 @@ class BaseCanvas(FigureCanvas):
         self.axes.set_ylabel("Normalized Intensity (%)", self.fontdict)
             
         if self.has_data():
-            self.axes.set_xlim((data[:, Spectrum.MZ].min()-self.X_MARGIN,
-                                data[:, Spectrum.MZ].max()+self.X_MARGIN))
+            self.axes.set_xlim((data[:, MZ].min()-self.X_MARGIN,
+                                data[:, MZ].max()+self.X_MARGIN))
         else:
             self.axes.set_xlim(0, 1000)
                                 
@@ -71,10 +71,10 @@ class BaseCanvas(FigureCanvas):
             return
 
         if yinverted:
-            return self.axes.vlines(data[:, Spectrum.MZ], 0, np.negative(data[:, Spectrum.INTENSITY]),
+            return self.axes.vlines(data[:, MZ], 0, np.negative(data[:, INTENSITY]),
                                     linewidth=0.5, **kwargs)
         else:
-            return self.axes.vlines(data[:, Spectrum.MZ], 0, data[:, Spectrum.INTENSITY],
+            return self.axes.vlines(data[:, MZ], 0, data[:, INTENSITY],
                                     linewidth=0.5, **kwargs)
     
     def auto_adjust_ylim(self):

@@ -468,7 +468,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def on_show_spectrum_triggered(self, type_, node):
         if self.network.spectra is not None:
             try:
-                data = self.network.spectra[node.index()].human_readable_data
+                data = workers.human_readable_data(self.network.spectra[node.index()])
             except KeyError:
                 dialog = QDialog(self)
                 dialog.warning(self, None, 'Selected spectrum does not exists.')
@@ -571,8 +571,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def on_import_metadata_triggered(self):
         dialog = ui.ImportMetadataDialog(self)
         if dialog.exec_() == QDialog.Accepted:
-            metadata_file, options = dialog.getValues()
-            worker = self.prepare_read_metadata_worker(metadata_file, options)
+            metadata_filename, options = dialog.getValues()
+            worker = self.prepare_read_metadata_worker(metadata_filename, options)
             if worker is not None:
                 self._workers.add(worker)
 
@@ -820,10 +820,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
         def file_read():
             nonlocal worker
             self.tvNodes.model().sourceModel().beginResetModel()
-            self.network.spectra = worker.result()
+            self.network.mzs, self.network.spectra = worker.result()
             self.tvNodes.model().sourceModel().endResetModel()
-            multiprocess = len(self.network.spectra) > 1000  # TODO: Tune this, arbitrary decision
-            worker = self.prepare_compute_scores_worker(self.network.spectra, multiprocess)
+            worker = self.prepare_compute_scores_worker(self.network.mzs, self.network.spectra)
             if worker is not None:
                 worker.finished.connect(scores_computed)
                 self._workers.add(worker)

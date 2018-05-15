@@ -166,4 +166,5 @@ databases/
 /log/
 packaging/share/
 packaging/sip/
-lib/workers/ext/
+lib/workers/cosinelib/
+lib/workers/fa2/

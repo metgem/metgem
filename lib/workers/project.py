@@ -4,7 +4,7 @@ from .base import BaseWorker
 from ..save import MnzFile, savez
 from ..utils import AttrDict
 from ..utils.network import Network
-from ..workers import Spectrum, NetworkVisualizationOptions, TSNEVisualizationOptions, CosineComputationOptions
+from ..workers import NetworkVisualizationOptions, TSNEVisualizationOptions, CosineComputationOptions
 from ..graphml import GraphMLParser, GraphMLWriter
 from ..errors import UnsupportedVersionError
 
@@ -57,13 +57,15 @@ class LoadProjectWorker(BaseWorker):
 
                     # Load table of spectra
                     spec_infos = fid['0/spectra/index.json']
+                    network.mzs = []
                     network.spectra = []
                     for s in spec_infos:
                         if self.isStopped():
                             self.canceled.emit()
                             return
 
-                        network.spectra.append(Spectrum(s['id'], s['mz_parent'], fid[f'0/spectra/{s["id"]}']))
+                        network.mzs.append(s['mz_parent'])
+                        network.spectra.append(fid[f'0/spectra/{s["id"]}'])
 
                     if self.isStopped():
                         self.canceled.emit()
@@ -131,10 +133,11 @@ class SaveProjectWorker(BaseWorker):
         writer = GraphMLWriter()
         gxl = writer.tostring(self.graph).decode()
 
-        # Convert list of Spectrum objects to something that be can be saved
+        # Convert lists of parent mass and spectrum data to something that be can be saved
+        mzs = getattr(self.network, 'mzs', [])
         spectra = getattr(self.network, 'spectra', [])
-        spec_infos = [{'id': s.id, 'mz_parent': s.mz_parent} for s in spectra]
-        spec_data = {'0/spectra/{}'.format(s.id): s.data for s in spectra}
+        spec_infos = [{'id': i, 'mz_parent': mz_parent} for i, mz_parent in enumerate(spectra)]
+        spec_data = {'0/spectra/{}'.format(i): data for i, data in enumerate(spectra)}
 
         # Create dict for saving
         d = {'0/scores': getattr(self.network, 'scores', np.array([])),

@@ -1,7 +1,7 @@
 import numpy as np
 import igraph as ig
 
-from .ext.fa2 import ForceAtlas2
+from fa2 import ForceAtlas2
 from .base import BaseWorker
 from ..config import RADIUS
 

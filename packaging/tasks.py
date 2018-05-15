@@ -82,20 +82,25 @@ def build_modules(ctx):
 
         # Build cosine-cython extension
         path = os.path.join(packaging_dir, '..', 'cosine-cython')
-        ctx.run(rf'cd /d {path} & python setup.py build_ext --inplace')
-        dest = os.path.join(packaging_dir, '..', 'lib', 'workers', 'ext')
-        if not os.path.exists(dest):
-            os.makedirs(dest)
-        for module in glob.glob(os.path.join(path, '*.pyd')):
-            shutil.copy(module, dest)
+        ctx.run('pip uninstall -y cosinelib')
+        ctx.run(f'cd /d {path} & python setup.py bdist_wheel')
+        for wheel in glob.glob(os.path.join(path, 'dist', 'cosinelib*.whl')):
+            ctx.run(f'pip install {wheel}')
 
         # Build force atlas 2 extension
         path = os.path.join(packaging_dir, '..', 'forceatlas2')
-        dest = os.path.join(packaging_dir, '..', 'lib', 'workers', 'ext', 'fa2')
-        if not os.path.exists(dest):
-            os.makedirs(dest)
-        ctx.run(rf'cd /d {path} & python setup.py build_ext --inplace')
-        for module in glob.glob(os.path.join(path, 'fa2', '*.py*')):
+        ctx.run('pip uninstall -y fa2')
+        ctx.run(rf'cd /d {path} & python setup.py bdist_wheel')
+        for wheel in glob.glob(os.path.join(path, 'dist', 'fa2*.whl')):
+            ctx.run(f'pip install {wheel}')
+
+        # Build NetworkView extension
+        path = os.path.join(packaging_dir, '..', 'NetworkView')
+        module = os.path.join(path, 'modules', 'NetworkView.pyd')
+        dest = os.path.join(packaging_dir, '..', 'lib', 'ui', 'widgets', 'network_view')
+        if not os.path.exists(module):
+            raise FileNotFoundError('Please compile NetworkView module before packaging.')
+        else:
             shutil.copy(module, dest)
     else:
         pass  # TODO: Allow packaging of dependencies on other platforms

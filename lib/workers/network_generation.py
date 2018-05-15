@@ -21,9 +21,9 @@ class NetworkVisualizationOptions(AttrDict):
                          max_connected_nodes=1000)
         
     
-def generate_network(scores_matrix, spectra, options, use_self_loops=True): #TODO: change this in worker
+def generate_network(scores_matrix, mzs, options, use_self_loops=True): #TODO: change this in worker
     interactions = []
-    num_spectra = len(spectra)
+    num_spectra = len(mzs)
 
     triu = np.triu(scores_matrix)
     triu[triu <= options.pairs_min_cosine] = 0
@@ -33,8 +33,7 @@ def generate_network(scores_matrix, spectra, options, use_self_loops=True): #TOD
         indexes = indexes[triu[i, indexes] > 0]
             
         for index in indexes:
-            interactions.append((i, index,
-                spectra[i].mz_parent-spectra[index].mz_parent, triu[i, index]))
+            interactions.append((i, index, mzs[i]-mzs[index], triu[i, index]))
     
     interactions = np.array(interactions, dtype=[('Source', int), ('Target', int), ('Delta MZ', np.float32), ('Cosine', np.float32)])
     interactions = interactions[np.argsort(interactions, order='Cosine')[::-1]]

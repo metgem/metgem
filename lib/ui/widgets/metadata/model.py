@@ -70,7 +70,7 @@ class NodesModel(QAbstractTableModel):
             self.table = None
             self.headers = None
         self.headers_colors = [None] * self.columnCount()
-        self.list = getattr(self.parent().network, 'spectra', [])
+        self.list = getattr(self.parent().network, 'mzs', [])
         super().endResetModel()
 
     def data(self, index: QModelIndex, role=Qt.DisplayRole):
@@ -82,7 +82,7 @@ class NodesModel(QAbstractTableModel):
         if role in (Qt.DisplayRole, Qt.EditRole, FilterRole, LabelRole):
             if column == 0:
                 try:
-                    return self.list[row].mz_parent
+                    return self.list[row]
                 except IndexError:
                     return
             elif role in (FilterRole, LabelRole):

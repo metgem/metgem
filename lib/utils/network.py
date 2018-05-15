@@ -1,11 +1,10 @@
 from ..workers.network_generation import generate_network
 
-import numpy as np
 from PyQt5.QtCore import QObject, pyqtSignal
 
 
 class Network(QObject):
-    __slots__ = 'spectra', 'scores', 'graph', 'options', '_infos', '_interactions'
+    __slots__ = 'mzs', 'spectra', 'scores', 'graph', 'options', '_infos', '_interactions'
 
     infosAboutToChange = pyqtSignal()
     infosChanged = pyqtSignal()
@@ -32,7 +31,7 @@ class Network(QObject):
         if self._interactions is None:
             if getattr(self, 'scores', None) is not None and getattr(self, 'spectra', None) is not None:
                 self.interactionsAboutToChange.emit()
-                self._interactions = generate_network(self.scores, self.spectra, self.options.network)
+                self._interactions = generate_network(self.scores, self.mzs, self.options.network)
                 self.interactionsChanged.emit()
 
         return self._interactions

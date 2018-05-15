@@ -5,7 +5,7 @@ from matplotlib.ticker import FuncFormatter, AutoMinorLocator
 import numpy as np
 
 from .base import BaseCanvas
-from ....workers.cosine import Spectrum
+from ....workers.cosine import MZ, INTENSITY
 
 
 class SpectrumCanvas(BaseCanvas):
@@ -120,15 +120,15 @@ class SpectrumCanvas(BaseCanvas):
     def auto_adjust_ylim(self):
         if self.has_data():
             xlim = self.axes.get_xlim()
-            intensities = self._spectrum1_data[:, Spectrum.INTENSITY][
-                np.logical_and(self._spectrum1_data[:, Spectrum.MZ] >= xlim[0],
-                               self._spectrum1_data[:, Spectrum.MZ] <= xlim[1])]
+            intensities = self._spectrum1_data[:, INTENSITY][
+                np.logical_and(self._spectrum1_data[:, MZ] >= xlim[0],
+                               self._spectrum1_data[:, MZ] <= xlim[1])]
             max_ = intensities.max() if intensities.size > 0 else 0
 
             if self._spectrum2_data is not None:
-                intensities = self._spectrum2_data[:, Spectrum.INTENSITY][
-                    np.logical_and(self._spectrum2_data[:, Spectrum.MZ] >= xlim[0],
-                                   self._spectrum2_data[:, Spectrum.MZ] <= xlim[1])]
+                intensities = self._spectrum2_data[:, INTENSITY][
+                    np.logical_and(self._spectrum2_data[:, MZ] >= xlim[0],
+                                   self._spectrum2_data[:, MZ] <= xlim[1])]
                 min_ = intensities.max() if intensities.size > 0 else 0
             else:
                 min_ = 0

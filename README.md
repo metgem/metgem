@@ -8,7 +8,7 @@ Use of [Anaconda](https://anaconda.org/) distribution is recommended.
 > cd packaging
 > activate.bat tsne-network
 > conda install pip
-> pip install invoke==0.22.1
+> pip install invoke>=1.0
 > invoke check-dependencies
 > pip install python_igraph-*.whl
 > pip install -r ..\requirements.txt
