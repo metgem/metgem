@@ -621,14 +621,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
         elif type_ == 't-sne':
                 self.gvTSNE.scene().setScale(scale / self.sliderNetworkScale.defaultValue())
 
-    def show_items(self, items):
-        for item in items:
-            item.show()
-
-    def hide_items(self, items):
-        for item in items:
-            item.hide()
-
     def minimize_tabwidget(self):
         w = self.tabWidget.cornerWidget(Qt.TopRightCorner)
         if w.arrowType() == Qt.DownArrow:
