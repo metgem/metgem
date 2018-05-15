@@ -50,7 +50,7 @@ import igraph
 splash.setValue(20)
 
 splash.showMessage("Loading scipy library...")
-import igraph
+import scipy
 splash.setValue(25)
 
 splash.showMessage("Loading lxml library...")
