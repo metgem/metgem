@@ -169,7 +169,8 @@ class ProcessMgfDialog(ProcessMgfDialogBase, ProcessMgfDialogUI):
     def getValues(self):
         """Returns files to process and options"""
 
+        metadata_file = self.editMetadataFile.text() if os.path.isfile(self.editMetadataFile.text()) else None
         return (self.editProcessFile.text(),
-                self.gbMetadata.isChecked(),  self.editMetadataFile.text(),
+                self.gbMetadata.isChecked(),  metadata_file,
                 self._metadata_options, self.cosine_widget.getValues(),
                 self.tsne_widget.getValues(), self.network_widget.getValues())

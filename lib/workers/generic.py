@@ -10,4 +10,5 @@ class GenericWorker(BaseWorker):
         self.kwargs = kwargs
 
     def run(self):
-        return self.callback(*self.args, **self.kwargs)
+        result = self.callback(*self.args, **self.kwargs)
+        return result if result is not None else True

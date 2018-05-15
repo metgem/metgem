@@ -15,16 +15,16 @@ class WorkerSet(set):
     def parent(self):
         return self._parent
 
-    def show_progressbar(self):
-        if not self:  # dict is empty, so we are going to create the first entry. Show the progress bar
-            self.widgetProgress.show()
+    def show_progressbar(self, worker):
+        if worker.track_progress and not self.widgetProgress.isVisible():
             self.widgetProgress.setModal(True)
+            self.widgetProgress.show()
 
     def hide_progressbar(self):
         if not self:  # dict is now empty, hide the progress bar
             if self.widgetProgress is not None:
-                self.widgetProgress.setModal(False)
                 self.widgetProgress.close()
+                self.widgetProgress.setModal(False)
 
     def update_progress(self, i, worker):
         if worker.iterative_update:
@@ -53,6 +53,7 @@ class WorkerSet(set):
             worker.started.connect(lambda: self.widgetProgress.setFormat(worker.desc.format(value=0, max=worker.max)))
 
         self.widgetProgress.rejected.connect(lambda: worker.stop())
+        worker.started.connect(lambda: self.show_progressbar(worker))
         worker.finished.connect(lambda: self.remove(worker))
         worker.canceled.connect(lambda: self.remove(worker))
         worker.error.connect(lambda: self.remove(worker))
@@ -66,22 +67,11 @@ class WorkerSet(set):
             worker.start()
 
     def add(self, worker):
-        if worker.track_progress:
-            self.show_progressbar()
-
         super().add(worker)
 
         self.connect_events(worker)
 
     def update(self, workers):
-        show_progress = False
-        for worker in workers:
-            if worker.track_progress:
-                show_progress = True
-                break
-        if show_progress:
-            self.show_progressbar()
-
         super().update(workers)
 
         for worker in workers:
@@ -92,6 +82,5 @@ class WorkerSet(set):
             worker.thread().quit()
         if worker in self:
             super().remove(worker)
-
             self.hide_progressbar()
 
