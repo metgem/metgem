@@ -5,9 +5,6 @@ import sys
 import glob
 from PyInstaller.utils.hooks import qt_plugins_binaries, get_module_file_attribute
 
-os.path.join(os.path.dirname(get_module_file_attribute('PyQt5')),
-                                     'Qt', 'bin')
-
 DEBUG = os.getenv('DEBUG_MODE', 'false').lower() in ('true', '1')
 
 pathex = []
@@ -46,8 +43,8 @@ if not sys.platform.startswith('darwin'):
 # Get Qt styles dll
 binaries.extend(qt_plugins_binaries('styles', namespace='PyQt5'))
 
-# Adds compiled modules
-hiddenimports.extend(['fa2'])
+# Add pybel
+hiddenimports.extend(['pybel'])
 
 # Adds Qt OpenGL
 hiddenimports.extend(['PyQt5.QtOpenGL'])
