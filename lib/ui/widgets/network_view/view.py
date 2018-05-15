@@ -178,18 +178,18 @@ class NetworkView(QGraphicsView):
                 
     def zoomToFit(self):
         self.fitInView(self.scene().sceneRect().adjusted(-20, -20, 20, 20), Qt.KeepAspectRatio)
-        self._minimum_zoom = self.transform().m11()  # Set zoom out limit to horizontal scaling factor
+        # self._minimum_zoom = self.transform().m11()  # Set zoom out limit to horizontal scaling factor
         self.minimap.adjustRubberband()
         
     def wheelEvent(self, event):
         self.scaleView(2**(event.angleDelta().y() / 240.0))
 
     def scaleView(self, scaleFactor):
-        factor = self.transform().scale(scaleFactor, scaleFactor).mapRect(QRectF(0, 0, 1, 1)).width()
-
-        if factor < self._minimum_zoom or factor > 2:
-            return
-
+    #     factor = self.transform().scale(scaleFactor, scaleFactor).mapRect(QRectF(0, 0, 1, 1)).width()
+    #
+    #     if factor < self._minimum_zoom or factor > 2:
+    #         return
+    #
         self.scale(scaleFactor, scaleFactor)
             
 
