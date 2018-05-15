@@ -15,7 +15,7 @@
    viewBox="0 0 169.33333 127"
    version="1.1"
    id="svg1038"
-   inkscape:version="0.92.2 2405546, 2018-03-11"
+   inkscape:version="0.92.2 (5c3e80d, 2017-08-06)"
    sodipodi:docname="splash.svg">
   <defs
      id="defs1032">
@@ -36,16 +36,16 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.98994949"
-     inkscape:cx="127.04648"
-     inkscape:cy="354.89698"
+     inkscape:cx="349.43914"
+     inkscape:cy="320.40597"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
      units="px"
      inkscape:window-width="1920"
-     inkscape:window-height="1015"
-     inkscape:window-x="0"
-     inkscape:window-y="0"
+     inkscape:window-height="1018"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
      inkscape:window-maximized="1"
      inkscape:pagecheckerboard="true" />
   <metadata
@@ -56,7 +56,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -66,13 +66,13 @@
      id="layer1"
      transform="translate(0,-169.99998)">
     <rect
-       style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:32.8125;stroke-miterlimit:1.60000002;stroke-dasharray:none"
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.26410189;stroke-miterlimit:1.60000002;stroke-dasharray:none;stroke-opacity:1"
        id="rect1649"
-       width="169.33333"
-       height="127"
-       x="2.5431316e-06"
-       y="169.99998"
-       ry="4.2763085" />
+       width="169.06923"
+       height="126.7359"
+       x="0.13205211"
+       y="170.13203"
+       ry="4.2674165" />
     <g
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1;stroke-linecap:square;stroke-linejoin:bevel"
        id="g874"
@@ -268,5 +268,16 @@
          id="path9569-5-25"
          style="fill:#0000ff;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:19.87858391;stroke-linecap:round;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:none;paint-order:normal" />
     </g>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:20.30301285px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.50757527px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="72.015396"
+       y="243.46164"
+       id="text848"><tspan
+         sodipodi:role="line"
+         id="tspan846"
+         x="72.015396"
+         y="243.46164"
+         style="stroke-width:0.50757527px">HDiSpeC</tspan></text>
   </g>
 </svg>
