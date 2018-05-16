@@ -68,10 +68,13 @@ class ReadMGFWorker(BaseWorker):
                     return
 
                 mz_parent = params['pepmass']
-                mzs.append(mz_parent)
-                data = filter_data(data, mz_parent, self.options.min_intensity, self.options.parent_filter_tolerance,
-                                   self.options.matched_peaks_window, self.options.min_matched_peaks_search)
-                spectra.append(data)
+                data = filter_data(data, mz_parent, self.options.min_intensity,
+                                   self.options.parent_filter_tolerance,
+                                   self.options.matched_peaks_window,
+                                   self.options.min_matched_peaks_search)
+                if data.size > 0:
+                    spectra.append(data)
+                    mzs.append(mz_parent)
                 self.updated.emit(1)
         else:
             try:
@@ -83,13 +86,15 @@ class ReadMGFWorker(BaseWorker):
                     mz_parent = entry['params']['pepmass']
                     mz_parent = mz_parent[0] if type(
                         mz_parent) is tuple else mz_parent  # Parent ion mass is read as a tuple
-                    data = np.column_stack((entry['m/z array'], entry['intensity array']))
 
-                    mzs.append(mz_parent)
+                    data = np.column_stack((entry['m/z array'], entry['intensity array']))
                     data = filter_data(data, mz_parent, self.options.min_intensity,
                                        self.options.parent_filter_tolerance,
-                                       self.options.matched_peaks_window, self.options.min_matched_peaks_search)
-                    spectra.append(data)
+                                       self.options.matched_peaks_window,
+                                       self.options.min_matched_peaks_search)
+                    if data.size > 0:
+                        spectra.append(data)
+                        mzs.append(mz_parent)
 
                     self.updated.emit(1)
             except PyteomicsError as e:
