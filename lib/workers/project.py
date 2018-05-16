@@ -10,6 +10,7 @@ from ..errors import UnsupportedVersionError
 
 CURRENT_FORMAT_VERSION = 2
 
+
 class LoadProjectWorker(BaseWorker):
     """Load project from a previously saved file"""
 
@@ -154,4 +155,4 @@ class SaveProjectWorker(BaseWorker):
         except PermissionError as e:
             self.error.emit(e)
         else:
-            self.finished.emit()
+            return True

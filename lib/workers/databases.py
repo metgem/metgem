@@ -126,6 +126,7 @@ class DownloadGNPSDatabasesWorker(BaseWorker):
                                 self.canceled.emit()
 
                         ftp.retrbinary(f'RETR {id_}.mgf', write_callback)
+            return True
         except ftplib.all_errors as e:
             self.error.emit(e)
             return
@@ -142,10 +143,10 @@ class ConvertDatabasesWorker(BaseWorker):
         self.desc = 'Converting databases...'
 
     def run(self):
-        print(self.ids)
         with DataBaseBuilder(os.path.join(self.path, 'spectra')) as db:
             for i, id_ in enumerate(self.ids):
                 path = os.path.join(self.path, f'{id_}.mgf')
                 if os.path.exists(path):
                     db.add_bank(path)
                 self.updated.emit(i)
+        return True
