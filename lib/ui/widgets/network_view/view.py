@@ -1,8 +1,21 @@
-from PyQt5.QtCore import QRectF, pyqtSignal, Qt
+import sys
+
+from PyQt5.QtCore import pyqtSignal, Qt
 from PyQt5.QtGui import QPainter, QSurfaceFormat
 from PyQt5.QtWidgets import QGraphicsView, QRubberBand, QOpenGLWidget, QFormLayout, QSizePolicy, QMenu
 
 from .scene import Node, NetworkScene
+
+
+def isRemoteSession():
+    """Detect Remote session in windows"""
+
+    if sys.platform.startswith('win'):
+        # See https://msdn.microsoft.com/en-us/library/aa380798%28v=vs.85%29.aspx
+        from win32api import GetSystemMetrics
+        if GetSystemMetrics(0x1000) != 0:  # 0x1000 is SM_REMOTESESSION
+            return True
+    return False
 
 
 class MiniMapGraphicsView(QGraphicsView):
@@ -72,11 +85,12 @@ class NetworkView(QGraphicsView):
         super().__init__(parent)
         
         self._minimum_zoom = 0
-        
-        # fmt = QSurfaceFormat()
-        # fmt.setSamples(4)
-        # self.setViewport(QOpenGLWidget())
-        # self.viewport().setFormat(fmt)
+
+        if not isRemoteSession():
+            fmt = QSurfaceFormat()
+            fmt.setSamples(4)
+            self.setViewport(QOpenGLWidget())
+            self.viewport().setFormat(fmt)
 
         layout = QFormLayout(self)
         layout.setContentsMargins(0, 0, 6, 0)
