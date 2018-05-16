@@ -12,7 +12,7 @@ class NetworkWorker(BaseWorker):
         super().__init__()
         self.graph = graph
         self.max = self.graph.vcount()
-        self.iterative_update = True
+        self.iterative_update = False
         self.desc = 'Computing layout: {value:d} vertices of {max:d}.'
 
     def run(self):
@@ -24,6 +24,7 @@ class NetworkWorker(BaseWorker):
         dx, dy = 0, 0
         max_height = 0
         max_width = 0
+        total_count = 0
         for i, ids in enumerate(clusters):
             if self.isStopped():
                 self.canceled.emit()
@@ -58,6 +59,7 @@ class NetworkWorker(BaseWorker):
                 dy += max_height
                 max_height = 0
 
-            self.updated.emit(vcount)
+            total_count += vcount
+            self.updated.emit(total_count)
 
         return layout
