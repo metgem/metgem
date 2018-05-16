@@ -13,10 +13,31 @@ class SplashScreen(QSplashScreen):
 
         self.pbar = QProgressBar(self)
         self.pbar.setMaximum(100)
-        self.pbar.setGeometry(0, splash_pix.height()-50, splash_pix.width(), 20)
-        palette = QPalette()
-        palette.setBrush(QPalette.Highlight, QBrush(Qt.black))
-        self.pbar.setPalette(palette)
+        self.pbar.setGeometry(20, splash_pix.height()-50, splash_pix.width()-40, 20)
+        self.pbar.setAlignment(Qt.AlignCenter)
+        self.pbar.setStyleSheet("""
+            QProgressBar {
+                border: 1px solid black;
+                text-align: center;
+                padding: 1px;
+                border-radius: 5px;
+                background: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1,
+                stop: 0 #fff,
+                stop: 0.4999 #eee,
+                stop: 0.5 #ddd,
+                stop: 1 #eee );
+                height: 15px;
+            }
+
+            QProgressBar::chunk {
+                background: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1,
+                stop: 0 #727378,
+                stop: 0.4999 #727478,
+                stop: 0.5 #727378,
+                stop: 1 #3d404d );
+                border-radius: 5px;
+                border: 1px solid black;
+            }""")
 
     def setValue(self, value):
         self.pbar.setValue(value)
@@ -26,7 +47,7 @@ class SplashScreen(QSplashScreen):
         qApp.processEvents()
 
     def showMessage(self, message: str, alignment: int=Qt.AlignBottom | Qt.AlignLeft, color=Qt.black):
-        super().showMessage(message, alignment, color)
+        super().showMessage(f'      {message}', alignment, color)
         qApp.processEvents()
 
 
@@ -89,10 +110,6 @@ splash.showMessage("Loading Databases module...")
 import lib.database
 import lib.models
 splash.setValue(75)
-
-splash.showMessage("Loading MainWindow...")
-import lib.ui.main_window
-splash.setValue(85)
 
 splash.showMessage("Loading User interface module...")
 import lib.ui
