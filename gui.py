@@ -9,12 +9,13 @@ if __name__ == '__main__':
 
     app = QApplication(sys.argv)
 
+    from version import DOMAIN, ORGANIZATION, APPLICATION, FULLVERSION
     from splash import splash
 
-    QCoreApplication.setOrganizationDomain("CNRS")
-    QCoreApplication.setOrganizationName("ICSN")
-    QCoreApplication.setApplicationName("HDiSpeC")
-    QCoreApplication.setApplicationVersion("0.1")
+    QCoreApplication.setOrganizationDomain(DOMAIN)
+    QCoreApplication.setOrganizationName(ORGANIZATION)
+    QCoreApplication.setApplicationName(APPLICATION)
+    QCoreApplication.setApplicationVersion(FULLVERSION)
 
     from lib.ui import MainWindow
     window = MainWindow()
