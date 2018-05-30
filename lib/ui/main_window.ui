@@ -141,6 +141,12 @@
          </item>
          <item>
           <widget class="Slider" name="sliderNetworkScale">
+           <property name="toolTip">
+            <string>Change scale of network graph</string>
+           </property>
+           <property name="statusTip">
+            <string>Change scale of network graph</string>
+           </property>
            <property name="minimum">
             <number>1</number>
            </property>
@@ -201,6 +207,12 @@
          </item>
          <item>
           <widget class="Slider" name="sliderTSNEScale">
+           <property name="toolTip">
+            <string>Change scale of t-SNE graph</string>
+           </property>
+           <property name="statusTip">
+            <string>Change scale of t-SNE graph</string>
+           </property>
            <property name="minimum">
             <number>1</number>
            </property>
@@ -344,7 +356,7 @@
      <x>0</x>
      <y>0</y>
      <width>1089</width>
-     <height>30</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -370,6 +382,10 @@
     <property name="title">
      <string>&amp;View</string>
     </property>
+    <addaction name="actionViewMiniMap"/>
+    <addaction name="actionViewSpectrum"/>
+    <addaction name="actionViewCompareSpectrum"/>
+    <addaction name="separator"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
@@ -889,6 +905,44 @@
    </property>
    <property name="statusTip">
     <string>Export current view of network as image</string>
+   </property>
+  </action>
+  <action name="actionViewMiniMap">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Mini &amp;map</string>
+   </property>
+   <property name="shortcut">
+    <string>M</string>
+   </property>
+  </action>
+  <action name="actionViewSpectrum">
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/spectrum.svg</normaloff>:/icons/images/spectrum.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Spectrum</string>
+   </property>
+   <property name="shortcut">
+    <string>S</string>
+   </property>
+  </action>
+  <action name="actionViewCompareSpectrum">
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/spectrum-inverted.svg</normaloff>:/icons/images/spectrum-inverted.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Compare Spectrum</string>
+   </property>
+   <property name="shortcut">
+    <string>C</string>
    </property>
   </action>
  </widget>

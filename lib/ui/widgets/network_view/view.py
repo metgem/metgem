@@ -78,9 +78,6 @@ class MiniMapGraphicsView(QGraphicsView):
 
 class NetworkView(QGraphicsView):
 
-    showSpectrumTriggered = pyqtSignal(Node)
-    compareSpectrumTriggered = pyqtSignal(Node)
-
     def __init__(self, parent=None):
         super().__init__(parent)
         
@@ -122,23 +119,6 @@ class NetworkView(QGraphicsView):
     def setScene(self, scene):
         super().setScene(scene)
         self.minimap.setScene(scene)
-
-    def keyPressEvent(self, event):
-        if event.key() == Qt.Key_M:
-            self.minimap.setVisible(not self.minimap.isVisible())
-
-    def contextMenuEvent(self, event):
-        menu = QMenu(self)
-        pos = self.mapToScene(event.pos()).toPoint()
-        node = self.scene().nodeAt(pos, self.transform())
-        if node is not None:
-            action = menu.addAction('Show spectrum')
-            action.triggered.connect(lambda: self.showSpectrumTriggered.emit(node))
-            action = menu.addAction('Set as compare spectrum')
-            action.triggered.connect(lambda: self.compareSpectrumTriggered.emit(node))
-
-        if len(menu.actions()) > 0:
-            menu.exec(event.globalPos())
 
     def mouseDoubleClickEvent(self, event):
         pos = self.mapToScene(event.pos()).toPoint()

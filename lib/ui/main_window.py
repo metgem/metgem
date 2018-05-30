@@ -13,7 +13,7 @@ from PyQt5.QtWidgets import (QDialog, QFileDialog,
                              QMenu, QToolButton, QActionGroup,
                              QAction, QDockWidget, QWIDGETSIZE_MAX, qApp)
 from PyQt5.QtCore import QSettings, Qt, QSize, QCoreApplication
-from PyQt5.QtGui import QPainter, QImage, QCursor, QColor
+from PyQt5.QtGui import QPainter, QImage, QCursor, QColor, QKeyEvent
 
 from PyQt5 import uic
 
@@ -114,10 +114,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         self.gvNetwork.scene().selectionChanged.connect(self.on_scene_selection_changed)
         self.gvTSNE.scene().selectionChanged.connect(self.on_scene_selection_changed)
-        self.gvNetwork.showSpectrumTriggered.connect(lambda node: self.on_show_spectrum_triggered('show', node))
-        self.gvTSNE.showSpectrumTriggered.connect(lambda node: self.on_show_spectrum_triggered('show', node))
-        self.gvNetwork.compareSpectrumTriggered.connect(lambda node: self.on_show_spectrum_triggered('compare', node))
-        self.gvTSNE.compareSpectrumTriggered.connect(lambda node: self.on_show_spectrum_triggered('compare', node))
 
         self.actionQuit.triggered.connect(self.close)
         self.actionAbout.triggered.connect(self.on_about_triggered)
@@ -138,6 +134,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.actionOpen.triggered.connect(self.on_open_project_triggered)
         self.actionSave.triggered.connect(self.on_save_project_triggered)
         self.actionSaveAs.triggered.connect(self.on_save_project_as_triggered)
+
+        self.actionViewMiniMap.triggered.connect(self.on_switch_minimap_visibility)
+        qApp.focusChanged.connect(self.on_focus_changed)
+        self.actionViewSpectrum.triggered.connect(lambda: self.on_show_spectrum_triggered('show'))
+        self.actionViewCompareSpectrum.triggered.connect(lambda: self.on_show_spectrum_triggered('compare'))
 
         self.actionFullScreen.triggered.connect(self.on_full_screen_triggered)
         self.actionHideSelected.triggered.connect(lambda: self.current_view.scene().hideSelectedItems())
@@ -260,12 +261,14 @@ class MainWindow(MainWindowBase, MainWindowUI):
         group.triggered.connect(lambda action: table.model().setFilterKeyColumn(action.data() - 1))
         model.setFilterKeyColumn(-1)
 
-    def keyPressEvent(self, event):
+    def keyPressEvent(self, event: QKeyEvent):
         key = event.key()
-
-        if key == Qt.Key_M:  # Show/hide minimap
-            view = self.current_view
-            view.minimap.setVisible(not view.minimap.isVisible())
+        modifiers = event.modifiers()
+        if key == Qt.Key_Tab and modifiers & Qt.ControlModifier:  # Show/hide minimap
+            if self.gvNetwork.hasFocus():
+                self.gvTSNE.setFocus(Qt.TabFocusReason)
+            else:
+                self.gvNetwork.setFocus(Qt.TabFocusReason)
 
     def showEvent(self, event):
         self.load_settings()
@@ -284,6 +287,16 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.save_settings()
         else:
             event.ignore()
+
+    def on_focus_changed(self, old: QWidget, now: QWidget):
+        if now in (self.gvNetwork, self.gvTSNE):
+            self.actionViewMiniMap.setChecked(self.current_view.minimap.isVisible())
+
+    def on_switch_minimap_visibility(self):
+        view = self.current_view
+        visible = view.minimap.isVisible()
+        view.minimap.setVisible(not visible)
+        self.actionViewMiniMap.setChecked(not visible)
 
     def on_scene_selection_changed(self):
         view = self.current_view
@@ -465,13 +478,16 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 view.render(painter, source=rect) if type_ == 'current' else view.scene().render(painter)
                 image.save(filename)
 
-    def on_show_spectrum_triggered(self, type_, node):
-        if self.network.spectra is not None:
+    def on_show_spectrum_triggered(self, type_, node=None):
+        if getattr(self.network, 'spectra', None) is not None:
             try:
+                if node is None:
+                    node = self.current_view.scene().selectedNodes()[0]
                 data = workers.human_readable_data(self.network.spectra[node.index()])
+            except IndexError:
+                pass
             except KeyError:
-                dialog = QDialog(self)
-                dialog.warning(self, None, 'Selected spectrum does not exists.')
+                QMessageBox.warning(self, None, 'Selected spectrum does not exists.')
             else:
                 # Set data as first or second spectrum
                 if type_ == 'compare':
