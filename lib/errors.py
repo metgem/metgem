@@ -16,6 +16,7 @@ class UnsupportedVersionError(OSError):
     pass
 
 
+# noinspection PyArgumentList
 def exceptionHandler(exctype, value, trace):
     """
         This exception handler prevents quitting to the command line when there is

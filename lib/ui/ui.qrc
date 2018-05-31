@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="icons">
+    <file>images/highlight.svg</file>
     <file>images/spectrum-inverted.svg</file>
     <file>images/label.svg</file>
     <file>images/pie.svg</file>

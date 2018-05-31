@@ -93,7 +93,7 @@ class MetadataTableView(QTableView):
 
         self.setItemDelegate(EnsureStringItemDelegate())
 
-        # Install event filter on top left button (usually used to select all rows and columns
+        # Install event filter on top left button (usually used to select all rows and columns)
         btn = self.findChild(QAbstractButton)
         if btn:
             btn.installEventFilter(self)

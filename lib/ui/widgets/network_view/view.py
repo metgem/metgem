@@ -1,7 +1,7 @@
 import sys
 
 from PyQt5.QtCore import pyqtSignal, Qt
-from PyQt5.QtGui import QPainter, QSurfaceFormat
+from PyQt5.QtGui import QPainter, QSurfaceFormat, QFocusEvent
 from PyQt5.QtWidgets import QGraphicsView, QRubberBand, QOpenGLWidget, QFormLayout, QSizePolicy, QMenu
 
 from .scene import Node, NetworkScene
@@ -78,6 +78,8 @@ class MiniMapGraphicsView(QGraphicsView):
 
 class NetworkView(QGraphicsView):
 
+    focusedIn = pyqtSignal()
+
     def __init__(self, parent=None):
         super().__init__(parent)
         
@@ -152,6 +154,10 @@ class NetworkView(QGraphicsView):
     def resizeEvent(self, event):
         super().resizeEvent(event)
         self.minimap.adjustRubberband()
+
+    def focusInEvent(self, event: QFocusEvent):
+        super().focusInEvent(event)
+        self.focusedIn.emit()
 
     def on_scale_changed(self):
         self.scene().setSceneRect(self.scene().itemsBoundingRect())

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1089</width>
+    <width>1084</width>
     <height>768</height>
    </rect>
   </property>
@@ -73,6 +73,9 @@
         <property name="icon">
          <iconset resource="ui.qrc">
           <normaloff>:/icons/images/system-search.svg</normaloff>:/icons/images/system-search.svg</iconset>
+        </property>
+        <property name="popupMode">
+         <enum>QToolButton::InstantPopup</enum>
         </property>
        </widget>
       </item>
@@ -261,7 +264,7 @@
          <item>
           <layout class="QVBoxLayout" name="verticalLayout">
            <item>
-            <widget class="QPushButton" name="btUseColumnForLabels">
+            <widget class="QToolButton" name="btUseColumnForLabels">
              <property name="toolTip">
               <string>Use selected column as source for nodes' labels</string>
              </property>
@@ -278,7 +281,7 @@
             </widget>
            </item>
            <item>
-            <widget class="QPushButton" name="btUseColumnsForPieCharts">
+            <widget class="QToolButton" name="btUseColumnsForPieCharts">
              <property name="toolTip">
               <string>Use selected columns as source for nodes' pie charts</string>
              </property>
@@ -291,6 +294,9 @@
              <property name="icon">
               <iconset resource="ui.qrc">
                <normaloff>:/icons/images/pie.svg</normaloff>:/icons/images/pie.svg</iconset>
+             </property>
+             <property name="popupMode">
+              <enum>QToolButton::DelayedPopup</enum>
              </property>
             </widget>
            </item>
@@ -355,7 +361,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1089</width>
+     <width>1084</width>
      <height>21</height>
     </rect>
    </property>

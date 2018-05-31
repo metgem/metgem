@@ -8,3 +8,4 @@ from .view_databases import PubMedLabel, SpectrumIdLabel, SubmitUserLabel, Quali
 from .slider import Slider
 from .structure import StructureSvgWidget
 from .toolbar_menu import ToolBarMenu
+from .colormaps import ColorMapFrame

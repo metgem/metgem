@@ -11,22 +11,25 @@ import igraph as ig
 from PyQt5.QtWidgets import (QDialog, QFileDialog,
                              QMessageBox, QWidget,
                              QMenu, QToolButton, QActionGroup,
-                             QAction, QDockWidget, QWIDGETSIZE_MAX, qApp)
+                             QAction, QDockWidget, QWIDGETSIZE_MAX, qApp, QWidgetAction)
 from PyQt5.QtCore import QSettings, Qt, QSize, QCoreApplication
-from PyQt5.QtGui import QPainter, QImage, QCursor, QColor, QKeyEvent
+from PyQt5.QtGui import QPainter, QImage, QCursor, QColor, QKeyEvent, QIcon
 
 from PyQt5 import uic
 
 from .. import config, ui, utils, workers, errors
 from ..utils.network import Network
+from ..utils import colors
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'main_window.ui')
 if getattr(sys, 'frozen', False):
+    # noinspection PyProtectedMember
     MAIN_UI_FILE = os.path.join(sys._MEIPASS, UI_FILE)
 
 MainWindowUI, MainWindowBase = uic.loadUiType(UI_FILE, from_imports='lib.ui', import_from='lib.ui')
 
 
+# noinspection PyCallByClass,PyArgumentList
 class MainWindow(MainWindowBase, MainWindowUI):
 
     def __init__(self, *args, **kwargs):
@@ -113,7 +116,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.btUseColumnForLabels.clicked.connect(lambda: self.on_use_columns_for('labels'))
 
         self.gvNetwork.scene().selectionChanged.connect(self.on_scene_selection_changed)
+        self.gvNetwork.focusedIn.connect(lambda: self.on_scene_selection_changed(update_view=False))
         self.gvTSNE.scene().selectionChanged.connect(self.on_scene_selection_changed)
+        self.gvTSNE.focusedIn.connect(lambda: self.on_scene_selection_changed(update_view=False))
 
         self.actionQuit.triggered.connect(self.close)
         self.actionAbout.triggered.connect(self.on_about_triggered)
@@ -160,6 +165,19 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         self.sliderNetworkScale.valueChanged.connect(lambda val: self.on_scale_changed('network', val))
         self.sliderTSNEScale.valueChanged.connect(lambda val: self.on_scale_changed('t-sne', val))
+
+        # Create list of colormaps
+        menu = QMenu(self)
+        group = QActionGroup(menu, exclusive=True)
+        for cmap in colors.COLORMAPS:
+            action = group.addAction(QWidgetAction(menu, checkable=True))
+            label = ui.widgets.ColorMapFrame(cmap, colors.cmap2pixmap(cmap), parent=menu)
+            action.setDefaultWidget(label)
+            action.setData(cmap)
+            menu.addAction(action)
+
+        self.btUseColumnsForPieCharts.setMenu(menu)
+        group.triggered.connect(lambda act: self.on_use_columns_for("pie charts", cmap=act.data()))
 
         # Add a menu to show/hide toolbars
         popup_menu = self.createPopupMenu()
@@ -216,6 +234,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def network(self):
         return self._network
 
+    # noinspection PyAttributeOutsideInit
     @network.setter
     def network(self, network):
         network.infosAboutToChange.connect(self.tvNodes.model().sourceModel().beginResetModel)
@@ -257,8 +276,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 menu.addSeparator()
 
         self.btSearch.setMenu(menu)
-        self.btSearch.setPopupMode(QToolButton.InstantPopup)
-        group.triggered.connect(lambda action: table.model().setFilterKeyColumn(action.data() - 1))
+        group.triggered.connect(lambda act: table.model().setFilterKeyColumn(act.data() - 1))
         model.setFilterKeyColumn(-1)
 
     def keyPressEvent(self, event: QKeyEvent):
@@ -288,6 +306,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         else:
             event.ignore()
 
+    # noinspection PyUnusedLocal
     def on_focus_changed(self, old: QWidget, now: QWidget):
         if now in (self.gvNetwork, self.gvTSNE):
             self.actionViewMiniMap.setChecked(self.current_view.minimap.isVisible())
@@ -298,14 +317,14 @@ class MainWindow(MainWindowBase, MainWindowUI):
         view.minimap.setVisible(not visible)
         self.actionViewMiniMap.setChecked(not visible)
 
-    def on_scene_selection_changed(self):
+    def on_scene_selection_changed(self, update_view=True):
         view = self.current_view
         nodes_idx = [item.index() for item in view.scene().selectedNodes()]
         edges_idx = [item.index() for item in view.scene().selectedEdges()]
         self.tvNodes.model().setSelection(nodes_idx)
         self.tvEdges.model().setSelection(edges_idx)
 
-        if self.actionLinkViews.isChecked():
+        if update_view and self.actionLinkViews.isChecked():
             if view == self.gvNetwork:
                 with utils.SignalBlocker(self.gvTSNE.scene()):
                     self.gvTSNE.scene().setNodesSelection(nodes_idx)
@@ -431,10 +450,12 @@ class MainWindow(MainWindowBase, MainWindowUI):
                                     'Cytoscape was not ready to receive data. Please try again.')
         except ImportError:
             QMessageBox.information(self, None,
-                                    'py2tocytoscape is required for this action (https://pypi.python.org/pypi/py2cytoscape).')
+                                    ('py2tocytoscape is required for this action '
+                                     'https://pypi.python.org/pypi/py2cytoscape).'))
         except FileNotFoundError:
             QMessageBox.warning(self, None,
-                                f'styles.json not found. You may have to reinstall {QCoreApplication.applicationName()}')
+                                ('styles.json not found. You may have to reinstall'
+                                 f'{QCoreApplication.applicationName(self)}'))
 
     def on_export_as_image_triggered(self, type_):
         filter_ = ["PNG - Portable Network Graphics (*.png)",
@@ -469,21 +490,24 @@ class MainWindow(MainWindowBase, MainWindowUI):
             else:
                 use_transparency = filter_.endswith('(*.png)')
                 rect = view.viewport().rect() if type_ == 'current' else view.scene().sceneRect().toRect()
-                format = QImage.Format_ARGB32 if use_transparency else QImage.Format_RGB32
+                fmt = QImage.Format_ARGB32 if use_transparency else QImage.Format_RGB32
                 size = rect.size() * 4 if type_ == 'current' else rect.size()
-                image = QImage(size, format)
+                image = QImage(size, fmt)
                 image.fill(Qt.transparent) if use_transparency else image.fill(Qt.white)
                 painter = QPainter(image)
                 painter.setRenderHint(QPainter.Antialiasing)
                 view.render(painter, source=rect) if type_ == 'current' else view.scene().render(painter)
                 image.save(filename)
 
-    def on_show_spectrum_triggered(self, type_, node=None):
+    def on_show_spectrum_triggered(self, type_, node=None, node_idx=None):
         if getattr(self.network, 'spectra', None) is not None:
             try:
-                if node is None:
-                    node = self.current_view.scene().selectedNodes()[0]
-                data = workers.human_readable_data(self.network.spectra[node.index()])
+                if node_idx is None:
+                    if node is None:
+                        # No node specified, try to get it from current view's selection
+                        node = self.current_view.scene().selectedNodes()[0]
+                    node_idx = node.index()
+                data = workers.human_readable_data(self.network.spectra[node_idx])
             except IndexError:
                 pass
             except KeyError:
@@ -491,9 +515,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
             else:
                 # Set data as first or second spectrum
                 if type_ == 'compare':
-                    self.cvSpectrum.set_spectrum2(data, node.index()+1)
+                    self.cvSpectrum.set_spectrum2(data, node_idx+1)
                 else:
-                    self.cvSpectrum.set_spectrum1(data, node.index()+1)
+                    self.cvSpectrum.set_spectrum1(data, node_idx+1)
 
                 # Show spectrum tab
                 self.tabWidget.setCurrentIndex(self.tabWidget.indexOf(self.cvSpectrum))
@@ -506,14 +530,21 @@ class MainWindow(MainWindowBase, MainWindowUI):
         elif view == self.gvTSNE:
             self.gvTSNE.scene().setNodesSelection(neighbors)
 
-    def on_use_columns_for(self, type_):
+    def on_use_columns_for(self, type_, cmap=None):
+        if self.tvNodes.model().columnCount() <= 1:
+            return
+
         selected_columns_ids = self.tvNodes.selectionModel().selectedColumns(0)
         len_ = len(selected_columns_ids)
         if type_ == "pie charts":
             if len_ > 0:
+                if cmap is None:
+                    cmap = QSettings().value('ColorMap', 'auto')
+                else:
+                    QSettings().setValue('ColorMap', cmap)
                 ids = [index.column() for index in selected_columns_ids]
-                self.set_nodes_pie_chart_values(ids)
-            else:
+                self.set_nodes_pie_chart_values(ids, cmap=cmap)
+            elif cmap is None:
                 reply = QMessageBox.question(self, None,
                                              "No column selected. Do you want to remove pie charts?",
                                              QMessageBox.Yes | QMessageBox.No)
@@ -521,7 +552,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                     self.set_nodes_pie_chart_values(None)
         elif type_ == "labels":
             if len_ > 1:
-              QMessageBox.information(self, None, "Please select only one column.")
+                QMessageBox.information(self, None, "Please select only one column.")
             elif len_ == 1:
                 id_ = selected_columns_ids[0].column()
                 self.set_nodes_label(id_)
@@ -533,14 +564,22 @@ class MainWindow(MainWindowBase, MainWindowUI):
                     self.set_nodes_label(None)
 
     def on_nodes_table_contextmenu(self, event):
-        selected_column_index = self.tvNodes.columnAt(event.x())
-        selected_row_index = self.tvNodes.rowAt(event.y())
-        if selected_column_index != -1 and selected_row_index != -1:
+        column_index = self.tvNodes.columnAt(event.x())
+        row_index = self.tvNodes.rowAt(event.y())
+        if column_index != -1 and row_index != -1:
+            model = self.tvNodes.model()
+            node_idx = model.mapToSource(model.index(row_index, column_index)).row()
             menu = QMenu(self)
-            action = QAction("Highlight selected nodes", self)
+            action = QAction(QIcon(":/icons/images/highlight.svg"), "Highlight selected nodes", self)
+            action.triggered.connect(lambda: self.highlight_selected_nodes())
+            menu.addAction(action)
+            action = QAction(self.actionViewSpectrum.icon(), "View Spectrum", self)
+            action.triggered.connect(lambda: self.on_show_spectrum_triggered('show', node_idx=node_idx))
+            menu.addAction(action)
+            action = QAction(self.actionViewCompareSpectrum.icon(), "Compare Spectrum", self)
+            action.triggered.connect(lambda: self.on_show_spectrum_triggered('compare', node_idx=node_idx))
             menu.addAction(action)
             menu.popup(QCursor.pos())
-            action.triggered.connect(lambda: self.highlight_selected_nodes())
 
     def highlight_selected_nodes(self):
         selected_indexes = self.tvNodes.model().mapSelectionToSource(
@@ -575,7 +614,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.gvTSNE.scene().clear()
 
             process_file, use_metadata, metadata_file, metadata_options, \
-            compute_options, tsne_options, network_options = dialog.getValues()
+                compute_options, tsne_options, network_options = dialog.getValues()
             self.network.options.cosine = compute_options
             self.network.options.tsne = tsne_options
             self.network.options.network = network_options
@@ -657,15 +696,15 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.gvNetwork.scene().resetLabels()
             self.gvTSNE.scene().resetLabels()
 
-    def set_nodes_pie_chart_values(self, column_ids):
+    def set_nodes_pie_chart_values(self, column_ids, cmap='auto'):
         model = self.tvNodes.model().sourceModel()
         if column_ids is not None:
-            colors = utils.generate_colors(len(column_ids))
-            self.gvNetwork.scene().setPieColors(colors)
-            self.gvTSNE.scene().setPieColors(colors)
+            colors_list = colors.get_colors(len(column_ids), cmap=cmap)
+            self.gvNetwork.scene().setPieColors(colors_list)
+            self.gvTSNE.scene().setPieColors(colors_list)
             for column in range(model.columnCount()):
                 model.setHeaderData(column, Qt.Horizontal, None, role=Qt.BackgroundColorRole)
-            for column, color in zip(column_ids, colors):
+            for column, color in zip(column_ids, colors_list):
                 color = QColor(color)
                 color.setAlpha(128)
                 model.setHeaderData(column, Qt.Horizontal, color, role=Qt.BackgroundColorRole)
@@ -676,7 +715,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 model.setHeaderData(column, Qt.Horizontal, None, role=Qt.BackgroundColorRole)
             self.gvNetwork.scene().resetPieCharts()
             self.gvTSNE.scene().resetPieCharts()
-
 
     def save_settings(self):
         settings = QSettings()
@@ -713,7 +751,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         if which == 'all':
             which = {'network', 't-sne'}
         elif isinstance(which, str):
-            which = set((which,))
+            which = {which}
 
         worker = None
         if 'network' in which:
@@ -726,8 +764,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
             layout = None
 
             def draw_tsne():
-                worker = self.prepare_draw_tsne_worker(layout=layout)
-                self._workers.add(worker)
+                tsne_worker = self.prepare_draw_tsne_worker(layout=layout)
+                self._workers.add(tsne_worker)
 
             if not compute_layouts and self.network.graph.tsne_layout is not None:
                 layout = self.network.graph.tsne_layout
@@ -776,9 +814,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
         if layout is None:
             # Compute layout
             def process_finished():
-                layout = worker.result()
-                if layout is not None:
-                    self.apply_layout('network', layout)
+                computed_layout = worker.result()
+                if computed_layout is not None:
+                    self.apply_layout('network', computed_layout)
 
             worker = workers.NetworkWorker(self.network.graph)
             worker.finished.connect(process_finished)
@@ -797,9 +835,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
         if layout is None:
             # Compute layout
             def process_finished():
-                layout = worker.result()
-                if layout is not None:
-                    self.apply_layout('t-sne', layout)
+                computed_layout = worker.result()
+                if computed_layout is not None:
+                    self.apply_layout('t-sne', computed_layout)
 
             worker = workers.TSNEWorker(self.network.scores, self.network.options.tsne)
             worker.finished.connect(process_finished)

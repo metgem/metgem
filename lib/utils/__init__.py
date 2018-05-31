@@ -1,7 +1,5 @@
 import itertools
 
-from PyQt5.QtGui import QColor
-
 
 class AttrDict(dict):
     """A frozen dictionary where item can be accessed as attributes."""
@@ -73,13 +71,3 @@ class SignalBlocker:
     def __exit__(self, *args):
         for widget in self.widgets:
             widget.blockSignals(False)
-
-
-# https://wiki.qt.io/Color_palette_generator
-# https://martin.ankerl.com/2009/12/09/how-to-create-random-colors-programmatically/
-def generate_colors(n):
-    """Generate list of `n` colors"""
-
-    golden_ratio = 0.618033988749895  # 1/phi
-    step = int(golden_ratio * 360 / n)
-    return [QColor.fromHsv(step * i, 77, 254, 255) for i in range(n)]
