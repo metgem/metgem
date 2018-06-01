@@ -24,3 +24,4 @@ elif sys.platform.startswith('linux'):
 else:
     LOG_PATH = 'log'
     DATABASES_PATH = 'databases'
+SQL_PATH = os.path.join(DATABASES_PATH, 'spectra.sqlite')

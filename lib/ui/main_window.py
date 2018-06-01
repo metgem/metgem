@@ -2,11 +2,12 @@ import sys
 import os
 import json
 
-from pyteomics.auxiliary import PyteomicsError
-from requests import ConnectionError
+import pyteomics
+import requests
 
 import numpy as np
 import igraph as ig
+import sqlalchemy
 
 from PyQt5.QtWidgets import (QDialog, QFileDialog,
                              QMessageBox, QWidget,
@@ -243,6 +244,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
         network.interactionsChanged.connect(self.tvEdges.model().sourceModel().endResetModel)
         self._network = network
 
+    def nodes_selection(self):
+        selected_indexes = self.tvNodes.model().mapSelectionToSource(
+            self.tvNodes.selectionModel().selection()).indexes()
+        return tuple(index.row() for index in selected_indexes)
+
     def load_project(self, filename):
         worker = self.prepare_load_project_worker(filename)
         if worker is not None:
@@ -442,7 +448,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 style_js = json.load(f)
             style = cy.style.create('cyREST style', style_js)
             cy.style.apply(style, g_cy)
-        except (ConnectionRefusedError, ConnectionError):
+        except (ConnectionRefusedError, requests.ConnectionError):
             QMessageBox.information(self, None,
                                     'Please launch Cytoscape before trying to export.')
         except json.decoder.JSONDecodeError:
@@ -473,7 +479,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 try:
                     from PyQt5.QtSvg import QSvgGenerator
                 except ImportError:
-                    print('QtSvg was not found on your system. It is needed for SVG export.')
+                    QMessageBox.warning(self, None, 'QtSvg was not found on your system. It is needed for SVG export.')
                 else:
                     svg_gen = QSvgGenerator()
 
@@ -571,7 +577,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             node_idx = model.mapToSource(model.index(row_index, column_index)).row()
             menu = QMenu(self)
             action = QAction(QIcon(":/icons/images/highlight.svg"), "Highlight selected nodes", self)
-            action.triggered.connect(lambda: self.highlight_selected_nodes())
+            action.triggered.connect(self.highlight_selected_nodes)
             menu.addAction(action)
             action = QAction(self.actionViewSpectrum.icon(), "View Spectrum", self)
             action.triggered.connect(lambda: self.on_show_spectrum_triggered('show', node_idx=node_idx))
@@ -579,15 +585,27 @@ class MainWindow(MainWindowBase, MainWindowUI):
             action = QAction(self.actionViewCompareSpectrum.icon(), "Compare Spectrum", self)
             action.triggered.connect(lambda: self.on_show_spectrum_triggered('compare', node_idx=node_idx))
             menu.addAction(action)
+            action = QAction(QIcon(":/icons/images/library-query.svg"), "Find standards in library", self)
+            action.triggered.connect(lambda: self.on_query_databases('standards'))
+            menu.addAction(action)
+            action = QAction(QIcon(":/icons/images/library-query-analogs.svg"), "Find analogs in library", self)
+            action.triggered.connect(lambda: self.on_query_databases('analogs'))
+            menu.addAction(action)
             menu.popup(QCursor.pos())
 
-    def highlight_selected_nodes(self):
-        selected_indexes = self.tvNodes.model().mapSelectionToSource(
-            self.tvNodes.selectionModel().selection()).indexes()
-        selected = tuple(index.row() for index in selected_indexes)
-        with utils.SignalBlocker(self.gvNetwork.scene(), self.gvTSNE.scene()):
-            self.gvNetwork.scene().setNodesSelection(selected)
-            self.gvTSNE.scene().setNodesSelection(selected)
+    def on_query_databases(self, type_='standards'):
+        selected_idx = self.nodes_selection()
+        if not selected_idx:
+            return
+        options = workers.QueryDatabasesOptions()
+        options.analog_search = (type_ == 'analogs')
+        # TODO: Set polarity
+        dialog = ui.QueryDatabasesDialog(self, options=options)
+        if dialog.exec_() == QDialog.Accepted:
+            options = dialog.getValues()
+            worker = self.prepare_query_database_worker(selected_idx, options)
+            if worker is not None:
+                self._workers.add(worker)
 
     def on_current_parameters_triggered(self):
         dialog = ui.CurrentParametersDialog(self, options=self.network.options)
@@ -663,7 +681,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         dialog.exec_()
 
     def on_view_databases_triggered(self):
-        path = os.path.join(config.DATABASES_PATH, 'spectra.sqlite')
+        path = config.SQL_PATH
         if os.path.exists(path) and os.path.isfile(path) and os.path.getsize(path) > 0:
             dialog = ui.ViewDatabasesDialog(self, base_path=config.DATABASES_PATH)
             dialog.exec_()
@@ -675,6 +693,12 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.gvNetwork.scene().setScale(scale / self.sliderNetworkScale.defaultValue())
         elif type_ == 't-sne':
                 self.gvTSNE.scene().setScale(scale / self.sliderNetworkScale.defaultValue())
+
+    def highlight_selected_nodes(self):
+        selected = self.nodes_selection()
+        with utils.SignalBlocker(self.gvNetwork.scene(), self.gvTSNE.scene()):
+            self.gvNetwork.scene().setNodesSelection(selected)
+            self.gvTSNE.scene().setNodesSelection(selected)
 
     def minimize_tabwidget(self):
         w = self.tabWidget.cornerWidget(Qt.TopRightCorner)
@@ -874,7 +898,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 self._workers.add(worker)
 
         def error(e):
-            if e.__class__ == PyteomicsError:
+            if e.__class__ == pyteomics.auxiliary.PyteomicsError:
                 QMessageBox.warning(self, None, e.message)
 
         def scores_computed():
@@ -962,4 +986,24 @@ class MainWindow(MainWindowBase, MainWindowUI):
         worker.finished.connect(process_finished)
         worker.error.connect(error)
 
+        return worker
+
+    def prepare_query_database_worker(self, indexes, options):
+        if (getattr(self.network, 'mzs', None) is None or getattr(self.network, 'spectra', None) is None
+                or not os.path.exists(config.SQL_PATH)):
+            return
+        mzs = [self.network.mzs[index] for index in indexes]
+        spectra = [self.network.spectra[index] for index in indexes]
+        worker = workers.QueryDatabasesWorker(indexes, mzs, spectra, options)
+
+        def query_finished():
+            nonlocal worker
+            print(worker.result())
+
+        def error(e):
+            if e.__class__ == sqlalchemy.exc.OperationalError:
+                QMessageBox.warning(self, None, 'You have to download at least one database before trying to query it.')
+
+        worker.finished.connect(query_finished)
+        worker.error.connect(error)
         return worker

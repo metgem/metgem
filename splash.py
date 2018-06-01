@@ -115,7 +115,6 @@ splash.setValue(70)
 
 splash.showMessage("Loading Databases module...")
 import lib.database
-import lib.models
 splash.setValue(75)
 
 splash.showMessage("Loading User interface module...")

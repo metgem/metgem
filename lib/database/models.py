@@ -106,7 +106,7 @@ class Spectrum(Base):
                 setattr(self, key, value)
 
     def __repr__(self):
-        return (f"Spectrum(bank='{self.bank.name}', pemass={self.pepmass}, polarity={repr(self.polarity)}, "
+        return (f"Spectrum(bank='{self.bank.name}', pepmass={self.pepmass}, polarity={repr(self.polarity)}, "
                 f"charge={self.charge}, mslevel={self.mslevel})")
 
     def __getitem__(self, key):

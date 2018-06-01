@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="icons">
+    <file>images/library-query-analogs.svg</file>
+    <file>images/library-query.svg</file>
     <file>images/highlight.svg</file>
     <file>images/spectrum-inverted.svg</file>
     <file>images/label.svg</file>

@@ -7,6 +7,7 @@ import os
 from ...workers.network_generation import NetworkVisualizationOptions
 from ...workers.tsne import TSNEVisualizationOptions
 from ...workers.cosine import CosineComputationOptions
+from ...workers.databases.query import QueryDatabasesOptions
 
 
 class NetworkOptionsWidget(QGroupBox):
@@ -93,10 +94,36 @@ class CosineOptionsWidget(QGroupBox):
         return options
 
     def setValues(self, options):
-        """Modify Cosine visualization options
-        """
-
         self.spinMZTolerance.setValue(options.mz_tolerance)
         self.spinMinIntensity.setValue(options.min_intensity)
         self.spinParentFilterTolerance.setValue(options.parent_filter_tolerance)
         self.spinMinMatchedPeaks.setValue(options.min_matched_peaks)
+
+
+class QueryDatabasesOptionsWidget(QGroupBox):
+    """Create a widget containing Database query options"""
+
+    def __init__(self):
+        super().__init__()
+        uic.loadUi(os.path.join(os.path.dirname(__file__), 'databases_options_widget.ui'), self)
+
+    def getValues(self):
+        options = QueryDatabasesOptions()
+        options.mz_tolerance = self.spinMZTolerance.value()
+        options.min_intensity = self.spinMinIntensity.value()
+        options.parent_filter_tolerance = self.spinParentFilterTolerance.value()
+        options.min_matched_peaks = self.spinMinMatchedPeaks.value()
+        options.min_cosine = self.spinMinScore.value()
+        options.analog_search = self.gbAnalogs.isChecked()
+        options.analog_mz_tolerance = self.spinAnalogTolerance.value()
+
+        return options
+
+    def setValues(self, options):
+        self.spinMZTolerance.setValue(options.mz_tolerance)
+        self.spinMinIntensity.setValue(options.min_intensity)
+        self.spinParentFilterTolerance.setValue(options.parent_filter_tolerance)
+        self.spinMinMatchedPeaks.setValue(options.min_matched_peaks)
+        self.spinMinScore.setValue(options.min_cosine)
+        self.gbAnalogs.setChecked(options.analog_search)
+        self.spinAnalogTolerance.setValue(options.analog_mz_tolerance)

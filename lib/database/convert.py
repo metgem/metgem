@@ -2,26 +2,11 @@ import os
 
 import numpy as np
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-
 from pyteomics import mgf
 
-from .utils import grouper
-from .models import Base, Spectrum, Organism, Submitter, DataCollector, Instrument, Bank, Investigator
-
-
-def create_session(filename=None, echo=False, drop_all=False):
-    engine = create_engine(f'sqlite:///{filename}', echo=echo)
-    Base.metadata.bind = engine
-
-    if drop_all:
-        Base.metadata.drop_all(engine)
-        Base.metadata.create_all(engine)
-
-    DBSession = sessionmaker(bind=engine)
-
-    return DBSession()
+from ..utils import grouper
+from .session import create_session
+from .models import Spectrum, Organism, Submitter, DataCollector, Instrument, Bank, Investigator
 
 
 def clean_string(string):
@@ -47,7 +32,7 @@ class DataBaseBuilder:
         self.name = name
         self.echo = echo
 
-        fname = f'{self.name}.sqlite'
+        fname = f'{name}.sqlite' if not name.endswith('.sqlite') else name
         self.bases = {'bank': Bank, 'organism': Organism, 'pi': Investigator,
                       'submituser': Submitter, 'datacollector': DataCollector,
                       'source_instrument': Instrument}
@@ -177,29 +162,3 @@ class DataBaseBuilder:
 
         self.session.commit()
         self._indexes['bank'] += 1
-
-
-class SpectraLibrary:
-
-    def __init__(self, database, echo=False):
-        self.database = database
-        self.echo = echo
-        self._session = None
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, type_, value, traceback):
-        self.close()
-
-    def close(self):
-        if self._session is not None:
-            self._session.close()
-            self._session.bind.dispose()
-            self._session = None
-
-    @property
-    def session(self):
-        if self._session is None:
-            self._session = create_session(f'{self.database}.sqlite', echo=self.echo)
-        return self._session

@@ -7,8 +7,7 @@ from PyQt5 import uic
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'view_databases_dialog.ui')
 
-from ..database import SpectraLibrary
-from ..models import Bank, Spectrum, Base
+from ..database import SpectraLibrary, Bank, Spectrum, Base
 from .widgets import AutoToolTipItemDelegate, LibraryQualityDelegate, SpectrumWidget, SpectrumCanvas, StructureSvgWidget
 
 ViewDatabasesDialogUI, ViewDatabasesDialogBase = uic.loadUiType(UI_FILE,
@@ -173,11 +172,11 @@ class ViewDatabasesDialog(ViewDatabasesDialogUI, ViewDatabasesDialogBase):
         self.setupUi(self)
         self.setWindowFlags(Qt.Tool | Qt.CustomizeWindowHint | Qt.WindowCloseButtonHint)
 
-        model = BanksModel(self.library.session)
+        model = BanksModel(self.library)
         self.cbBanks.setModel(model)
         self.cbBanks.setItemDelegate(AutoToolTipItemDelegate())
 
-        model = SpectraModel(self.library.session,
+        model = SpectraModel(self.library,
                              self.cbBanks.currentData(role=BanksModel.BankIdRole))
         for i in range(model.columnCount()):
             if model.headerData(i, Qt.Horizontal) == Spectrum.libraryquality.comment:

@@ -1,4 +1,4 @@
-from PyQt5.QtGui import QPainter, QKeyEvent, QMouseEvent
+from PyQt5.QtGui import QPainter, QMouseEvent
 from PyQt5.QtWidgets import QTableView, QAbstractButton, QHeaderView
 from PyQt5.QtCore import Qt, QObject, QEvent, QRect, QItemSelectionModel, pyqtSignal
 
@@ -122,8 +122,6 @@ class NodeTableView(MetadataTableView):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self._sort_allowed = True
-
         header = HeaderView(Qt.Horizontal, self)
         header.setHighlightSections(True)
         header.setSectionsClickable(True)
@@ -157,6 +155,7 @@ class EdgeTableView(MetadataTableView):
             return 0
         return super().sizeHintForColumn(column)
 
+    # noinspection PyUnusedLocal
     def on_sort_indicator_changed(self, index: int, order: int):
         if index == self.model().columnCount() - 1:
             with SignalBlocker(self.horizontalHeader()):

@@ -6,7 +6,7 @@ from ..utils import AttrDict
 from ..errors import UserRequestedStopError
 
 try:
-    from cosinelib.cosine import compute_distance_matrix
+    from cosinelib.cosine import cosine_score, compute_distance_matrix
 except ImportError:
     def cosine_score(spectrum1_mz, spectrum1_data, spectrum2_mz, spectrum2_data, mz_tolerance, min_matched_peaks):
         """Compute cosine score from two spectra.
@@ -84,24 +84,24 @@ class CosineComputationOptions(AttrDict):
     """Class containing spectra cosine scores options.
 
     Attributes:
-        mz_tolerance (float): in Da. Default value = 0.02
-        min_intensity (int): relative minimum intensity in percentage Default value = 0
-        parent_filter_tolerance (int): in Da. Default value = 17
-        min_matched_peaks (int): Minimum number of common peaks between two spectra. Default value = 4
+        mz_tolerance (float): in Da.
+        min_intensity (int): relative minimum intensity in percentage.
+        parent_filter_tolerance (int): in Da.
+        min_matched_peaks (int): Minimum number of common peaks between two spectra.
         min_matched_peaks_search (int): Window rank filter's parameters: for each peak in the spectrum, 
-            it is kept only if it is in top `min_matched_peaks_search` in the +/-`matched_peaks_window` window
-            Default value = 6
-        matched_peaks_window (int): in Da. Default value = 50
+            it is kept only if it is in top `min_matched_peaks_search` in the +/-`matched_peaks_window` window.
+        matched_peaks_window (int): in Da.
 
     """
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         super().__init__(mz_tolerance=0.02,
                          min_intensity=0,
                          parent_filter_tolerance=17,
                          min_matched_peaks=4,
                          min_matched_peaks_search=6,
-                         matched_peaks_window=50)
+                         matched_peaks_window=50,
+                         **kwargs)
 
 
 class ComputeScoresWorker(BaseWorker):

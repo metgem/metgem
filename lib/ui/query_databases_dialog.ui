@@ -9,19 +9,16 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>472</width>
-    <height>529</height>
+    <width>210</width>
+    <height>350</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Download databases</string>
-  </property>
-  <property name="modal">
-   <bool>true</bool>
+   <string>Query databases</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
@@ -88,16 +85,13 @@
       </widget>
      </item>
      <item>
-      <widget class="QToolButton" name="btRefresh">
-       <property name="toolTip">
-        <string>Refresh list</string>
-       </property>
+      <widget class="QToolButton" name="btSaveSelection">
        <property name="text">
-        <string>...</string>
+        <string>Save selection</string>
        </property>
        <property name="icon">
         <iconset resource="ui.qrc">
-         <normaloff>:/icons/images/refresh.svg</normaloff>:/icons/images/refresh.svg</iconset>
+         <normaloff>:/icons/images/document-save.svg</normaloff>:/icons/images/document-save.svg</iconset>
        </property>
       </widget>
      </item>
@@ -117,35 +111,43 @@
     </layout>
    </item>
    <item>
-    <widget class="LoadingListWidget" name="lstDatabases">
-     <property name="editTriggers">
-      <set>QAbstractItemView::NoEditTriggers</set>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>Databases</string>
      </property>
-     <property name="showDropIndicator" stdset="0">
-      <bool>false</bool>
-     </property>
-     <property name="alternatingRowColors">
+     <property name="flat">
       <bool>true</bool>
      </property>
-     <property name="sortingEnabled">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QLabel" name="labelDesc">
-     <property name="text">
-      <string/>
-     </property>
-     <property name="textFormat">
-      <enum>Qt::RichText</enum>
-     </property>
-     <property name="wordWrap">
-      <bool>true</bool>
-     </property>
-     <property name="openExternalLinks">
-      <bool>true</bool>
-     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="QListWidget" name="lstDatabases">
+        <property name="horizontalScrollBarPolicy">
+         <enum>Qt::ScrollBarAlwaysOff</enum>
+        </property>
+        <property name="editTriggers">
+         <set>QAbstractItemView::NoEditTriggers</set>
+        </property>
+        <property name="tabKeyNavigation">
+         <bool>true</bool>
+        </property>
+        <property name="showDropIndicator" stdset="0">
+         <bool>false</bool>
+        </property>
+        <property name="alternatingRowColors">
+         <bool>true</bool>
+        </property>
+        <property name="selectionMode">
+         <enum>QAbstractItemView::MultiSelection</enum>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
    <item>
@@ -154,19 +156,12 @@
       <enum>Qt::Horizontal</enum>
      </property>
      <property name="standardButtons">
-      <set>QDialogButtonBox::Close</set>
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
      </property>
     </widget>
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>LoadingListWidget</class>
-   <extends>QListWidget</extends>
-   <header>lib/ui/widgets.h</header>
-  </customwidget>
- </customwidgets>
  <resources>
   <include location="ui.qrc"/>
  </resources>
@@ -178,8 +173,8 @@
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>254</x>
-     <y>522</y>
+     <x>200</x>
+     <y>340</y>
     </hint>
     <hint type="destinationlabel">
      <x>157</x>
@@ -194,11 +189,11 @@
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>322</x>
-     <y>522</y>
+     <x>200</x>
+     <y>340</y>
     </hint>
     <hint type="destinationlabel">
-     <x>286</x>
+     <x>209</x>
      <y>274</y>
     </hint>
    </hints>
