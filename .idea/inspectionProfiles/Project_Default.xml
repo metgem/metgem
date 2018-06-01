@@ -30,6 +30,8 @@
           <option value="lib.ui.widgets" />
           <option value="PyQt5.QtWidgets.triggered.connect" />
           <option value="typing.Iterable.__add__" />
+          <option value="PyQt5.QtCore.QEvent.QEvent.button" />
+          <option value="sqlalchemy.exc" />
         </list>
       </option>
     </inspection_tool>
