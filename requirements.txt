@@ -1,3 +1,4 @@
+pandas>=0.22
 lxml>=4.0
 numpy>=1.14
 PyQt5>=5.9
