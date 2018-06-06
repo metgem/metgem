@@ -3,7 +3,7 @@ import os
 from PyQt5.QtGui import QStandardItemModel, QIcon, QStandardItem
 from PyQt5.QtWidgets import QAbstractItemView
 
-from PyQt5.QtCore import Qt, QAbstractTableModel, QModelIndex
+from PyQt5.QtCore import Qt, QAbstractTableModel, QModelIndex, QItemSelection, QItemSelectionModel
 from PyQt5 import uic
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'view_standards_results_dialog.ui')
@@ -111,6 +111,8 @@ class ViewStandardsResultsDialog(ViewStandardsResultsDialogUI, ViewStandardsResu
         self.setupUi(self)
         self.setWindowFlags(Qt.Tool | Qt.CustomizeWindowHint | Qt.WindowCloseButtonHint)
 
+        self.current = selection['current'] if 'current' in selection else 0
+
         model = SpectraModel(base_path, selection)
 
         for i in range(model.columnCount()):
@@ -146,12 +148,16 @@ class ViewStandardsResultsDialog(ViewStandardsResultsDialogUI, ViewStandardsResu
                 standards_item.appendRow(values)
 
         self.tvSpectra.setModel(tree_model)
+        self.tvSpectra.expandAll()
         self.widgetSpectrumDetails.setModel(model)
 
         # Connect events
         self.tvSpectra.selectionModel().currentChanged.connect(self.on_selection_changed)
 
     def on_selection_changed(self, index):
+        if not index.isValid():
+            return
+
         parent = index.parent()
         if parent.isValid():
             # Update description labels
@@ -161,7 +167,7 @@ class ViewStandardsResultsDialog(ViewStandardsResultsDialogUI, ViewStandardsResu
         super().closeEvent(event)
 
     def showEvent(self, event):
-        self.select_row(0)
+        self.select_row(self.current)
         super().showEvent(event)
 
     def keyPressEvent(self, event):
@@ -170,9 +176,16 @@ class ViewStandardsResultsDialog(ViewStandardsResultsDialogUI, ViewStandardsResu
         super().keyPressEvent(event)
 
     def select_row(self, row, scroll_hint: QAbstractItemView.ScrollHint = QAbstractItemView.EnsureVisible):
-        return  # TODO
-        if 0 <= row < self.tvSpectra.model().rowCount():
-            index = self.tvSpectra.model().index(row, 0)
-            self.tvSpectra.selectRow(row)
-            self.tvSpectra.scrollTo(index, scroll_hint)
+        if 0 <= row < self.widgetSpectrumDetails.model().rowCount():
+            index = self.widgetSpectrumDetails.model().index(row, 0)
+            if index.data(role=SpectraModel.TypeRole) == 'standards':
+                parent = self.tvSpectra.model().index(0, 0)
+            else:
+                parent = self.tvSpectra.model().index(1, 0)
+            index_first = self.tvSpectra.model().index(row, 0, parent=parent)
+            index_last = self.tvSpectra.model().index(row, self.tvSpectra.model().columnCount()-1, parent=parent)
+            self.tvSpectra.selectionModel().select(QItemSelection(index_first, index_last),
+                                                   QItemSelectionModel.Select)
+            self.on_selection_changed(index_first)
+            self.tvSpectra.scrollTo(index_first, scroll_hint)
 
