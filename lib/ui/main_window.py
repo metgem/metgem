@@ -168,6 +168,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.sliderTSNEScale.valueChanged.connect(lambda val: self.on_scale_changed('t-sne', val))
 
         self.tvNodes.viewDetailsClicked.connect(self.on_view_details_clicked)
+        self.tvNodes.model().dataChanged.connect(self.on_nodes_table_data_changed)
 
         # Create list of colormaps
         menu = QMenu(self)
@@ -600,6 +601,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
             menu.addAction(action)
             menu.popup(QCursor.pos())
 
+    def on_nodes_table_data_changed(self):
+        self.has_unsaved_changes = True
+
     def on_query_databases(self, type_='standards'):
         selected_idx = self.nodes_selection()
         if not selected_idx:
@@ -710,6 +714,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                     current = dialog.getValues()
                     if current is not None:
                         self.network.db_results[row]['current'] = current
+                        self.has_unsaved_changes = True
             else:
                 QMessageBox.information(self, None, "No databases found, please download one or more database first.")
 
@@ -1030,6 +1035,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                             self.network.db_results[row] = {type_: result[row][type_]}
                     elif row in self.network.db_results and type_ in self.network.db_results[row]:
                         del self.network.db_results[row][type_]
+                self.has_unsaved_changes = True
                 self.tvNodes.model().sourceModel().endResetModel()
 
                 # Show column if db_results is not empty

@@ -1,5 +1,5 @@
 import numpy as np
-from PyQt5.QtCore import Qt, QAbstractTableModel, QModelIndex, QSortFilterProxyModel, QSettings
+from PyQt5.QtCore import Qt, QAbstractTableModel, QModelIndex, QSortFilterProxyModel, QSettings, pyqtSignal
 
 try:
     import os
@@ -130,8 +130,12 @@ class NodesModel(QAbstractTableModel):
         row = index.row()
         column = index.column()
         if role == Qt.EditRole and column == 1:
-            self.db_results[row]['current'] = value
-            return True
+            if ('current' not in self.db_results[row] and value != 0) or \
+                    ('current' in self.db_results[row] and self.db_results[row]['current'] != value):
+                self.db_results[row]['current'] = value
+                self.dataChanged.emit(index, index)
+                return True
+            return super().setData(index, value, role)
         else:
             return super().setData(index, value, role)
 
