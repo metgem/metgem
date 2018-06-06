@@ -147,7 +147,8 @@ class SaveProjectWorker(BaseWorker):
              '0/graph.graphml': gxl,
              '0/network_layout': getattr(self.graph, 'network_layout', np.array([])),
              '0/tsne_layout': getattr(self.graph, 'tsne_layout', np.array([])),
-             '0/options.json': self.options}
+             '0/options.json': self.network.options,
+             '0/db_results.json': self.network.db_results}
         d.update(spec_data)
 
         try:
