@@ -137,7 +137,7 @@ class SaveProjectWorker(BaseWorker):
         # Convert lists of parent mass and spectrum data to something that be can be saved
         mzs = getattr(self.network, 'mzs', [])
         spectra = getattr(self.network, 'spectra', [])
-        spec_infos = [{'id': i, 'mz_parent': mz_parent} for i, mz_parent in enumerate(spectra)]
+        spec_infos = [{'id': i, 'mz_parent': mz_parent} for i, mz_parent in enumerate(mzs)]
         spec_data = {'0/spectra/{}'.format(i): data for i, data in enumerate(spectra)}
 
         # Create dict for saving
