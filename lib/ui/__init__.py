@@ -8,3 +8,4 @@ from .progress_dialog import ProgressDialog
 from .import_metadata_dialog import ImportMetadataDialog
 from .settings_dialog import SettingsDialog
 from .query_databases_dialog import QueryDatabasesDialog
+from .view_standards_results_dialog import ViewStandardsResultsDialog

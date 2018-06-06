@@ -167,6 +167,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.sliderNetworkScale.valueChanged.connect(lambda val: self.on_scale_changed('network', val))
         self.sliderTSNEScale.valueChanged.connect(lambda val: self.on_scale_changed('t-sne', val))
 
+        self.tvNodes.viewDetailsClicked.connect(self.on_view_details_clicked)
+
         # Create list of colormaps
         menu = QMenu(self)
         group = QActionGroup(menu, exclusive=True)
@@ -199,6 +201,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self._network.options = utils.AttrDict({'cosine': workers.CosineComputationOptions(),
                                                 'network': workers.NetworkVisualizationOptions(),
                                                 'tsne': workers.TSNEVisualizationOptions()})
+
+        self.tvNodes.setColumnHidden(1, not bool(self._network.db_results))
 
     @property
     def window_title(self):
@@ -242,6 +246,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         network.infosChanged.connect(self.tvNodes.model().sourceModel().endResetModel)
         network.interactionsAboutToChange.connect(self.tvEdges.model().sourceModel().beginResetModel)
         network.interactionsChanged.connect(self.tvEdges.model().sourceModel().endResetModel)
+
         self._network = network
 
     def nodes_selection(self):
@@ -599,7 +604,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             return
         options = workers.QueryDatabasesOptions()
         options.analog_search = (type_ == 'analogs')
-        # TODO: Set polarity
+
         dialog = ui.QueryDatabasesDialog(self, options=options)
         if dialog.exec_() == QDialog.Accepted:
             options = dialog.getValues()
@@ -693,6 +698,15 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.gvNetwork.scene().setScale(scale / self.sliderNetworkScale.defaultValue())
         elif type_ == 't-sne':
                 self.gvTSNE.scene().setScale(scale / self.sliderNetworkScale.defaultValue())
+
+    def on_view_details_clicked(self, selection: dict):
+        if selection:
+            path = config.SQL_PATH
+            if os.path.exists(path) and os.path.isfile(path) and os.path.getsize(path) > 0:
+                dialog = ui.ViewStandardsResultsDialog(self, selection=selection, base_path=config.DATABASES_PATH)
+                dialog.exec_()
+            else:
+                QMessageBox.information(self, None, "No databases found, please download one or more database first.")
 
     def highlight_selected_nodes(self):
         selected = self.nodes_selection()
@@ -998,7 +1012,23 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         def query_finished():
             nonlocal worker
-            print(worker.result())
+            result = worker.result()
+            if result:
+                self.tvNodes.model().sourceModel().beginResetModel()
+                type_ = "analogs" if options.analog_search else "standards"
+                # Update db_results with these new results
+                for row in result:
+                    if result[row][type_]:
+                        if row in self.network.db_results:
+                            self.network.db_results[row][type_] = result[row][type_]
+                        else:
+                            self.network.db_results[row] = {type_: result[row][type_]}
+                    elif row in self.network.db_results:
+                        del self.network.db_results[row][type_]
+                self.tvNodes.model().sourceModel().endResetModel()
+
+                # Show column if db_results is not empty
+                self.tvNodes.setColumnHidden(1, self.network.db_results is None)
 
         def error(e):
             if e.__class__ == sqlalchemy.exc.OperationalError:

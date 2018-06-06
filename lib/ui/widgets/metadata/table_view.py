@@ -1,7 +1,8 @@
 from PyQt5.QtGui import QPainter, QMouseEvent
 from PyQt5.QtWidgets import QTableView, QAbstractButton, QHeaderView
-from PyQt5.QtCore import Qt, QObject, QEvent, QRect, QItemSelectionModel, pyqtSignal
+from PyQt5.QtCore import Qt, QObject, QEvent, QRect, QItemSelectionModel, pyqtSignal, QModelIndex
 
+from lib.ui.widgets.delegates import StandardsResultsDelegate
 from .model import ProxyModel
 from ..delegates import EnsureStringItemDelegate
 from ....utils import SignalBlocker
@@ -102,7 +103,7 @@ class MetadataTableView(QTableView):
         self.setSortingEnabled(True)
 
     def eventFilter(self, watched: QObject, event: QEvent):
-        # If top-left button if right clicked, reset model's sorting order
+        # If top-left button is right clicked, reset model's sorting order
         if event.type() == QEvent.MouseButtonRelease:
             if event.button() == Qt.RightButton:
                 self.resetSorting()
@@ -119,6 +120,9 @@ class MetadataTableView(QTableView):
 
 
 class NodeTableView(MetadataTableView):
+
+    viewDetailsClicked = pyqtSignal(dict)
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -131,6 +135,10 @@ class NodeTableView(MetadataTableView):
         self.setHorizontalHeader(header)
 
         self.setContextMenuPolicy(Qt.CustomContextMenu)
+
+        delegate = StandardsResultsDelegate()
+        delegate.viewDetailsClicked.connect(self.viewDetailsClicked.emit)
+        self.setItemDelegateForColumn(1, delegate)
 
     def on_section_entered(self, logical_index):
         index = self.model().index(0, logical_index)

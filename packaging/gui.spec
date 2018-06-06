@@ -37,7 +37,8 @@ datas = [('../splash.svg', ''),
          ('../lib/ui/*.ui', 'lib/ui'),
          ('../lib/ui/widgets/images/*', 'lib/ui/widgets/images'),
          ('../lib/ui/widgets/spectrum/images/*', 'lib/ui/widgets/spectrum/images'),
-         ('../lib/ui/widgets/*.ui', 'lib/ui/widgets')]
+         ('../lib/ui/widgets/*.ui', 'lib/ui/widgets'),
+         ('../lib/ui/widgets/databases/*.ui', 'lib/ui/widgets/databases')]
 if not sys.platform.startswith('darwin'):
     datas.extend([('../examples/*', 'examples')])
          

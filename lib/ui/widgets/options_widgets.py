@@ -107,6 +107,10 @@ class QueryDatabasesOptionsWidget(QGroupBox):
         super().__init__()
         uic.loadUi(os.path.join(os.path.dirname(__file__), 'databases_options_widget.ui'), self)
 
+        # Populate polarity combobox
+        self.cbPolarity.addItems(['Positive', 'Negative'])
+        self.cbPolarity.setCurrentIndex(0)
+
     def getValues(self):
         options = QueryDatabasesOptions()
         options.mz_tolerance = self.spinMZTolerance.value()
@@ -116,6 +120,7 @@ class QueryDatabasesOptionsWidget(QGroupBox):
         options.min_cosine = self.spinMinScore.value()
         options.analog_search = self.gbAnalogs.isChecked()
         options.analog_mz_tolerance = self.spinAnalogTolerance.value()
+        options.positive_polarity = (self.cbPolarity.currentIndex() == 0)
 
         return options
 
@@ -127,3 +132,4 @@ class QueryDatabasesOptionsWidget(QGroupBox):
         self.spinMinScore.setValue(options.min_cosine)
         self.gbAnalogs.setChecked(options.analog_search)
         self.spinAnalogTolerance.setValue(options.analog_mz_tolerance)
+        self.cbPolarity.setCurrentIndex(0 if options.positive_polarity else 1)

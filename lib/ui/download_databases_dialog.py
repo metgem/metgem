@@ -23,8 +23,8 @@ DownloadDatabasesDialogUI, DownloadDatabasesDialogBase = uic.loadUiType(UI_FILE,
 
 
 class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialogBase):
-    IDS_ROLE = Qt.UserRole + 1
-    DESC_ROLE = Qt.UserRole + 2
+    IdsRole = Qt.UserRole + 1
+    DescRole = Qt.UserRole + 2
 
     def __init__(self, *args, base_path=None, **kwargs):
         super().__init__(*args, **kwargs)
@@ -77,8 +77,8 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
         def update_list(dict_item):
             item = QListWidgetItem(dict_item['name'])
             item.setCheckState(Qt.Unchecked)
-            item.setData(DownloadDatabasesDialog.IDS_ROLE, dict_item['ids'])
-            item.setData(DownloadDatabasesDialog.DESC_ROLE, dict_item['desc'])
+            item.setData(DownloadDatabasesDialog.IdsRole, dict_item['ids'])
+            item.setData(DownloadDatabasesDialog.DescRole, dict_item['desc'])
             self.lstDatabases.addItem(item)
 
         def process_finished():
@@ -127,8 +127,8 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
     def get_ids(self, selected_only=False):
         items = [self.lstDatabases.item(i) for i in range(self.lstDatabases.count())
                  if not selected_only or self.lstDatabases.item(i).checkState() == Qt.Checked]
-        ids = [id_ for item in items for id_ in item.data(DownloadDatabasesDialog.IDS_ROLE)
-               if item.data(DownloadDatabasesDialog.IDS_ROLE) is not None]
+        ids = [id_ for item in items for id_ in item.data(DownloadDatabasesDialog.IdsRole)
+               if item.data(DownloadDatabasesDialog.IdsRole) is not None]
         return ids
 
     def check_selection(self, item):
@@ -144,7 +144,7 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
 
     def update_description(self, current, previous):
         if current is not None:
-            desc = current.data(DownloadDatabasesDialog.DESC_ROLE)
+            desc = current.data(DownloadDatabasesDialog.DescRole)
             self.labelDesc.setText(desc)
 
     def update_badges(self):
@@ -153,7 +153,7 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
 
         for i in range(self.lstDatabases.count()):
             item = self.lstDatabases.item(i)
-            ids = item.data(DownloadDatabasesDialog.IDS_ROLE)
+            ids = item.data(DownloadDatabasesDialog.IdsRole)
             if ids is None:
                 continue
             for id_ in ids:

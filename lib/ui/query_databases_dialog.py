@@ -15,20 +15,8 @@ QueryDatabasesDialogUI, QueryDatabasesDialogBase = uic.loadUiType(UI_FILE, from_
 
 
 class QueryDatabasesDialog(QueryDatabasesDialogBase, QueryDatabasesDialogUI):
-    """Create and open a dialog to process a new .mgf file.
 
-    Creates a dialog containing 4 widgets:
-        -file opening widget: to select a .mgf file to process and a .txt meta data file
-        -CosineComputationOptions containing widget: to modify the cosine computation parameters
-        -NetworkVisualizationOptions containing widget: to modify the Network visualization parameters
-        -TSNEVisualizationOptions containing widget: to modify the TSNE visualization parameters
-
-    If validated:   - the entered parameters are selected as default values for the next actions.
-                    - the cosine score computing is started
-                    - upon cosine score computation validation, Network and TSNE vilsualizations are created
-
-    """
-    IDS_ROLE = Qt.UserRole + 1
+    IdsRole = Qt.UserRole + 1
 
     def __init__(self, *args, options=None, **kwargs):
         super().__init__(*args, **kwargs)
@@ -52,9 +40,8 @@ class QueryDatabasesDialog(QueryDatabasesDialogBase, QueryDatabasesDialogUI):
         with SpectraLibrary(SQL_PATH, echo=DEBUG) as lib:
             for bank in lib.query(Bank):
                 item = QListWidgetItem(bank.name)
-                item.setData(QueryDatabasesDialog.IDS_ROLE, bank.id)
+                item.setData(QueryDatabasesDialog.IdsRole, bank.id)
                 self.lstDatabases.addItem(item)
-                print(bank.name, selection)
                 if bank.name in selection:
                     item.setSelected(True)
 
@@ -83,5 +70,5 @@ class QueryDatabasesDialog(QueryDatabasesDialogBase, QueryDatabasesDialogUI):
 
     def getValues(self):
         options = self.db_widget.getValues()
-        options.databases = [item.data(QueryDatabasesDialog.IDS_ROLE) for item in self.lstDatabases.selectedItems()]
+        options.databases = [item.data(QueryDatabasesDialog.IdsRole) for item in self.lstDatabases.selectedItems()]
         return options

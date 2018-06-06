@@ -4,7 +4,7 @@ from .options_widgets import TSNEOptionsWidget, NetworkOptionsWidget, CosineOpti
 from .spectrum import SpectrumCanvas, SpectrumNavigationToolbar, SpectrumWidget, ExtendedSpectrumWidget
 from .delegates import AutoToolTipItemDelegate, LibraryQualityDelegate, EnsureStringItemDelegate
 from .loading_views import LoadingListView, LoadingListWidget, LoadingTableView, LoadingTableWidget
-from .view_databases import PubMedLabel, SpectrumIdLabel, SubmitUserLabel, QualityLabel
+from .databases import SpectrumDetailsWidget, PubMedLabel, SpectrumIdLabel, SubmitUserLabel, QualityLabel
 from .slider import Slider
 from .structure import StructureSvgWidget
 from .toolbar_menu import ToolBarMenu

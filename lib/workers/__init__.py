@@ -9,4 +9,4 @@ from .read_metadata import ReadMetadataOptions, ReadMetadataWorker
 from .project import LoadProjectWorker, SaveProjectWorker
 from .databases import (ListGNPSDatabasesWorker, DownloadGNPSDatabasesWorker,
                         GetGNPSDatabasesMtimeWorker, ConvertDatabasesWorker,
-                        QueryDatabasesWorker, QueryDatabasesOptions)
+                        QueryDatabasesWorker, QueryDatabasesOptions, STANDARDS, ANALOGS)

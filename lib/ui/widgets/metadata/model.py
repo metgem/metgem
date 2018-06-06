@@ -10,6 +10,9 @@ except (ImportError, FileNotFoundError, IOError, pd.errors.ParserError, pd.error
 
 FilterRole = Qt.UserRole + 1
 LabelRole = Qt.UserRole + 2
+StandardsRole = Qt.UserRole + 3
+AnalogsRole = Qt.UserRole + 4
+DbResultsRole = Qt.UserRole + 5
 
 
 class ProxyModel(QSortFilterProxyModel):
@@ -50,27 +53,33 @@ class NodesModel(QAbstractTableModel):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.table = None
-        self.list = []
+        self.infos = None
+        self.mzs = []
+        self.db_results = None
         self.headers = None
         self.headers_colors = None
 
     def rowCount(self, parent=QModelIndex()):
-        return self.table.shape[0] if self.table is not None else len(self.list)
+        return self.infos.shape[0] if self.infos is not None else len(self.mzs)
 
     def columnCount(self, parent=QModelIndex()):
-        return self.table.shape[1] + 1 if self.table is not None else 1
+        count = self.infos.shape[1] + 2 if self.infos is not None else 2
+        return count
 
     def endResetModel(self):
-        table = getattr(self.parent().network, 'infos', None)
-        if table is not None:
-            self.table = table.values
-            self.headers = np.array(table.columns)
+        network = self.parent().network
+        infos = getattr(network, 'infos', None)
+        if infos is not None:
+            self.infos = infos.values
+            self.headers = np.array(infos.columns)
         else:
-            self.table = None
+            self.infos = None
             self.headers = None
         self.headers_colors = [None] * self.columnCount()
-        self.list = getattr(self.parent().network, 'mzs', [])
+
+        self.mzs = getattr(network, 'mzs', [])
+
+        self.db_results = getattr(network, 'db_results', None)
         super().endResetModel()
 
     def data(self, index: QModelIndex, role=Qt.DisplayRole):
@@ -79,24 +88,62 @@ class NodesModel(QAbstractTableModel):
 
         row = index.row()
         column = index.column()
-        if role in (Qt.DisplayRole, Qt.EditRole, FilterRole, LabelRole):
+        if role in (Qt.DisplayRole, Qt.EditRole, FilterRole, LabelRole, StandardsRole, AnalogsRole, DbResultsRole):
             if column == 0:
                 try:
-                    return self.list[row]
+                    return self.mzs[row]
                 except IndexError:
                     return
-            elif role in (FilterRole, LabelRole):
-                return str(self.table[row, column - 1])
+            elif column == 1:
+                try:
+                    if role == Qt.DisplayRole:
+                        results = self.db_results[row]
+                        try:
+                            current = results['current']
+                        except KeyError:
+                            current = 0
+                        return self.db_results[row]['standards'][current].text
+                    elif role == DbResultsRole:
+                        return self.db_results[row]
+                    elif role == StandardsRole:
+                        return self.db_results[row]['standards']
+                    elif role == AnalogsRole:
+                        return self.db_results[row]['analogs']
+                    elif role == Qt.EditRole:
+                        return self.db_results[row]['current']
+                    else:
+                        return
+                except (TypeError, KeyError, IndexError):
+                    if role == Qt.EditRole:
+                        return 0
+                    return
             else:
-                return self.table[row, column - 1]
+                if role in (FilterRole, LabelRole):
+                    return str(self.infos[row, column - 2])
+                else:
+                    return self.infos[row, column - 2]
+
+    def setData(self, index: QModelIndex, value, role=Qt.EditRole):
+        if not index.isValid():
+            return
+
+        row = index.row()
+        column = index.column()
+        if role == Qt.EditRole and column == 1:
+            self.db_results[row]['current'] = value
+            return True
+        else:
+            return super().setData(index, value, role)
 
     def headerData(self, section: int, orientation: int, role=Qt.DisplayRole):
         if role in (Qt.DisplayRole, Qt.ToolTipRole):
             if orientation == Qt.Horizontal:
                 if section == 0:
                     return "m/z parent"
+                elif section == 1:
+                    return "Database search results"
                 elif self.headers is not None:
-                    return self.headers[section-1]
+                    return self.headers[section - 2]
             elif orientation == Qt.Vertical:
                 return str(section+1)
         elif role == Qt.BackgroundColorRole:
@@ -114,22 +161,28 @@ class NodesModel(QAbstractTableModel):
         else:
             super().setHeaderData(section, orientation, value, role)
 
+    def flags(self, index: QModelIndex):
+        flags = super().flags(index)
+        if index.column() == 1:
+            flags |= Qt.ItemIsEditable
+        return flags
+
 
 class EdgesModel(QAbstractTableModel):
     """Model based on a numpy record array"""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.table = None
+        self.interactions = None
 
         self.settings = QSettings()
 
     def rowCount(self, parent=QModelIndex()):
-        data = self.table
+        data = self.interactions
         return data.size if data is not None else 0
 
     def columnCount(self, parent=QModelIndex()):
-        data = self.table
+        data = self.interactions
         if data is not None:
             if NEUTRAL_LOSSES is not None:
                 return len(data[0]) + 1
@@ -139,7 +192,7 @@ class EdgesModel(QAbstractTableModel):
             return 0
 
     def endResetModel(self):
-        self.table = getattr(self.parent().network, 'interactions', None)
+        self.interactions = getattr(self.parent().network, 'interactions', None)
         super().endResetModel()
 
     def data(self, index, role=Qt.DisplayRole):
@@ -152,7 +205,7 @@ class EdgesModel(QAbstractTableModel):
             if column == self.columnCount()-1:
                 if role in (FilterRole, LabelRole):
                     return
-                d_exp = abs(self.table[row]['Delta MZ'])
+                d_exp = abs(self.interactions[row]['Delta MZ'])
                 interpretations = []
                 if NEUTRAL_LOSSES is not None:
                     for _, r in NEUTRAL_LOSSES.iterrows():
@@ -163,9 +216,9 @@ class EdgesModel(QAbstractTableModel):
                 else:
                     return
             elif role in (FilterRole, LabelRole):
-                return str(self.table[row][column])
+                return str(self.interactions[row][column])
             else:
-                return self.table[row][column]
+                return self.interactions[row][column]
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if role != Qt.DisplayRole:
@@ -174,6 +227,6 @@ class EdgesModel(QAbstractTableModel):
         if orientation == Qt.Horizontal:
             if section == self.columnCount()-1:
                 return 'Possible interpretation'
-            return self.table.dtype.names[section]
+            return self.interactions.dtype.names[section]
         elif orientation == Qt.Vertical:
             return str(section+1)
