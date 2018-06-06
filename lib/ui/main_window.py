@@ -1023,7 +1023,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                             self.network.db_results[row][type_] = result[row][type_]
                         else:
                             self.network.db_results[row] = {type_: result[row][type_]}
-                    elif row in self.network.db_results:
+                    elif row in self.network.db_results and type_ in self.network.db_results[row]:
                         del self.network.db_results[row][type_]
                 self.tvNodes.model().sourceModel().endResetModel()
 
