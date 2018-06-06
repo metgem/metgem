@@ -43,6 +43,12 @@ class StandardsResultsEditor(QWidget):
     def setCurrentIndex(self, index: QModelIndex):
         self.combo.setCurrentIndex(index)
 
+    def showPopup(self):
+        self.combo.showPopup()
+
+    def hidePopup(self):
+        self.combo.hidePopup()
+
 
 class StandardsResultsComboBox(QComboBox):
 
@@ -84,7 +90,7 @@ class StandardsResultsComboBox(QComboBox):
 
 class StandardsResultsDelegate(QStyledItemDelegate):
 
-    viewDetailsClicked = pyqtSignal(dict)
+    viewDetailsClicked = pyqtSignal(int, dict)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -117,7 +123,7 @@ class StandardsResultsDelegate(QStyledItemDelegate):
                         parent.appendRow(item)
 
             # Connect events
-            editor.button.clicked.connect(lambda: self.on_view_details(index))
+            editor.button.clicked.connect(lambda: self.on_view_details(index, editor))
 
             return editor
 
@@ -132,7 +138,8 @@ class StandardsResultsDelegate(QStyledItemDelegate):
     def setModelData(self, editor, model, index):
         model.setData(index, editor.currentIndex(), Qt.EditRole)
 
-    def on_view_details(self, index):
+    def on_view_details(self, index, editor):
+        self.closeEditor.emit(editor)
         item_ids = index.model().data(index, DbResultsRole)
         if item_ids:
-            self.viewDetailsClicked.emit(item_ids)
+            self.viewDetailsClicked.emit(index.row(), item_ids)

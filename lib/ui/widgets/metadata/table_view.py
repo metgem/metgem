@@ -121,8 +121,6 @@ class MetadataTableView(QTableView):
 
 class NodeTableView(MetadataTableView):
 
-    viewDetailsClicked = pyqtSignal(dict)
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -137,7 +135,7 @@ class NodeTableView(MetadataTableView):
         self.setContextMenuPolicy(Qt.CustomContextMenu)
 
         delegate = StandardsResultsDelegate()
-        delegate.viewDetailsClicked.connect(self.viewDetailsClicked.emit)
+        self.viewDetailsClicked = delegate.viewDetailsClicked
         self.setItemDelegateForColumn(1, delegate)
 
     def on_section_entered(self, logical_index):

@@ -1,7 +1,7 @@
 import os
 
 from PyQt5.QtGui import QStandardItemModel, QIcon, QStandardItem
-from PyQt5.QtWidgets import QAbstractItemView
+from PyQt5.QtWidgets import QAbstractItemView, QDialog
 
 from PyQt5.QtCore import Qt, QAbstractTableModel, QModelIndex, QItemSelection, QItemSelectionModel
 from PyQt5 import uic
@@ -108,6 +108,8 @@ class ViewStandardsResultsDialog(ViewStandardsResultsDialogUI, ViewStandardsResu
     def __init__(self, *args, base_path=None, selection: dict = None, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self._selected_index = QModelIndex()
+
         self.setupUi(self)
         self.setWindowFlags(Qt.Tool | Qt.CustomizeWindowHint | Qt.WindowCloseButtonHint)
 
@@ -130,9 +132,11 @@ class ViewStandardsResultsDialog(ViewStandardsResultsDialogUI, ViewStandardsResu
 
         standards_item = QStandardItem(QIcon(":/icons/images/library-query.svg"), 'Standards')
         standards_item.setSelectable(False)
+        standards_item.setData("standards", role=SpectraModel.TypeRole)
         tree_model.appendRow(standards_item)
         analogs_item = QStandardItem(QIcon(":/icons/images/library-query-analogs.svg"), 'Analogs')
         analogs_item.setSelectable(False)
+        analogs_item.setData("analogs", role=SpectraModel.TypeRole)
         tree_model.appendRow(analogs_item)
 
         for row in range(model.rowCount()):
@@ -141,7 +145,9 @@ class ViewStandardsResultsDialog(ViewStandardsResultsDialogUI, ViewStandardsResu
                 if column in forbidden_cols:
                     continue
                 index = model.index(row, column)
-                values.append(QStandardItem(str(model.data(index))))
+                item = QStandardItem(str(model.data(index)))
+                item.setEditable(False)
+                values.append(item)
             if model.data(index, role=SpectraModel.TypeRole) == 'analogs':
                 analogs_item.appendRow(values)
             else:
@@ -154,19 +160,34 @@ class ViewStandardsResultsDialog(ViewStandardsResultsDialogUI, ViewStandardsResu
         # Connect events
         self.tvSpectra.selectionModel().currentChanged.connect(self.on_selection_changed)
 
+    def done(self, r):
+        if r == QDialog.Accepted:
+            if self.getValues() is not None:
+                super().done(r)
+        else:
+            super().done(r)
+
+    def getValues(self):
+        if self._selected_index.isValid():
+            parent = self._selected_index.parent()
+            if parent.isValid():
+                if parent.data(role=SpectraModel.TypeRole) == "standards":
+                    return self._selected_index.row()
+
     def on_selection_changed(self, index):
         if not index.isValid():
             return
 
         parent = index.parent()
         if parent.isValid():
-            # Update description labels
-            self.widgetSpectrumDetails.setCurrentIndex(index.row() + parent.row())
+            self.widgetSpectrumDetails.setCurrentIndex(index.row() + parent.row())  # Update description labels
+            self._selected_index = index
 
     def closeEvent(self, event):
         super().closeEvent(event)
 
     def showEvent(self, event):
+        self.activateWindow()
         self.select_row(self.current)
         super().showEvent(event)
 

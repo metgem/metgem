@@ -7,6 +7,7 @@ from ..utils.network import Network
 from ..workers import NetworkVisualizationOptions, TSNEVisualizationOptions, CosineComputationOptions
 from ..graphml import GraphMLParser, GraphMLWriter
 from ..errors import UnsupportedVersionError
+from ..workers.databases import StandardsResult
 
 CURRENT_FORMAT_VERSION = 2
 
@@ -80,6 +81,24 @@ class LoadProjectWorker(BaseWorker):
                         if key in network.options:
                             opt.update(network.options[key])
                         network.options[key] = opt
+
+                    if self.isStopped():
+                        self.canceled.emit()
+                        return
+
+                    # Load Databases results
+                    try:
+                        results = fid['0/db_results.json']
+
+                        for k, v in results.items():
+                            if 'standards' in v:
+                                results[k]['standards'] = [StandardsResult(*r) for r in v['standards']]
+                            if 'analogs' in v:
+                                results[k]['analogs'] = [StandardsResult(*r) for r in v['analogs']]
+                        network.db_results = {int(k): v for k, v in results.items()}  # Convert string keys to integer
+                    except KeyError:
+                        raise
+                        network.db_results = {}
 
                     if self.isStopped():
                         self.canceled.emit()

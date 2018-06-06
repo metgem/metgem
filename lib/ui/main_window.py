@@ -247,6 +247,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
         network.interactionsAboutToChange.connect(self.tvEdges.model().sourceModel().beginResetModel)
         network.interactionsChanged.connect(self.tvEdges.model().sourceModel().endResetModel)
 
+        self.tvNodes.setColumnHidden(1, network.db_results is None)
+
         self._network = network
 
     def nodes_selection(self):
@@ -699,12 +701,15 @@ class MainWindow(MainWindowBase, MainWindowUI):
         elif type_ == 't-sne':
                 self.gvTSNE.scene().setScale(scale / self.sliderNetworkScale.defaultValue())
 
-    def on_view_details_clicked(self, selection: dict):
+    def on_view_details_clicked(self, row: int, selection: dict):
         if selection:
             path = config.SQL_PATH
             if os.path.exists(path) and os.path.isfile(path) and os.path.getsize(path) > 0:
                 dialog = ui.ViewStandardsResultsDialog(self, selection=selection, base_path=config.DATABASES_PATH)
-                dialog.exec_()
+                if dialog.exec_() == QDialog.Accepted:
+                    current = dialog.getValues()
+                    if current is not None:
+                        self.network.db_results[row]['current'] = current
             else:
                 QMessageBox.information(self, None, "No databases found, please download one or more database first.")
 
