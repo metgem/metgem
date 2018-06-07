@@ -143,7 +143,7 @@ fabric.properties
 
 # app-specific development files
 bin/
-databases/
+/databases/
 *.h5
 *.sqlite
 *.whl
