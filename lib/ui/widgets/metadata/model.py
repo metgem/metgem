@@ -58,28 +58,44 @@ class NodesModel(QAbstractTableModel):
         self.db_results = None
         self.headers = None
         self.headers_colors = None
+        self.mappings = {}
 
     def rowCount(self, parent=QModelIndex()):
         return self.infos.shape[0] if self.infos is not None else len(self.mzs)
 
     def columnCount(self, parent=QModelIndex()):
-        count = self.infos.shape[1] + 2 if self.infos is not None else 2
+        count = len(self.mappings) + 2
+        if self.infos is not None:
+            count += self.infos.shape[1]
         return count
 
     def endResetModel(self):
         network = self.parent().network
         infos = getattr(network, 'infos', None)
+        mappings = getattr(network, 'mappings', {})
         if infos is not None:
             self.infos = infos.values
-            self.headers = np.array(infos.columns)
+            self.headers = np.array(infos.columns.tolist() + list(mappings.keys()))
         else:
             self.infos = None
             self.headers = None
         self.headers_colors = [None] * self.columnCount()
 
-        self.mzs = getattr(network, 'mzs', [])
+        # Convert column name's mappings to index mapping
+        if self.headers is not None:
+            header_to_column = {h: i for i, h in enumerate(self.headers)}
+            index_mappings = {}
+            first_mapping_column = infos.shape[1] if infos is not None else 0
+            for index, (mapname, maplist) in enumerate(mappings.items()):
+                l = [value for key, value in header_to_column.items() for colname in maplist if key.startswith(colname)]
+                index_mappings[first_mapping_column+index] = l
+            self.mappings = index_mappings
+        else:
+            self.mappings = {}
 
+        self.mzs = getattr(network, 'mzs', [])
         self.db_results = getattr(network, 'db_results', None)
+
         super().endResetModel()
 
     def data(self, index: QModelIndex, role=Qt.DisplayRole):
@@ -118,10 +134,12 @@ class NodesModel(QAbstractTableModel):
                         return 0
                     return
             else:
-                if role in (FilterRole, LabelRole):
-                    return str(self.infos[row, column - 2])
-                else:
-                    return self.infos[row, column - 2]
+                try:
+                    data = self.infos[row, column - 2]
+                except IndexError:
+                    mappped_columns = self.mappings[column - 2]
+                    data = sum(self.infos[row, c] for c in mappped_columns)
+                return str(data) if role in (FilterRole, LabelRole) else data
 
     def setData(self, index: QModelIndex, value, role=Qt.EditRole):
         if not index.isValid():
@@ -147,7 +165,7 @@ class NodesModel(QAbstractTableModel):
                 elif section == 1:
                     return "Database search results"
                 elif self.headers is not None:
-                    return self.headers[section - 2]
+                    return str(self.headers[section - 2])
             elif orientation == Qt.Vertical:
                 return str(section+1)
         elif role == Qt.BackgroundColorRole:

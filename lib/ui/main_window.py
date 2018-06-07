@@ -126,6 +126,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.actionAboutQt.triggered.connect(self.on_about_qt_triggered)
         self.actionProcessFile.triggered.connect(self.on_process_file_triggered)
         self.actionImportMetadata.triggered.connect(self.on_import_metadata_triggered)
+        self.actionImportGroupMapping.triggered.connect(self.on_import_group_mapping)
         self.actionCurrentParameters.triggered.connect(self.on_current_parameters_triggered)
         self.actionSettings.triggered.connect(self.on_settings_triggered)
         self.actionZoomIn.triggered.connect(lambda: self.current_view.scaleView(1.2))
@@ -660,6 +661,16 @@ class MainWindow(MainWindowBase, MainWindowUI):
             if worker is not None:
                 self._workers.add(worker)
 
+    def on_import_group_mapping(self):
+        dialog = QFileDialog(self)
+        dialog.setFileMode(QFileDialog.ExistingFile)
+        dialog.setNameFilters(["Text Files (*.txt; *.csv; *.tsv)", "All files (*.*)"])
+        if dialog.exec_() == QDialog.Accepted:
+            filename = dialog.selectedFiles()[0]
+            worker = self.prepare_read_group_mapping_worker(filename)
+            if worker is not None:
+                self._workers.add(worker)
+
     def on_edit_options_triggered(self, type_):
         if hasattr(self.network, 'scores'):
             if type_ == 'network':
@@ -1046,5 +1057,23 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 QMessageBox.warning(self, None, 'You have to download at least one database before trying to query it.')
 
         worker.finished.connect(query_finished)
+        worker.error.connect(error)
+        return worker
+
+    def prepare_read_group_mapping_worker(self, filename):
+        worker = workers.ReadGroupMappingWorker(filename)
+
+        def finished():
+            nonlocal worker
+            result = worker.result()
+            self.tvNodes.model().sourceModel().beginResetModel()
+            self.network.mappings = result
+            self.has_unsaved_changes = True
+            self.tvNodes.model().sourceModel().endResetModel()
+
+        def error(e):
+            QMessageBox.warning(self, None, f"Group mapping was not loaded because the following error occured: {str(e)}")
+
+        worker.finished.connect(finished)
         worker.error.connect(error)
         return worker

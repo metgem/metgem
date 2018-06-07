@@ -415,6 +415,7 @@
    <addaction name="separator"/>
    <addaction name="actionProcessFile"/>
    <addaction name="actionImportMetadata"/>
+   <addaction name="actionImportGroupMapping"/>
    <addaction name="separator"/>
    <addaction name="actionCurrentParameters"/>
    <addaction name="actionSettings"/>
@@ -949,6 +950,24 @@
    </property>
    <property name="shortcut">
     <string>C</string>
+   </property>
+  </action>
+  <action name="actionImportGroupMapping">
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/mapping.svg</normaloff>:/icons/images/mapping.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Import &amp;Group Mapping</string>
+   </property>
+   <property name="toolTip">
+    <string>Import metadata's group mapping</string>
+   </property>
+   <property name="statusTip">
+    <string>Import metadata's group mapping</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+G</string>
    </property>
   </action>
  </widget>

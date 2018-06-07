@@ -1,0 +1,9 @@
+GROUP_test1=39-1.mzXML
+GROUP_test2=39-2.mzXML
+GROUP_test3=39-3.mzXML
+GROUP_test4=39-4.mzXML
+GROUP_test5=39-5.mzXML
+GROUP_test6=39-6.mzXML,test.mzXML
+GROUP_1et2=39-1.mzXML;39-2.mzXML
+GROUP_total=39-1.mzXML;39-2.mzXML;39-3.mzXML;39-4.mzXML;39-5.mzXML;39-6.mzXML
+GROUP_vide=test1.mzXML;test2.mzXML 

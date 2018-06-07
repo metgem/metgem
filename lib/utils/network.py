@@ -4,7 +4,7 @@ from PyQt5.QtCore import QObject, pyqtSignal
 
 
 class Network(QObject):
-    __slots__ = 'mzs', 'spectra', 'scores', 'graph', 'options', '_infos', '_interactions', 'db_results'
+    __slots__ = 'mzs', 'spectra', 'scores', 'graph', 'options', '_infos', '_interactions', 'db_results', 'mappings'
 
     infosAboutToChange = pyqtSignal()
     infosChanged = pyqtSignal()

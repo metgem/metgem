@@ -57,6 +57,16 @@ class LoadProjectWorker(BaseWorker):
                         self.canceled.emit()
                         return
 
+                    # Load group mappings
+                    try:
+                        network.mappings = fid['0/mappings.json']
+                    except KeyError:
+                        network.mappings = {}
+
+                    if self.isStopped():
+                        self.canceled.emit()
+                        return
+
                     # Load table of spectra
                     spec_infos = fid['0/spectra/index.json']
                     network.mzs = []
@@ -97,7 +107,6 @@ class LoadProjectWorker(BaseWorker):
                                 results[k]['analogs'] = [StandardsResult(*r) for r in v['analogs']]
                         network.db_results = {int(k): v for k, v in results.items()}  # Convert string keys to integer
                     except KeyError:
-                        raise
                         network.db_results = {}
 
                     if self.isStopped():
@@ -167,7 +176,8 @@ class SaveProjectWorker(BaseWorker):
              '0/network_layout': getattr(self.graph, 'network_layout', np.array([])),
              '0/tsne_layout': getattr(self.graph, 'tsne_layout', np.array([])),
              '0/options.json': self.network.options,
-             '0/db_results.json': self.network.db_results}
+             '0/db_results.json': self.network.db_results,
+             '0/mappings.json': self.network.mappings}
         d.update(spec_data)
 
         try:
