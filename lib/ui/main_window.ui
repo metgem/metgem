@@ -697,6 +697,9 @@
    <property name="text">
     <string>&amp;Reset Zoom </string>
    </property>
+   <property name="statusTip">
+    <string>Reset Zoom</string>
+   </property>
    <property name="shortcut">
     <string>0</string>
    </property>
@@ -716,7 +719,7 @@
     <string>Show all nodes and edges in the current network</string>
    </property>
    <property name="shortcut">
-    <string>Alt+S</string>
+    <string>A</string>
    </property>
   </action>
   <action name="actionHideSelected">
@@ -734,7 +737,7 @@
     <string>Hide selected nodes and edges of the current network</string>
    </property>
    <property name="shortcut">
-    <string>Alt+H</string>
+    <string>H</string>
    </property>
   </action>
   <action name="actionNeighbors">
@@ -752,7 +755,7 @@
     <string>Select first neighbors of currently selected nodes</string>
    </property>
    <property name="shortcut">
-    <string>Alt+N</string>
+    <string>N</string>
    </property>
   </action>
   <action name="actionExportToCytoscape">
@@ -826,6 +829,12 @@
    <property name="toolTip">
     <string>Download database from GNPS</string>
    </property>
+   <property name="statusTip">
+    <string>Download database from GNPS</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+D</string>
+   </property>
   </action>
   <action name="actionViewDatabases">
    <property name="enabled">
@@ -841,8 +850,11 @@
    <property name="toolTip">
     <string>Explore databases</string>
    </property>
+   <property name="statusTip">
+    <string>Explore databases</string>
+   </property>
    <property name="shortcut">
-    <string>Ctrl+E</string>
+    <string>Ctrl+D</string>
    </property>
   </action>
   <action name="actionCurrentParameters">
@@ -856,6 +868,9 @@
    <property name="toolTip">
     <string>Show Current Parameters</string>
    </property>
+   <property name="statusTip">
+    <string>Show Current Parameters</string>
+   </property>
   </action>
   <action name="actionImportMetadata">
    <property name="icon">
@@ -866,6 +881,9 @@
     <string>Import &amp;Metadata</string>
    </property>
    <property name="toolTip">
+    <string>Import nodes metadata</string>
+   </property>
+   <property name="statusTip">
     <string>Import nodes metadata</string>
    </property>
    <property name="shortcut">
@@ -883,6 +901,9 @@
    <property name="toolTip">
     <string>Create a new project</string>
    </property>
+   <property name="statusTip">
+    <string>Create a new project</string>
+   </property>
    <property name="shortcut">
     <string>Ctrl+N</string>
    </property>
@@ -896,6 +917,9 @@
     <string>Settings</string>
    </property>
    <property name="toolTip">
+    <string>Change application settings</string>
+   </property>
+   <property name="statusTip">
     <string>Change application settings</string>
    </property>
   </action>
@@ -913,6 +937,9 @@
    <property name="statusTip">
     <string>Export current view of network as image</string>
    </property>
+   <property name="shortcut">
+    <string>Alt+E</string>
+   </property>
   </action>
   <action name="actionViewMiniMap">
    <property name="checkable">
@@ -923,6 +950,12 @@
    </property>
    <property name="text">
     <string>Mini &amp;map</string>
+   </property>
+   <property name="toolTip">
+    <string>View/hide Mini map on current's view</string>
+   </property>
+   <property name="statusTip">
+    <string>View/hide Mini map on current's network</string>
    </property>
    <property name="shortcut">
     <string>M</string>
@@ -936,6 +969,12 @@
    <property name="text">
     <string>&amp;Spectrum</string>
    </property>
+   <property name="toolTip">
+    <string>View Spectrum</string>
+   </property>
+   <property name="statusTip">
+    <string>View Spectrum</string>
+   </property>
    <property name="shortcut">
     <string>S</string>
    </property>
@@ -947,6 +986,9 @@
    </property>
    <property name="text">
     <string>&amp;Compare Spectrum</string>
+   </property>
+   <property name="statusTip">
+    <string>Compare Spectrum</string>
    </property>
    <property name="shortcut">
     <string>C</string>
