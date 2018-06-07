@@ -50,10 +50,13 @@ def cmap2pixmap(cmap, steps=50):
     if cmap == 'auto':
         colors = generate_colors(steps)
     else:
-        norm = mplcm.colors.Normalize(vmin=0., vmax=1.)
-        sm = mplcm.ScalarMappable(norm=norm, cmap=cmap)
-        inds = np.linspace(0, 1, steps)
-        colors = [QColor(*c) for c in sm.to_rgba(inds, bytes=True)]
+        try:
+            norm = mplcm.colors.Normalize(vmin=0., vmax=1.)
+            sm = mplcm.ScalarMappable(norm=norm, cmap=cmap)
+            inds = np.linspace(0, 1, steps)
+            colors = [QColor(*c) for c in sm.to_rgba(inds, bytes=True)]
+        except ValueError:
+            return
 
     im = QImage(steps, 1, QImage.Format_Indexed8)
     im.setColorTable([c.rgba() for c in colors])

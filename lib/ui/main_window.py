@@ -176,10 +176,12 @@ class MainWindow(MainWindowBase, MainWindowUI):
         group = QActionGroup(menu, exclusive=True)
         for cmap in colors.COLORMAPS:
             action = group.addAction(QWidgetAction(menu, checkable=True))
-            label = ui.widgets.ColorMapFrame(cmap, colors.cmap2pixmap(cmap), parent=menu)
-            action.setDefaultWidget(label)
-            action.setData(cmap)
-            menu.addAction(action)
+            pixmap = colors.cmap2pixmap(cmap)
+            if pixmap is not None:
+                label = ui.widgets.ColorMapFrame(cmap, pixmap, parent=menu)
+                action.setDefaultWidget(label)
+                action.setData(cmap)
+                menu.addAction(action)
 
         self.btUseColumnsForPieCharts.setMenu(menu)
         group.triggered.connect(lambda act: self.on_use_columns_for("pie charts", cmap=act.data()))
