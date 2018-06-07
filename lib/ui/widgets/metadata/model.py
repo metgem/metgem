@@ -1,5 +1,6 @@
 import numpy as np
 from PyQt5.QtCore import Qt, QAbstractTableModel, QModelIndex, QSortFilterProxyModel, QSettings, pyqtSignal
+from PyQt5.QtGui import QIcon
 
 try:
     import os
@@ -79,7 +80,7 @@ class NodesModel(QAbstractTableModel):
         else:
             self.infos = None
             self.headers = None
-        self.headers_colors = [None] * self.columnCount()
+        self.headers_colors = {}
 
         # Convert column name's mappings to index mapping
         if self.headers is not None:
@@ -165,12 +166,18 @@ class NodesModel(QAbstractTableModel):
                 elif section == 1:
                     return "Database search results"
                 elif self.headers is not None:
-                    return str(self.headers[section - 2])
+                    text = str(self.headers[section - 2])
+                    if role == Qt.ToolTipRole and section - 2 in self.mappings:
+                        text += " [" + "+".join(self.headers[x] for x in self.mappings[section-2]) + "]"
+                    return text
             elif orientation == Qt.Vertical:
                 return str(section+1)
         elif role == Qt.BackgroundColorRole:
-            if orientation == Qt.Horizontal and self.headers_colors is not None and section < len(self.headers_colors):
+            if orientation == Qt.Horizontal and self.headers_colors is not None and section in self.headers_colors:
                 return self.headers_colors[section]
+        elif role == Qt.DecorationRole:
+            if orientation == Qt.Horizontal and section - 2 in self.mappings:
+                return QIcon(":/icons/images/mapping.svg")
         else:
             super().headerData(section, orientation, role)
 
