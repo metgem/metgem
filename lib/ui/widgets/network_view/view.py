@@ -122,11 +122,11 @@ class NetworkView(QGraphicsView):
         super().setScene(scene)
         self.minimap.setScene(scene)
 
-    def mouseDoubleClickEvent(self, event):
-        pos = self.mapToScene(event.pos()).toPoint()
-        node = self.scene().nodeAt(pos, self.transform())
-        if node is not None:
-            self.showSpectrumTriggered.emit(node)
+    # def mouseDoubleClickEvent(self, event):
+    #     pos = self.mapToScene(event.pos()).toPoint()
+    #     node = self.scene().nodeAt(pos, self.transform())
+    #     if node is not None:
+    #         self.showSpectrumTriggered.emit(node)
             
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton and not self.itemAt(event.pos()):
