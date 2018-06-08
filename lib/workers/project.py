@@ -177,9 +177,16 @@ class SaveProjectWorker(BaseWorker):
              '0/graph.graphml': gxl,
              '0/network_layout': getattr(self.graph, 'network_layout', np.array([])),
              '0/tsne_layout': getattr(self.graph, 'tsne_layout', np.array([])),
-             '0/options.json': self.network.options,
-             '0/db_results.json': self.network.db_results,
-             '0/mappings.json': self.network.mappings}
+             '0/options.json': self.network.options}
+
+        db_results = getattr(self.network, 'db_results', None)
+        if db_results is not None:
+            d['0/db_results.json'] = db_results
+
+        mappings = getattr(self.network, 'mappings', None)
+        if mappings is not None:
+            d['0/mappings.json'] = mappings
+
         d.update(spec_data)
 
         try:
