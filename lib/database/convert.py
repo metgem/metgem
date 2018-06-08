@@ -1,6 +1,7 @@
 import os
 
 import numpy as np
+from sqlalchemy.exc import OperationalError
 
 from pyteomics import mgf
 
@@ -91,11 +92,15 @@ class DataBaseBuilder:
         self.session.close()
         self.session.bind.dispose()
 
-        isolation_level = self.session.connection().connection.isolation_level
-        self.session.connection().connection.isolation_level = None
-        self.session.execute('vacuum')
-        self.session.connection().connection.isolation_level = isolation_level
-        self.session.close()
+        # Try to clean up unused data in database to free space (vacuum)
+        try:
+            isolation_level = self.session.connection().connection.isolation_level
+            self.session.connection().connection.isolation_level = None
+            self.session.execute('vacuum')
+            self.session.connection().connection.isolation_level = isolation_level
+            self.session.close()
+        except OperationalError:
+            pass
 
     def add_bank(self, mgf_path):
         bank = os.path.splitext(os.path.basename(mgf_path))[0]
