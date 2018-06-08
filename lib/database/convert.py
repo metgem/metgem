@@ -88,7 +88,9 @@ class DataBaseBuilder:
                                  [{'id': v, 'name': k} for k, v in self._uniques[key].items()])
 
         self.session.commit()
+        self.session.isolation_level = None
         self.session.execute('vacuum')
+        self.session.isolation_level = ''
         self.session.close()
         self.session.bind.dispose()
 
