@@ -1070,7 +1070,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 self.tvNodes.model().sourceModel().endResetModel()
 
                 # Show column if db_results is not empty
-                self.tvNodes.setColumnHidden(1, self.network.db_results is None)
+                self.tvNodes.setColumnHidden(1, self.network.db_results is None or len(self.network.db_results))
 
         def error(e):
             if e.__class__ == sqlalchemy.exc.OperationalError:
