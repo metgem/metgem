@@ -12,7 +12,7 @@ import sqlalchemy
 from PyQt5.QtWidgets import (QDialog, QFileDialog,
                              QMessageBox, QWidget,
                              QMenu, QToolButton, QActionGroup,
-                             QAction, QDockWidget, QWIDGETSIZE_MAX, qApp, QWidgetAction)
+                             QAction, QDockWidget, QWIDGETSIZE_MAX, qApp, QWidgetAction, QColorDialog)
 from PyQt5.QtCore import QSettings, Qt, QSize, QCoreApplication
 from PyQt5.QtGui import QPainter, QImage, QCursor, QColor, QKeyEvent, QIcon
 
@@ -73,13 +73,13 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.tbSearch.addWidget(w)
 
         # Reorganise export as image actions
-        self.tbExport.removeAction(self.actionExportAsImage)
-        self.tbExport.removeAction(self.actionExportCurrentViewAsImage)
         export_button = ui.widgets.ToolBarMenu()
         export_button.setDefaultAction(self.actionExportAsImage)
         export_button.addAction(self.actionExportAsImage)
         export_button.addAction(self.actionExportCurrentViewAsImage)
-        self.tbExport.addWidget(export_button)
+        self.tbExport.insertWidget(self.actionExportAsImage, export_button)
+        self.tbExport.removeAction(self.actionExportAsImage)
+        self.tbExport.removeAction(self.actionExportCurrentViewAsImage)
 
         # Add a Jupyter widget
         if config.EMBED_JUPYTER:
@@ -150,6 +150,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.actionFullScreen.triggered.connect(self.on_full_screen_triggered)
         self.actionHideSelected.triggered.connect(lambda: self.current_view.scene().hideSelectedItems())
         self.actionShowAll.triggered.connect(lambda: self.current_view.scene().showAllItems())
+        self.actionSetNodesColor.triggered.connect(self.on_set_selected_nodes_color)
         self.actionNeighbors.triggered.connect(
             lambda: self.on_select_first_neighbors_triggered(self.current_view.scene().selectedNodes()))
         self.actionExportToCytoscape.triggered.connect(self.on_export_to_cytoscape_triggered)
@@ -348,6 +349,19 @@ class MainWindow(MainWindowBase, MainWindowUI):
             elif view == self.gvTSNE:
                 with utils.SignalBlocker(self.gvNetwork.scene()):
                     self.gvNetwork.scene().setNodesSelection(nodes_idx)
+
+    def on_set_selected_nodes_color(self):
+        color = QColorDialog.getColor(parent=self)
+
+        if self.actionLinkViews.isChecked():
+            for scene in (self.gvNetwork.scene(), self.gvTSNE.scene()):
+                scene.setSelectedNodesColor(color)
+        else:
+            self.current_view.scene().setSelectedNodesColor(color)
+
+        self.network.graph.vs['__network_color'] = self.gvNetwork.scene().nodesColors()
+        self.network.graph.vs['__tsne_color'] = self.gvTSNE.scene().nodesColors()
+        self.has_unsaved_changes = True
 
     def on_do_search(self):
         childs = self.tabWidget.currentWidget().children()
@@ -865,7 +879,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.network.graph.es['__width'] = widths
 
         # Add nodes
-        nodes = self.gvNetwork.scene().addNodes(self.network.graph.vs.indices)
+        colors = self.network.graph.vs['__network_color']\
+            if '__network_color' in self.network.graph.vs.attributes() else []
+        nodes = self.gvNetwork.scene().addNodes(self.network.graph.vs.indices, colors=colors)
 
         # Add edges
         edges_attr = [(e.index, nodes[e.source], nodes[e.target], e['__weight'], e['__width'])
@@ -891,7 +907,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.gvTSNE.scene().clear()
 
         # Add nodes
-        self.gvTSNE.scene().addNodes(self.network.graph.vs.indices)
+        colors = self.network.graph.vs['__tsne_color']\
+            if '__tsne_color' in self.network.graph.vs.attributes() else []
+        self.gvTSNE.scene().addNodes(self.network.graph.vs.indices, colors=colors)
 
         if layout is None:
             # Compute layout

@@ -1,3 +1,4 @@
+from PyQt5.QtGui import QColor
 from lxml import etree
 
 import numpy as np
@@ -15,7 +16,7 @@ class GraphMLParser:
     def _convert(self, key, value):
         """Helper function to convert data types"""
 
-        if not key in self._keys:
+        if key not in self._keys:
             return None
         t = self._keys[key]['type']
         if t == 'boolean':
@@ -31,6 +32,8 @@ class GraphMLParser:
             except ValueError:
                 return 0.
         elif t == 'string':
+            if len(value) == 7 and value[0] == "#":
+                    return QColor(str(value))
             return str(value)
 
     def parse(self, fname):
@@ -118,6 +121,8 @@ class GraphMLWriter:
             return 'boolean'
         elif isinstance(val, str):
             return 'string'
+        elif isinstance(val, QColor):
+            return 'string'
         else:
             return False
 
@@ -203,6 +208,10 @@ class GraphMLWriter:
                     val = graph_node[attr]
                     if attr == 'name' and isinstance(val, float):
                         val = int(val)
+                    elif isinstance(val, QColor):
+                        if not val.isValid():
+                            continue
+                        val = val.name()
                     data.text = str(val)
                     node.append(data)
 

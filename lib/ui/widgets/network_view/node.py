@@ -1,4 +1,4 @@
-from PyQt5.QtGui import QPen, QBrush
+from PyQt5.QtGui import QPen, QBrush, QColor
 from PyQt5.QtWidgets import (QGraphicsItem, QGraphicsEllipseItem, QStyle)
 from PyQt5.QtCore import (Qt, QRectF)
 
@@ -31,7 +31,7 @@ class Node(QGraphicsEllipseItem):
         return self.id
 
     def color(self):
-        return self._color
+        return self._color if self._color != Qt.lightGray else QColor()
 
     def setColor(self, color):
         self._color = color

@@ -452,6 +452,8 @@
    <addaction name="separator"/>
    <addaction name="actionHideSelected"/>
    <addaction name="actionShowAll"/>
+   <addaction name="separator"/>
+   <addaction name="actionSetNodesColor"/>
   </widget>
   <widget class="QToolBar" name="tbExport">
    <property name="windowTitle">
@@ -1010,6 +1012,21 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+G</string>
+   </property>
+  </action>
+  <action name="actionSetNodesColor">
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/node-color.svg</normaloff>:/icons/images/node-color.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Set selected nodes &amp;color</string>
+   </property>
+   <property name="toolTip">
+    <string>Set selected nodes color</string>
+   </property>
+   <property name="statusTip">
+    <string>Set selected nodes color</string>
    </property>
   </action>
  </widget>

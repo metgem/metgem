@@ -1,3 +1,5 @@
+from PyQt5.QtGui import QColor
+
 try:
     from .NetworkView import Node, Edge, NetworkScene as BaseNetworkScene
 
@@ -42,12 +44,14 @@ except ImportError:
             self.addItem(self.edgesLayer)
             self.edgesLayer.setZValue(0)
 
-        def addNodes(self, indexes, labels=[], positions=[]):
+        def addNodes(self, indexes, labels=[], positions=[], colors=[]):
             nodes = []
-            for index, label, pos in itertools.zip_longest(indexes, labels, positions):
+            for index, label, pos, color in itertools.zip_longest(indexes, labels, positions, colors):
                 node = Node(index, label)
                 if pos:
                     node.setPos(pos)
+                if isinstance(color, QColor) and color.isValid():
+                    node.setColor(color)
                 node.setParentItem(self.nodesLayer)
                 nodes.append(node)
             return nodes
@@ -74,12 +78,12 @@ except ImportError:
 
         def setNodesSelection(self, items):
             self.clearSelection()
-            nodes = self.nodes()
             if len(items) > 0:
                 if isinstance(items[0], Node):
                     for node in items:
                         node.setSelected(True)
                 else:
+                    nodes = self.nodes()
                     for index in items:
                         nodes[index].setSelected(True)
 
@@ -114,7 +118,8 @@ except ImportError:
 
         def setLayout(self, positions, scale=None):
             scale = scale if scale is not None else self._scale
-            for node, pos in zip(self.nodes(), positions):
+            for node in self.nodes():
+                pos = positions[node.index()]
                 node.setFlag(QGraphicsItem.ItemSendsScenePositionChanges, False)
                 node.setPos(*pos * scale)
                 node.setFlag(QGraphicsItem.ItemSendsScenePositionChanges)
@@ -184,6 +189,20 @@ except ImportError:
         def showAllItems(self):
             for item in self.items():
                 item.show()
+
+        def nodesColors(self):
+            return [node.color() for node in sorted(self.nodes(), key=lambda node: node.index())]
+
+        def setNodesColors(self, colors):
+            for node in self.nodes():
+                color = colors[node.index()]
+                if color.isValid():
+                    node.setColor(color)
+
+        def setSelectedNodesColor(self, color: QColor):
+            for node in self.selectedNodes():
+                if color.isValid():
+                    node.setColor(color)
 
         def nodeAt(self, *args, **kwargs):
             item = self.itemAt(*args, **kwargs)

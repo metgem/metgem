@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="icons">
+    <file>images/node-color.svg</file>
     <file>images/mapping.svg</file>
     <file>images/library-more.svg</file>
     <file>images/library-query-analogs.svg</file>

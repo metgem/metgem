@@ -1,4 +1,5 @@
 import numpy as np
+from PyQt5.QtGui import QColor
 
 from .base import BaseWorker
 from ..save import MnzFile, savez
@@ -116,7 +117,8 @@ class LoadProjectWorker(BaseWorker):
                     # Load graph
                     gxl = fid['0/graph.graphml']
                     parser = GraphMLParser()
-                    network.graph = parser.fromstring(gxl)
+                    graph = parser.fromstring(gxl)
+                    network.graph = graph
 
                     if self.isStopped():
                         self.canceled.emit()
