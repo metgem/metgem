@@ -88,11 +88,14 @@ class DataBaseBuilder:
                                  [{'id': v, 'name': k} for k, v in self._uniques[key].items()])
 
         self.session.commit()
-        self.session.isolation_level = None
-        self.session.execute('vacuum')
-        self.session.isolation_level = ''
         self.session.close()
         self.session.bind.dispose()
+
+        isolation_level = self.session.connection().connection.isolation_level
+        self.session.connection().connection.isolation_level = None
+        self.session.execute('vacuum')
+        self.session.connection().connection.isolation_level = isolation_level
+        self.session.close()
 
     def add_bank(self, mgf_path):
         bank = os.path.splitext(os.path.basename(mgf_path))[0]
