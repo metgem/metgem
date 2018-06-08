@@ -81,6 +81,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.tbExport.removeAction(self.actionExportAsImage)
         self.tbExport.removeAction(self.actionExportCurrentViewAsImage)
 
+        color_button = ui.widgets.ColorPicker(self.actionSetNodesColor)
+        self.tbNetwork.insertWidget(self.actionSetNodesColor, color_button)
+        self.tbNetwork.removeAction(self.actionSetNodesColor)
+
         # Add a Jupyter widget
         if config.EMBED_JUPYTER:
             from qtconsole.rich_jupyter_widget import RichJupyterWidget
@@ -150,7 +154,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.actionFullScreen.triggered.connect(self.on_full_screen_triggered)
         self.actionHideSelected.triggered.connect(lambda: self.current_view.scene().hideSelectedItems())
         self.actionShowAll.triggered.connect(lambda: self.current_view.scene().showAllItems())
-        self.actionSetNodesColor.triggered.connect(self.on_set_selected_nodes_color)
+        color_button.colorSelected.connect(self.on_set_selected_nodes_color)
         self.actionNeighbors.triggered.connect(
             lambda: self.on_select_first_neighbors_triggered(self.current_view.scene().selectedNodes()))
         self.actionExportToCytoscape.triggered.connect(self.on_export_to_cytoscape_triggered)
@@ -350,9 +354,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 with utils.SignalBlocker(self.gvNetwork.scene()):
                     self.gvNetwork.scene().setNodesSelection(nodes_idx)
 
-    def on_set_selected_nodes_color(self):
-        color = QColorDialog.getColor(parent=self)
-
+    def on_set_selected_nodes_color(self, color):
         if self.actionLinkViews.isChecked():
             for scene in (self.gvNetwork.scene(), self.gvTSNE.scene()):
                 scene.setSelectedNodesColor(color)
