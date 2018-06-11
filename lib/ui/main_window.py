@@ -405,6 +405,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.update_search_menu()
 
     def on_open_project_triggered(self):
+        self.on_new_project_triggered()
+
         dialog = QFileDialog(self)
         dialog.setFileMode(QFileDialog.ExistingFile)
         dialog.setNameFilters([f"{QCoreApplication.applicationName()} Files (*{config.FILE_EXTENSION})",
@@ -654,6 +656,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.showNormal()
 
     def on_process_file_triggered(self):
+        self.on_new_project_triggered()
+
         dialog = ui.ProcessMgfDialog(self, options=self.network.options)
         if dialog.exec_() == QDialog.Accepted:
             self.fname = None
@@ -700,7 +704,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                         self.has_unsaved_changes = True
 
                         self.network.interactions = None
-                        self.create_graph()
+                        self.create_graph(keep_vertices=True)
                         self.draw(which='network')
                         self.update_search_menu()
             elif type_ == 't-sne':
@@ -815,13 +819,14 @@ class MainWindow(MainWindowBase, MainWindowUI):
         if setting:
             self.minimize_tabwidget()
 
-    def create_graph(self):
+    def create_graph(self, keep_vertices=False):
         # Delete all previously created edges and nodes
         self.network.graph.delete_edges(self.network.graph.es)
-        self.network.graph.delete_vertices(self.network.graph.vs)
+        if not keep_vertices:
+            self.network.graph.delete_vertices(self.network.graph.vs)
+            nodes_idx = np.arange(self.network.scores.shape[0])
+            self.network.graph.add_vertices(nodes_idx.tolist())
 
-        nodes_idx = np.arange(self.network.scores.shape[0])
-        self.network.graph.add_vertices(nodes_idx.tolist())
         self.network.graph.add_edges(zip(self.network.interactions['Source'], self.network.interactions['Target']))
 
     def draw(self, compute_layouts=True, which='all'):
@@ -866,7 +871,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.network.graph.tsne_layout = layout
 
     def prepare_draw_network_worker(self, layout=None):
-        self.gvNetwork.scene().clear()
+        scene = self.gvNetwork.scene()
+
+        scene.removeAllEdges()
 
         interactions = self.network.interactions
 
@@ -880,15 +887,21 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.network.graph.es['__weight'] = interactions['Cosine']
         self.network.graph.es['__width'] = widths
 
-        # Add nodes
-        colors = self.network.graph.vs['__network_color']\
+        colors = self.network.graph.vs['__network_color'] \
             if '__network_color' in self.network.graph.vs.attributes() else []
-        nodes = self.gvNetwork.scene().addNodes(self.network.graph.vs.indices, colors=colors)
+
+        # Add nodes
+        nodes = scene.nodes()
+        num_nodes = len(nodes)
+        if num_nodes == 0:
+            nodes = scene.addNodes(self.network.graph.vs.indices, colors=colors)
+        elif num_nodes == len(colors):
+            scene.setNodesColors(colors)
 
         # Add edges
         edges_attr = [(e.index, nodes[e.source], nodes[e.target], e['__weight'], e['__width'])
                       for e in self.network.graph.es if not e.is_loop()]
-        self.gvNetwork.scene().addEdges(*zip(*edges_attr))
+        scene.addEdges(*zip(*edges_attr))
 
         if layout is None:
             # Compute layout
@@ -906,12 +919,18 @@ class MainWindow(MainWindowBase, MainWindowUI):
             return worker
 
     def prepare_draw_tsne_worker(self, layout=None):
-        self.gvTSNE.scene().clear()
+        scene = self.gvTSNE.scene()
+
+        colors = self.network.graph.vs['__tsne_color'] \
+            if '__tsne_color' in self.network.graph.vs.attributes() else []
 
         # Add nodes
-        colors = self.network.graph.vs['__tsne_color']\
-            if '__tsne_color' in self.network.graph.vs.attributes() else []
-        self.gvTSNE.scene().addNodes(self.network.graph.vs.indices, colors=colors)
+        nodes = scene.nodes()
+        num_nodes = len(nodes)
+        if num_nodes == 0:
+            scene.addNodes(self.network.graph.vs.indices, colors=colors)
+        elif num_nodes == len(colors):
+            scene.setNodesColors(colors)
 
         if layout is None:
             # Compute layout
