@@ -81,7 +81,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.tbExport.removeAction(self.actionExportAsImage)
         self.tbExport.removeAction(self.actionExportCurrentViewAsImage)
 
-        color_button = ui.widgets.ColorPicker(self.actionSetNodesColor)
+        color_button = ui.widgets.ColorPicker(self.actionSetNodesColor, color_group='Node', default_color=Qt.blue)
         self.tbNetwork.insertWidget(self.actionSetNodesColor, color_button)
         self.tbNetwork.removeAction(self.actionSetNodesColor)
 
