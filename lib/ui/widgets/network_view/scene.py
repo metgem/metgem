@@ -64,6 +64,22 @@ except ImportError:
                 edges.append(edge)
             return edges
 
+        def removeAllNodes(self):
+            for node in self.nodes():
+                self.removeItem(node)
+
+        def removeNodes(self, nodes):
+            for node in nodes:
+                self.removeItem(node)
+
+        def removeAllEdges(self):
+            for edge in self.edges():
+                self.removeItem(edge)
+
+        def removeEdges(self, edges):
+            for edge in edges:
+                self.removeItem(edge)
+
         def nodes(self):
             try:
                 return self.nodesLayer.childItems()

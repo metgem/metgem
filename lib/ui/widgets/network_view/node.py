@@ -1,4 +1,4 @@
-from PyQt5.QtGui import QPen, QBrush, QColor
+from PyQt5.QtGui import QPen, QColor
 from PyQt5.QtWidgets import (QGraphicsItem, QGraphicsEllipseItem, QStyle)
 from PyQt5.QtCore import (Qt, QRectF)
 
@@ -35,6 +35,11 @@ class Node(QGraphicsEllipseItem):
 
     def setColor(self, color):
         self._color = color
+
+        # Calculate the perceptive luminance (aka luma) - human eye favors green color...
+        # See https://stackoverflow.com/questions/1855884/determine-font-color-based-on-background-color
+        luma = 0.299 * color.red() + 0.587 * color.green() + 0.114 * color.blue() / 255
+        self._text_color = QColor(Qt.black) if luma > 0.5 else QColor(Qt.white)
 
     def label(self):
         return self._label
@@ -80,8 +85,10 @@ class Node(QGraphicsEllipseItem):
         # If selected, change brush to yellow
         if option.state & QStyle.State_Selected:
             painter.setBrush(Qt.yellow)
+            text_color = QColor(Qt.black)
         else:
             painter.setBrush(self._color)
+            text_color = self._text_color
 
         # Draw ellipse
         if self.spanAngle() != 0 and abs(self.spanAngle()) % (360 * 16) == 0:
@@ -108,5 +115,5 @@ class Node(QGraphicsEllipseItem):
             font = painter.font()
             font.setPixelSize(FONT_SIZE)
             painter.setFont(font)
-            painter.setPen(QPen(Qt.black, 0))
+            painter.setPen(QPen(text_color, 0))
             painter.drawText(self.rect(), Qt.AlignCenter, self._label)
