@@ -211,8 +211,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
                                                 'network': workers.NetworkVisualizationOptions(),
                                                 'tsne': workers.TSNEVisualizationOptions()})
 
-        self.tvNodes.setColumnHidden(1, not bool(self._network.db_results))
-
     @property
     def window_title(self):
         if self.fname is not None:
@@ -256,7 +254,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         network.interactionsAboutToChange.connect(self.tvEdges.model().sourceModel().beginResetModel)
         network.interactionsChanged.connect(self.tvEdges.model().sourceModel().endResetModel)
 
-        self.tvNodes.setColumnHidden(1, network.db_results is None)
+        self.tvNodes.setColumnHidden(1, network.db_results is None or len(network.db_results) == 0)
 
         self._network = network
 
@@ -1091,7 +1089,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 self.tvNodes.model().sourceModel().endResetModel()
 
                 # Show column if db_results is not empty
-                self.tvNodes.setColumnHidden(1, self.network.db_results is None or len(self.network.db_results))
+                self.tvNodes.setColumnHidden(1, self.network.db_results is None or len(self.network.db_results) == 0)
 
         def error(e):
             if e.__class__ == sqlalchemy.exc.OperationalError:
