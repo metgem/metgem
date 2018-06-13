@@ -17,8 +17,8 @@ except ImportError:
 
     from .node import Node
     from .edge import Edge
-
     from .graphicsitem import GraphicsItemLayer
+    from .style import NetworkStyle, DefaultStyle
 
 
     class NetworkScene(QGraphicsScene):
@@ -27,11 +27,24 @@ except ImportError:
 
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
-            self._colors = []
 
+            self._style = DefaultStyle()
+            self._colors = []
             self._scale = 1
 
             self.clear()
+
+        def networkStyle(self):
+            return self._style
+
+        def setNetworkStyle(self, style: NetworkStyle=None):
+            new_style = style if style is not None else DefaultStyle()
+            for node in self.nodes():
+                node.updateStyle(self.networkStyle(), new_style)
+            for edge in self.edges():
+                edge.updateStyle(self.networkStyle(), new_style)
+            self.setBackgroundBrush(style.backgroundBrush())
+            self._style = new_style
 
         def clear(self):
             super().clear()
@@ -47,11 +60,13 @@ except ImportError:
         def addNodes(self, indexes, labels=[], positions=[], colors=[]):
             nodes = []
             for index, label, pos, color in itertools.zip_longest(indexes, labels, positions, colors):
-                node = Node(index, label)
+                node = Node(index, self._style.nodeRadius(), label=label)
                 if pos:
                     node.setPos(pos)
                 if isinstance(color, QColor) and color.isValid():
-                    node.setColor(color)
+                    node.setBrush(color)
+                elif self._style is not None:
+                    node.setBrush(self._style.nodeBrush())
                 node.setParentItem(self.nodesLayer)
                 nodes.append(node)
             return nodes
@@ -61,6 +76,7 @@ except ImportError:
             for index, source, dest, weight, width in zip(indexes, sourceNodes, destNodes, weights, widths):
                 edge = Edge(index, source, dest, weight, width)
                 edge.setParentItem(self.edgesLayer)
+                edge.adjust()
                 edges.append(edge)
             return edges
 
@@ -207,18 +223,19 @@ except ImportError:
                 item.show()
 
         def nodesColors(self):
-            return [node.color() for node in sorted(self.nodes(), key=lambda node: node.index())]
+            return [node.brush().color() if node.brush().color() != self.networkStyle().nodeBrush().color() else QColor()
+                    for node in sorted(self.nodes(), key=lambda node: node.index())]
 
         def setNodesColors(self, colors):
             for node in self.nodes():
                 color = colors[node.index()]
                 if color.isValid():
-                    node.setColor(color)
+                    node.setBrush(color)
 
         def setSelectedNodesColor(self, color: QColor):
             for node in self.selectedNodes():
                 if color.isValid():
-                    node.setColor(color)
+                    node.setBrush(color)
 
         def nodeAt(self, *args, **kwargs):
             item = self.itemAt(*args, **kwargs)

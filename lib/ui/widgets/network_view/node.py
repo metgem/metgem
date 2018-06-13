@@ -1,18 +1,22 @@
-from PyQt5.QtGui import QPen, QColor
-from PyQt5.QtWidgets import (QGraphicsItem, QGraphicsEllipseItem, QStyle)
+from PyQt5.QtGui import QPen, QColor, QFont, QBrush
+from PyQt5.QtWidgets import (QGraphicsItem, QGraphicsEllipseItem, QStyle, QApplication)
 from PyQt5.QtCore import (Qt, QRectF)
 
-from ....config import RADIUS, NODE_BORDER_WIDTH, FONT_SIZE
+from .style import NetworkStyle
 
 
 class Node(QGraphicsEllipseItem):
     Type = QGraphicsItem.UserType + 1
 
-    def __init__(self, index, label=None):
-        super().__init__(-RADIUS, -RADIUS, 2 * RADIUS, 2 * RADIUS)
+    def __init__(self, index, radius, label=None):
+        super().__init__(-radius, -radius, 2 * radius, 2 * radius)
 
         self._edge_list = []
         self._pie = []
+
+        self._font = QApplication.font()
+        self._text_color = None
+        self._radius = radius
 
         self.id = index
         if label is None:
@@ -24,22 +28,41 @@ class Node(QGraphicsEllipseItem):
         self.setFlag(QGraphicsItem.ItemSendsScenePositionChanges)
         self.setCacheMode(QGraphicsItem.DeviceCoordinateCache)
 
-        self.setColor(Qt.lightGray)
-        self.setPen(QPen(Qt.black, NODE_BORDER_WIDTH))
+        self.setBrush(Qt.lightGray)
+        self.setPen(QPen(Qt.black, 1))
 
-    def index(self):
+    def index(self) -> int:
         return self.id
 
-    def color(self):
-        return self._color if self._color != Qt.lightGray else QColor()
+    def radius(self) -> int:
+        return self._radius
 
-    def setColor(self, color):
-        self._color = color
+    def setRadius(self, radius: int):
+        self._radius = radius
+        self.setRect(QRectF(-radius, -radius, 2 * radius, 2 * radius))
 
-        # Calculate the perceptive luminance (aka luma) - human eye favors green color...
-        # See https://stackoverflow.com/questions/1855884/determine-font-color-based-on-background-color
-        luma = 0.299 * color.red() + 0.587 * color.green() + 0.114 * color.blue() / 255
-        self._text_color = QColor(Qt.black) if luma > 0.5 else QColor(Qt.white)
+    def font(self) -> QFont:
+        return self._font
+
+    def setFont(self, font: QFont):
+        self._font = font
+
+    def textColor(self) -> QColor:
+        return self._text_color
+
+    def setTextColor(self, color: QColor):
+        self._text_color = color
+
+    # noinspection PyMethodOverriding
+    def setBrush(self, brush: QBrush, autoTextColor: bool = True):
+        super().setBrush(brush)
+
+        if autoTextColor:
+            # Calculate the perceptive luminance (aka luma) - human eye favors green color...
+            # See https://stackoverflow.com/questions/1855884/determine-font-color-based-on-background-color
+            color = QBrush(brush).color()
+            luma = 0.299 * color.red() + 0.587 * color.green() + 0.114 * color.blue() / 255
+            self._text_color = QColor(Qt.black) if luma > 0.5 else QColor(Qt.white)
 
     def label(self):
         return self._label
@@ -59,10 +82,18 @@ class Node(QGraphicsEllipseItem):
 
     def addEdge(self, edge):
         self._edge_list.append(edge)
-        edge.adjust()
 
     def edges(self):
         return self._edge_list
+
+    def updateStyle(self, old: NetworkStyle, style: NetworkStyle):
+        self.setRadius(style.nodeRadius())
+        if self.brush().color() == old.nodeBrush().color():
+            self.setBrush(style.nodeBrush(), autoTextColor=False)
+        self.setTextColor(style.textColor())
+        self.setPen(style.nodePen())
+        self.setFont(style.font())
+        self.update()
 
     def itemChange(self, change, value):
         if change == QGraphicsItem.ItemScenePositionHasChanged:
@@ -81,14 +112,26 @@ class Node(QGraphicsEllipseItem):
         self.update()
         super().mouseReleaseEvent(event)
 
+    def boundingRect(self):
+        brect = super().boundingRect()
+        pwidth = self.pen().width()
+        size = 2 * (self.radius() + pwidth)
+        return QRectF(brect.x() - pwidth, brect.y() - pwidth, size, size)
+
+    # noinspection PyMethodOverriding
     def paint(self, painter, option, widget):
+        scene = self.scene()
+
         # If selected, change brush to yellow
         if option.state & QStyle.State_Selected:
             painter.setBrush(Qt.yellow)
             text_color = QColor(Qt.black)
         else:
-            painter.setBrush(self._color)
-            text_color = self._text_color
+            painter.setBrush(self.brush())
+            text_color = self.textColor()
+
+        # Set pen
+        painter.setPen(self.pen())
 
         # Draw ellipse
         if self.spanAngle() != 0 and abs(self.spanAngle()) % (360 * 16) == 0:
@@ -100,8 +143,9 @@ class Node(QGraphicsEllipseItem):
         lod = option.levelOfDetailFromTransform(painter.worldTransform())
 
         # Draw pies if any
-        if lod > 0.1 and len(self._pie) > 0:
-            rect = QRectF(-0.85 * RADIUS, -0.85 * RADIUS, 1.7 * RADIUS, 1.7 * RADIUS)
+        if scene is not None and lod > 0.1 and len(self._pie) > 0:
+            radius = self.radius()
+            rect = QRectF(-.85 * radius, -0.85 * radius, 1.7 * radius, 1.7 * radius)
             start = 0.
             colors = self.scene().pieColors()
             painter.setPen(QPen(Qt.NoPen))
@@ -112,8 +156,6 @@ class Node(QGraphicsEllipseItem):
 
         # Draw text
         if lod > 0.4:
-            font = painter.font()
-            font.setPixelSize(FONT_SIZE)
-            painter.setFont(font)
+            painter.setFont(self.font())
             painter.setPen(QPen(text_color, 0))
             painter.drawText(self.rect(), Qt.AlignCenter, self._label)

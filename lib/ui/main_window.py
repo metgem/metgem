@@ -877,10 +877,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         widths = np.array(interactions['Cosine'])
         min_ = max(0, widths.min() - 0.1)
+        max_ = scene.networkStyle().nodeRadius()
         if min_ != widths.max():
-            widths = (config.RADIUS - 1) * (widths - min_) / (widths.max() - min_) + 1
+            widths = (max_ - 1) * (widths - min_) / (widths.max() - min_) + 1
         else:
-            widths = config.RADIUS
+            widths = max_
 
         self.network.graph.es['__weight'] = interactions['Cosine']
         self.network.graph.es['__width'] = widths
@@ -908,7 +909,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 if computed_layout is not None:
                     self.apply_layout('network', computed_layout)
 
-            worker = workers.NetworkWorker(self.network.graph)
+            worker = workers.NetworkWorker(self.network.graph, radius=scene.networkStyle().nodeRadius())
             worker.finished.connect(process_finished)
 
             return worker
@@ -937,7 +938,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 if computed_layout is not None:
                     self.apply_layout('t-sne', computed_layout)
 
-            worker = workers.TSNEWorker(self.network.scores, self.network.options.tsne)
+            worker = workers.TSNEWorker(self.network.scores, self.network.options.tsne,
+                                        radius=scene.networkStyle().nodeRadius())
             worker.finished.connect(process_finished)
 
             return worker

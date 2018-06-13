@@ -1,9 +1,8 @@
-from PyQt5.QtGui import QPainterPath
+from PyQt5.QtGui import QPainterPath, QPen
 from PyQt5.QtWidgets import (QGraphicsItem, QGraphicsPathItem, QStyle)
 from PyQt5.QtCore import (Qt, QPointF, QLineF, QRectF)
 
-from ....config import RADIUS, NODE_BORDER_WIDTH
-
+from .style import NetworkStyle
 
 class Edge(QGraphicsPathItem):
     Type = QGraphicsItem.UserType + 2
@@ -18,40 +17,20 @@ class Edge(QGraphicsPathItem):
         self.dest_point = QPointF()
         self.weight = weight
 
-        self.setAcceptedMouseButtons(Qt.LeftButton)
         self._source = source_node
         self._dest = dest_node
         self._source.addEdge(self)
         if self._source != self._dest:
             self._dest.addEdge(self)
 
-        self.setColor(Qt.darkGray)
+        self.setPen(QPen(Qt.darkGray))
         self.setWidth(width)
-        self.adjust()
 
+        self.setAcceptedMouseButtons(Qt.LeftButton)
         self.setFlag(QGraphicsItem.ItemIsSelectable)
 
     def index(self):
         return self.id
-
-    def setColor(self, color):
-        pen = self.pen()
-        pen.setColor(color)
-        self.setPen(pen)
-
-    def setWidth(self, width):
-        pen = self.pen()
-        if self._source != self._dest and width is not None:
-            pen.setWidth(width)
-        else:
-            pen.setWidth(1)
-        self.setPen(pen)
-
-    def itemChange(self, change, value):
-        if change == QGraphicsItem.ItemSelectedChange:
-            self.setZValue(not self.isSelected())  # Bring item to front
-            self.setCacheMode(self.cacheMode())  # Force redraw
-        return super().itemChange(change, value)
 
     def sourceNode(self):
         return self._source
@@ -67,6 +46,21 @@ class Edge(QGraphicsPathItem):
         self._dest = node
         self.adjust()
 
+    def setPen(self, pen: QPen):
+        pen.setWidth(self.pen().width())
+        super().setPen(pen)
+
+    def width(self):
+        return self.pen().width()
+
+    def setWidth(self, width):
+        pen = self.pen()
+        if self._source != self._dest and width is not None:
+            pen.setWidth(width)
+        else:
+            pen.setWidth(1)
+        super().setPen(pen)
+
     def adjust(self):
         if not self._source or not self._dest:
             return
@@ -77,32 +71,55 @@ class Edge(QGraphicsPathItem):
 
         self.prepareGeometryChange()
 
-        if length > 2 * RADIUS + NODE_BORDER_WIDTH:
-            edge_offset = QPointF((line.dx() * (RADIUS + NODE_BORDER_WIDTH + 1)) / length,
-                                  (line.dy() * (RADIUS + NODE_BORDER_WIDTH + 1)) / length)
+        min_len = self._source.radius() + self._dest.radius() + self._source.pen().width() + self._dest.pen().width()
+        if length > min_len:
+            edge_offset = QPointF((line.dx() * (min_len/2 + 1)) / length,
+                                  (line.dy() * (min_len/2 + 1)) / length)
             self.source_point = line.p1() + edge_offset
             self.dest_point = line.p2() - edge_offset
         else:
-            self.source_point = line.p1()
-            self.dest_point = line.p1()
+            self.source_point = self.dest_point = line.p1()
 
         path = QPainterPath()
         if self.sourceNode() == self.destNode():  # Draw self-loops
             self.__is_self_loop = True
-            path.moveTo(self.source_point.x() - RADIUS - NODE_BORDER_WIDTH * 2,
+            radius = self._source.radius()
+            path.moveTo(self.source_point.x() - radius - 2 * self._source.pen().width(),
                         self.source_point.y())
-            path.cubicTo(QPointF(self.source_point.x() - 4 * RADIUS,
+            path.cubicTo(QPointF(self.source_point.x() - 4 * radius,
                                  self.source_point.y()),
                          QPointF(self.source_point.x(),
-                                 self.source_point.y() - 4 * RADIUS),
+                                 self.source_point.y() - 4 * radius),
                          QPointF(self.dest_point.x(),
-                                 self.dest_point.y() - RADIUS - NODE_BORDER_WIDTH * 2))
+                                 self.dest_point.y() - radius - 2 * self._source.pen().width()))
         else:
             self.__is_self_loop = False
             path.moveTo(self.source_point)
             path.lineTo(self.dest_point)
         self.setPath(path)
 
+    def updateStyle(self, old: NetworkStyle, style: NetworkStyle):
+        self.setPen(style.edgePen())
+        self.update()
+
+    def itemChange(self, change, value):
+        if change == QGraphicsItem.ItemSelectedChange:
+            self.setZValue(not self.isSelected())  # Bring item to front
+            self.setCacheMode(self.cacheMode())  # Force redraw
+        return super().itemChange(change, value)
+
+    def boundingRect(self):
+        brect = super().boundingRect()
+        if self.__is_self_loop:
+            w = self.pen().width()
+            radius = self._source.radius()
+            width = self._source.pen().width()
+            delta = 2 * radius - 2 * width - w
+            size = 2 * (radius + width + 1 + w)
+            brect = QRectF(brect.x() + delta, brect.y() + delta, size, size)
+        return brect
+
+    # noinspection PyMethodOverriding
     def paint(self, painter, option, widget):
         pen = self.pen()
 
@@ -112,13 +129,3 @@ class Edge(QGraphicsPathItem):
 
         painter.setPen(pen)
         painter.drawPath(self.path())
-
-    def boundingRect(self):
-        brect = super().boundingRect()
-        if self.__is_self_loop:
-            w = self.pen().width()
-            brect = QRectF(brect.x() + 2 * RADIUS - NODE_BORDER_WIDTH * 2 - w,
-                           brect.y() + 2 * RADIUS - NODE_BORDER_WIDTH * 2 - w,
-                           2 * (RADIUS + NODE_BORDER_WIDTH + 1 + w),
-                           2 * (RADIUS + NODE_BORDER_WIDTH + 1 + w))
-        return brect
