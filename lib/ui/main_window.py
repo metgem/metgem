@@ -12,7 +12,7 @@ import sqlalchemy
 from PyQt5.QtWidgets import (QDialog, QFileDialog,
                              QMessageBox, QWidget,
                              QMenu, QToolButton, QActionGroup,
-                             QAction, QDockWidget, QWIDGETSIZE_MAX, qApp, QWidgetAction, QColorDialog)
+                             QAction, QDockWidget, QWIDGETSIZE_MAX, qApp, QWidgetAction)
 from PyQt5.QtCore import QSettings, Qt, QSize, QCoreApplication
 from PyQt5.QtGui import QPainter, QImage, QCursor, QColor, QKeyEvent, QIcon
 
@@ -353,14 +353,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
                     self.gvNetwork.scene().setNodesSelection(nodes_idx)
 
     def on_set_selected_nodes_color(self, color):
-        if self.actionLinkViews.isChecked():
-            for scene in (self.gvNetwork.scene(), self.gvTSNE.scene()):
-                scene.setSelectedNodesColor(color)
-        else:
-            self.current_view.scene().setSelectedNodesColor(color)
+        for scene in (self.gvNetwork.scene(), self.gvTSNE.scene()):
+            scene.setSelectedNodesColor(color)
 
-        self.network.graph.vs['__network_color'] = self.gvNetwork.scene().nodesColors()
-        self.network.graph.vs['__tsne_color'] = self.gvTSNE.scene().nodesColors()
+        self.network.graph.vs['__color'] = self.gvNetwork.scene().nodesColors()
         self.has_unsaved_changes = True
 
     def on_do_search(self):
@@ -886,8 +882,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.network.graph.es['__weight'] = interactions['Cosine']
         self.network.graph.es['__width'] = widths
 
-        colors = self.network.graph.vs['__network_color'] \
-            if '__network_color' in self.network.graph.vs.attributes() else []
+        colors = self.network.graph.vs['__color'] \
+            if '__color' in self.network.graph.vs.attributes() else []
 
         # Add nodes
         nodes = scene.nodes()
@@ -920,8 +916,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def prepare_draw_tsne_worker(self, layout=None):
         scene = self.gvTSNE.scene()
 
-        colors = self.network.graph.vs['__tsne_color'] \
-            if '__tsne_color' in self.network.graph.vs.attributes() else []
+        colors = self.network.graph.vs['__color'] \
+            if '__color' in self.network.graph.vs.attributes() else []
 
         # Add nodes
         nodes = scene.nodes()

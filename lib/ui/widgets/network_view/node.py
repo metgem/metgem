@@ -90,9 +90,9 @@ class Node(QGraphicsEllipseItem):
         self.setRadius(style.nodeRadius())
         if self.brush().color() == old.nodeBrush().color():
             self.setBrush(style.nodeBrush(), autoTextColor=False)
-        self.setTextColor(style.textColor())
+        self.setTextColor(style.nodeTextColor())
         self.setPen(style.nodePen())
-        self.setFont(style.font())
+        self.setFont(style.nodeFont())
         self.update()
 
     def itemChange(self, change, value):
