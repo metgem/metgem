@@ -17,6 +17,15 @@
    <iconset resource="ui.qrc">
     <normaloff>:/icons/images/main.svg</normaloff>:/icons/images/main.svg</iconset>
   </property>
+  <property name="dockNestingEnabled">
+   <bool>true</bool>
+  </property>
+  <property name="dockOptions">
+   <set>QMainWindow::AllowNestedDocks|QMainWindow::AllowTabbedDocks|QMainWindow::AnimatedDocks</set>
+  </property>
+  <property name="unifiedTitleAndToolBarOnMac">
+   <bool>true</bool>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_5">
     <item>
@@ -127,20 +136,7 @@
           </layout>
          </item>
          <item>
-          <widget class="NetworkView" name="gvNetwork">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-             <horstretch>0</horstretch>
-             <verstretch>1</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>400</height>
-            </size>
-           </property>
-          </widget>
+          <widget class="NetworkView" name="gvNetwork"/>
          </item>
          <item>
           <widget class="Slider" name="sliderNetworkScale">
@@ -206,7 +202,14 @@
           </layout>
          </item>
          <item>
-          <widget class="NetworkView" name="gvTSNE"/>
+          <widget class="NetworkView" name="gvTSNE">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>3</verstretch>
+            </sizepolicy>
+           </property>
+          </widget>
          </item>
          <item>
           <widget class="Slider" name="sliderTSNEScale">
@@ -240,116 +243,6 @@
           </widget>
          </item>
         </layout>
-       </widget>
-      </widget>
-      <widget class="QTabWidget" name="tabWidget">
-       <property name="currentIndex">
-        <number>0</number>
-       </property>
-       <property name="documentMode">
-        <bool>false</bool>
-       </property>
-       <property name="movable">
-        <bool>true</bool>
-       </property>
-       <widget class="QWidget" name="tab">
-        <attribute name="icon">
-         <iconset resource="ui.qrc">
-          <normaloff>:/icons/images/node.svg</normaloff>:/icons/images/node.svg</iconset>
-        </attribute>
-        <attribute name="title">
-         <string>Nodes</string>
-        </attribute>
-        <layout class="QHBoxLayout" name="horizontalLayout_3">
-         <item>
-          <layout class="QVBoxLayout" name="verticalLayout">
-           <item>
-            <widget class="QToolButton" name="btUseColumnForLabels">
-             <property name="toolTip">
-              <string>Use selected column as source for nodes' labels</string>
-             </property>
-             <property name="statusTip">
-              <string>Use selected column as source for nodes' labels</string>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-             <property name="icon">
-              <iconset resource="ui.qrc">
-               <normaloff>:/icons/images/label.svg</normaloff>:/icons/images/label.svg</iconset>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QToolButton" name="btUseColumnsForPieCharts">
-             <property name="toolTip">
-              <string>Use selected columns as source for nodes' pie charts</string>
-             </property>
-             <property name="statusTip">
-              <string>Use selected columns as source for nodes' pie charts</string>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-             <property name="icon">
-              <iconset resource="ui.qrc">
-               <normaloff>:/icons/images/pie.svg</normaloff>:/icons/images/pie.svg</iconset>
-             </property>
-             <property name="popupMode">
-              <enum>QToolButton::DelayedPopup</enum>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <spacer name="verticalSpacer">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>40</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <widget class="NodeTableView" name="tvNodes">
-           <property name="alternatingRowColors">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="tab">
-        <attribute name="icon">
-         <iconset resource="ui.qrc">
-          <normaloff>:/icons/images/edge.svg</normaloff>:/icons/images/edge.svg</iconset>
-        </attribute>
-        <attribute name="title">
-         <string>Edges</string>
-        </attribute>
-        <layout class="QHBoxLayout" name="horizontalLayout_4">
-         <item>
-          <widget class="EdgeTableView" name="tvEdges">
-           <property name="alternatingRowColors">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-       <widget class="ExtendedSpectrumWidget" name="cvSpectrum">
-        <attribute name="icon">
-         <iconset resource="ui.qrc">
-          <normaloff>:/icons/images/spectrum.svg</normaloff>:/icons/images/spectrum.svg</iconset>
-        </attribute>
-        <attribute name="title">
-         <string>Spectra</string>
-        </attribute>
        </widget>
       </widget>
      </widget>
@@ -495,6 +388,137 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+  </widget>
+  <widget class="QDockWidget" name="dockNodes">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="windowIcon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/node.svg</normaloff>:/icons/images/node.svg</iconset>
+   </property>
+   <property name="windowTitle">
+    <string>Nodes</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>8</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents">
+    <layout class="QHBoxLayout" name="horizontalLayout_5">
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_6">
+       <item>
+        <widget class="QToolButton" name="btUseColumnForLabels">
+         <property name="toolTip">
+          <string>Use selected column as source for nodes' labels</string>
+         </property>
+         <property name="statusTip">
+          <string>Use selected column as source for nodes' labels</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="ui.qrc">
+           <normaloff>:/icons/images/label.svg</normaloff>:/icons/images/label.svg</iconset>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QToolButton" name="btUseColumnsForPieCharts">
+         <property name="toolTip">
+          <string>Use selected columns as source for nodes' pie charts</string>
+         </property>
+         <property name="statusTip">
+          <string>Use selected columns as source for nodes' pie charts</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="ui.qrc">
+           <normaloff>:/icons/images/pie.svg</normaloff>:/icons/images/pie.svg</iconset>
+         </property>
+         <property name="popupMode">
+          <enum>QToolButton::DelayedPopup</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="NodeTableView" name="tvNodes">
+       <property name="alternatingRowColors">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dockEdges">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="windowIcon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/edge.svg</normaloff>:/icons/images/edge.svg</iconset>
+   </property>
+   <property name="windowTitle">
+    <string>Edges</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>8</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_2">
+    <layout class="QHBoxLayout" name="horizontalLayout_6">
+     <item>
+      <widget class="EdgeTableView" name="tvEdges">
+       <property name="alternatingRowColors">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dockSpectra">
+   <property name="windowIcon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/spectrum.svg</normaloff>:/icons/images/spectrum.svg</iconset>
+   </property>
+   <property name="windowTitle">
+    <string>Spectra</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>8</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_4">
+    <layout class="QHBoxLayout" name="horizontalLayout_7">
+     <item>
+      <widget class="ExtendedSpectrumWidget" name="cvSpectrum" native="true"/>
+     </item>
+    </layout>
+   </widget>
   </widget>
   <action name="actionProcessFile">
    <property name="icon">

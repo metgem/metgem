@@ -9,11 +9,9 @@ import numpy as np
 import igraph as ig
 import sqlalchemy
 
-from PyQt5.QtWidgets import (QDialog, QFileDialog,
-                             QMessageBox, QWidget,
-                             QMenu, QToolButton, QActionGroup,
-                             QAction, QDockWidget, QWIDGETSIZE_MAX, qApp, QWidgetAction)
-from PyQt5.QtCore import QSettings, Qt, QSize, QCoreApplication
+from PyQt5.QtWidgets import (QDialog, QFileDialog, QMessageBox, QWidget, QMenu, QActionGroup,
+                             QAction, QDockWidget, qApp, QWidgetAction, QTableView)
+from PyQt5.QtCore import QSettings, Qt, QCoreApplication
 from PyQt5.QtGui import QPainter, QImage, QCursor, QColor, QKeyEvent, QIcon
 
 from PyQt5 import uic
@@ -49,16 +47,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.setupUi(self)
         self.gvNetwork.setFocus()
 
-        # Activate first tab of tab widget
-        self.tabWidget.setCurrentIndex(0)
-
-        # Create a corner button to hide/show pages of tab widget
-        w = QToolButton(self)
-        w.setArrowType(Qt.DownArrow)
-        w.setIconSize(QSize(12, 12))
-        w.setAutoRaise(True)
-        self.tabWidget.setCornerWidget(w, Qt.TopRightCorner)
-
         # Add model to table views
         self.tvNodes.setModel(ui.widgets.NodesModel(self))
         self.tvEdges.setModel(ui.widgets.EdgesModel(self))
@@ -71,6 +59,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.layoutSearch.setParent(None)
         w.setLayout(self.layoutSearch)
         self.tbSearch.addWidget(w)
+
+        # Arrange dock widgets
+        self.tabifyDockWidget(self.dockNodes, self.dockEdges)
+        self.tabifyDockWidget(self.dockEdges, self.dockSpectra)
+        self.dockNodes.raise_()
 
         # Reorganise export as image actions
         export_button = ui.widgets.ToolBarMenu()
@@ -112,7 +105,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             dock_widget.setWindowTitle('Jupyter Console')
             dock_widget.setWidget(self.jupyter_widget)
 
-            self.addDockWidget(Qt.BottomDockWidgetArea, dock_widget)
+            self.addDockWidget(Qt.TopDockWidgetArea, dock_widget)
             kernel_manager.kernel.shell.push({'app': qApp, 'win': self})
 
         # Connect events
@@ -167,8 +160,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.btNetworkOptions.clicked.connect(lambda: self.on_edit_options_triggered('network'))
         self.btTSNEOptions.clicked.connect(lambda: self.on_edit_options_triggered('t-sne'))
 
-        self.tabWidget.cornerWidget(Qt.TopRightCorner).clicked.connect(self.minimize_tabwidget)
-        self.tabWidget.currentChanged.connect(self.update_search_menu)
+        self.dockNodes.visibilityChanged.connect(lambda v: self.update_search_menu(self.tvNodes) if v else None)
+        self.dockEdges.visibilityChanged.connect(lambda v: self.update_search_menu(self.tvEdges) if v else None)
+        self.dockSpectra.visibilityChanged.connect(lambda v: self.update_search_menu(self.tvNodes) if v else None)
 
         self.sliderNetworkScale.valueChanged.connect(lambda val: self.on_scale_changed('network', val))
         self.sliderTSNEScale.valueChanged.connect(lambda val: self.on_scale_changed('t-sne', val))
@@ -273,14 +267,12 @@ class MainWindow(MainWindowBase, MainWindowUI):
         if worker is not None:
             self._workers.add(worker)
 
-    def update_search_menu(self):
-        childs = self.tabWidget.currentWidget().children()
-        if self.tvNodes in childs:
-            table = self.tvNodes
-        elif self.tvEdges in childs:
-            table = self.tvEdges
-        else:
-            return False
+    def update_search_menu(self, table: QTableView=None):
+        if table is None:
+            if self.dockEdges.isVisible():
+                table = self.tvEdges
+            else:
+                table = self.tvNodes
         model = table.model()
 
         menu = QMenu(self)
@@ -309,6 +301,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 self.gvNetwork.setFocus(Qt.TabFocusReason)
 
     def showEvent(self, event):
+        self.gvNetwork.setMinimumHeight(self.height()/2)
         self.load_settings()
         super().showEvent(event)
 
@@ -360,13 +353,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.has_unsaved_changes = True
 
     def on_do_search(self):
-        childs = self.tabWidget.currentWidget().children()
-        if self.tvNodes in childs:
-            table = self.tvNodes
-        elif self.tvEdges in childs:
+        if self.tvEdges.isVisible():
             table = self.tvEdges
         else:
-            return False
+            table = self.tvNodes
         table.model().setFilterRegExp(str(self.leSearch.text()))
 
     def on_new_project_triggered(self):
@@ -549,7 +539,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
                     self.cvSpectrum.set_spectrum1(data, node_idx+1)
 
                 # Show spectrum tab
-                self.tabWidget.setCurrentIndex(self.tabWidget.indexOf(self.cvSpectrum))
+                self.dockSpectra.show()
+                self.dockSpectra.raise_()
 
     def on_select_first_neighbors_triggered(self, nodes):
         view = self.current_view
@@ -751,17 +742,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.gvNetwork.scene().setNodesSelection(selected)
             self.gvTSNE.scene().setNodesSelection(selected)
 
-    def minimize_tabwidget(self):
-        w = self.tabWidget.cornerWidget(Qt.TopRightCorner)
-        if w.arrowType() == Qt.DownArrow:
-            w.setArrowType(Qt.UpArrow)
-            self.tabWidget.setMaximumHeight(self.tabWidget.tabBar().height())
-            self.tabWidget.setDocumentMode(True)
-        else:
-            w.setArrowType(Qt.DownArrow)
-            self.tabWidget.setDocumentMode(False)
-            self.tabWidget.setMaximumHeight(QWIDGETSIZE_MAX)
-
     def set_nodes_label(self, column_id):
         if column_id is not None:
             model = self.tvNodes.model().sourceModel()
@@ -796,8 +776,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
         settings.beginGroup('MainWindow')
         settings.setValue('Geometry', self.saveGeometry())
         settings.setValue('State', self.saveState())
-        settings.setValue('TabWidget/State',
-                          self.tabWidget.cornerWidget(Qt.TopRightCorner).arrowType() == Qt.UpArrow)
         settings.endGroup()
 
     def load_settings(self):
@@ -809,9 +787,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
         setting = settings.value('State')
         if setting is not None:
             self.restoreState(setting)
-        setting = settings.value('TabWidget/State', type=bool)
-        if setting:
-            self.minimize_tabwidget()
 
     def create_graph(self, keep_vertices=False):
         # Delete all previously created edges and nodes
