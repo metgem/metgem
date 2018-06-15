@@ -306,6 +306,12 @@ class MainWindow(MainWindowBase, MainWindowUI):
         super().showEvent(event)
 
     def closeEvent(self, event):
+        if not config.DEBUG:
+            reply = self.on_new_project_triggered(before_exit=True)
+            if reply == QMessageBox.Cancel:
+                event.ignore()
+                return
+
         if not config.DEBUG and self._workers:
             reply = QMessageBox.question(self, None,
                                          "There is process running. Do you really want to exit?",
@@ -359,7 +365,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             table = self.tvNodes
         table.model().setFilterRegExp(str(self.leSearch.text()))
 
-    def on_new_project_triggered(self):
+    def on_new_project_triggered(self, before_exit=False):
         reply = QMessageBox.Yes
         if self.has_unsaved_changes:
             if self.fname is not None:
@@ -372,7 +378,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             if reply == QMessageBox.Yes:
                 self.on_save_project_triggered()
 
-        if reply != QMessageBox.Cancel:
+        if not before_exit and reply != QMessageBox.Cancel:
             self.fname = None
             self.has_unsaved_changes = False
             self.tvNodes.model().sourceModel().beginResetModel()
@@ -387,6 +393,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.cvSpectrum.set_spectrum1(None)
             self.cvSpectrum.set_spectrum2(None)
             self.update_search_menu()
+
+        return reply
 
     def on_open_project_triggered(self):
         self.on_new_project_triggered()
