@@ -7,7 +7,6 @@ class ColorPicker(QToolButton):
     def __init__(self, action: QAction = None, color_group=None, default_color=Qt.blue, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self._last_color = None
         self.last_color_action = action if action is not None else QAction(self)
         self._color_group = color_group
 
@@ -54,8 +53,6 @@ class ColorPicker(QToolButton):
         super().showEvent(*args, **kwargs)
 
     def on_color_selected(self, color):
-        self._last_color = color
-
         self.update_icon()
         self.save_settings()
 
@@ -76,12 +73,11 @@ class ColorPicker(QToolButton):
             pixmap = current_icon.pixmap(size)
             painter = QPainter(pixmap)
             painter.setPen(Qt.NoPen)
-            painter.setBrush(QBrush(self._last_color))
+            painter.setBrush(QBrush(self.dialog.currentColor()))
             painter.drawEllipse(0, 0, size.width() / 4, size.height() / 4)
             painter.end()
             icon.addPixmap(pixmap)
         super().setIcon(icon)
 
     def on_use_last_color(self):
-        if self._last_color is not None:
-            self.colorSelected.emit(self._last_color)
+        self.colorSelected.emit(self.dialog.currentColor())
