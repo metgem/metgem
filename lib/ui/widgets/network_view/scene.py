@@ -40,10 +40,10 @@ except ImportError:
         def setNetworkStyle(self, style: NetworkStyle=None):
             new_style = style if style is not None else DefaultStyle()
             for node in self.nodes():
-                node.updateStyle(self.networkStyle(), new_style)
+                node.updateStyle(new_style, old=self._style)
             for edge in self.edges():
-                edge.updateStyle(self.networkStyle(), new_style)
-            self.setBackgroundBrush(style.backgroundBrush())
+                edge.updateStyle(new_style, old=self._style)
+            self.setBackgroundBrush(new_style.backgroundBrush())
             self._style = new_style
 
         def clear(self):
@@ -63,18 +63,23 @@ except ImportError:
                 node = Node(index, self._style.nodeRadius(), label=label)
                 if pos:
                     node.setPos(pos)
+
+                if self._style is not None:
+                    node.updateStyle(self._style)
+
                 if isinstance(color, QColor) and color.isValid():
                     node.setBrush(color)
-                elif self._style is not None:
-                    node.setBrush(self._style.nodeBrush())
                 node.setParentItem(self.nodesLayer)
                 nodes.append(node)
+
             return nodes
 
         def addEdges(self, indexes, sourceNodes, destNodes, weights, widths):
             edges = []
             for index, source, dest, weight, width in zip(indexes, sourceNodes, destNodes, weights, widths):
                 edge = Edge(index, source, dest, weight, width)
+                if self._style is not None:
+                    edge.updateStyle(self._style)
                 edge.setParentItem(self.edgesLayer)
                 edge.adjust()
                 edges.append(edge)

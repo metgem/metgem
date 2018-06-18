@@ -4,6 +4,7 @@ from PyQt5.QtCore import (Qt, QPointF, QLineF, QRectF)
 
 from .style import NetworkStyle
 
+
 class Edge(QGraphicsPathItem):
     Type = QGraphicsItem.UserType + 2
 
@@ -98,7 +99,7 @@ class Edge(QGraphicsPathItem):
             path.lineTo(self.dest_point)
         self.setPath(path)
 
-    def updateStyle(self, old: NetworkStyle, style: NetworkStyle):
+    def updateStyle(self, style: NetworkStyle, old: NetworkStyle = None):
         self.setPen(style.edgePen())
         self.update()
 
@@ -121,11 +122,16 @@ class Edge(QGraphicsPathItem):
 
     # noinspection PyMethodOverriding
     def paint(self, painter, option, widget):
-        pen = self.pen()
+        scene = self.scene()
+        if scene is None:
+            return
 
         # If selected, change color to red
         if option.state & QStyle.State_Selected:
-            pen.setColor(Qt.red)
+            pen = scene.networkStyle().edgePen(state='selected')
+            pen.setWidth(self.pen().width())
+        else:
+            pen = self.pen()
 
         painter.setPen(pen)
         painter.drawPath(self.path())

@@ -1,0 +1,32 @@
+/* name: dark */
+
+node
+{
+    background-color: #808080;
+    color: white;
+    font: small-caps italic lighter 10pt Arial;
+    radius: 30;
+    border: solid white 10px;
+}
+
+node:selected
+{
+    background-color: #808080;
+    color: white;
+    border: solid yellow 10px;
+}
+
+edge
+{
+    background-color: #c0c0c0;
+}
+
+edge:selected
+{
+    background-color: red;
+}
+
+scene
+{
+    background-color: #404040;
+}

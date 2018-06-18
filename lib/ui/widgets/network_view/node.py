@@ -15,7 +15,7 @@ class Node(QGraphicsEllipseItem):
         self._pie = []
 
         self._font = QApplication.font()
-        self._text_color = None
+        self._text_color = QColor()
         self._radius = radius
 
         self.id = index
@@ -86,9 +86,9 @@ class Node(QGraphicsEllipseItem):
     def edges(self):
         return self._edge_list
 
-    def updateStyle(self, old: NetworkStyle, style: NetworkStyle):
+    def updateStyle(self, style: NetworkStyle, old: NetworkStyle = None):
         self.setRadius(style.nodeRadius())
-        if self.brush().color() == old.nodeBrush().color():
+        if old is None or self.brush().color() == old.nodeBrush().color():
             self.setBrush(style.nodeBrush(), autoTextColor=False)
         self.setTextColor(style.nodeTextColor())
         self.setPen(style.nodePen())
@@ -121,17 +121,20 @@ class Node(QGraphicsEllipseItem):
     # noinspection PyMethodOverriding
     def paint(self, painter, option, widget):
         scene = self.scene()
+        if scene is None:
+            return
 
         # If selected, change brush to yellow
         if option.state & QStyle.State_Selected:
-            painter.setBrush(Qt.yellow)
-            text_color = QColor(Qt.black)
+            brush = scene.networkStyle().nodeBrush(state='selected')
+            painter.setBrush(brush if brush is not None else self.brush())
+            text_color = scene.networkStyle().nodeTextColor(state='selected')
+            text_color = text_color if text_color is not None else self.textColor()
+            painter.setPen(scene.networkStyle().nodePen(state='selected'))
         else:
             painter.setBrush(self.brush())
+            painter.setPen(self.pen())
             text_color = self.textColor()
-
-        # Set pen
-        painter.setPen(self.pen())
 
         # Draw ellipse
         if self.spanAngle() != 0 and abs(self.spanAngle()) % (360 * 16) == 0:
@@ -143,7 +146,7 @@ class Node(QGraphicsEllipseItem):
         lod = option.levelOfDetailFromTransform(painter.worldTransform())
 
         # Draw pies if any
-        if scene is not None and lod > 0.1 and len(self._pie) > 0:
+        if lod > 0.1 and len(self._pie) > 0:
             radius = self.radius()
             rect = QRectF(-.85 * radius, -0.85 * radius, 1.7 * radius, 1.7 * radius)
             start = 0.
