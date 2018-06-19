@@ -103,7 +103,7 @@ except ImportError:
 
         def nodes(self):
             try:
-                return self.nodesLayer.childItems()
+                return sorted(self.nodesLayer.childItems(), key=lambda node: node.index())
             except RuntimeError:
                 return []
 
@@ -132,7 +132,7 @@ except ImportError:
 
         def edges(self):
             try:
-                return self.edgesLayer.childItems()
+                return sorted(self.edgesLayer.childItems(), key=lambda node: node.index())
             except RuntimeError:
                 return []
 
@@ -229,7 +229,7 @@ except ImportError:
 
         def nodesColors(self):
             return [node.brush().color() if node.brush().color() != self.networkStyle().nodeBrush().color() else QColor()
-                    for node in sorted(self.nodes(), key=lambda node: node.index())]
+                    for node in self.nodes()]
 
         def setNodesColors(self, colors):
             for node in self.nodes():
