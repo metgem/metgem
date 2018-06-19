@@ -69,16 +69,16 @@ class Node(QGraphicsEllipseItem):
 
     def setLabel(self, label):
         self._label = label
-        if self.isVisible():
-            self.update()
+        self.update()
 
     def setPie(self, values):
-        sum_ = sum(values)
-        values = [v / sum_ for v in values] if sum_ > 0 else []
-        self._pie = values
-
-        if self.isVisible():
-            self.update()
+        if values is not None:
+            sum_ = sum(values)
+            values = [v / sum_ for v in values] if sum_ > 0 else []
+            self._pie = values
+        else:
+            self._pie = []
+        self.update()
 
     def addEdge(self, edge):
         self._edge_list.append(edge)
