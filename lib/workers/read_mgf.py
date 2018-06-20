@@ -67,14 +67,18 @@ class ReadMGFWorker(BaseWorker):
                     self.canceled.emit()
                     return
 
-                mz_parent = params['pepmass']
+                try:
+                    mz_parent = params['pepmass']
+                except KeyError as e:
+                    self.error.emit(e)
+                    return
+
                 data = filter_data(data, mz_parent, self.options.min_intensity,
                                    self.options.parent_filter_tolerance,
                                    self.options.matched_peaks_window,
                                    self.options.min_matched_peaks_search)
-                if data.size > 0:
-                    spectra.append(data)
-                    mzs.append(mz_parent)
+                spectra.append(data)
+                mzs.append(mz_parent)
                 self.updated.emit(1)
         else:
             try:
@@ -83,7 +87,10 @@ class ReadMGFWorker(BaseWorker):
                         self.canceled.emit()
                         return
 
-                    mz_parent = entry['params']['pepmass']
+                    try:
+                        mz_parent = entry['params']['pepmass']
+                    except KeyError as e:
+                        self.error.emit(e)
                     mz_parent = mz_parent[0] if type(
                         mz_parent) is tuple else mz_parent  # Parent ion mass is read as a tuple
 
@@ -92,9 +99,8 @@ class ReadMGFWorker(BaseWorker):
                                        self.options.parent_filter_tolerance,
                                        self.options.matched_peaks_window,
                                        self.options.min_matched_peaks_search)
-                    if data.size > 0:
-                        spectra.append(data)
-                        mzs.append(mz_parent)
+                    spectra.append(data)
+                    mzs.append(mz_parent)
 
                     self.updated.emit(1)
             except PyteomicsError as e:

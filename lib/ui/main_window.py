@@ -955,6 +955,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
         def error(e):
             if e.__class__ == pyteomics.auxiliary.PyteomicsError:
                 QMessageBox.warning(self, None, e.message)
+            elif e.__class__ == KeyError and e.args[0] == "pepmass":
+                QMessageBox.warning(self, None, f"File format is incorrect. At least one scan has no pepmass defined.")
+            else:
+                QMessageBox.warning(self, None, str(e))
 
         def scores_computed():
             nonlocal worker
