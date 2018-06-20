@@ -107,7 +107,7 @@ class ImportMetadataDialog(ImportMetadataDialogBase, ImportMetadataDialogUI):
         # Check that selected metadata file is a valid csv file and try to get delimiter
         try:
             with open(text, 'r') as f:
-                line = f.read(2048)
+                line = f.readline()
             sniffer = csv.Sniffer()
             delimiter = sniffer.sniff(line).delimiter
             has_header = sniffer.has_header(line)
