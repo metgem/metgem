@@ -10,7 +10,7 @@ import igraph as ig
 import sqlalchemy
 
 from PyQt5.QtWidgets import (QDialog, QFileDialog, QMessageBox, QWidget, QMenu, QActionGroup,
-                             QAction, QDockWidget, qApp, QWidgetAction, QTableView)
+                             QAction, QDockWidget, qApp, QWidgetAction, QTableView, QComboBox)
 from PyQt5.QtCore import QSettings, Qt, QCoreApplication
 from PyQt5.QtGui import QPainter, QImage, QCursor, QColor, QKeyEvent, QIcon
 
@@ -77,6 +77,19 @@ class MainWindow(MainWindowBase, MainWindowUI):
         color_button = ui.widgets.ColorPicker(self.actionSetNodesColor, color_group='Node', default_color=Qt.blue)
         self.tbNetwork.insertWidget(self.actionSetNodesColor, color_button)
         self.tbNetwork.removeAction(self.actionSetNodesColor)
+
+        size_combo = QComboBox(self.tbNetwork)
+        size_combo.setFixedSize(self.tbNetwork.height() + 60, self.tbNetwork.height())
+        size_combo.setEditable(True)
+        size_combo.setInsertPolicy(QComboBox.NoInsert)
+        size_combo.addItems(['10', '20', '30', '40', '50', '60', '70', '100'])
+        current_radius = self.gvNetwork.scene().networkStyle().nodeRadius()
+        size_combo.setCurrentText(str(current_radius))
+        size_combo.setStatusTip(self.actionSetNodesSize.statusTip())
+        size_combo.setToolTip(self.actionSetNodesSize.toolTip())
+        size_combo.setLineEdit(ui.widgets.LineEditIcon(self.actionSetNodesSize.icon(), size_combo))
+        self.tbNetwork.insertWidget(self.actionSetNodesSize, size_combo)
+        self.tbNetwork.removeAction(self.actionSetNodesSize)
 
         # Add a Jupyter widget
         if config.EMBED_JUPYTER:
@@ -148,6 +161,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.actionHideSelected.triggered.connect(lambda: self.current_view.scene().hideSelectedItems())
         self.actionShowAll.triggered.connect(lambda: self.current_view.scene().showAllItems())
         color_button.colorSelected.connect(self.on_set_selected_nodes_color)
+        size_combo.currentIndexChanged['QString'].connect(self.on_set_selected_nodes_size)
         self.actionNeighbors.triggered.connect(
             lambda: self.on_select_first_neighbors_triggered(self.current_view.scene().selectedNodes()))
         self.actionExportToCytoscape.triggered.connect(self.on_export_to_cytoscape_triggered)
@@ -351,11 +365,23 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 with utils.SignalBlocker(self.gvNetwork.scene()):
                     self.gvNetwork.scene().setNodesSelection(nodes_idx)
 
-    def on_set_selected_nodes_color(self, color):
+    def on_set_selected_nodes_color(self, color: QColor):
         for scene in (self.gvNetwork.scene(), self.gvTSNE.scene()):
             scene.setSelectedNodesColor(color)
 
         self.network.graph.vs['__color'] = self.gvNetwork.scene().nodesColors()
+        self.has_unsaved_changes = True
+
+    def on_set_selected_nodes_size(self, text: str):
+        try:
+            size = int(text)
+        except ValueError:
+            return
+
+        for scene in (self.gvNetwork.scene(), self.gvTSNE.scene()):
+            scene.setSelectedNodesRadius(size)
+
+        self.network.graph.vs['__size'] = self.gvNetwork.scene().nodesRadii()
         self.has_unsaved_changes = True
 
     def on_do_search(self):
@@ -868,11 +894,14 @@ class MainWindow(MainWindowBase, MainWindowUI):
         colors = self.network.graph.vs['__color'] \
             if '__color' in self.network.graph.vs.attributes() else []
 
+        radii = self.network.graph.vs['__size'] \
+            if '__size' in self.network.graph.vs.attributes() else []
+
         # Add nodes
         nodes = scene.nodes()
         num_nodes = len(nodes)
         if num_nodes == 0:
-            nodes = scene.addNodes(self.network.graph.vs.indices, colors=colors)
+            nodes = scene.addNodes(self.network.graph.vs.indices, colors=colors, radii=radii)
         elif num_nodes == len(colors):
             scene.setNodesColors(colors)
 
@@ -902,11 +931,14 @@ class MainWindow(MainWindowBase, MainWindowUI):
         colors = self.network.graph.vs['__color'] \
             if '__color' in self.network.graph.vs.attributes() else []
 
+        radii = self.network.graph.vs['__size'] \
+            if '__size' in self.network.graph.vs.attributes() else []
+
         # Add nodes
         nodes = scene.nodes()
         num_nodes = len(nodes)
         if num_nodes == 0:
-            scene.addNodes(self.network.graph.vs.indices, colors=colors)
+            scene.addNodes(self.network.graph.vs.indices, colors=colors, radii=radii)
         elif num_nodes == len(colors):
             scene.setNodesColors(colors)
 

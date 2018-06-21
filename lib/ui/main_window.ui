@@ -344,6 +344,7 @@
    <addaction name="actionShowAll"/>
    <addaction name="separator"/>
    <addaction name="actionSetNodesColor"/>
+   <addaction name="actionSetNodesSize"/>
   </widget>
   <widget class="QToolBar" name="tbExport">
    <property name="windowTitle">
@@ -1048,6 +1049,21 @@
    </property>
    <property name="statusTip">
     <string>Set selected nodes color</string>
+   </property>
+  </action>
+  <action name="actionSetNodesSize">
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/node-size.svg</normaloff>:/icons/images/node-size.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Set selected nodes &amp;size</string>
+   </property>
+   <property name="toolTip">
+    <string>Set selected nodes size</string>
+   </property>
+   <property name="statusTip">
+    <string>Set selected nodes size</string>
    </property>
   </action>
  </widget>

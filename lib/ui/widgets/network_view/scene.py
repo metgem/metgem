@@ -57,9 +57,9 @@ except ImportError:
             self.addItem(self.edgesLayer)
             self.edgesLayer.setZValue(0)
 
-        def addNodes(self, indexes, labels=[], positions=[], colors=[]):
+        def addNodes(self, indexes, labels=[], positions=[], colors=[], radii=[]):
             nodes = []
-            for index, label, pos, color in itertools.zip_longest(indexes, labels, positions, colors):
+            for index, label, pos, color, radius in itertools.zip_longest(indexes, labels, positions, colors, radii):
                 node = Node(index, self._style.nodeRadius(), label=label)
                 if pos:
                     node.setPos(pos)
@@ -69,6 +69,10 @@ except ImportError:
 
                 if isinstance(color, QColor) and color.isValid():
                     node.setBrush(color)
+
+                if radius > 0:
+                    node.setRadius(radius)
+
                 node.setParentItem(self.nodesLayer)
                 nodes.append(node)
 
@@ -228,8 +232,8 @@ except ImportError:
                 item.show()
 
         def nodesColors(self):
-            return [node.brush().color() if node.brush().color() != self.networkStyle().nodeBrush().color() else QColor()
-                    for node in self.nodes()]
+            return [node.brush().color() if node.brush().color() != self.networkStyle().nodeBrush().color()
+                    else QColor() for node in self.nodes()]
 
         def setNodesColors(self, colors):
             for node in self.nodes():
@@ -238,9 +242,26 @@ except ImportError:
                     node.setBrush(color)
 
         def setSelectedNodesColor(self, color: QColor):
-            for node in self.selectedNodes():
-                if color.isValid():
+            if color.isValid():
+                for node in self.selectedNodes():
                     node.setBrush(color)
+
+        def nodesRadii(self):
+            return [node.radius() if node.radius() != self.networkStyle().nodeRadius()
+                    else None for node in self.nodes()]
+
+        def setNodesRadii(self, radii):
+            for node in self.nodes():
+                radius = radii[node.index()]
+                node.setRadius(radius)
+                for edge in node.edges():
+                    edge.adjust()
+
+        def setSelectedNodesRadius(self, radius: int):
+            for node in self.selectedNodes():
+                node.setRadius(radius)
+                for edge in node.edges():
+                    edge.adjust()
 
         def nodeAt(self, *args, **kwargs):
             item = self.itemAt(*args, **kwargs)

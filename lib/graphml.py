@@ -114,9 +114,10 @@ class GraphMLWriter:
     def _get_type(self, val):
         """Helper function to identify data types"""
 
-        if isinstance(val, (float, int)) or (hasattr(val, 'dtype')
-                                             and issubclass(val.dtype.type, (np.integer, np.floating))):
+        if isinstance(val, float) or (hasattr(val, 'dtype') and issubclass(val.dtype.type, np.floating)):
             return 'double'
+        elif isinstance(val, int) or (hasattr(val, 'dtype') and issubclass(val.dtype.type, np.integer)):
+            return 'int'
         elif isinstance(val, bool):
             return 'boolean'
         elif isinstance(val, str):
@@ -212,6 +213,8 @@ class GraphMLWriter:
                         if not val.isValid():
                             continue
                         val = val.name()
+                    elif attr == '__size' and val <= 0:
+                        continue
                     data.text = str(val)
                     node.append(data)
 
