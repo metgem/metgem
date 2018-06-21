@@ -70,7 +70,7 @@ except ImportError:
                 if isinstance(color, QColor) and color.isValid():
                     node.setBrush(color)
 
-                if radius > 0:
+                if radius is not None and radius > 0:
                     node.setRadius(radius)
 
                 node.setParentItem(self.nodesLayer)
