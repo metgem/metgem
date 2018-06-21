@@ -143,6 +143,7 @@ class GraphMLWriter:
         # Graph attributes
         for attr in graph.attributes():
             type_ = self._get_type(graph[attr])
+
             if not type_:
                 continue
 
@@ -156,7 +157,12 @@ class GraphMLWriter:
 
         # Vertices attributes
         for attr in graph.vs.attributes():
-            type_ = self._get_type(graph.vs[0][attr])
+            if attr == '__color':
+                type_ = 'string'
+            elif attr == '__size':
+                type_ = 'int'
+            else:
+                type_ = self._get_type(graph.vs[0][attr])
             if not type_:
                 continue
 
@@ -213,7 +219,7 @@ class GraphMLWriter:
                         if not val.isValid():
                             continue
                         val = val.name()
-                    elif attr == '__size' and val <= 0:
+                    elif attr == '__size' and (val is None or val <= 0):
                         continue
                     data.text = str(val)
                     node.append(data)
