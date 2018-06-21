@@ -43,12 +43,6 @@ except ImportError:
             except KeyError:
                 return None if state == 'selected' else QColor(Qt.black)
 
-        def nodeRadius(self) -> int:
-            try:
-                return self.node['radius']
-            except KeyError:
-                return 30
-
         def nodePen(self, state='normal') -> QPen:
             try:
                 return self.node['border'][state]
@@ -75,8 +69,7 @@ except ImportError:
 
     class DefaultStyle(NetworkStyle):
         name = "default"
-        node = {'radius': 30,
-                'bgcolor':  {'normal':    QBrush(Qt.lightGray),
+        node = {'bgcolor':  {'normal':    QBrush(Qt.lightGray),
                              'selected':  QBrush(Qt.yellow)},
                 'txtcolor': {'normal':   QColor(Qt.black),
                              'selected': QColor(Qt.black)},
@@ -161,8 +154,7 @@ def style_from_css(css):
         sheet = tinycss2.parse_stylesheet(''.join(f.readlines()))
 
     stylename = ""
-    node = {'radius': 30,
-            'bgcolor':  {'normal':   Qt.lightGray,
+    node = {'bgcolor':  {'normal':   Qt.lightGray,
                          'selected': Qt.yellow},
             'txtcolor': {'normal':   Qt.black,
                          'selected': Qt.black},
@@ -241,12 +233,6 @@ def style_from_css(css):
                             node['txtcolor'][state] = token.serialize()
                         elif prop == 'border-color':
                             node['border'][state] = token.serialize()
-                    elif token.type == 'number':
-                        if prop == 'radius' and state == 'normal':
-                            try:
-                                node['radius'] = int(token.value)
-                            except ValueError:
-                                pass
                 elif name == 'edge':
                     if token.type == 'ident':
                         if prop == 'background-color':

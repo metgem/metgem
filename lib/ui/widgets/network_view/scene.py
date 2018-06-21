@@ -1,5 +1,7 @@
 from PyQt5.QtGui import QColor
 
+from ....config import RADIUS
+
 try:
     from .NetworkView import Node, Edge, NetworkScene as BaseNetworkScene
 
@@ -60,7 +62,7 @@ except ImportError:
         def addNodes(self, indexes, labels=[], positions=[], colors=[], radii=[]):
             nodes = []
             for index, label, pos, color, radius in itertools.zip_longest(indexes, labels, positions, colors, radii):
-                node = Node(index, self._style.nodeRadius(), label=label)
+                node = Node(index, label=label)
                 if pos:
                     node.setPos(pos)
 
@@ -247,8 +249,7 @@ except ImportError:
                     node.setBrush(color)
 
         def nodesRadii(self):
-            return [node.radius() if node.radius() != self.networkStyle().nodeRadius()
-                    else None for node in self.nodes()]
+            return [node.radius() if node.radius() != RADIUS else 0 for node in self.nodes()]
 
         def setNodesRadii(self, radii):
             for node in self.nodes():

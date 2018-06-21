@@ -82,9 +82,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
         size_combo.setFixedSize(self.tbNetwork.height() + 60, self.tbNetwork.height())
         size_combo.setEditable(True)
         size_combo.setInsertPolicy(QComboBox.NoInsert)
-        size_combo.addItems(['10', '20', '30', '40', '50', '60', '70', '100'])
-        current_radius = self.gvNetwork.scene().networkStyle().nodeRadius()
-        size_combo.setCurrentText(str(current_radius))
+        items = [str(x) for x in range(10, 101, 10)]
+        size_combo.addItems(items)
+        size_combo.setCurrentText(str(config.RADIUS))
+        size_combo.setCurrentIndex(items.index(str(config.RADIUS)))
         size_combo.setStatusTip(self.actionSetNodesSize.statusTip())
         size_combo.setToolTip(self.actionSetNodesSize.toolTip())
         size_combo.setLineEdit(ui.widgets.LineEditIcon(self.actionSetNodesSize.icon(), size_combo))
@@ -882,7 +883,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         widths = np.array(interactions['Cosine'])
         min_ = max(0, widths.min() - 0.1)
-        max_ = scene.networkStyle().nodeRadius()
+        max_ = config.RADIUS
         if min_ != widths.max():
             widths = (max_ - 1) * (widths - min_) / (widths.max() - min_) + 1
         else:

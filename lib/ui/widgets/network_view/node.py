@@ -3,20 +3,21 @@ from PyQt5.QtWidgets import (QGraphicsItem, QGraphicsEllipseItem, QStyle, QAppli
 from PyQt5.QtCore import (Qt, QRectF)
 
 from .style import NetworkStyle
+from ....config import RADIUS
 
 
 class Node(QGraphicsEllipseItem):
     Type = QGraphicsItem.UserType + 1
 
-    def __init__(self, index, radius, label=None):
-        super().__init__(-radius, -radius, 2 * radius, 2 * radius)
+    def __init__(self, index, label=None):
+        super().__init__(-RADIUS, -RADIUS, 2 * RADIUS, 2 * RADIUS)
+        self._radius = RADIUS
 
         self._edge_list = []
         self._pie = []
 
         self._font = QApplication.font()
         self._text_color = QColor()
-        self._radius = radius
 
         self.id = index
         if label is None:
@@ -87,7 +88,6 @@ class Node(QGraphicsEllipseItem):
         return self._edge_list
 
     def updateStyle(self, style: NetworkStyle, old: NetworkStyle = None):
-        self.setRadius(style.nodeRadius())
         if old is None or self.brush().color() == old.nodeBrush().color():
             self.setBrush(style.nodeBrush(), autoTextColor=False)
         self.setTextColor(style.nodeTextColor())
@@ -115,7 +115,7 @@ class Node(QGraphicsEllipseItem):
     def boundingRect(self):
         brect = super().boundingRect()
         pwidth = self.pen().width()
-        size = 2 * (self.radius() + pwidth)
+        size = 2 * (self._radius + pwidth)
         return QRectF(brect.x() - pwidth, brect.y() - pwidth, size, size)
 
     # noinspection PyMethodOverriding
@@ -147,7 +147,7 @@ class Node(QGraphicsEllipseItem):
 
         # Draw pies if any
         if lod > 0.1 and len(self._pie) > 0:
-            radius = self.radius()
+            radius = self._radius
             rect = QRectF(-.85 * radius, -0.85 * radius, 1.7 * radius, 1.7 * radius)
             start = 0.
             colors = self.scene().pieColors()

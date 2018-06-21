@@ -8,6 +8,7 @@ from sklearn.manifold import TSNE
 from .base import BaseWorker
 from ..utils import AttrDict, BoundingBox
 from ..errors import UserRequestedStopError
+from ..config import RADIUS
 
 
 class TSNEVisualizationOptions(AttrDict):
@@ -48,11 +49,10 @@ class ProgressStringIO(io.StringIO):
     
 class TSNEWorker(BaseWorker):
     
-    def __init__(self, scores, options, radius):
+    def __init__(self, scores, options):
         super().__init__()
         self._scores = scores
         self.options = options
-        self.radius = radius
 
         method = 'barnes_hut' if options.barnes_hut else 'exact'
         random_state = None if options.random else 0
@@ -68,7 +68,6 @@ class TSNEWorker(BaseWorker):
         self.desc = 't-SNE: Iteration {value:d} of {max:d}'
 
     def run(self):
-        radius = self.radius
         sys.stdout = ProgressStringIO(self)
 
         # Compute layout
@@ -84,17 +83,17 @@ class TSNEWorker(BaseWorker):
             else:
                 # Adjust scale
                 bb = BoundingBox(layout[mask])
-                layout *= (2*radius**2 / bb.width)
+                layout *= (2*RADIUS**2 / bb.width)
 
                 # Calculate positions for excluded nodes
                 bb = BoundingBox(layout[mask])
-                dx, dy = 0, 5 * radius
+                dx, dy = 0, 5 * RADIUS
                 for index in np.where(~mask)[0]:
                     layout[index] = (bb.left + dx, bb.bottom + dy)
-                    dx += 5 * radius
+                    dx += 5 * RADIUS
                     if dx >= bb.width:
                         dx = 0
-                        dy += 5 * radius
+                        dy += 5 * RADIUS
 
         sys.stdout = sys.__stdout__
         return layout
