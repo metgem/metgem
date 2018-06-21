@@ -1,6 +1,6 @@
 from PyQt5.QtCore import Qt, QSettings
 from PyQt5.QtGui import QIcon, QPainter, QBrush, QColor
-from PyQt5.QtWidgets import QToolButton, QWidgetAction, QColorDialog, QMenu, QAction
+from PyQt5.QtWidgets import QToolButton, QWidgetAction, QColorDialog, QMenu, QAction, QAbstractButton
 
 
 class ColorPicker(QToolButton):
@@ -13,7 +13,13 @@ class ColorPicker(QToolButton):
         dialog_action = QWidgetAction(self)
         self.dialog = QColorDialog()
         self.dialog.setWindowFlags(Qt.Widget)
+        self.dialog.setOptions(self.dialog.options() | QColorDialog.DontUseNativeDialog)
         dialog_action.setDefaultWidget(self.dialog)
+
+        # Hide pick screen color button
+        button = self.dialog.findChild(QAbstractButton)
+        if button:
+            button.hide()
 
         # Load custom colors
         settings = QSettings()
