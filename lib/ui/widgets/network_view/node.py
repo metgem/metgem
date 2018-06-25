@@ -1,4 +1,4 @@
-from PyQt5.QtGui import QPen, QColor, QFont, QBrush
+from PyQt5.QtGui import QPen, QColor, QFont, QBrush, QFontMetrics
 from PyQt5.QtWidgets import (QGraphicsItem, QGraphicsEllipseItem, QStyle, QApplication)
 from PyQt5.QtCore import (Qt, QRectF)
 
@@ -114,9 +114,10 @@ class Node(QGraphicsEllipseItem):
 
     def boundingRect(self):
         brect = super().boundingRect()
-        pwidth = self.pen().width()
-        size = 2 * (self._radius + pwidth)
-        return QRectF(brect.x() - pwidth, brect.y() - pwidth, size, size)
+        height = brect.height()
+        fm = QFontMetrics(self.font())
+        width = max(height, fm.width(self._label))
+        return QRectF(brect.x() - (width-height)/2, brect.y(), width, height)
 
     # noinspection PyMethodOverriding
     def paint(self, painter, option, widget):
@@ -161,4 +162,4 @@ class Node(QGraphicsEllipseItem):
         if lod > 0.4:
             painter.setFont(self.font())
             painter.setPen(QPen(text_color, 0))
-            painter.drawText(self.rect(), Qt.AlignCenter, self._label)
+            painter.drawText(self.boundingRect(), Qt.AlignCenter, self._label)
