@@ -11,15 +11,15 @@ DEBUG = os.getenv('DEBUG_MODE', 'false').lower() in ('true', '1')
 EMBED_JUPYTER = os.getenv('EMBED_JUPYTER', 'false').lower() in ('true', '1')
 
 if sys.platform.startswith('win'):
-    LOG_PATH = os.path.expandvars(r'%APPDATA%\HDiSpeC\log')
-    DATABASES_PATH = os.path.expandvars(r'%APPDATA%\HDiSpeC\databases')
+    USER_PATH = os.path.join(os.path.expandvars(r'%APPDATA%'), 'HDiSpeC')
 elif sys.platform.startswith('darwin'):
-    LOG_PATH = os.path.expanduser('~/Library/Logs/HDiSpeC/log')
-    DATABASES_PATH = os.path.expanduser(r'~/Library/HDiSpeC/databases')
+    USER_PATH = os.path.join(os.path.expanduser('~'), 'Library', 'Logs', 'HDiSpeC')
 elif sys.platform.startswith('linux'):
-    LOG_PATH = os.path.expanduser('~/.config/HDiSpeC/log')
-    DATABASES_PATH = os.path.expanduser(r'~/.config/HDiSpeC/databases')
+    USER_PATH = os.path.join(os.path.expanduser('~'), '.config', 'HDiSpeC')
 else:
-    LOG_PATH = 'log'
-    DATABASES_PATH = 'databases'
+    USER_PATH = os.path.realpath('.')
+
+DATABASES_PATH = os.path.join(USER_PATH, 'databases')
 SQL_PATH = os.path.join(DATABASES_PATH, 'spectra.sqlite')
+LOG_PATH = os.path.join(USER_PATH, 'log')
+STYLES_PATH = os.path.join(USER_PATH, 'styles')

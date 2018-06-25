@@ -1,0 +1,31 @@
+/* name: Cytoscape */
+
+node
+{
+    background-color: #4f94cd;
+    color: black;
+    font: 10pt Arial;
+    border: solid black 2px;
+}
+
+node:selected
+{
+    background-color: yellow;
+    color: black;
+    border: solid black 2px;
+}
+
+edge
+{
+    background-color: black;
+}
+
+edge:selected
+{
+    background-color: red;
+}
+
+scene
+{
+    background-color: white;
+}

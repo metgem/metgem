@@ -309,7 +309,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def keyPressEvent(self, event: QKeyEvent):
         key = event.key()
         modifiers = event.modifiers()
-        if key == Qt.Key_Tab and modifiers & Qt.ControlModifier:  # Show/hide minimap
+        if key == Qt.Key_Tab and modifiers & Qt.ControlModifier:  # Navigate between GraphicsViews
             if self.gvNetwork.hasFocus():
                 self.gvTSNE.setFocus(Qt.TabFocusReason)
             else:
@@ -665,7 +665,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
     def on_settings_triggered(self):
         dialog = ui.SettingsDialog(self)
-        dialog.exec_()
+        if dialog.exec_() == QDialog.Accepted:
+            style = dialog.getValues()
+            self.gvNetwork.scene().setNetworkStyle(style)
+            self.gvTSNE.scene().setNetworkStyle(style)
 
     def on_full_screen_triggered(self):
         if not self.isFullScreen():
@@ -822,6 +825,14 @@ class MainWindow(MainWindowBase, MainWindowUI):
         setting = settings.value('State')
         if setting is not None:
             self.restoreState(setting)
+        settings.endGroup()
+
+        settings.beginGroup('NetworkView')
+        setting = settings.value('style', None)
+        style = ui.widgets.style_from_css(setting) if setting is not None else ui.widgets.DefaultStyle()
+        self.gvNetwork.scene().setNetworkStyle(style)
+        self.gvTSNE.scene().setNetworkStyle(style)
+        settings.endGroup()
 
     def create_graph(self, keep_vertices=False):
         # Delete all previously created edges and nodes

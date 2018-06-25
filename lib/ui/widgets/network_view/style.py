@@ -153,7 +153,7 @@ def style_from_css(css):
     with open(css, 'r') as f:
         sheet = tinycss2.parse_stylesheet(''.join(f.readlines()))
 
-    stylename = ""
+    stylename = None
     node = {'bgcolor':  {'normal':   Qt.lightGray,
                          'selected': Qt.yellow},
             'txtcolor': {'normal':   Qt.black,

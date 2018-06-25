@@ -1,5 +1,6 @@
 from .metadata import NodesModel, EdgesModel, ProxyModel, CsvDelimiterCombo, NodeTableView, EdgeTableView, LabelRole
 from .network_view import NetworkView
+from .network_view.style import style_from_css, DefaultStyle
 from .options_widgets import TSNEOptionsWidget, NetworkOptionsWidget, CosineOptionsWidget, QueryDatabasesOptionsWidget
 from .spectrum import SpectrumCanvas, SpectrumNavigationToolbar, SpectrumWidget, ExtendedSpectrumWidget
 from .delegates import AutoToolTipItemDelegate, LibraryQualityDelegate, EnsureStringItemDelegate
