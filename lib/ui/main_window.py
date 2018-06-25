@@ -918,7 +918,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 if computed_layout is not None:
                     self.apply_layout('network', computed_layout)
 
-            worker = workers.NetworkWorker(self.network.graph, radius=scene.networkStyle().nodeRadius())
+            worker = workers.NetworkWorker(self.network.graph)
             worker.finished.connect(process_finished)
 
             return worker
@@ -950,8 +950,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 if computed_layout is not None:
                     self.apply_layout('t-sne', computed_layout)
 
-            worker = workers.TSNEWorker(self.network.scores, self.network.options.tsne,
-                                        radius=scene.networkStyle().nodeRadius())
+            worker = workers.TSNEWorker(self.network.scores, self.network.options.tsne)
             worker.finished.connect(process_finished)
 
             return worker

@@ -3,14 +3,15 @@ import igraph as ig
 
 from fa2 import ForceAtlas2
 from .base import BaseWorker
+from ..config import RADIUS
 
 
 class NetworkWorker(BaseWorker):
     
-    def __init__(self, graph, radius):
+    def __init__(self, graph):
         super().__init__()
         self.graph = graph
-        self.radius = radius
+        self.radius = RADIUS
         self.max = self.graph.vcount()
         self.iterative_update = False
         self.desc = 'Computing layout: {value:d} vertices of {max:d}.'
