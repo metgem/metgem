@@ -33,10 +33,10 @@ def icon_from_app(app_path):
 # .. Basics ....................................................................
 
 # Uncomment to override the output filename
-filename = 'HDiSpeC.dmg'
+filename = 'MetGem.dmg'
 
 # Uncomment to override the output volume name
-volume_name = 'HDiSpeC'
+volume_name = 'MetGem'
 
 # Volume format (see hdiutil create -help)
 format = defines.get('format', 'UDBZ')

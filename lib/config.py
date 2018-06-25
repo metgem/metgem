@@ -11,11 +11,11 @@ DEBUG = os.getenv('DEBUG_MODE', 'false').lower() in ('true', '1')
 EMBED_JUPYTER = os.getenv('EMBED_JUPYTER', 'false').lower() in ('true', '1')
 
 if sys.platform.startswith('win'):
-    USER_PATH = os.path.join(os.path.expandvars(r'%APPDATA%'), 'HDiSpeC')
+    USER_PATH = os.path.join(os.path.expandvars(r'%APPDATA%'), 'MetGem')
 elif sys.platform.startswith('darwin'):
-    USER_PATH = os.path.join(os.path.expanduser('~'), 'Library', 'Logs', 'HDiSpeC')
+    USER_PATH = os.path.join(os.path.expanduser('~'), 'Library', 'Logs', 'MetGem')
 elif sys.platform.startswith('linux'):
-    USER_PATH = os.path.join(os.path.expanduser('~'), '.config', 'HDiSpeC')
+    USER_PATH = os.path.join(os.path.expanduser('~'), '.config', 'MetGem')
 else:
     USER_PATH = os.path.realpath('.')
 

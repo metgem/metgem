@@ -9,14 +9,15 @@ from version import FULLVERSION
 
 class SplashScreen(QSplashScreen):
     def __init__(self):
-        splash_pix = QPixmap(os.path.join(os.path.dirname(__file__), 'splash.svg'))
+        splash_pix = QPixmap(os.path.join(os.path.dirname(__file__), 'splash.png'))
         super().__init__(splash_pix, Qt.WindowStaysOnTopHint)
         self.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
         self.setMask(splash_pix.mask())
+        self.setAttribute(Qt.WA_TranslucentBackground)
 
         self.pbar = QProgressBar(self)
         self.pbar.setMaximum(100)
-        self.pbar.setGeometry(20, splash_pix.height()-50, splash_pix.width()-40, 20)
+        self.pbar.setGeometry(100, splash_pix.height()-130, splash_pix.width()-200, 20)
         self.pbar.setAlignment(Qt.AlignCenter)
         self.pbar.setStyleSheet("""
             QProgressBar {
@@ -33,11 +34,9 @@ class SplashScreen(QSplashScreen):
             }
 
             QProgressBar::chunk {
-                background: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1,
-                stop: 0 #727378,
-                stop: 0.4999 #727478,
-                stop: 0.5 #727378,
-                stop: 1 #3d404d );
+                background: QLinearGradient( x1: 0, y1: 0, x2: 1, y2: 0,
+                stop: 0 #729fcf,
+                stop: 1 #3465a4);
                 border-radius: 5px;
                 border: 1px solid black;
             }""")
@@ -45,7 +44,7 @@ class SplashScreen(QSplashScreen):
         v = f"Version: {FULLVERSION}"
         self.version = QLabel(self)
         self.version.setText(v)
-        self.version.move(splash_pix.width()-self.fontMetrics().width(v)-40, splash_pix.height()-145)
+        self.version.move(splash_pix.width()-self.fontMetrics().width(v)-125, splash_pix.height()-180)
 
     def setValue(self, value):
         self.pbar.setValue(value)

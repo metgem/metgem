@@ -7,7 +7,7 @@ import shutil
 from invoke import task, call
 
 DIST = 'dist'
-NAME = 'HDiSpeC'
+NAME = 'MetGem'
 
 if sys.platform.startswith('win'):
     WINDOWS_BIN_URL = 'https://mycore.core-cloud.net/index.php/s/2z4z9phDvxplWiE/download'
