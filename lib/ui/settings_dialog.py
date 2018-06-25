@@ -44,7 +44,7 @@ class SettingsDialog(SettingsDialogUI, SettingsDialogBase):
                                                      positions=[QPointF(x, 96-y) for x, y in POSITIONS])
         sources, dests = zip(*LINKS)
         edges = self.gvStylePreview.scene().addEdges(range(len(LINKS)), [nodes[x] for x in sources],
-                                                     [nodes[x] for x in dests], [], [x*4 for x in WIDTHS])
+                                                     [nodes[x] for x in dests], WIDTHS, [x*4 for x in WIDTHS])
 
         self.gvStylePreview.minimap.setVisible(False)
         self.gvStylePreview.scene().setScale(4)
