@@ -929,7 +929,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 if computed_layout is not None:
                     self.apply_layout('network', computed_layout)
 
-            worker = workers.NetworkWorker(self.network.graph)
+            worker = workers.NetworkWorker(self.network.graph, self.gvNetwork.scene().nodesRadii())
             worker.finished.connect(process_finished)
 
             return worker
