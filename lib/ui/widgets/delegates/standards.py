@@ -142,4 +142,8 @@ class StandardsResultsDelegate(QStyledItemDelegate):
         self.closeEditor.emit(editor)
         item_ids = index.model().data(index, DbResultsRole)
         if item_ids:
-            self.viewDetailsClicked.emit(index.row(), item_ids)
+            try:
+                row = index.model().mapToSource(index).row()
+            except AttributeError:
+                row = index.row()
+            self.viewDetailsClicked.emit(row, item_ids)
