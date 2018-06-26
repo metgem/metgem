@@ -1144,7 +1144,12 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.tvNodes.model().sourceModel().endResetModel()
 
         def error(e):
-            QMessageBox.warning(self, None, f"Group mapping was not loaded because the following error occured: {str(e)}")
+            if isinstance(e, ValueError):
+                QMessageBox.warning(self, None, "Group mapping file format was not recognized.")
+            elif isinstance(e, FileNotFoundError):
+                QMessageBox.warning(self, None, "Group mapping file does not exist.")
+            else:
+                QMessageBox.warning(self, None, f"Group mapping was not loaded because the following error occured: {str(e)}")
 
         worker.finished.connect(finished)
         worker.error.connect(error)

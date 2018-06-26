@@ -24,7 +24,7 @@ class ReadGroupMappingWorker(BaseWorker):
                             mapping[key] = cols
                 self.updated.emit(1)
             return mapping
-        except(FileNotFoundError, IOError) as e:
+        except(FileNotFoundError, IOError, ValueError) as e:
             self.error.emit(e)
             return
 
