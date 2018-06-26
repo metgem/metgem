@@ -90,7 +90,7 @@ pyz = PYZ(a.pure, a.zipped_data,
 exe = EXE(pyz,
           a.scripts,
           exclude_binaries=True,
-          name='HDiSpeC',
+          name='MetGem',
           debug=DEBUG,
           strip=False,
           upx=False,
@@ -102,10 +102,10 @@ coll = COLLECT(exe,
                a.datas,
                strip=False,
                upx=False,
-               name='HDiSpeC')
+               name='MetGem')
                
 if sys.platform.startswith('darwin'):
     app = BUNDLE(coll,
-                 name='HDiSpeC.app',
+                 name='MetGem.app',
                  icon='main.icns',
                  bundle_identifier=None)
