@@ -80,12 +80,8 @@ class ProcessMgfDialog(ProcessMgfDialogBase, ProcessMgfDialogUI):
         self.btMore = self.buttonBox.addButton("&More >>", QDialogButtonBox.DestructiveRole)
 
         # Connect events
-        self._mapper = QSignalMapper(self)
-        self.btBrowseProcessFile.clicked.connect(self._mapper.map)
-        self._mapper.setMapping(self.btBrowseProcessFile, 'process')
-        self.btBrowseMetadataFile.clicked.connect(self._mapper.map)
-        self._mapper.setMapping(self.btBrowseMetadataFile, 'metadata')
-        self._mapper.mapped[str].connect(self.browse)
+        self.btBrowseProcessFile.clicked.connect(lambda: self.browse('process'))
+        self.btBrowseMetadataFile.clicked.connect(lambda: self.browse('metadata'))
         self.editMetadataFile.textChanged.connect(self.on_metadata_file_changed)
         self.btMore.clicked.connect(self.toggle_advanced_options)
         self.btOptions.clicked.connect(self.on_show_options_dialog)
@@ -147,7 +143,7 @@ class ProcessMgfDialog(ProcessMgfDialogBase, ProcessMgfDialogUI):
         self.adjustSize()
 
     def browse(self, type_='process'):
-        """Open a dialog to file either .mgf or metadata.txt file"""
+        """Open a dialog to choose either .mgf or metadata.txt file"""
 
         dialog = QFileDialog(self)
         dialog.setFileMode(QFileDialog.ExistingFile)

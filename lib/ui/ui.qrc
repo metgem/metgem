@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="icons">
+    <file>images/import-database.svg</file>
+    <file>images/new-library-user.svg</file>
     <file>images/node-size.svg</file>
     <file>images/node-color.svg</file>
     <file>images/mapping.svg</file>

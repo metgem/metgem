@@ -170,6 +170,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.actionExportCurrentViewAsImage.triggered.connect(lambda: self.on_export_as_image_triggered('current'))
 
         self.actionDownloadDatabases.triggered.connect(self.on_download_databases_triggered)
+        self.actionImportUserDatabase.triggered.connect(self.on_import_user_database_triggered)
         self.actionViewDatabases.triggered.connect(self.on_view_databases_triggered)
 
         self.btNetworkOptions.clicked.connect(lambda: self.on_edit_options_triggered('network'))
@@ -747,6 +748,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
         dialog = ui.DownloadDatabasesDialog(self, base_path=config.DATABASES_PATH)
         dialog.exec_()
 
+    def on_import_user_database_triggered(self):
+        dialog = ui.ImportUserDatabaseDialog(self, base_path=config.DATABASES_PATH)
+        dialog.exec_()
+
     def on_view_databases_triggered(self):
         path = config.SQL_PATH
         if os.path.exists(path) and os.path.isfile(path) and os.path.getsize(path) > 0:
@@ -829,7 +834,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         settings.beginGroup('NetworkView')
         setting = settings.value('style', None)
-        style = ui.widgets.style_from_css(setting) if setting is not None else ui.widgets.DefaultStyle()
+        style = ui.widgets.style_from_css(setting)
         self.gvNetwork.scene().setNetworkStyle(style)
         self.gvTSNE.scene().setNetworkStyle(style)
         settings.endGroup()

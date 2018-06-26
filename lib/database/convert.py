@@ -102,8 +102,9 @@ class DataBaseBuilder:
         except OperationalError:
             pass
 
-    def add_bank(self, mgf_path):
-        bank = os.path.splitext(os.path.basename(mgf_path))[0]
+    def add_bank(self, mgf_path, name=None):
+        bank = os.path.splitext(os.path.basename(mgf_path))[0] if name is None else name
+
         if bank in self._uniques['bank']:
             q = self.session.query(Spectrum).filter(Spectrum.bank_id == self._uniques['bank'][bank])
             if q.count() > 0:

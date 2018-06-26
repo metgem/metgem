@@ -8,7 +8,7 @@ from PyQt5.QtGui import QShowEvent
 from PyQt5.QtWidgets import QDialog, QListWidgetItem
 
 from ..config import STYLES_PATH
-from .widgets.network_view.style import style_from_css, DefaultStyle
+from .widgets.network_view.style import style_from_css
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'settings_dialog.ui')
 
@@ -60,7 +60,7 @@ class SettingsDialog(SettingsDialogUI, SettingsDialogBase):
         current_style = QSettings().value('NetworkView/style', None)
         current_item = None
         for css in styles:
-            style = style_from_css(css) if css is not None else DefaultStyle()
+            style = style_from_css(css)
             item = QListWidgetItem(style.styleName())
             item.setData(SettingsDialog.StyleRole, style)
             item.setData(SettingsDialog.CssRole, css)

@@ -8,7 +8,6 @@ from lxml import html, etree
 from PyQt5.QtCore import pyqtSignal
 
 from ..base import BaseWorker
-from ...database import DataBaseBuilder
 
 LIB_URL = "https://gnps.ucsd.edu/ProteoSAFe/libraries.jsp"
 FTP_URL = "ccms-ftp.ucsd.edu"
@@ -130,23 +129,3 @@ class DownloadGNPSDatabasesWorker(BaseWorker):
         except ftplib.all_errors as e:
             self.error.emit(e)
             return
-
-
-class ConvertDatabasesWorker(BaseWorker):
-
-    def __init__(self, ids, path):
-        super().__init__()
-        self.ids = ids
-        self.path = path
-        self.iterative_update = False
-        self.max = len(self.ids)
-        self.desc = 'Converting databases...'
-
-    def run(self):
-        with DataBaseBuilder(os.path.join(self.path, 'spectra')) as db:
-            for i, id_ in enumerate(self.ids):
-                path = os.path.join(self.path, f'{id_}.mgf')
-                if os.path.exists(path):
-                    db.add_bank(path)
-                self.updated.emit(i)
-        return True

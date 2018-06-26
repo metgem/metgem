@@ -213,7 +213,7 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
             self.setEnabled(True)
             self.update_badges()
 
-        worker = ConvertDatabasesWorker(ids, self.base_path)
+        worker = ConvertDatabasesWorker(ids, output_path=self.base_path)
         worker.error.connect(clean_up)
         worker.error.connect(self.on_error)
         worker.canceled.connect(clean_up)

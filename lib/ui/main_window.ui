@@ -374,6 +374,7 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionDownloadDatabases"/>
+   <addaction name="actionImportUserDatabase"/>
    <addaction name="actionViewDatabases"/>
   </widget>
   <widget class="QToolBar" name="tbSearch">
@@ -1064,6 +1065,24 @@
    </property>
    <property name="statusTip">
     <string>Set selected nodes size</string>
+   </property>
+  </action>
+  <action name="actionImportUserDatabase">
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/new-library-user.svg</normaloff>:/icons/images/new-library-user.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Import &amp;user database</string>
+   </property>
+   <property name="toolTip">
+    <string>Import user database from MGF file</string>
+   </property>
+   <property name="statusTip">
+    <string>Import user database from MGF file</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+U</string>
    </property>
   </action>
  </widget>
