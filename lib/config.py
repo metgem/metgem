@@ -23,3 +23,12 @@ DATABASES_PATH = os.path.join(USER_PATH, 'databases')
 SQL_PATH = os.path.join(DATABASES_PATH, 'spectra.sqlite')
 LOG_PATH = os.path.join(USER_PATH, 'log')
 STYLES_PATH = os.path.join(USER_PATH, 'styles')
+
+if not os.path.exists(DATABASES_PATH):
+    os.makedirs(DATABASES_PATH)
+
+if not os.path.exists(LOG_PATH):
+    os.makedirs(LOG_PATH)
+
+if not os.path.exists(STYLES_PATH):
+    os.makedirs(STYLES_PATH)
