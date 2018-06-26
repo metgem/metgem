@@ -30,7 +30,7 @@ if sys.platform.startswith('win'):
     pathex.append(sys.prefix + r'\Lib\site-packages\scipy\extra-dll')
 
 # Gather data files
-datas = [('../splash.svg', ''),
+datas = [('../splash.png', ''),
          ('../styles.json', ''),
          ('../LICENSE', ''),
          ('../lib/ui/*_rc.py', 'lib/ui'),
