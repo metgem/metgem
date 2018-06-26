@@ -19,7 +19,6 @@ class NetworkWorker(BaseWorker):
     def run(self):
         layout = np.zeros((self.max, 2))
 
-        # TODO: Use list of radii in adjustSizes
         forceatlas2 = ForceAtlas2(adjustSizes=True, scalingRatio=RADIUS, verbose=False)
 
         clusters = sorted(self.graph.clusters(), key=len, reverse=True)
