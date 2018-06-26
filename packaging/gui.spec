@@ -32,6 +32,7 @@ if sys.platform.startswith('win'):
 # Gather data files
 datas = [('../splash.png', ''),
          ('../styles.json', ''),
+         ('../styles/*.css', 'styles'),
          ('../LICENSE', ''),
          ('../lib/ui/*_rc.py', 'lib/ui'),
          ('../lib/ui/*.ui', 'lib/ui'),
