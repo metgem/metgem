@@ -43,7 +43,7 @@ class ReadMetadataWorker(BaseWorker):
                 data = pd.read_csv(self.filename, **kwargs)
             if data is not None and data.size > 0:
                 return data
-        except(FileNotFoundError, IOError, pd.errors.ParserError, pd.errors.EmptyDataError) as e:
+        except(FileNotFoundError, IOError, pd.errors.ParserError, pd.errors.EmptyDataError, ValueError) as e:
             self.error.emit(e)
             return
 

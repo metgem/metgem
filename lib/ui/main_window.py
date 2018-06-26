@@ -1034,7 +1034,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.tvNodes.model().sourceModel().endResetModel()
 
         def error(e):
-            QMessageBox.warning(self, None, str(e))
+            QMessageBox.warning(self, None, "Metadata were not imported becaused the following error occurred: "
+                                            f"{str(e)}")
 
         worker = workers.ReadMetadataWorker(filename, options)
         worker.finished.connect(file_read)
