@@ -147,11 +147,14 @@ def css_border_style_to_qt(style):
 
 
 def style_from_css(css):
-    if not HAS_TINYCSS2:
-        return
+    if not HAS_TINYCSS2 or css is None:
+        return DefaultStyle()
 
-    with open(css, 'r') as f:
-        sheet = tinycss2.parse_stylesheet(''.join(f.readlines()))
+    try:
+        with open(css, 'r') as f:
+            sheet = tinycss2.parse_stylesheet(''.join(f.readlines()))
+    except FileNotFoundError:
+        return DefaultStyle()
 
     stylename = None
     node = {'bgcolor':  {'normal':   Qt.lightGray,
