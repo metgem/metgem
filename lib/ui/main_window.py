@@ -323,7 +323,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
     def closeEvent(self, event):
         if not config.DEBUG:
-            reply = self.on_new_project_triggered(before_exit=True)
+            reply = self.confirm_save_changes()
             if reply == QMessageBox.Cancel:
                 event.ignore()
                 return
@@ -393,20 +393,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
             table = self.tvNodes
         table.model().setFilterRegExp(str(self.leSearch.text()))
 
-    def on_new_project_triggered(self, before_exit=False):
-        reply = QMessageBox.Yes
-        if self.has_unsaved_changes:
-            if self.fname is not None:
-                message = f"There is unsaved changes in {self.fname}. Would you like to save them?"
-            else:
-                message = f"Current work has not been saved. Would you like to save now?"
-            reply = QMessageBox.question(self, QCoreApplication.applicationName(),
-                                         message, QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)
+    def on_new_project_triggered(self):
+        reply = self.confirm_save_changes()
 
-            if reply == QMessageBox.Yes:
-                self.on_save_project_triggered()
-
-        if not before_exit and reply != QMessageBox.Cancel:
+        if reply != QMessageBox.Cancel:
             self.fname = None
             self.has_unsaved_changes = False
             self.tvNodes.model().sourceModel().beginResetModel()
@@ -425,7 +415,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
         return reply
 
     def on_open_project_triggered(self):
-        self.on_new_project_triggered()
+        reply = self.confirm_save_changes()
+        if reply == QMessageBox.Cancel:
+            return
 
         dialog = QFileDialog(self)
         dialog.setFileMode(QFileDialog.ExistingFile)
@@ -670,7 +662,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.showNormal()
 
     def on_process_file_triggered(self):
-        self.on_new_project_triggered()
+        reply = self.confirm_save_changes()
+        if reply == QMessageBox.Cancel:
+            return
 
         dialog = ui.ProcessMgfDialog(self, options=self.network.options)
         if dialog.exec_() == QDialog.Accepted:
@@ -768,6 +762,21 @@ class MainWindow(MainWindowBase, MainWindowUI):
                         self.has_unsaved_changes = True
             else:
                 QMessageBox.information(self, None, "No databases found, please download one or more database first.")
+
+    def confirm_save_changes(self):
+        reply = QMessageBox.Yes
+        if self.has_unsaved_changes:
+            if self.fname is not None:
+                message = f"There is unsaved changes in {self.fname}. Would you like to save them?"
+            else:
+                message = f"Current work has not been saved. Would you like to save now?"
+            reply = QMessageBox.question(self, QCoreApplication.applicationName(),
+                                         message, QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)
+
+            if reply == QMessageBox.Yes:
+                self.on_save_project_triggered()
+
+        return reply
 
     def highlight_selected_nodes(self):
         selected = self.nodes_selection()
