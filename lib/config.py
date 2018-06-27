@@ -7,6 +7,12 @@ RADIUS = 30
 # File format
 FILE_EXTENSION = '.mnz'
 
+try:
+    with open('LICENSE', 'r', encoding='UTF-8') as f:
+        LICENSE_TEXT = "".join(f.readlines())
+except (FileNotFoundError, IOError):
+    LICENSE_TEXT = ""
+
 DEBUG = os.getenv('DEBUG_MODE', 'false').lower() in ('true', '1')
 EMBED_JUPYTER = os.getenv('EMBED_JUPYTER', 'false').lower() in ('true', '1')
 

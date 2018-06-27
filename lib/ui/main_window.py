@@ -133,8 +133,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.gvTSNE.focusedIn.connect(lambda: self.on_scene_selection_changed(update_view=False))
 
         self.actionQuit.triggered.connect(self.close)
-        self.actionAbout.triggered.connect(self.on_about_triggered)
-        self.actionAboutQt.triggered.connect(self.on_about_qt_triggered)
+        self.actionAbout.triggered.connect(lambda: ui.AboutDialog().exec_())
+        self.actionAboutQt.triggered.connect(lambda: QMessageBox.aboutQt(self))
         self.actionProcessFile.triggered.connect(self.on_process_file_triggered)
         self.actionImportMetadata.triggered.connect(self.on_import_metadata_triggered)
         self.actionImportGroupMapping.triggered.connect(self.on_import_group_mapping)
@@ -449,16 +449,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
         if dialog.exec_() == QDialog.Accepted:
             filename = dialog.selectedFiles()[0]
             self.save_project(filename)
-
-    def on_about_triggered(self):
-        message = (f'Version: {QCoreApplication.applicationVersion()}',
-                   '',
-                   'Should say something here.')
-        QMessageBox.about(self, f'About {QCoreApplication.applicationName()}',
-                          '\n'.join(message))
-
-    def on_about_qt_triggered(self):
-        QMessageBox.aboutQt(self)
 
     def on_export_to_cytoscape_triggered(self):
         try:

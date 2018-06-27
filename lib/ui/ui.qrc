@@ -56,4 +56,7 @@
     <file>images/folder-open.svg</file>
     <file>images/main.svg</file>
   </qresource>
+  <qresource prefix="logo">
+    <file>images/main-wide.svg</file>
+  </qresource>
 </RCC>
