@@ -72,6 +72,12 @@
       </item>
       <item>
        <widget class="QDoubleSpinBox" name="spinAnalogTolerance">
+        <property name="prefix">
+         <string/>
+        </property>
+        <property name="suffix">
+         <string> Th</string>
+        </property>
         <property name="decimals">
          <number>1</number>
         </property>
@@ -129,6 +135,9 @@
      <property name="enabled">
       <bool>true</bool>
      </property>
+     <property name="suffix">
+      <string> Th</string>
+     </property>
      <property name="maximum">
       <double>100.000000000000000</double>
      </property>
@@ -144,6 +153,9 @@
     <widget class="QSpinBox" name="spinParentFilterTolerance">
      <property name="enabled">
       <bool>true</bool>
+     </property>
+     <property name="suffix">
+      <string> Th</string>
      </property>
      <property name="maximum">
       <number>100</number>
@@ -177,6 +189,9 @@
     <widget class="QSpinBox" name="spinMinIntensity">
      <property name="enabled">
       <bool>true</bool>
+     </property>
+     <property name="suffix">
+      <string>%</string>
      </property>
      <property name="maximum">
       <number>100</number>

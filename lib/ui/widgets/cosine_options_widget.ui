@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>340</width>
+    <width>339</width>
     <height>188</height>
    </rect>
   </property>
@@ -24,6 +24,9 @@
     <widget class="QSpinBox" name="spinMinIntensity">
      <property name="enabled">
       <bool>true</bool>
+     </property>
+     <property name="suffix">
+      <string>%</string>
      </property>
      <property name="maximum">
       <number>100</number>
@@ -81,6 +84,12 @@
      <property name="enabled">
       <bool>true</bool>
      </property>
+     <property name="suffix">
+      <string> Th</string>
+     </property>
+     <property name="prefix">
+      <string/>
+     </property>
      <property name="maximum">
       <number>100</number>
      </property>
@@ -93,6 +102,12 @@
     <widget class="QDoubleSpinBox" name="spinMZTolerance">
      <property name="enabled">
       <bool>true</bool>
+     </property>
+     <property name="prefix">
+      <string/>
+     </property>
+     <property name="suffix">
+      <string> Th</string>
      </property>
      <property name="maximum">
       <double>100.000000000000000</double>
