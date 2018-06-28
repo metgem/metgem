@@ -137,6 +137,8 @@ class NodesModel(QAbstractTableModel):
             else:
                 try:
                     data = self.infos[row, column - 2]
+                    if isinstance(data, np.generic):
+                        data = data.item()
                 except IndexError:
                     mappped_columns = self.mappings[column - 2]
                     data = sum(self.infos[row, c] for c in mappped_columns)
