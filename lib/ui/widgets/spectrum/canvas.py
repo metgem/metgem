@@ -63,8 +63,10 @@ class SpectrumCanvas(BaseCanvas):
             if self._spectrum2_data is not None:
                 self._spectrum2_plot = self.plot_spectrum(self._spectrum2_data, yinverted=True, colors='b',
                                                           label=self._spectrum2_label)
+                self.axes.set_xmax(max(self._spectrum1_data.max(), self._spectrum2_data.max()) + 50)
             else:
                 self._spectrum2_plot = None
+                self.axes.set_xmax(self._spectrum1_data.max() + 50)
 
             self.axes.axhline(0, color='k', linewidth=0.5)
             handles = [handle for handle, label in ((self._spectrum1_plot, self._spectrum1_label),
