@@ -204,9 +204,6 @@
       <property name="selectionBehavior">
        <enum>QAbstractItemView::SelectRows</enum>
       </property>
-      <property name="sortingEnabled">
-       <bool>true</bool>
-      </property>
      </widget>
      <widget class="SpectrumDetailsWidget" name="widgetSpectrumDetails" native="true">
       <property name="sizePolicy">
