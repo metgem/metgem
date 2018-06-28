@@ -92,6 +92,15 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.tbNetwork.insertWidget(self.actionSetNodesSize, size_combo)
         self.tbNetwork.removeAction(self.actionSetNodesSize)
 
+        # Send Scale sliders to a toolbutton menu
+        for widget, button in {(self.sliderNetworkScale, self.btNetworkRuler),
+                               (self.sliderTSNEScale, self.btTSNERuler)}:
+            menu = QMenu()
+            action = QWidgetAction(self)
+            action.setDefaultWidget(widget)
+            menu.addAction(action)
+            button.setMenu(menu)
+
         # Add a Jupyter widget
         if config.EMBED_JUPYTER:
             from qtconsole.rich_jupyter_widget import RichJupyterWidget
@@ -271,7 +280,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def nodes_selection(self):
         selected_indexes = self.tvNodes.model().mapSelectionToSource(
             self.tvNodes.selectionModel().selection()).indexes()
-        return tuple(index.row() for index in selected_indexes)
+        return {index.row() for index in selected_indexes}
 
     def load_project(self, filename):
         worker = self.prepare_load_project_worker(filename)
@@ -317,7 +326,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 self.gvNetwork.setFocus(Qt.TabFocusReason)
 
     def showEvent(self, event):
-        self.gvNetwork.setMinimumHeight(self.height()/2)
+        self.gvNetwork.setMinimumHeight(self.height() / 2)
         self.load_settings()
         super().showEvent(event)
 
@@ -460,6 +469,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             if view == self.gvTSNE:
                 g.delete_edges(g.es)  # in a t-SNE layout, edges does not makes any sense
             else:
+                g.delete_edges([edge for edge in g.es if edge.is_loop()])
                 for attr in g.es.attributes():
                     if attr.startswith('__'):
                         del g.es[attr]
@@ -630,6 +640,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
     def on_query_databases(self, type_='standards'):
         selected_idx = self.nodes_selection()
+        print(len(selected_idx))
         if not selected_idx:
             return
         options = workers.QueryDatabasesOptions()
