@@ -39,7 +39,7 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
         self.lstDatabases.setItemDelegate(AutoToolTipItemDelegate())
 
         self._workers = WorkerSet(self, ProgressDialog(self))
-        self._mtimes = None
+        self._mtimes = {}
 
         # Add download button
         self.btDownload = self.buttonBox.addButton("&Download", QDialogButtonBox.ActionRole)
@@ -148,7 +148,7 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
             self.labelDesc.setText(desc)
 
     def update_badges(self):
-        if self._mtimes is None:
+        if not self._mtimes:
             return False
 
         for i in range(self.lstDatabases.count()):
