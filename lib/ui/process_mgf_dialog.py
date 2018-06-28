@@ -4,7 +4,7 @@ import csv
 
 from PyQt5.QtWidgets import QFileDialog, QDialog, QVBoxLayout, QDialogButtonBox, QCompleter, QFileSystemModel
 from PyQt5.QtGui import QPalette, QColor
-from PyQt5.QtCore import Qt, QDir, QSignalMapper
+from PyQt5.QtCore import Qt, QDir
 from PyQt5 import uic
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'process_mgf_dialog.ui')

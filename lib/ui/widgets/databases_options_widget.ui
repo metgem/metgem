@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>229</width>
+    <width>230</width>
     <height>240</height>
    </rect>
   </property>
@@ -126,7 +126,7 @@
    <item row="3" column="0">
     <widget class="QLabel" name="label_5">
      <property name="text">
-      <string>Parent Filter Tolerance</string>
+      <string>&lt;i&gt;m/z&lt;/i&gt; parent Filter Tolerance</string>
      </property>
     </widget>
    </item>
@@ -136,7 +136,7 @@
       <bool>true</bool>
      </property>
      <property name="suffix">
-      <string> Th</string>
+      <string/>
      </property>
      <property name="maximum">
       <double>100.000000000000000</double>
@@ -155,7 +155,7 @@
       <bool>true</bool>
      </property>
      <property name="suffix">
-      <string> Th</string>
+      <string/>
      </property>
      <property name="maximum">
       <number>100</number>
@@ -245,11 +245,13 @@
   </layout>
  </widget>
  <tabstops>
+  <tabstop>cbPolarity</tabstop>
   <tabstop>spinMZTolerance</tabstop>
   <tabstop>spinMinIntensity</tabstop>
   <tabstop>spinParentFilterTolerance</tabstop>
   <tabstop>spinMinMatchedPeaks</tabstop>
   <tabstop>spinMinScore</tabstop>
+  <tabstop>gbAnalogs</tabstop>
   <tabstop>spinAnalogTolerance</tabstop>
  </tabstops>
  <resources/>

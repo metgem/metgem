@@ -6,37 +6,18 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>339</width>
-    <height>188</height>
+    <width>220</width>
+    <height>131</height>
    </rect>
-  </property>
-  <property name="minimumSize">
-   <size>
-    <width>0</width>
-    <height>0</height>
-   </size>
   </property>
   <property name="title">
    <string>Cosine Score Computing</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="3" column="1">
-    <widget class="QSpinBox" name="spinMinIntensity">
-     <property name="enabled">
-      <bool>true</bool>
-     </property>
-     <property name="suffix">
-      <string>%</string>
-     </property>
-     <property name="maximum">
-      <number>100</number>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="0" rowspan="2">
-    <widget class="QLabel" name="label_6">
+   <item row="3" column="0">
+    <widget class="QLabel" name="label_4">
      <property name="text">
-      <string>Minimum Matched Peaks</string>
+      <string>Minimal Intensity</string>
      </property>
     </widget>
    </item>
@@ -49,6 +30,26 @@
      </property>
      <property name="text">
       <string>&lt;i&gt;m/z&lt;/i&gt; Tolerance</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="0" rowspan="2">
+    <widget class="QLabel" name="label_6">
+     <property name="text">
+      <string>Minimum Matched Peaks</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1">
+    <widget class="QSpinBox" name="spinMinIntensity">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="suffix">
+      <string>%</string>
+     </property>
+     <property name="maximum">
+      <number>100</number>
      </property>
     </widget>
    </item>
@@ -65,17 +66,10 @@
      </property>
     </widget>
    </item>
-   <item row="3" column="0">
-    <widget class="QLabel" name="label_4">
-     <property name="text">
-      <string>Minimal Intensity</string>
-     </property>
-    </widget>
-   </item>
    <item row="4" column="0">
     <widget class="QLabel" name="label_5">
      <property name="text">
-      <string>Parent Filter Tolerance</string>
+      <string>&lt;i&gt;m/z&lt;/i&gt; parent Filter Tolerance</string>
      </property>
     </widget>
    </item>
@@ -85,7 +79,7 @@
       <bool>true</bool>
      </property>
      <property name="suffix">
-      <string> Th</string>
+      <string/>
      </property>
      <property name="prefix">
       <string/>
@@ -107,7 +101,7 @@
       <string/>
      </property>
      <property name="suffix">
-      <string> Th</string>
+      <string/>
      </property>
      <property name="maximum">
       <double>100.000000000000000</double>
