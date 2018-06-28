@@ -555,16 +555,18 @@ class MainWindow(MainWindowBase, MainWindowUI):
                         node = self.current_view.scene().selectedNodes()[0]
                     node_idx = node.index()
                 data = workers.human_readable_data(self.network.spectra[node_idx])
+                mz_parent = self.network.mzs[node_idx]
             except IndexError:
                 pass
             except KeyError:
                 QMessageBox.warning(self, None, 'Selected spectrum does not exists.')
             else:
                 # Set data as first or second spectrum
+                label = f"{node_idx+1} ($m/z$ {mz_parent})"
                 if type_ == 'compare':
-                    self.cvSpectrum.set_spectrum2(data, node_idx+1)
+                    self.cvSpectrum.set_spectrum2(data, label)
                 else:
-                    self.cvSpectrum.set_spectrum1(data, node_idx+1)
+                    self.cvSpectrum.set_spectrum1(data, label)
 
                 # Show spectrum tab
                 self.dockSpectra.show()
