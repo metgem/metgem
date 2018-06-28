@@ -1,6 +1,8 @@
 from matplotlib.axes import Axes
 from matplotlib.projections import register_projection
 
+import numpy as np
+
 
 class SpectrumAxes(Axes):
     name = 'spectrum_axes'
@@ -11,7 +13,7 @@ class SpectrumAxes(Axes):
         self.fmt_xdata = lambda x: '{:.4f}'.format(x)
         self.fmt_ydata = lambda y: '{:.0f}%'.format(y)
 
-        self.__xmax = None
+        self._xmax = None
     
     def format_coord(self, x, y):
         """Return a format string formatting the *x*, *y* coord"""
@@ -29,16 +31,17 @@ class SpectrumAxes(Axes):
         return self.__xmax
 
     def set_xmax(self, max):
-        self.set_xlim(0, max)
-        self.__xmax = max
+        super().set_xlim(0, max)
+        self._xmax = max
 
-    def drag_pan(self, button, key, x, y):
-        xlim = self.get_xlim()
-        super().drag_pan(button, 'x', x, y)  # pretend key=='x' to prevent Y axis range to change
-        xlim_new = self.get_xlim()
-        if self.__xmax is not None and xlim_new[0] < 0 or xlim_new[1] > self.__xmax:
-            # If xlim is outside allowed range, roll-back
-            self.set_xlim(xlim)
+    def set_xlim(self, left=None, right=None, emit=True, auto=False, **kw):
+        print(left, right, isinstance(left, tuple))
+        if hasattr(self, '_xmax') and self._xmax is not None:
+            if isinstance(left, (tuple, list, np.ndarray)):
+                left, right = left
+            if left < 0 or right > self._xmax or right - left < 10:
+                return
+        super().set_xlim(left, right, emit, auto, **kw)
 
 
 register_projection(SpectrumAxes)

@@ -1,5 +1,5 @@
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QSizePolicy
+from PyQt5.QtWidgets import QWidget, QHBoxLayout, QSizePolicy, QVBoxLayout
 
 from .toolbar import SpectrumNavigationToolbar
 from .canvas import SpectrumCanvas
@@ -7,15 +7,15 @@ from .canvas import SpectrumCanvas
 
 class SpectrumWidget(QWidget):
 
-    def __init__(self, *args, extended_mode=False, **kwargs):
+    def __init__(self, *args, extended_mode=False, orientation=Qt.Horizontal, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.canvas = SpectrumCanvas(self)
         self.toolbar = SpectrumNavigationToolbar(self.canvas, self, extended_mode=extended_mode)
-        self.toolbar.setOrientation(Qt.Vertical)
+        self.toolbar.setOrientation(orientation)
         self.toolbar.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
-        layout = QHBoxLayout()
+        layout = QHBoxLayout() if orientation == Qt.Vertical else QVBoxLayout()
         layout.addWidget(self.toolbar)
         layout.setAlignment(self.toolbar, Qt.AlignHCenter)
         layout.addWidget(self.canvas)
@@ -39,4 +39,4 @@ class SpectrumWidget(QWidget):
 
 class ExtendedSpectrumWidget(SpectrumWidget):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, extended_mode=True, **kwargs)
+        super().__init__(*args, extended_mode=True, orientation=Qt.Vertical, **kwargs)
