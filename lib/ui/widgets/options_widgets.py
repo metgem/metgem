@@ -89,17 +89,21 @@ class CosineOptionsWidget(QGroupBox):
     def getValues(self):
         options = CosineComputationOptions()
         options.mz_tolerance = self.spinMZTolerance.value()
-        options.min_intensity = self.spinMinIntensity.value()
-        options.parent_filter_tolerance = self.spinParentFilterTolerance.value()
         options.min_matched_peaks = self.spinMinMatchedPeaks.value()
+        options.parent_filter_tolerance = self.spinParentFilterTolerance.value()
+        options.min_intensity = self.spinMinIntensity.value()
+        options.min_matched_peaks_search = self.spinMinMatchedPeaksSearch.value()
+        options.matched_peaks_window = self.spinMatchedPeaksWindow.value()
         
         return options
 
     def setValues(self, options):
         self.spinMZTolerance.setValue(options.mz_tolerance)
-        self.spinMinIntensity.setValue(options.min_intensity)
-        self.spinParentFilterTolerance.setValue(options.parent_filter_tolerance)
         self.spinMinMatchedPeaks.setValue(options.min_matched_peaks)
+        self.spinParentFilterTolerance.setValue(options.parent_filter_tolerance)
+        self.spinMinIntensity.setValue(options.min_intensity)
+        self.spinMinMatchedPeaksSearch.setValue(options.min_matched_peaks_search)
+        self.spinMatchedPeaksWindow.setValue(options.matched_peaks_window)
 
 
 class QueryDatabasesOptionsWidget(QGroupBox):
