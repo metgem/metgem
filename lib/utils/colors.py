@@ -30,7 +30,7 @@ def get_colors(n, cmap='auto'):
             cm = mplcm.get_cmap(cmap)
         except ValueError:
             return []
-        if isinstance(cm, mplcm.colors.ListedColormap) and cm.N < 256:
+        if (isinstance(cm, mplcm.colors.ListedColormap) and cm.N < 256) or n == 1:
             step = 1
         else:
             step = 256 // (n - 1)
