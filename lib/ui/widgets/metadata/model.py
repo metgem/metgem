@@ -193,10 +193,7 @@ class NodesModel(QAbstractTableModel):
             super().setHeaderData(section, orientation, value, role)
 
     def flags(self, index: QModelIndex):
-        flags = super().flags(index)
-        if index.column() == 1:
-            flags |= Qt.ItemIsEditable
-        return flags
+        return super().flags(index)| Qt.ItemIsEditable
 
 
 class EdgesModel(QAbstractTableModel):
