@@ -8,7 +8,8 @@ RADIUS = 30
 FILE_EXTENSION = '.mnz'
 
 try:
-    with open('LICENSE', 'r', encoding='UTF-8') as f:
+    path = os.path.join(sys._MEIPASS, 'LICENSE') if getattr(sys, 'frozen', False) else 'LICENSE'
+    with open(path, 'r', encoding='UTF-8') as f:
         LICENSE_TEXT = "".join(f.readlines())
 except (FileNotFoundError, IOError):
     LICENSE_TEXT = ""
