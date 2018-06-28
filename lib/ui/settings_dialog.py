@@ -86,8 +86,7 @@ class SettingsDialog(SettingsDialogUI, SettingsDialogBase):
         if r == QDialog.Accepted:
             settings = QSettings()
             settings.setValue('Metadata/neutral_tolerance', self.spinNeutralTolerance.value())
-            css = self.lstStyles.currentItem().data(SettingsDialog.CssRole)
-            settings.setValue('NetworkView/style', css)
+            settings.setValue('NetworkView/style', self.lstStyles.currentItem().data(SettingsDialog.CssRole))
         super().done(r)
 
     def getValues(self):
