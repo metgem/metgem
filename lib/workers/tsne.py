@@ -19,6 +19,7 @@ class TSNEVisualizationOptions(AttrDict):
         super().__init__(perplexity=6,
                          learning_rate=200,
                          min_score=0.70,
+                         min_scores_above_threshold=1,
                          early_exaggeration=12,
                          barnes_hut=True,
                          angle=0.5,
@@ -71,7 +72,7 @@ class TSNEWorker(BaseWorker):
         sys.stdout = ProgressStringIO(self)
 
         # Compute layout
-        mask = (self._scores >= self.options.min_score).sum(axis=0) > 1
+        mask = (self._scores >= self.options.min_score).sum(axis=0) > self.options.min_scores_above_threshold
         layout = np.zeros((self._scores.shape[0], 2))
         if np.any(mask):
             try:

@@ -49,6 +49,7 @@ class TSNEOptionsWidget(QGroupBox):
         
         options = TSNEVisualizationOptions()
         options.min_score = self.spinMinScore.value()
+        options.min_scores_above_threshold = self.spinMinScoresAboveThreshold.value()
         options.n_iter = self.spinNumIterations.value()
         options.perplexity = self.spinTSNEPerplexity.value()
         options.learning_rate = self.spinTSNELearningRate.value()
@@ -68,6 +69,7 @@ class TSNEOptionsWidget(QGroupBox):
         """
 
         self.spinMinScore.setValue(options.min_score)
+        self.spinMinScoresAboveThreshold.setValue(options.min_scores_above_threshold)
         self.spinNumIterations.setValue(options.n_iter)
         self.spinTSNEPerplexity.setValue(options.perplexity)
         self.spinTSNELearningRate.setValue(options.learning_rate)
