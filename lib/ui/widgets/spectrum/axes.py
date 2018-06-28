@@ -35,7 +35,6 @@ class SpectrumAxes(Axes):
         self._xmax = max
 
     def set_xlim(self, left=None, right=None, emit=True, auto=False, **kw):
-        print(left, right, isinstance(left, tuple))
         if hasattr(self, '_xmax') and self._xmax is not None:
             if isinstance(left, (tuple, list, np.ndarray)):
                 left, right = left
