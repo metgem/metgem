@@ -19,6 +19,7 @@ from PyQt5 import uic
 from .. import config, ui, utils, workers, errors
 from ..utils.network import Network
 from ..utils import colors
+from ..logger import logger, debug
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'main_window.ui')
 if getattr(sys, 'frozen', False):
@@ -146,7 +147,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.actionAboutQt.triggered.connect(lambda: QMessageBox.aboutQt(self))
         self.actionProcessFile.triggered.connect(self.on_process_file_triggered)
         self.actionImportMetadata.triggered.connect(self.on_import_metadata_triggered)
-        self.actionImportGroupMapping.triggered.connect(self.on_import_group_mapping)
+        self.actionImportGroupMapping.triggered.connect(self.on_import_group_mapping_triggered)
         self.actionCurrentParameters.triggered.connect(self.on_current_parameters_triggered)
         self.actionSettings.triggered.connect(self.on_settings_triggered)
         self.actionZoomIn.triggered.connect(lambda: self.current_view.scaleView(1.2))
@@ -218,6 +219,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         # Build research bar
         self.update_search_menu()
 
+    @debug
     def init_project(self):
         # Create an object to store all computed objects
         self.network = Network()
@@ -277,21 +279,25 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         self._network = network
 
+    @debug
     def nodes_selection(self):
         selected_indexes = self.tvNodes.model().mapSelectionToSource(
             self.tvNodes.selectionModel().selection()).indexes()
         return {index.row() for index in selected_indexes}
 
+    @debug
     def load_project(self, filename):
         worker = self.prepare_load_project_worker(filename)
         if worker is not None:
             self._workers.add(worker)
 
+    @debug
     def save_project(self, filename):
         worker = self.prepare_save_project_worker(filename)
         if worker is not None:
             self._workers.add(worker)
 
+    @debug
     def update_search_menu(self, table: QTableView=None):
         if table is None:
             if self.dockEdges.isVisible():
@@ -351,16 +357,19 @@ class MainWindow(MainWindowBase, MainWindowUI):
             event.ignore()
 
     # noinspection PyUnusedLocal
+    @debug
     def on_focus_changed(self, old: QWidget, now: QWidget):
         if now in (self.gvNetwork, self.gvTSNE):
             self.actionViewMiniMap.setChecked(self.current_view.minimap.isVisible())
 
-    def on_switch_minimap_visibility(self):
+    @debug
+    def on_switch_minimap_visibility(self, *args):
         view = self.current_view
         visible = view.minimap.isVisible()
         view.minimap.setVisible(not visible)
         self.actionViewMiniMap.setChecked(not visible)
 
+    @debug
     def on_scene_selection_changed(self, update_view=True):
         view = self.current_view
         nodes_idx = [item.index() for item in view.scene().selectedNodes()]
@@ -376,6 +385,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 with utils.SignalBlocker(self.gvNetwork.scene()):
                     self.gvNetwork.scene().setNodesSelection(nodes_idx)
 
+    @debug
     def on_set_selected_nodes_color(self, color: QColor):
         for scene in (self.gvNetwork.scene(), self.gvTSNE.scene()):
             scene.setSelectedNodesColor(color)
@@ -383,6 +393,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.network.graph.vs['__color'] = self.gvNetwork.scene().nodesColors()
         self.has_unsaved_changes = True
 
+    @debug
     def on_set_selected_nodes_size(self, text: str):
         try:
             size = int(text)
@@ -395,6 +406,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.network.graph.vs['__size'] = self.gvNetwork.scene().nodesRadii()
         self.has_unsaved_changes = True
 
+    @debug
     def on_do_search(self):
         if self.tvEdges.isVisible():
             table = self.tvEdges
@@ -402,7 +414,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
             table = self.tvNodes
         table.model().setFilterRegExp(str(self.leSearch.text()))
 
-    def on_new_project_triggered(self):
+    @debug
+    def on_new_project_triggered(self, *args):
         reply = self.confirm_save_changes()
 
         if reply != QMessageBox.Cancel:
@@ -423,8 +436,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         return reply
 
-    def on_open_project_triggered(self):
-        reply = self.confirm_save_changes()
+    @debug
+    def on_open_project_triggered(self, *args):
+        reply = self.on_new_project_triggered()
         if reply == QMessageBox.Cancel:
             return
 
@@ -436,13 +450,15 @@ class MainWindow(MainWindowBase, MainWindowUI):
             filename = dialog.selectedFiles()[0]
             self.load_project(filename)
 
-    def on_save_project_triggered(self):
+    @debug
+    def on_save_project_triggered(self, *args):
         if self.fname is None:
             self.on_save_project_as_triggered()
         else:
             self.save_project(self.fname)
 
-    def on_save_project_as_triggered(self):
+    @debug
+    def on_save_project_as_triggered(self, *args):
         dialog = QFileDialog(self)
         dialog.setAcceptMode(QFileDialog.AcceptSave)
         dialog.setNameFilters([f"{QCoreApplication.applicationName()} Files (*{config.FILE_EXTENSION})",
@@ -451,7 +467,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
             filename = dialog.selectedFiles()[0]
             self.save_project(filename)
 
-    def on_export_to_cytoscape_triggered(self):
+    @debug
+    def on_export_to_cytoscape_triggered(self, *args):
         try:
             from py2cytoscape.data.cyrest_client import CyRestClient
 
@@ -505,6 +522,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                                      'https://pypi.python.org/pypi/py2cytoscape).'))
             logger.error('py2cytoscape not found.')
 
+    @debug
     def on_export_as_image_triggered(self, type_):
         filter_ = ["PNG - Portable Network Graphics (*.png)",
                    "JPEG - Joint Photographic Experts Group (*.JPEG)",
@@ -547,6 +565,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 view.render(painter, source=rect) if type_ == 'current' else view.scene().render(painter)
                 image.save(filename)
 
+    @debug
     def on_show_spectrum_triggered(self, type_, node=None, node_idx=None):
         if getattr(self.network, 'spectra', None) is not None:
             try:
@@ -573,7 +592,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 self.dockSpectra.show()
                 self.dockSpectra.raise_()
 
-    def on_select_first_neighbors_triggered(self, nodes):
+    @debug
+    def on_select_first_neighbors_triggered(self, nodes, *args):
         view = self.current_view
         neighbors = [v.index for node in nodes for v in self.network.graph.vs[node.index()].neighbors()]
         if view == self.gvNetwork:
@@ -581,6 +601,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         elif view == self.gvTSNE:
             self.gvTSNE.scene().setNodesSelection(neighbors)
 
+    @debug
     def on_use_columns_for(self, type_, cmap=None):
         if self.tvNodes.model().columnCount() <= 1:
             return
@@ -614,6 +635,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 if reply == QMessageBox.Yes:
                     self.set_nodes_label(None)
 
+    @debug
     def on_nodes_table_contextmenu(self, event):
         column_index = self.tvNodes.columnAt(event.x())
         row_index = self.tvNodes.rowAt(event.y())
@@ -638,12 +660,13 @@ class MainWindow(MainWindowBase, MainWindowUI):
             menu.addAction(action)
             menu.popup(QCursor.pos())
 
-    def on_nodes_table_data_changed(self):
+    @debug
+    def on_nodes_table_data_changed(self, *args):
         self.has_unsaved_changes = True
 
+    @debug
     def on_query_databases(self, type_='standards'):
         selected_idx = self.nodes_selection()
-        print(len(selected_idx))
         if not selected_idx:
             return
         options = workers.QueryDatabasesOptions()
@@ -656,18 +679,21 @@ class MainWindow(MainWindowBase, MainWindowUI):
             if worker is not None:
                 self._workers.add(worker)
 
-    def on_current_parameters_triggered(self):
+    @debug
+    def on_current_parameters_triggered(self, *args):
         dialog = ui.CurrentParametersDialog(self, options=self.network.options)
         dialog.exec_()
 
-    def on_settings_triggered(self):
+    @debug
+    def on_settings_triggered(self, *args):
         dialog = ui.SettingsDialog(self)
         if dialog.exec_() == QDialog.Accepted:
             style = dialog.getValues()
             self.gvNetwork.scene().setNetworkStyle(style)
             self.gvTSNE.scene().setNetworkStyle(style)
 
-    def on_full_screen_triggered(self):
+    @debug
+    def on_full_screen_triggered(self, *args):
         if not self.isFullScreen():
             self.setWindowFlags(Qt.Window)
             self.showFullScreen()
@@ -675,7 +701,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.setWindowFlags(Qt.Widget)
             self.showNormal()
 
-    def on_process_file_triggered(self):
+    @debug
+    def on_process_file_triggered(self, *args):
         reply = self.confirm_save_changes()
         if reply == QMessageBox.Cancel:
             return
@@ -697,7 +724,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
             if worker is not None:
                 self._workers.add(worker)
 
-    def on_import_metadata_triggered(self):
+    @debug
+    def on_import_metadata_triggered(self, *args):
         dialog = ui.ImportMetadataDialog(self)
         if dialog.exec_() == QDialog.Accepted:
             metadata_filename, options = dialog.getValues()
@@ -705,7 +733,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
             if worker is not None:
                 self._workers.add(worker)
 
-    def on_import_group_mapping(self):
+    @debug
+    def on_import_group_mapping_triggered(self, *args):
         dialog = QFileDialog(self)
         dialog.setFileMode(QFileDialog.ExistingFile)
         dialog.setNameFilters(["Text Files (*.txt; *.csv; *.tsv)", "All files (*.*)"])
@@ -715,6 +744,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             if worker is not None:
                 self._workers.add(worker)
 
+    @debug
     def on_edit_options_triggered(self, type_):
         if hasattr(self.network, 'scores'):
             if type_ == 'network':
@@ -742,15 +772,18 @@ class MainWindow(MainWindowBase, MainWindowUI):
         else:
             QMessageBox.information(self, None, "No network found, please open a file first.")
 
-    def on_download_databases_triggered(self):
+    @debug
+    def on_download_databases_triggered(self, *args):
         dialog = ui.DownloadDatabasesDialog(self, base_path=config.DATABASES_PATH)
         dialog.exec_()
 
-    def on_import_user_database_triggered(self):
+    @debug
+    def on_import_user_database_triggered(self, *args):
         dialog = ui.ImportUserDatabaseDialog(self, base_path=config.DATABASES_PATH)
         dialog.exec_()
 
-    def on_view_databases_triggered(self):
+    @debug
+    def on_view_databases_triggered(self, *args):
         path = config.SQL_PATH
         if os.path.exists(path) and os.path.isfile(path) and os.path.getsize(path) > 0:
             dialog = ui.ViewDatabasesDialog(self, base_path=config.DATABASES_PATH)
@@ -758,12 +791,14 @@ class MainWindow(MainWindowBase, MainWindowUI):
         else:
             QMessageBox.information(self, None, "No databases found, please download one or more database first.")
 
+    @debug
     def on_scale_changed(self, type_, scale):
         if type_ == 'network':
             self.gvNetwork.scene().setScale(scale / self.sliderNetworkScale.defaultValue())
         elif type_ == 't-sne':
                 self.gvTSNE.scene().setScale(scale / self.sliderNetworkScale.defaultValue())
 
+    @debug
     def on_view_details_clicked(self, row: int, selection: dict):
         if selection:
             path = config.SQL_PATH
@@ -777,6 +812,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             else:
                 QMessageBox.information(self, None, "No databases found, please download one or more database first.")
 
+    @debug
     def confirm_save_changes(self):
         reply = QMessageBox.Yes
         if self.has_unsaved_changes:
@@ -792,12 +828,14 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         return reply
 
+    @debug
     def highlight_selected_nodes(self):
         selected = self.nodes_selection()
         with utils.SignalBlocker(self.gvNetwork.scene(), self.gvTSNE.scene()):
             self.gvNetwork.scene().setNodesSelection(selected)
             self.gvTSNE.scene().setNodesSelection(selected)
 
+    @debug
     def set_nodes_label(self, column_id):
         if column_id is not None:
             model = self.tvNodes.model().sourceModel()
@@ -807,6 +845,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.gvNetwork.scene().resetLabels()
             self.gvTSNE.scene().resetLabels()
 
+    @debug
     def set_nodes_pie_chart_values(self, column_ids, cmap='auto'):
         model = self.tvNodes.model().sourceModel()
         if column_ids is not None:
@@ -827,6 +866,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.gvNetwork.scene().resetPieCharts()
             self.gvTSNE.scene().resetPieCharts()
 
+    @debug
     def save_settings(self):
         settings = QSettings()
         settings.beginGroup('MainWindow')
@@ -834,6 +874,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         settings.setValue('State', self.saveState())
         settings.endGroup()
 
+    @debug
     def load_settings(self):
         settings = QSettings()
         settings.beginGroup('MainWindow')
@@ -852,6 +893,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.gvTSNE.scene().setNetworkStyle(style)
         settings.endGroup()
 
+    @debug
     def create_graph(self, keep_vertices=False):
         # Delete all previously created edges and nodes
         self.network.graph.delete_edges(self.network.graph.es)
@@ -862,6 +904,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         self.network.graph.add_edges(zip(self.network.interactions['Source'], self.network.interactions['Target']))
 
+    @debug
     def draw(self, compute_layouts=True, which='all'):
         if which == 'all':
             which = {'network', 't-sne'}
@@ -895,6 +938,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         self.update_search_menu()
 
+    @debug
     def apply_layout(self, type_, layout):
         if type_ == 'network':
             self.gvNetwork.scene().setLayout(layout)
@@ -903,6 +947,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.gvTSNE.scene().setLayout(layout)
             self.network.graph.tsne_layout = layout
 
+    @debug
     def prepare_draw_network_worker(self, layout=None):
         scene = self.gvNetwork.scene()
 
@@ -955,6 +1000,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             worker = workers.GenericWorker(self.apply_layout, 'network', layout)
             return worker
 
+    @debug
     def prepare_draw_tsne_worker(self, layout=None):
         scene = self.gvTSNE.scene()
 
@@ -987,6 +1033,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             worker = workers.GenericWorker(self.apply_layout, 't-sne', layout)
             return worker
 
+    @debug
     def prepare_compute_scores_worker(self, spectra, use_multiprocessing):
         def error(e):
             if e.__class__ == OSError:
@@ -999,6 +1046,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         return worker
 
+    @debug
     def prepare_read_mgf_worker(self, mgf_filename, metadata_filename=None,
                                 metadata_options=workers.ReadMetadataOptions()):
         worker = workers.ReadMGFWorker(mgf_filename, self.network.options.cosine)
@@ -1038,11 +1086,13 @@ class MainWindow(MainWindowBase, MainWindowUI):
         worker.error.connect(error)
         return worker
 
+    @debug
     def prepare_read_metadata_worker(self, filename, options):
         def file_read():
             nonlocal worker
             self.tvNodes.model().sourceModel().beginResetModel()
             self.network.infos = worker.result()  # TODO: Append metadata instead of overriding
+            self.network.mappings = {}
             self.has_unsaved_changes = True
             self.tvNodes.model().sourceModel().endResetModel()
 
@@ -1058,6 +1108,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         return worker
 
+    @debug
     def prepare_save_project_worker(self, fname):
         """Save current project to a file for future access"""
 
@@ -1077,6 +1128,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         return worker
 
+    @debug
     def prepare_load_project_worker(self, fname):
         """Load project from a previously saved file"""
 
@@ -1111,6 +1163,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         return worker
 
+    @debug
     def prepare_query_database_worker(self, indexes, options):
         if (getattr(self.network, 'mzs', None) is None or getattr(self.network, 'spectra', None) is None
                 or not os.path.exists(config.SQL_PATH)):
@@ -1148,6 +1201,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         worker.error.connect(error)
         return worker
 
+    @debug
     def prepare_read_group_mapping_worker(self, filename):
         worker = workers.ReadGroupMappingWorker(filename)
 
