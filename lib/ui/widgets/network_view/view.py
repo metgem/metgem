@@ -160,11 +160,11 @@ class NetworkView(QGraphicsView):
         self.focusedIn.emit()
 
     def on_scale_changed(self):
-        self.scene().setSceneRect(self.scene().itemsBoundingRect())
+        self.scene().setSceneRect(self.scene().itemsBoundingRect().adjusted(-30, -30, 30, 30))
         self.minimap.zoomToFit()
 
     def on_layout_changed(self):
-        self.scene().setSceneRect(self.scene().itemsBoundingRect())
+        self.scene().setSceneRect(self.scene().itemsBoundingRect().adjusted(-30, -30, 30, 30))
         self.zoomToFit()
         self.minimap.zoomToFit()
         
@@ -177,7 +177,7 @@ class NetworkView(QGraphicsView):
         self.minimap.adjustRubberband()
                 
     def zoomToFit(self):
-        self.fitInView(self.scene().sceneRect().adjusted(-20, -20, 20, 20), Qt.KeepAspectRatio)
+        self.fitInView(self.scene().sceneRect(), Qt.KeepAspectRatio)
         # self._minimum_zoom = self.transform().m11()  # Set zoom out limit to horizontal scaling factor
         self.minimap.adjustRubberband()
         
