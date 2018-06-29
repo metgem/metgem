@@ -3,11 +3,12 @@ import os
 DOMAIN = "CNRS"
 ORGANIZATION = "ICSN"
 APPLICATION = "MetGem"
-MAJOR = 0
-MINOR = 9
+MAJOR = 1
+MINOR = 0
 MICRO = 0
 VERSION = f"{MAJOR}.{MINOR}.{MICRO}"
 FULLVERSION = VERSION
+
 if os.path.exists('.git'):
     import subprocess
 
