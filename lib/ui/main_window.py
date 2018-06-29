@@ -459,7 +459,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
             cy = CyRestClient()
 
-            # Create exportable copy of the graph object
+            logger.debug('Creating exportable copy of the graph object')
             g = self.network.graph.copy()
             for attr in g.vs.attributes():
                 if attr.startswith('__'):
@@ -477,32 +477,33 @@ class MainWindow(MainWindowBase, MainWindowUI):
                         g.es[attr] = [str(x) for x in g.es[attr]]
 
             # cy.session.delete()
+            logger.debug('CyREST: Creating network')
             g_cy = cy.network.create_from_igraph(g)
 
+            logger.debug('CyREST: Set layout')
             layout = np.empty((g.vcount(), 2))
             for item in view.scene().nodes():
                 layout[item.index()] = (item.x(), item.y())
             positions = [(suid, x, y) for suid, (x, y) in zip(g_cy.get_nodes()[::-1], layout)]
             cy.layout.apply_from_presets(network=g_cy, positions=positions)
 
-            with open('styles.json', 'r') as f:
-                style_js = json.load(f)
-            style = cy.style.create('cyREST style', style_js)
+            logger.debug('CyREST: Set style')
+            style_js = ui.widgets.style_to_cytoscape(view.scene().networkStyle())
+            style = cy.style.create(style_js['title'], style_js)
             cy.style.apply(style, g_cy)
         except (ConnectionRefusedError, requests.ConnectionError):
             QMessageBox.information(self, None,
                                     'Please launch Cytoscape before trying to export.')
+            logger.error('Cytoscape was not launched.')
         except json.decoder.JSONDecodeError:
             QMessageBox.information(self, None,
                                     'Cytoscape was not ready to receive data. Please try again.')
+            logger.error('Cytoscape was not ready to receive data.')
         except ImportError:
             QMessageBox.information(self, None,
                                     ('py2tocytoscape is required for this action '
                                      'https://pypi.python.org/pypi/py2cytoscape).'))
-        except FileNotFoundError:
-            QMessageBox.warning(self, None,
-                                ('styles.json not found. You may have to reinstall'
-                                 f'{QCoreApplication.applicationName(self)}'))
+            logger.error('py2cytoscape not found.')
 
     def on_export_as_image_triggered(self, type_):
         filter_ = ["PNG - Portable Network Graphics (*.png)",

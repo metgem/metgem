@@ -5,8 +5,10 @@ except ImportError:
 else:
     HAS_TINYCSS2 = True
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QCoreApplication
 from PyQt5.QtGui import QColor, QFont, QPen, QBrush
+
+from ....config import RADIUS
 
 try:
     from .NetworkView import NetworkStyle, DefaultStyle
@@ -67,21 +69,21 @@ except ImportError:
             except KeyError:
                 return QBrush(QColor(Qt.white))
 
+
     class DefaultStyle(NetworkStyle):
         name = "default"
-        node = {'bgcolor':  {'normal':    QBrush(Qt.lightGray),
-                             'selected':  QBrush(Qt.yellow)},
-                'txtcolor': {'normal':   QColor(Qt.black),
+        node = {'bgcolor': {'normal': QBrush(Qt.lightGray),
+                            'selected': QBrush(Qt.yellow)},
+                'txtcolor': {'normal': QColor(Qt.black),
                              'selected': QColor(Qt.black)},
-                'border':   {'normal':   QPen(Qt.black, 1, Qt.SolidLine),
-                             'selected': QPen(Qt.black, 1, Qt.SolidLine)},
-                'font':     {'normal': QFont('Arial', 10),
-                             'selected': QFont('Arial', 10)},
-                 }
+                'border': {'normal': QPen(Qt.black, 1, Qt.SolidLine),
+                           'selected': QPen(Qt.black, 1, Qt.SolidLine)},
+                'font': {'normal': QFont('Arial', 10),
+                         'selected': QFont('Arial', 10)},
+                }
         edge = {'color': {'normal': QPen(QColor(Qt.darkGray)),
                           'selected': QPen(QColor(Qt.red))}}
         scene = {'color': QBrush(Qt.white)}
-
 
 # Code to load theme from css
 CSS_FONT_WEIGHTS_TO_QT = {100: 0, 200: 12, 300: 25, 400: 50, 500: 57, 600: 63, 700: 75, 800: 81, 900: 87, 1000: 99,
@@ -157,11 +159,11 @@ def style_from_css(css):
         return DefaultStyle()
 
     stylename = None
-    node = {'bgcolor':  {'normal':   Qt.lightGray,
-                         'selected': Qt.yellow},
-            'txtcolor': {'normal':   Qt.black,
+    node = {'bgcolor': {'normal': Qt.lightGray,
+                        'selected': Qt.yellow},
+            'txtcolor': {'normal': Qt.black,
                          'selected': Qt.black},
-            'border': {'normal':   {'style': Qt.SolidLine, 'width': 1, 'color': 'black'},
+            'border': {'normal': {'style': Qt.SolidLine, 'width': 1, 'color': 'black'},
                        'selected': {'style': Qt.SolidLine, 'width': 1, 'color': 'black'}},
             'font': {'normal': {'family': 'Arial', 'variant': QFont.MixedCase, 'size': 10, 'unit': 'pt',
                                 'style': QFont.StyleNormal, 'weight': QFont.Normal},
@@ -270,3 +272,127 @@ def style_from_css(css):
     scene['color'] = QColor(scene['color'])
 
     return NetworkStyle(stylename, node, edge, scene)
+
+
+def style_to_json(style: NetworkStyle):
+    style_dict = {"format_version": 1.0,
+                  "generated_by": f"{QCoreApplication.applicationName()}-{QCoreApplication.applicationVersion()}",
+                  "target_cytoscapejs_version": "~2.1",
+                  "title": style.styleName(),
+                  "style": [{
+                      "selector": "node",
+                      "css": {
+                          "text-opacity": 1.0,
+                          "background-color": style.nodeBrush().color().name(),
+                          "text-valign": "center",
+                          "text-halign": "center",
+                          "border-width": style.nodePen().width(),
+                          "font-size": style.nodeFont().pointSize(),
+                          "width": RADIUS * 2,
+                          "shape": "ellipse",
+                          "color": style.nodeTextColor(),
+                          "border-opacity": 1.0,
+                          "height": RADIUS * 2,
+                          "background-opacity": 1.0,
+                          "border-color": style.nodePen().color().name(),
+                          "font-family": style.nodeFont().family(),
+                          "font-weight": style.nodeFont().weight(),
+                          "content": "data(name)"
+                      }
+                  }, {
+                      "selector": "node:selected",
+                      "css": {
+                          "background-color": style.nodeBrush('selected').color().name(),
+                          "border-width": style.nodePen('selected').width(),
+                          "font-size": style.nodeFont('selected').pointSize(),
+                          "width": RADIUS * 2,
+                          "color": style.nodeTextColor('selected'),
+                          "height": RADIUS * 2,
+                          "border-color": style.nodePen('selected').color().name(),
+                          "font-family": style.nodeFont('selected').family(),
+                          "font-weight": style.nodeFont('selected').weight()
+                      }
+                  }, {
+                      "selector": "edge",
+                      "css": {
+                          "line-color": style.edgePen().color().name(),
+                          "opacity": 1.0,
+                          "line-style": style.edgePen().style(),
+                          "text-opacity": 1.0,
+                          "content": "data(interaction)"
+                      }
+                  }, {
+                      "selector": "edge:selected",
+                      "css": {
+                          "line-color": style.edgePen('selected').color().name(),
+                          "line-style": style.edgePen().style()
+                      }
+                  }]
+                  }
+    return style_dict
+
+
+def style_to_cytoscape(style: NetworkStyle):
+    style_dict = {'title': QCoreApplication.applicationName() + "-" + style.styleName(),
+                  'defaults':
+                      [{'visualProperty': 'COMPOUND_NODE_SHAPE', 'value': 'ROUND_RECTANGLE'},
+                       {'visualProperty': 'EDGE_LABEL', 'value': ''},
+                       {'visualProperty': 'EDGE_LINE_TYPE', 'value': style.edgePen().style()},
+                       {'visualProperty': 'EDGE_PAINT', 'value': style.edgePen().color().name()},
+                       {'visualProperty': 'EDGE_SELECTED', 'value': False},
+                       {'visualProperty': 'EDGE_SELECTED_PAINT', 'value': style.edgePen('selected').color().name()},
+                       {'visualProperty': 'EDGE_VISIBLE', 'value': True},
+                       {'visualProperty': 'EDGE_WIDTH', 'value': 12.0},
+                       {'visualProperty': 'EDGE_SOURCE_ARROW_UNSELECTED_PAINT', 'value': style.edgePen().color().name()},
+                       {'visualProperty': 'EDGE_TARGET_ARROW_UNSELECTED_PAINT', 'value': style.edgePen().color().name()},
+                       {'visualProperty': 'EDGE_STROKE_UNSELECTED_PAINT', 'value': style.edgePen().color().name()},
+                       {'visualProperty': 'EDGE_SOURCE_ARROW_SELECTED_PAINT', 'value': style.edgePen().color().name()},
+                       {'visualProperty': 'EDGE_TARGET_ARROW_SELECTED_PAINT', 'value': style.edgePen().color().name()},
+                       {'visualProperty': 'EDGE_STROKE_SELECTED_PAINT', 'value': style.edgePen().color().name()},
+                       {'visualProperty': 'NETWORK_BACKGROUND_PAINT', 'value': style.backgroundBrush().color().name()},
+                       {'visualProperty': 'NETWORK_CENTER_X_LOCATION', 'value': 0.0},
+                       {'visualProperty': 'NETWORK_CENTER_Y_LOCATION', 'value': 0.0},
+                       {'visualProperty': 'NETWORK_CENTER_Z_LOCATION', 'value': 0.0},
+                       {'visualProperty': 'NETWORK_DEPTH', 'value': 0.0},
+                       {'visualProperty': 'NETWORK_EDGE_SELECTION', 'value': True},
+                       {'visualProperty': 'NETWORK_HEIGHT', 'value': 400.0},
+                       {'visualProperty': 'NETWORK_NODE_SELECTION', 'value': True},
+                       {'visualProperty': 'NETWORK_SCALE_FACTOR', 'value': 1.0},
+                       {'visualProperty': 'NETWORK_SIZE', 'value': 550.0},
+                       {'visualProperty': 'NETWORK_TITLE', 'value': ''},
+                       {'visualProperty': 'NETWORK_WIDTH', 'value': 550.0},
+                       {'visualProperty': 'NODE_BORDER_PAINT', 'value': style.nodePen().color().name()},
+                       {'visualProperty': 'NODE_BORDER_STROKE', 'value': style.nodePen().style()},
+                       {'visualProperty': 'NODE_BORDER_TRANSPARENCY', 'value': 255},
+                       {'visualProperty': 'NODE_BORDER_WIDTH', 'value': style.nodePen().width()},
+                       {'visualProperty': 'NODE_DEPTH', 'value': 0.0},
+                       {'visualProperty': 'NODE_FILL_COLOR', 'value': style.nodeBrush().color().name()},
+                       {'visualProperty': 'NODE_HEIGHT', 'value': RADIUS*2},
+                       {'visualProperty': 'NODE_LABEL', 'value': ''},
+                       {'visualProperty': 'NODE_LABEL_COLOR', 'value': style.nodeTextColor().name()},
+                       {'visualProperty': 'NODE_LABEL_FONT_FACE', 'value': style.nodeFont().family()},
+                       {'visualProperty': 'NODE_LABEL_FONT_SIZE', 'value': style.nodeFont().pointSize()},
+                       {'visualProperty': 'NODE_LABEL_TRANSPARENCY', 'value': 255},
+                       {'visualProperty': 'NODE_NESTED_NETWORK_IMAGE_VISIBLE', 'value': True},
+                       {'visualProperty': 'NODE_PAINT', 'value': style.nodeBrush().color().name()},
+                       {'visualProperty': 'NODE_SELECTED', 'value': False},
+                       {'visualProperty': 'NODE_SELECTED_PAINT', 'value': style.nodeBrush('selected').color().name()},
+                       {'visualProperty': 'NODE_SHAPE', 'value': 'ELLIPSE'},
+                       {'visualProperty': 'NODE_SIZE', 'value': RADIUS*2},
+                       {'visualProperty': 'NODE_TOOLTIP', 'value': ''},
+                       {'visualProperty': 'NODE_TRANSPARENCY', 'value': 255},
+                       {'visualProperty': 'NODE_VISIBLE', 'value': True},
+                       {'visualProperty': 'NODE_WIDTH', 'value': RADIUS*2},
+                       {'visualProperty': 'NODE_X_LOCATION', 'value': 0.0},
+                       {'visualProperty': 'NODE_Y_LOCATION', 'value': 0.0},
+                       {'visualProperty': 'NODE_Z_LOCATION', 'value': 0.0}],
+                  'mappings': [{'mappingType': 'passthrough',
+                                'mappingColumn': 'interaction',
+                                'mappingColumnType': 'String',
+                                'visualProperty': 'EDGE_LABEL'},
+                               {'mappingType': 'passthrough',
+                                'mappingColumn': 'name',
+                                'mappingColumnType': 'String',
+                                'visualProperty': 'NODE_LABEL'}]}
+
+    return style_dict
