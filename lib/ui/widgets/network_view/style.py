@@ -160,9 +160,9 @@ def style_from_css(css):
 
     stylename = None
     node = {'bgcolor': {'normal': Qt.lightGray,
-                        'selected': Qt.yellow},
+                        'selected': QColor()},
             'txtcolor': {'normal': Qt.black,
-                         'selected': Qt.black},
+                         'selected': QColor()},
             'border': {'normal': {'style': Qt.SolidLine, 'width': 1, 'color': 'black'},
                        'selected': {'style': Qt.SolidLine, 'width': 1, 'color': 'black'}},
             'font': {'normal': {'family': 'Arial', 'variant': QFont.MixedCase, 'size': 10, 'unit': 'pt',

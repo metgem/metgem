@@ -10,8 +10,6 @@ node
 
 node:selected
 {
-    background-color: #808080;
-    color: white;
     border: solid yellow 10px;
 }
 

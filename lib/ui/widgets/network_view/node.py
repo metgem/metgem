@@ -90,7 +90,7 @@ class Node(QGraphicsEllipseItem):
     def updateStyle(self, style: NetworkStyle, old: NetworkStyle = None):
         if old is None or self.brush().color() == old.nodeBrush().color():
             self.setBrush(style.nodeBrush(), autoTextColor=False)
-        self.setTextColor(style.nodeTextColor())
+            self.setTextColor(style.nodeTextColor())
         self.setPen(style.nodePen())
         self.setFont(style.nodeFont())
         self.update()
@@ -128,9 +128,11 @@ class Node(QGraphicsEllipseItem):
         # If selected, change brush to yellow
         if option.state & QStyle.State_Selected:
             brush = scene.networkStyle().nodeBrush(state='selected')
-            painter.setBrush(brush if brush is not None else self.brush())
             text_color = scene.networkStyle().nodeTextColor(state='selected')
-            text_color = text_color if text_color is not None else self.textColor()
+            if brush is None or not brush.color().isValid():
+                brush = self.brush()
+                text_color = self.textColor()
+            painter.setBrush(brush)
             painter.setPen(scene.networkStyle().nodePen(state='selected'))
         else:
             painter.setBrush(self.brush())
