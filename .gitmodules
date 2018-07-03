@@ -1,6 +1,6 @@
-[submodule "cosine-cython"]
-	path = cosine-cython
-	url = http://hanmais.icsn.cnrs-gif.fr/molecular-networking/cosine-cython.git
+[submodule "libmetgem"]
+	path = libmetgem
+	url = http://hanmais.icsn.cnrs-gif.fr/molecular-networking/libmetgem.git
 [submodule "NetworkView"]
 	path = NetworkView
 	url = http://hanmais.icsn.cnrs-gif.fr/molecular-networking/NetworkView.git
