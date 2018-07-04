@@ -3,7 +3,7 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/NetworkView" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/cosine-cython" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/forceatlas2" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/libmetgem" vcs="Git" />
   </component>
 </project>
