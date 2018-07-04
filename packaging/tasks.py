@@ -80,11 +80,11 @@ def build_modules(ctx):
     if sys.platform.startswith('win'):
         packaging_dir = os.path.dirname(__file__)
 
-        # Build cosine-cython extension
-        path = os.path.join(packaging_dir, '..', 'cosine-cython')
-        ctx.run('pip uninstall -y cosinelib')
+        # Build libmetgem extension
+        path = os.path.join(packaging_dir, '..', 'libmetgem')
+        ctx.run('pip uninstall -y libmetgem')
         ctx.run(f'cd /d {path} & python setup.py bdist_wheel')
-        for wheel in glob.glob(os.path.join(path, 'dist', 'cosinelib*.whl')):
+        for wheel in glob.glob(os.path.join(path, 'dist', 'libmetgem*.whl')):
             ctx.run(f'pip install {wheel}')
 
         # Build force atlas 2 extension

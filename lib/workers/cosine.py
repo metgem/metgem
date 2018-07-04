@@ -6,7 +6,7 @@ from ..utils import AttrDict
 from ..errors import UserRequestedStopError
 
 try:
-    from cosinelib.cosine import cosine_score, compute_distance_matrix
+    from libmetgem.cosine import cosine_score, compute_distance_matrix
 except ImportError:
     def cosine_score(spectrum1_mz, spectrum1_data, spectrum2_mz, spectrum2_data, mz_tolerance, min_matched_peaks):
         """Compute cosine score from two spectra.

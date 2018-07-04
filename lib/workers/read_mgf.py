@@ -3,14 +3,15 @@ import numpy as np
 from .base import BaseWorker
 
 try:
-    from cosinelib import mgf
-    from cosinelib.filter import filter_data
-    USE_COSINELIB = True
+    from libmetgem import mgf
+    from libmetgem.filter import filter_data
+    USE_LIBMETGEM = True
 except ImportError:
     from pyteomics import mgf
     from pyteomics.auxiliary import PyteomicsError
     from .cosine import MZ, INTENSITY
-    USE_COSINELIB = False
+
+    USE_LIBMETGEM = False
 
     def filter_data(data, mz_parent, min_intensity, parent_filter_tolerance, matched_peaks_window,
                     min_matched_peaks_search):
@@ -61,7 +62,7 @@ class ReadMGFWorker(BaseWorker):
     def run(self):
         mzs = []
         spectra = []
-        if USE_COSINELIB:
+        if USE_LIBMETGEM:
             for params, data in mgf.read(self.filename, ignore_unknown=True):
                 if self.isStopped():
                     self.canceled.emit()
