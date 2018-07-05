@@ -5,7 +5,8 @@ from PyQt5.QtGui import QIcon
 try:
     import os
     import pandas as pd
-    NEUTRAL_LOSSES = pd.read_csv(os.path.join(os.path.dirname(__file__), 'neutral_losses.csv'), sep=';', comment='#')
+    with open(os.path.join(os.path.dirname(__file__), 'neutral_losses.csv'), encoding='utf-8') as f:
+        NEUTRAL_LOSSES = pd.read_csv(f, sep=';', comment='#')  # Workaround for Pandas's bug #15086
 except (ImportError, FileNotFoundError, IOError, pd.errors.ParserError, pd.errors.EmptyDataError):
     NEUTRAL_LOSSES = None
 

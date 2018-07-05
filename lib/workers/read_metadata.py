@@ -38,9 +38,11 @@ class ReadMetadataWorker(BaseWorker):
             data = None
             if ext in (".xls", ".xlsx"):
                 kwargs['header'] = kwargs['header'] if type(kwargs['header']) is not str else 0
-                data = pd.read_excel(self.filename, **kwargs)
+                with open(self.filename, encoding='utf-8') as f:
+                    data = pd.read_excel(f, **kwargs)  # Workaround for Pandas's bug #15086
             elif ext in (".csv", ".txt", ".tsv"):
-                data = pd.read_csv(self.filename, **kwargs)
+                with open(self.filename, encoding='utf-8') as f:
+                    data = pd.read_csv(f, **kwargs)   # Workaround for Pandas's bug #15086
             if data is not None and data.size > 0:
                 return data
         except(FileNotFoundError, IOError, pd.errors.ParserError, pd.errors.EmptyDataError, ValueError) as e:
