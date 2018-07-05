@@ -19,12 +19,16 @@ class AboutDialog(AboutDialogDialogBase, AboutDialogUI):
 
         self.setupUi(self)
         self.tabWidget.setCurrentIndex(0)
-        self.setWindowTitle(f"About {QCoreApplication.applicationName()}")
-        self.setTitle(QCoreApplication.applicationName())
-        self.setVersion(f"Version {QCoreApplication.applicationVersion()}")
-        self.setAbout("<p>(c) 2018, CNRS/ICSN</p><p><a href='http://metgem.github.io'>http://metgem.github.io</a></p>")
 
-        authors = f"<p><b>Active Development Team of {QCoreApplication.applicationName()}</b></p>"
+        appname = QCoreApplication.applicationName()
+        self.setWindowTitle(f"About {appname}")
+        self.setTitle(appname)
+        self.setVersion(f"Version {QCoreApplication.applicationVersion()}")
+        self.setAbout("<p>(c) 2018, CNRS/ICSN</p>"
+                      f"<p><a href='https://metgem.github.io/'>{appname}</a></p>"
+                      "<p><a href='https://github.com/metgem'>Source Code</a></p>")
+
+        authors = f"<p><b>Active Development Team of {appname}</b></p>"
         mail = base64.b64decode(b'bmljb2xhcy5lbGllQGNucnMuZnI=').decode()
         authors += f"""<p>Nicolas Elie <a href=\"mailto:{mail}\">{mail}</a><br />
                        <i>Developer and Original Author</i></p>"""
@@ -38,7 +42,7 @@ class AboutDialog(AboutDialogDialogBase, AboutDialogUI):
         authors += f"""<p>David Touboul <a href=\"mailto:{mail}\">{mail}</a><br />
                       <i>Project Manager</i></p>"""
         authors += """<p><b>Credits</b></p>
-            <p><i>Various Suggestions &amp; Testing:</i> Cyrille Santerre</p>"""
+            <p><i>Various Suggestions &amp; Testing:</i> Cyrille Santerre, Simon Remy</p>"""
         self.setAuthors(authors)
 
         self.setData(
@@ -53,8 +57,37 @@ class AboutDialog(AboutDialogDialogBase, AboutDialogUI):
             <a href=\"http://creativecommons.org/publicdomain/zero/1.0/\">CC0 1.0 Universal</a> license.</p>
             """)
         self.setLicenseAgreement(LICENSE_TEXT)
+        self.setLibraries(
+            f"<p><b>Third-party libraries used by {appname}</b></p>"
+            f"<p>{appname} is built on the following free software libraries:</p>"
+            "<p><ul>"
+            "<li><a href=\"https://www.python.org/\">Python</a>: Python Software Foundation License v2</li>"
+            "<li><a href=\"https://www.numpy.org/\">Numpy</a>: 3-clause BSD</li>"
+            "<li><a href=\"https://www.scipy.org/\">Scipy</a>: 3-clause BSD</li>"
+            "<li><a href=\"http://cython.org/\">Cython</a>: Apache v2</li>"
+            "<li><a href=\"https://www.openmp.org/\">OpenMP</a>: MIT</li>"
+            "<li><a href=\"https://www.qt.io/\">Qt</a>: GPLv2 + GPLv3 + LGPLv2.1 + LGPLv3</li>"
+            "<li><a href=\"https://www.riverbankcomputing.com/software/pyqt/download5\">PyQt</a>: GPLv3</li>"
+            "<li><a href=\"https://www.riverbankcomputing.com/software/sip/download\">sip</a>: SIP License + GPLv2 + GPLv3</li>"
+            "<li><a href=\"https://pandas.pydata.org/\">Pandas</a>: 3-clause BSD</li>"
+            "<li><a href=\"https://arrow.apache.org/\">PyArrow</a>: Apache v2</li>"
+            "<li><a href=\"http://scikit-learn.org/\">Scikit-learn</a>: 3-clause BSD</li>"
+            "<li><a href=\"http://lxml.de/\">lxml</a>: BSD</li>"
+            "<li><a href=\"http://pyteomics.readthedocs.io/\">Pyteomics</a>: Apache v2</li>"
+            "<li><a href=\"http://igraph.org/\">igraph</a>: GPLv2</li>"        
+            "<li><a href=\"http://jupyter.org/\">Jupyter</a>: 3-clause BSD</li>"
+            "<li><a href=\"https://matplotlib.org/\">Matplotlib</a>: BSD-like</li>"
+            "<li><a href=\"http://docs.python-requests.org\">Requests</a>: Apache v2</li>"
+            "<li><a href=\"http://www.sqlalchemy.org/\">SQLAlchemy</a>: MIT</li>"
+            "<li><a href=\"https://www.sqlite.org\">SQLite</a>: Public Domain</li>"
+            "<li><a href=\"https://github.com/cytoscape/py2cytoscape\">py2cytoscape</a>: MIT</li>"
+            "<li><a href=\"https://github.com/mhammond/pywin32\">pywin32</a>: Python Software Foundation License</li>"
+            "<li><a href=\"https://github.com/bhargavchippada/forceatlas2\">Gephi's ForceAtlas2</a>: GPLv3</li>"
+            "</ul></p>"
+        )
 
     def _set_browser_text(self, browser: QTextBrowser, text: str):
+        browser.document().setDefaultStyleSheet("a { text-decoration: underline; color: palette(window-text); }")
         browser.setText(text)
         fmt = browser.document().rootFrame().frameFormat()
         fmt.setMargin(12)
@@ -77,3 +110,6 @@ class AboutDialog(AboutDialogDialogBase, AboutDialogUI):
 
     def setLicenseAgreement(self, text: str):
         self._set_browser_text(self.txtLicense, text)
+
+    def setLibraries(self, text: str):
+        self._set_browser_text(self.txtLibraries, text)

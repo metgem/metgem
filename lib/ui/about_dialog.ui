@@ -82,7 +82,7 @@
    <item row="7" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>4</number>
      </property>
      <widget class="QWidget" name="about">
       <attribute name="title">
@@ -142,6 +142,20 @@ p, li { white-space: pre-wrap; }
       <layout class="QVBoxLayout" name="verticalLayout_4">
        <item>
         <widget class="QTextBrowser" name="txtLicense">
+         <property name="openExternalLinks">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="libraries">
+      <attribute name="title">
+       <string>&amp;Third-party libraries</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_5">
+       <item>
+        <widget class="QTextBrowser" name="txtLibraries">
          <property name="openExternalLinks">
           <bool>true</bool>
          </property>
