@@ -114,27 +114,36 @@ class NodesModel(QAbstractTableModel):
                     return
             elif column == 1:
                 try:
+                    results = self.db_results[row]
+                except KeyError:
                     if role == Qt.DisplayRole:
-                        results = self.db_results[row]
+                        return 'N/A'
+                    else:
+                        return
+
+                try:
+                    if role == Qt.DisplayRole:
                         try:
                             current = results['current']
                         except KeyError:
                             current = 0
-                        return self.db_results[row]['standards'][current].text
+                        return results['standards'][current].text
                     elif role == DbResultsRole:
-                        return self.db_results[row]
+                        return results
                     elif role == StandardsRole:
-                        return self.db_results[row]['standards']
+                        return results['standards']
                     elif role == AnalogsRole:
-                        return self.db_results[row]['analogs']
+                        return results['analogs']
                     elif role == Qt.EditRole:
-                        return self.db_results[row]['current']
+                        return results['current']
                     else:
                         return
                 except (TypeError, KeyError, IndexError):
                     if role == Qt.EditRole:
                         return 0
-                    return
+                    elif role == Qt.DisplayRole and 'analogs' in results and 'standards' not in results:
+                        return 'Analogs results available'
+                    return 'N/A'
             else:
                 try:
                     data = self.infos[row, column - 2]
@@ -152,8 +161,13 @@ class NodesModel(QAbstractTableModel):
         row = index.row()
         column = index.column()
         if role == Qt.EditRole and column == 1:
-            if ('current' not in self.db_results[row] and value != 0) or \
-                    ('current' in self.db_results[row] and self.db_results[row]['current'] != value):
+            try:
+                result = self.db_results[row]
+            except KeyError:
+                return False
+
+            if ('current' not in result and value != 0) or \
+                    ('current' in result and result['current'] != value):
                 self.db_results[row]['current'] = value
                 self.dataChanged.emit(index, index)
                 return True

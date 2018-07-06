@@ -61,7 +61,7 @@ class Spectrum(Base):
     bank_id = Column(Integer, ForeignKey('banks.id'), nullable=False, comment="Source")
     bank = relationship('Bank')
     pepmass = Column(Float, nullable=False, index=True, comment="m/z parent")
-    positive = Column(Boolean, nullable=False, comment="Polarity")
+    positive = Column(Boolean, nullable=True, comment="Polarity")
     charge = Column(Integer, nullable=False, comment="Charge")
     mslevel = Column(Integer, nullable=False, comment="MS Level")
     source_instrument_id = Column(Integer, ForeignKey('instruments.id'), comment="Source Instrument")
@@ -85,11 +85,21 @@ class Spectrum(Base):
 
     @hybrid_property
     def polarity(self):
-        return 'Positive' if self.positive else 'Negative'
+        if self.positive is None:
+            return 'N/A'
+        elif self.positive:
+            return 'Positive'
+        else:
+            return 'Negative'
 
     @polarity.setter
     def polarity(self, value):
-        self.positive = (value == '+' or value == 'Positive')
+        if value.strip() in ('+', 'Positive', 'positive'):
+            self.positive = True
+        elif value.strip() in ('-', 'Negative', 'negative'):
+            self.positive = False
+        else:
+            self.positive = None
 
     def __init__(self, bank, pepmass, polarity, charge, mslevel, **kwargs):
         self.bank = bank
@@ -97,7 +107,7 @@ class Spectrum(Base):
         if isinstance(polarity, str):
             self.polarity = polarity
         else:
-            self.positive = bool(polarity)
+            self.positive = polarity
         self.charge = charge
         self.mslevel = mslevel
 

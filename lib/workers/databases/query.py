@@ -67,9 +67,12 @@ class QueryDatabasesWorker(BaseWorker):
                     if self.options.databases:
                         query = query.filter(Spectrum.bank_id.in_(self.options.databases))
 
-                    # Filter query by selecting polarity and pepmass window
-                    query = query.filter(Spectrum.positive == self.options.positive_polarity)\
-                        .filter(Spectrum.pepmass >= mz_parent - tol, Spectrum.pepmass <= mz_parent + tol)
+                    # Filter query by selecting polarity
+                    query = query.filter(or_(Spectrum.positive == self.options.positive_polarity,
+                                             Spectrum.positive.is_(None)))
+
+                    # Filter query by selecting pepmass window
+                    query = query.filter(Spectrum.pepmass >= mz_parent - tol, Spectrum.pepmass <= mz_parent + tol)
 
                     # If we are looking for analogs, do not include standards
                     if self.options.analog_search:

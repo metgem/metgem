@@ -115,12 +115,13 @@ class StandardsResultsDelegate(QStyledItemDelegate):
                 model.appendRow(parent)
                 if items:
                     for i, result in enumerate(items):
-                        item = QStandardItem()
-                        if type_ == ANALOGS:
-                            item.setSelectable(False)
-                        item.setText(result.text)
-                        item.setData(result.id)
-                        parent.appendRow(item)
+                        if not isinstance(result, str):
+                            item = QStandardItem()
+                            if type_ == ANALOGS:
+                                item.setSelectable(False)
+                            item.setText(result.text)
+                            item.setData(result.id)
+                            parent.appendRow(item)
 
             # Connect events
             editor.button.clicked.connect(lambda: self.on_view_details(index, editor))
@@ -128,12 +129,14 @@ class StandardsResultsDelegate(QStyledItemDelegate):
             return editor
 
     def setEditorData(self, editor, index):
-        value = index.model().data(index, Qt.EditRole)
-        type_ = index.model().data(index, StandardsRole)[value][0]
-        parent = editor.model().index(type_, 0)
-        editor.setRootModelIndex(parent)
-        editor.setCurrentIndex(value)
-        editor.setRootModelIndex(QModelIndex())
+        value = index.data(Qt.EditRole)
+        standards = index.data(StandardsRole)
+        if standards is not None and not isinstance(standards, str):
+            type_ = standards[value][0]
+            parent = editor.model().index(type_, 0)
+            editor.setRootModelIndex(parent)
+            editor.setCurrentIndex(value)
+            editor.setRootModelIndex(QModelIndex())
 
     def setModelData(self, editor, model, index):
         model.setData(index, editor.currentIndex(), Qt.EditRole)

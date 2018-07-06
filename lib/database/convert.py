@@ -24,6 +24,15 @@ def clean_string(string):
     return string
 
 
+def convert_polarity(string):
+    if string == 'positive':
+        return True
+    elif string == 'negative':
+        return False
+    else:
+        return None
+
+
 def chunk_read_mgf(filename, chunk_size=1000):
     yield from grouper(mgf.read(filename, convert_arrays=1, read_charges=True, dtype=np.float32), n=chunk_size)
 
@@ -130,7 +139,7 @@ class DataBaseBuilder:
                             'bank_id': self._uniques['bank'][bank],
                             'pepmass': float(params.get('pepmass', [-1])[0]),
                             'mslevel': int(params.get('mslevel', 0)),
-                            'positive': params.get('ionmode', 'Positive').lower() == 'positive',
+                            'positive': convert_polarity(params.get('ionmode', 'Positive').lower()),
                             'charge': params.get('charge', [1])[0],
                             'name': params.get('name', None),
                             'inchi': clean_string(params.get('inchi', None)),
