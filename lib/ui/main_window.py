@@ -217,6 +217,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.menuView.addMenu(popup_menu)
 
         # Build research bar
+        self._last_table = self.tvNodes
         self.update_search_menu()
 
     @debug
@@ -300,10 +301,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
     @debug
     def update_search_menu(self, table: QTableView=None):
         if table is None:
-            if self.dockEdges.isVisible():
-                table = self.tvEdges
-            else:
-                table = self.tvNodes
+            table = self._last_table
+
         model = table.model()
 
         menu = QMenu(self)
@@ -321,6 +320,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.btSearch.setMenu(menu)
         group.triggered.connect(lambda act: table.model().setFilterKeyColumn(act.data() - 1))
         model.setFilterKeyColumn(-1)
+
+        self._last_table = table
 
     def keyPressEvent(self, event: QKeyEvent):
         key = event.key()
@@ -408,11 +409,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
     @debug
     def on_do_search(self, *args):
-        if self.tvEdges.isVisible():
-            table = self.tvEdges
-        else:
-            table = self.tvNodes
-        table.model().setFilterRegExp(str(self.leSearch.text()))
+        if self._last_table is None:
+            return
+        self._last_table.model().setFilterRegExp(str(self.leSearch.text()))
 
     @debug
     def on_new_project_triggered(self, *args):
