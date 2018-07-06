@@ -407,7 +407,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.has_unsaved_changes = True
 
     @debug
-    def on_do_search(self):
+    def on_do_search(self, *args):
         if self.tvEdges.isVisible():
             table = self.tvEdges
         else:
@@ -829,7 +829,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         return reply
 
     @debug
-    def highlight_selected_nodes(self):
+    def highlight_selected_nodes(self, *args):
         selected = self.nodes_selection()
         with utils.SignalBlocker(self.gvNetwork.scene(), self.gvTSNE.scene()):
             self.gvNetwork.scene().setNodesSelection(selected)
