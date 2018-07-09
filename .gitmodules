@@ -1,9 +1,9 @@
 [submodule "libmetgem"]
 	path = libmetgem
-	url = http://hanmais.icsn.cnrs-gif.fr/molecular-networking/libmetgem.git
+	url = ../libmetgem.git
 [submodule "NetworkView"]
 	path = NetworkView
-	url = http://hanmais.icsn.cnrs-gif.fr/molecular-networking/NetworkView.git
+	url = ../NetworkView.git
 [submodule "forceatlas2"]
 	path = forceatlas2
-	url = http://hanmais.icsn.cnrs-gif.fr/molecular-networking/forceatlas2.git
+	url = ../forceatlas2.git
