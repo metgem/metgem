@@ -77,34 +77,32 @@ def build(ctx, clean=False):
 
 @task
 def build_modules(ctx):
-    if sys.platform.startswith('win'):
-        packaging_dir = os.path.dirname(__file__)
+    lib_ext = '.pyd' if sys.platform == 'win32' else '.so'
 
-        # Build libmetgem extension
-        path = os.path.join(packaging_dir, '..', 'libmetgem')
-        ctx.run('pip uninstall -y libmetgem')
-        ctx.run(f'cd /d {path} & python setup.py bdist_wheel')
-        for wheel in glob.glob(os.path.join(path, 'dist', 'libmetgem*.whl')):
-            ctx.run(f'pip install {wheel}')
+    packaging_dir = os.path.dirname(__file__)
 
-        # Build force atlas 2 extension
-        path = os.path.join(packaging_dir, '..', 'forceatlas2')
-        ctx.run('pip uninstall -y fa2')
-        ctx.run(rf'cd /d {path} & python setup.py bdist_wheel')
-        for wheel in glob.glob(os.path.join(path, 'dist', 'fa2*.whl')):
-            ctx.run(f'pip install {wheel}')
+    # Build libmetgem extension
+    path = os.path.join(packaging_dir, '..', 'libmetgem')
+    ctx.run('pip uninstall -y libmetgem')
+    ctx.run(f'pushd {path} && python setup.py bdist_wheel && popd')
+    for wheel in glob.glob(os.path.join(path, 'dist', 'libmetgem*.whl')):
+        ctx.run(f'pip install {wheel}')
 
-        # Build NetworkView extension
-        path = os.path.join(packaging_dir, '..', 'NetworkView')
-        module = os.path.join(path, 'modules', 'NetworkView.pyd')
-        dest = os.path.join(packaging_dir, '..', 'lib', 'ui', 'widgets', 'network_view')
-        if not os.path.exists(module):
-            raise FileNotFoundError('Please compile NetworkView module before packaging.')
-        else:
-            shutil.copy(module, dest)
+    # Build force atlas 2 extension
+    path = os.path.join(packaging_dir, '..', 'forceatlas2')
+    ctx.run('pip uninstall -y fa2')
+    ctx.run(rf'pushd {path} && python setup.py bdist_wheel && popd')
+    for wheel in glob.glob(os.path.join(path, 'dist', 'fa2*.whl')):
+        ctx.run(f'pip install {wheel}')
+
+    # Build NetworkView extension
+    path = os.path.join(packaging_dir, '..', 'NetworkView')
+    module = os.path.join(path, 'modules', f'NetworkView{lib_ext}')
+    dest = os.path.join(packaging_dir, '..', 'lib', 'ui', 'widgets', 'network_view')
+    if not os.path.exists(module):
+        raise FileNotFoundError('Please compile NetworkView module before packaging.')
     else:
-        pass  # TODO: Allow packaging of dependencies on other platforms
-
+        shutil.copy(module, dest)
 
 @task(check_dependencies)
 def icon(ctx):
