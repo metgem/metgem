@@ -20,7 +20,7 @@ EMBED_JUPYTER = os.getenv('EMBED_JUPYTER', 'false').lower() in ('true', '1')
 if sys.platform.startswith('win'):
     USER_PATH = os.path.join(os.path.expandvars(r'%APPDATA%'), 'MetGem')
 elif sys.platform.startswith('darwin'):
-    USER_PATH = os.path.join(os.path.expanduser('~'), 'Library', 'Logs', 'MetGem')
+    USER_PATH = os.path.join(os.path.expanduser('~'), 'Library', 'MetGem')
 elif sys.platform.startswith('linux'):
     USER_PATH = os.path.join(os.path.expanduser('~'), '.config', 'MetGem')
 else:
@@ -28,7 +28,10 @@ else:
 
 DATABASES_PATH = os.path.join(USER_PATH, 'databases')
 SQL_PATH = os.path.join(DATABASES_PATH, 'spectra.sqlite')
-LOG_PATH = os.path.join(USER_PATH, 'log')
+if sys.platform.startswith('darwin'):
+    LOG_PATH = os.path.join(os.path.expanduser('~'), 'Library', 'Logs', 'MetGem')
+else:
+    LOG_PATH = os.path.join(USER_PATH, 'log')
 STYLES_PATH = os.path.join(USER_PATH, 'styles')
 
 if not os.path.exists(DATABASES_PATH):
