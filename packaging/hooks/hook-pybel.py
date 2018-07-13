@@ -1,6 +1,7 @@
-from PyInstaller.utils.hooks import collect_data_files, get_module_file_attribute
+from PyInstaller.utils.hooks import collect_data_files
+import openbabel
 
-datas = [(get_module_file_attribute('openbabel._openbabel'), 'openbabel')]
+datas = [(openbabel._openbabel.__file__, 'openbabel')]
 d = collect_data_files('openbabel')
 datas += d
-datas += [(x, '') for x, _ in d if x.endswith('.dll')]
+datas += [(x, '') for x, _ in d if x.endswith('.dll') or x.endswith('.so')]

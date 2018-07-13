@@ -3,6 +3,15 @@ from __future__ import unicode_literals
 
 import biplist
 import os.path
+import shutil
+import tempfile
+
+appname = "MetGem"
+
+tmp_dir = tempfile.TemporaryDirectory()
+os.makedirs(os.path.join(tmp_dir.name, appname))
+shutil.copy("main.icns", tmp_dir.name)
+os.system(f"./set_folder_icon.sh main.icns {tmp_dir.name} {appname}")
 
 #
 # Example settings file for dmgbuild
@@ -17,8 +26,9 @@ import os.path
 
 # .. Useful stuff ..............................................................
 
-application = defines.get('app', 'dist/MetGem.app')
-appname = os.path.basename(application)
+application = defines.get('app', f'dist/{appname}.app')
+shutil.copytree(application, os.path.join(tmp_dir.name, appname, f'{appname}.app'))
+shutil.copytree('../examples', os.path.join(tmp_dir.name, appname, 'examples'))
 
 def icon_from_app(app_path):
     plist_path = os.path.join(app_path, 'Contents', 'Info.plist')
@@ -33,10 +43,10 @@ def icon_from_app(app_path):
 # .. Basics ....................................................................
 
 # Uncomment to override the output filename
-filename = 'MetGem.dmg'
+filename = f'{appname}.dmg'
 
 # Uncomment to override the output volume name
-volume_name = 'MetGem'
+volume_name = appname
 
 # Volume format (see hdiutil create -help)
 format = defines.get('format', 'UDBZ')
@@ -45,10 +55,10 @@ format = defines.get('format', 'UDBZ')
 size = defines.get('size', None)
 
 # Files to include
-files = [ application ]
+files = [os.path.join(tmp_dir.name, appname)]
 
 # Symlinks to create
-symlinks = { 'Applications': '/Applications' }
+symlinks = {'Applications': f'/Applications'}
 
 # Volume icon
 #

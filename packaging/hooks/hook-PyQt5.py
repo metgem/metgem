@@ -1,0 +1,1 @@
+hiddenimports = ['PyQt5.sip']
