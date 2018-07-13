@@ -121,8 +121,14 @@ except ImportError:
 
         def setNodesSelection(self, items):
             self.clearSelection()
+
+            # Look if items are Nodes or indexes
+            for _ in items:
+                is_nodes = isinstance(_, Node)
+                break
+
             if len(items) > 0:
-                if isinstance(items[0], Node):
+                if is_nodes:
                     for node in items:
                         node.setSelected(True)
                 else:
@@ -150,12 +156,18 @@ except ImportError:
 
         def setEdgesSelection(self, items):
             self.clearSelection()
-            edges = self.edges()
+
+            # Look if items are Edges or indexes
+            for _ in items:
+                is_edges = isinstance(_, Edge)
+                break
+
             if len(items) > 0:
-                if isinstance(items[0], Edge):
+                if is_edges:
                     for edge in items:
                         edge.setSelected(True)
                 else:
+                    edges = self.edges()
                     for index in items:
                         edges[index].setSelected(True)
 
