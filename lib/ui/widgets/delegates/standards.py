@@ -4,8 +4,8 @@ from PyQt5.QtWidgets import (QStyledItemDelegate, QComboBox, QTreeView,
                              QWidget, QHBoxLayout, QSizePolicy, QToolButton)
 
 from ..metadata.model import StandardsRole, AnalogsRole, DbResultsRole
-from ....workers.databases.query import ANALOGS
 
+ANALOGS = 1
 
 class StandardsResultsEditor(QWidget):
     def __init__(self, *args, **kwargs):

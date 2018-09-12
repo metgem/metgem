@@ -4,7 +4,7 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from PyQt5.QtCore import pyqtSignal, Qt
 from PyQt5.QtWidgets import QSizePolicy
 
-from ....workers.cosine import MZ, INTENSITY
+from ....workers.libmetgem_wrapper import MZ, INTENSITY
 
 import numpy as np
 

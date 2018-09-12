@@ -1,15 +1,12 @@
 from ..base import BaseWorker
-from ..cosine import cosine_score, CosineComputationOptions
-from ..read_mgf import filter_data
-from ...database import SpectraLibrary, Spectrum
+from ..libmetgem_wrapper import query
+from ..cosine import CosineComputationOptions
+from ...database import SpectraLibrary, Bank
 from ...config import SQL_PATH, DEBUG
 
+import operator
 from collections import namedtuple
-from sqlalchemy.exc import OperationalError
-from sqlalchemy import or_
 
-STANDARDS = 0
-ANALOGS = 1
 StandardsResult = namedtuple('StandardsResult', ['score', 'bank', 'id', 'text'])
 
 
@@ -35,79 +32,53 @@ class QueryDatabasesOptions(CosineComputationOptions):
 
 class QueryDatabasesWorker(BaseWorker):
 
-    def __init__(self, indexes, mzs, spectra, options):
+    def __init__(self, indices, mzs, spectra, options):
         super().__init__()
-        self._indexes = indexes
+        self._indices = list(indices)
         self._mzs = mzs
         self._spectra = spectra
         self.options = options
-        self.max = len(mzs) * 100
+        self.max = 0
         self.iterative_update = False
-        self.type_ = "analogs" if options.analog_search else "standards"
-        self.desc = f'Querying library for {self.type_}...'
+        self._type = "analogs" if options.analog_search else "standards"
+        self.desc = f'Querying library for {self._type}...'
 
     def run(self):
+        def callback(value):
+            if value > 0 and self.max == 0:
+                 self.max = 100
+            self.updated.emit(value)
+            return not self.isStopped()
+
         results = {}
-        count = 0
 
-        try:
-            with SpectraLibrary(SQL_PATH, echo=DEBUG) as lib:
-                for idx, mz_parent, spec_data in zip(self._indexes, self._mzs, self._spectra):
-                    if self.isStopped():
-                        self.canceled.emit()
-                        return False
+        # Query database
+        analog_mz_tolerance = self.options.analog_mz_tolerance if self.options.analog_search else 0
+        qr = query(SQL_PATH, self._indices, self._mzs, self._spectra, self.options.databases,
+                   self.options.mz_tolerance, self.options.min_matched_peaks, self.options.min_intensity,
+                   self.options.parent_filter_tolerance, self.options.matched_peaks_window,
+                   self.options.min_matched_peaks_search, self.options.min_cosine, analog_mz_tolerance,
+                   bool(self.options.positive_polarity), callback=callback)
 
-                    results[idx] = {self.type_: []}
-                    tol = self.options.analog_mz_tolerance if self.options.analog_search else self.options.mz_tolerance
-
-                    # Create query
-                    query = lib.query(Spectrum)
-
-                    # Filter query by selecting databases, if needed
-                    if self.options.databases:
-                        query = query.filter(Spectrum.bank_id.in_(self.options.databases))
-
-                    # Filter query by selecting polarity
-                    query = query.filter(or_(Spectrum.positive == self.options.positive_polarity,
-                                             Spectrum.positive.is_(None)))
-
-                    # Filter query by selecting pepmass window
-                    query = query.filter(Spectrum.pepmass >= mz_parent - tol, Spectrum.pepmass <= mz_parent + tol)
-
-                    # If we are looking for analogs, do not include standards
-                    if self.options.analog_search:
-                        tol = self.options.mz_tolerance
-                        query = query.filter(or_(Spectrum.pepmass < mz_parent - tol,
-                                                 Spectrum.pepmass > mz_parent + tol))
-
-                    num_results = query.count()
-                    if num_results > 0:
-                        step = 100. / num_results
-                        for i, obj in enumerate(query):
-                            if self.isStopped():
-                                self.canceled.emit()
-                                return False
-
-                            data = filter_data(obj.peaks.copy(), obj.pepmass, self.options.min_intensity,
-                                               self.options.parent_filter_tolerance,
-                                               self.options.matched_peaks_window,
-                                               self.options.min_matched_peaks_search)
-                            if data.size > 0:
-                                score = cosine_score(mz_parent, spec_data, obj.pepmass, data,
-                                                     self.options.mz_tolerance, self.options.min_matched_peaks)
-                                if score > self.options.min_cosine:
-                                    result = StandardsResult(score=score, id=obj.spectrumid,
-                                                             bank=obj.bank.name,
-                                                             text=f"[{score:.2f}] {obj.bank.name}: {obj.name}")
-                                    results[idx][self.type_].append(result)
-                            self.updated.emit(count+step*i)
-
-                    # Sort results by decreasing scores
-                    results[idx][self.type_] = sorted(results[idx][self.type_], reverse=True)
-
-                    count += 100
+        if qr is None:  # User canceled the process
             return results
 
-        except OperationalError as e:
-            self.error.emit(e)
-            return
+        # Get list of data banks
+        with SpectraLibrary(SQL_PATH, echo=DEBUG) as lib:
+            bank_names = dict(lib.query(Bank.id, Bank.name).all())
+
+        # Re-organize results
+        for idx, v in qr.items():
+            results[idx] = {self._type: []}
+            for r in sorted(v, key=operator.itemgetter('score'), reverse=True):
+                score = r['score']
+                id_ = r['id']
+                bank = bank_names[r['bank_id']]
+                try:
+                    name = r['name'].decode()
+                except AttributeError:
+                    name = r['name']
+                std_result = StandardsResult(score=score, id=id_, bank=bank, text=f"[{score:.2f}] {bank}: {name}")
+                results[idx][self._type].append(std_result)
+
+        return results

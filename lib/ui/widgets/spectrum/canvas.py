@@ -4,8 +4,7 @@ from matplotlib.ticker import FuncFormatter, AutoMinorLocator
 
 import numpy as np
 
-from .base import BaseCanvas
-from ....workers.cosine import MZ, INTENSITY
+from .base import BaseCanvas, MZ, INTENSITY
 
 
 class SpectrumCanvas(BaseCanvas):

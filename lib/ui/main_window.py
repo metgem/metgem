@@ -1163,13 +1163,13 @@ class MainWindow(MainWindowBase, MainWindowUI):
         return worker
 
     @debug
-    def prepare_query_database_worker(self, indexes, options):
+    def prepare_query_database_worker(self, indices, options):
         if (getattr(self.network, 'mzs', None) is None or getattr(self.network, 'spectra', None) is None
                 or not os.path.exists(config.SQL_PATH)):
             return
-        mzs = [self.network.mzs[index] for index in indexes]
-        spectra = [self.network.spectra[index] for index in indexes]
-        worker = workers.QueryDatabasesWorker(indexes, mzs, spectra, options)
+        mzs = [self.network.mzs[index] for index in indices]
+        spectra = [self.network.spectra[index] for index in indices]
+        worker = workers.QueryDatabasesWorker(indices, mzs, spectra, options)
 
         def query_finished():
             nonlocal worker
