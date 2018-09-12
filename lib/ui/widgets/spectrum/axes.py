@@ -10,8 +10,8 @@ class SpectrumAxes(Axes):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
-        self.fmt_xdata = lambda x: '{:.4f}'.format(x)
-        self.fmt_ydata = lambda y: '{:.0f}%'.format(y)
+        self.fmt_xdata = lambda x: f'{x:.4f}'
+        self.fmt_ydata = lambda y: f'{y:.0f}%'
 
         self._xmax = None
     
@@ -25,10 +25,10 @@ class SpectrumAxes(Axes):
             ys = '???'
         else:
             ys = self.format_ydata(y)
-        return '<i>m/z</i> {}, intensity={}'.format(xs, ys.replace('-', ''))
+        return f"<i>m/z</i> {xs}, intensity={ys.replace('-', '')}"
 
     def get_xmax(self):
-        return self.__xmax
+        return self._xmax
 
     def set_xmax(self, max):
         super().set_xlim(0, max)

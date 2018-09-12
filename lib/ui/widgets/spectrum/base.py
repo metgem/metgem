@@ -54,7 +54,7 @@ class BaseCanvas(FigureCanvas):
         if data is None:
             return
 
-        if self._title:
+        if self._title is not None:
             self.axes.set_title(self._title, self.fontdict, loc='right')
             
         self.axes.set_xlabel("$m/z$", self.fontdict)

@@ -23,15 +23,34 @@ class SpectrumWidget(QWidget):
 
         self.toolbar.setVisible(False)
 
-    def set_spectrum1(self, data, label=None):
-        if label is not None:
-            self.canvas.spectrum1_label = str(label)
-        self.canvas.spectrum1 = data
+    def set_spectrum1(self, data, idx=None, label=None):
+        if data is not None:
+            if label is not None:
+                self.canvas.spectrum1_label = str(label)
+            else:
+                self.canvas.spectrum1_label = None
+            self.canvas.spectrum1 = data
+            self.canvas.spectrum1_index = idx
+        else:
+            self.canvas.spectrum1 = None
+            self.canvas.spectrum1_index = None
+            self.canvas.spectrum1_label = None
 
-    def set_spectrum2(self, data, label=None):
-        if label is not None:
-            self.canvas.spectrum2_label = str(label)
-        self.canvas.spectrum2 = data
+    def set_spectrum2(self, data, idx=None, label=None):
+        if data is not None:
+            if label is not None:
+                self.canvas.spectrum2_label = str(label)
+            else:
+                self.canvas.spectrum2_label = None
+            self.canvas.spectrum2 = data
+            self.canvas.spectrum2_index = idx
+        else:
+            self.canvas.spectrum2 = None
+            self.canvas.spectrum2_index = None
+            self.canvas.spectrum2_label = None
+
+    def set_title(self, title):
+        self.canvas.title = title
 
     def __getattr__(self, item):
         return getattr(self.canvas, item)

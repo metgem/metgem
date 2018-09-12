@@ -7,6 +7,7 @@ from ..metadata.model import StandardsRole, AnalogsRole, DbResultsRole
 
 ANALOGS = 1
 
+
 class StandardsResultsEditor(QWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

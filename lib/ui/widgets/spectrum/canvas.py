@@ -14,6 +14,8 @@ class SpectrumCanvas(BaseCanvas):
         self._spectrum2_data = None
         self._spectrum1_label = None
         self._spectrum2_label = None
+        self._spectrum1_idx = None
+        self._spectrum2_idx = None
         self._spectrum1_plot = None
         self._spectrum2_plot = None
 
@@ -100,6 +102,14 @@ class SpectrumCanvas(BaseCanvas):
         if self._spectrum1_plot is not None:
             self._spectrum1_plot.set_label(label)
 
+    @pyqtProperty(int)
+    def spectrum1_index(self):
+        return self._spectrum1_idx
+
+    @spectrum1_index.setter
+    def spectrum1_index(self, idx):
+        self._spectrum1_idx = idx
+
     @pyqtProperty(np.ndarray)
     def spectrum2(self):
         return self._spectrum2_data
@@ -117,6 +127,22 @@ class SpectrumCanvas(BaseCanvas):
         self._spectrum2_label = label
         if self._spectrum2_plot is not None:
             self._spectrum2_plot.set_label(label)
+
+    @pyqtProperty(int)
+    def spectrum1_index(self):
+        return self._spectrum1_idx
+
+    @spectrum1_index.setter
+    def spectrum1_index(self, idx):
+        self._spectrum1_idx = idx
+
+    @pyqtProperty(str)
+    def title(self):
+        return self._title
+
+    @title.setter
+    def title(self, title):
+        self._title = title
 
     def auto_adjust_ylim(self):
         if self.has_data():
