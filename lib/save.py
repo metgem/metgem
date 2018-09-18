@@ -86,7 +86,7 @@ def savez(file, version, *args, compress=True, **kwargs):
     else:
         compression = zipfile.ZIP_STORED
 
-    with zipfile_factory(file, mode="w", compression=compression) as zipf:
+    with zipfile_factory(file, mode="a", compression=compression) as zipf:
         # Write file format version
         zipf.writestr('version', str(version))
         

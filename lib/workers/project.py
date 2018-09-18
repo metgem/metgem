@@ -36,13 +36,10 @@ class LoadProjectWorker(BaseWorker):
                                                   + "This file format is not supported anymore.\n"
                                                   + "Please generate networks from raw data again")
 
-                if version == CURRENT_FORMAT_VERSION:
-                    if self.isStopped():
-                        self.canceled.emit()
-                        return
-
+                elif version == CURRENT_FORMAT_VERSION:
                     # Create network object
                     network = Network()
+                    network.lazyloaded = True
 
                     # Load scores matrix
                     network.scores = fid['0/scores']
@@ -78,7 +75,7 @@ class LoadProjectWorker(BaseWorker):
                             return
 
                         network.mzs.append(s['mz_parent'])
-                        network.spectra.append(fid[f'0/spectra/{s["id"]}'])
+                        network.spectra.append(f'0/spectra/{s["id"]}')
 
                     if self.isStopped():
                         self.canceled.emit()
@@ -164,12 +161,6 @@ class SaveProjectWorker(BaseWorker):
         writer = GraphMLWriter()
         gxl = writer.tostring(self.graph).decode()
 
-        # Convert lists of parent mass and spectrum data to something that be can be saved
-        mzs = getattr(self.network, 'mzs', [])
-        spectra = getattr(self.network, 'spectra', [])
-        spec_infos = [{'id': i, 'mz_parent': mz_parent} for i, mz_parent in enumerate(mzs)]
-        spec_data = {'0/spectra/{}'.format(i): data for i, data in enumerate(spectra)}
-
         # Create dict for saving
         d = {'0/scores': getattr(self.network, 'scores', np.array([])),
              '0/spectra/index.json': spec_infos,
@@ -187,11 +178,33 @@ class SaveProjectWorker(BaseWorker):
         if mappings is not None:
             d['0/mappings.json'] = mappings
 
-        d.update(spec_data)
+        if self.network.lazyloaded and os.path.exists(self.original_fname):
+            # create a temp copy of the archive without filename
+            with zipfile.ZipFile(self.original_fname, 'r') as zin:
+                with zipfile.ZipFile(self.tmp_filename, 'w') as zout:
+                    zout.comment = zin.comment  # preserve the comment
+                    for item in zin.infolist():
+                        if item.filename.startswith('0/spectra/'):
+                            zout.writestr(item, zin.read(item.filename))
+        else:
+            # Convert lists of parent mass and spectrum data to something that be can be saved
+            mzs = getattr(self.network, 'mzs', [])
+            spectra = getattr(self.network, 'spectra', [])
+            d['0/spectra/index.json'] = [{'id': i, 'mz_parent': mz_parent} for i, mz_parent in enumerate(mzs)]
+            d.update({'0/spectra/{}'.format(i): data for i, data in enumerate(spectra)})
 
         try:
-            savez(self.filename, version=CURRENT_FORMAT_VERSION, **d)
+            savez(self.tmp_filename, version=CURRENT_FORMAT_VERSION, **d)
         except PermissionError as e:
+            try:
+                os.remove(self.tmp_filename)
+            except OSError:
+                pass
             self.error.emit(e)
         else:
+            try:
+                os.remove(self.filename)
+            except OSError:
+                pass
+            os.rename(self.tmp_filename, self.filename)
             return True

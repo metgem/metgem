@@ -16,6 +16,7 @@ from PyQt5.QtGui import QPainter, QImage, QCursor, QColor, QKeyEvent, QIcon
 
 from PyQt5 import uic
 
+from lib.save import MnzFile
 from .. import config, ui, utils, workers, errors
 from ..utils.network import Network
 from ..utils import colors
@@ -573,7 +574,15 @@ class MainWindow(MainWindowBase, MainWindowUI):
                         # No node specified, try to get it from current view's selection
                         node = self.current_view.scene().selectedNodes()[0]
                     node_idx = node.index()
-                data = workers.human_readable_data(self.network.spectra[node_idx])
+
+                data = self.network.spectra[node_idx]
+                if isinstance(data, str):
+                    with MnzFile(self.fname) as fid:
+                        data = fid[data]
+                        self.network.spectra[node_idx] = data
+
+                data = workers.human_readable_data(data)
+
                 mz_parent = self.network.mzs[node_idx]
             except IndexError:
                 pass
