@@ -2,7 +2,7 @@ from .set import WorkerSet
 from .generic import GenericWorker
 from .tsne import TSNEWorker, TSNEVisualizationOptions
 from .network import NetworkWorker
-from .network_generation import NetworkVisualizationOptions, generate_network
+from .network_generation import NetworkVisualizationOptions, GenerateNetworkWorker
 from .cosine import ComputeScoresWorker, CosineComputationOptions
 from .read_mgf import ReadMGFWorker
 from .read_metadata import ReadMetadataOptions, ReadMetadataWorker
