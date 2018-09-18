@@ -10,7 +10,7 @@ def human_readable_data(data):
 
 
 try:
-    from libmetgem.cosine import cosine_score, compute_distance_matrix, compare_spectra_to_reference
+    from libmetgem.cosine import cosine_score, compute_distance_matrix
     from libmetgem import mgf
     from libmetgem.filter import filter_data, filter_data_multi
     from libmetgem.network import generate_network
@@ -86,23 +86,6 @@ except ImportError:
         np.fill_diagonal(matrix, 1)
         matrix[matrix > 1] = 1
         return matrix
-
-    def compare_spectra_to_reference(mzs, spectra, mzref, dataref, mz_tolerance, min_matched_peaks, callback=None):
-        size = len(mzs)
-        has_callback = callback is not None
-        result = np.empty((size,), dtype=np.float32)
-
-        for i in range(len(spectra)):
-            result[i] = cosine_score(mzs[i], spectra[i], mzref, dataref, mz_tolerance, min_matched_peaks)
-            if has_callback and i % 10 == 0:
-                callback(10)
-
-        if has_callback and size % 10 != 0:
-            callback(size % 10)
-
-        result[result > 1] = 1
-
-        return result
 
     def filter_data(mz_parent, data, min_intensity, parent_filter_tolerance, matched_peaks_window,
                     min_matched_peaks_search):
