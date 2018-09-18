@@ -761,9 +761,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                         self.network.options.network = options
                         self.has_unsaved_changes = True
 
-                        self.network.interactions = None
-                        self.create_graph(keep_vertices=True)
-                        self.draw(which='network')
+                        self.draw(which='network', keep_vertices=True)
                         self.update_search_menu()
             elif type_ == 't-sne':
                 dialog = ui.EditTSNEOptionsDialog(self, options=self.network.options)
@@ -903,44 +901,49 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def create_graph(self, keep_vertices=False):
         # Delete all previously created edges and nodes
         self.network.graph.delete_edges(self.network.graph.es)
+
         if not keep_vertices:
             self.network.graph.delete_vertices(self.network.graph.vs)
             nodes_idx = np.arange(self.network.scores.shape[0])
             self.network.graph.add_vertices(nodes_idx.tolist())
 
-        self.network.graph.add_edges(zip(self.network.interactions['Source'], self.network.interactions['Target']))
+        interactions = self.network.interactions
+        self.network.graph.add_edges(zip(interactions['Source'], interactions['Target']))
 
     @debug
-    def draw(self, compute_layouts=True, which='all'):
+    def draw(self, compute_layouts=True, which='all', keep_vertices=False):
         if which == 'all':
             which = {'network', 't-sne'}
         elif isinstance(which, str):
             which = {which}
 
-        worker = None
-        if 'network' in which:
+        def draw_network():
             if not compute_layouts and self.network.graph.network_layout is not None:
-                worker = self.prepare_draw_network_worker(layout=self.network.graph.network_layout)
+                network_worker = self.prepare_draw_network_worker(layout=self.network.graph.network_layout)
             else:
-                worker = self.prepare_draw_network_worker()
+                network_worker = self.prepare_draw_network_worker()
 
-        if 't-sne' in which:
-            layout = None
+            if 't-sne' in which:
+                network_worker.finished.connect(draw_tsne)
 
-            def draw_tsne():
-                tsne_worker = self.prepare_draw_tsne_worker(layout=layout)
-                self._workers.add(tsne_worker)
+            self._workers.add(network_worker)
 
+        def draw_tsne():
             if not compute_layouts and self.network.graph.tsne_layout is not None:
-                layout = self.network.graph.tsne_layout
-
-            if worker is not None:
-                worker.finished.connect(draw_tsne)
+                tsne_worker = self.prepare_draw_tsne_worker(layout=self.network.graph.tsne_layout)
             else:
-                draw_tsne()
+                tsne_worker = self.prepare_draw_tsne_worker()
+            self._workers.add(tsne_worker)
 
-        if worker is not None:
-            self._workers.add(worker)
+        if 'network' in which:
+            if self.network.interactions is None:
+                worker = self.prepare_generate_network_worker(keep_vertices)
+                worker.finished.connect(draw_network)
+                self._workers.add(worker)
+            else:
+                draw_network()
+        elif 't-sne' in which:
+            draw_tsne()
 
         self.update_search_menu()
 
@@ -954,12 +957,54 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.network.graph.tsne_layout = layout
 
     @debug
+    def prepare_apply_network_layout_worker(self, layout=None):
+        if layout is None:
+            # Compute layout
+            def process_finished():
+                computed_layout = worker.result()
+                if computed_layout is not None:
+                    self.apply_layout('network', computed_layout)
+
+            worker = workers.NetworkWorker(self.network.graph, self.gvNetwork.scene().nodesRadii())
+            worker.finished.connect(process_finished)
+        else:
+            worker = workers.GenericWorker(self.apply_layout, 'network', layout)
+        return worker
+
+    @debug
+    def prepare_apply_tsne_layout_worker(self, layout=None):
+        if layout is None:
+            # Compute layout
+            def process_finished():
+                computed_layout = worker.result()
+                if computed_layout is not None:
+                    self.apply_layout('t-sne', computed_layout)
+
+            worker = workers.TSNEWorker(self.network.scores, self.network.options.tsne)
+            worker.finished.connect(process_finished)
+
+            return worker
+        else:
+            worker = workers.GenericWorker(self.apply_layout, 't-sne', layout)
+            return worker
+
+    @debug
+    def prepare_generate_network_worker(self, keep_vertices=False):
+        def interactions_generated():
+            nonlocal worker
+            self.network.interactions = worker.result()
+            self.create_graph(keep_vertices)
+
+        worker = workers.GenerateNetworkWorker(self.network.scores, self.network.mzs, self.network.options.network)
+        worker.finished.connect(interactions_generated)
+
+        return worker
+
+    @debug
     def prepare_draw_network_worker(self, layout=None):
-        scene = self.gvNetwork.scene()
-
-        scene.removeAllEdges()
-
         interactions = self.network.interactions
+        scene = self.gvNetwork.scene()
+        scene.removeAllEdges()
 
         widths = np.array(interactions['Cosine'])
         min_ = max(0, widths.min() - 0.1)
@@ -991,20 +1036,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
                       for e in self.network.graph.es if not e.is_loop()]
         scene.addEdges(*zip(*edges_attr))
 
-        if layout is None:
-            # Compute layout
-            def process_finished():
-                computed_layout = worker.result()
-                if computed_layout is not None:
-                    self.apply_layout('network', computed_layout)
-
-            worker = workers.NetworkWorker(self.network.graph, self.gvNetwork.scene().nodesRadii())
-            worker.finished.connect(process_finished)
-
-            return worker
-        else:
-            worker = workers.GenericWorker(self.apply_layout, 'network', layout)
-            return worker
+        worker = self.prepare_apply_network_layout_worker(layout)
+        return worker
 
     @debug
     def prepare_draw_tsne_worker(self, layout=None):
@@ -1024,20 +1057,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
         elif num_nodes == len(colors):
             scene.setNodesColors(colors)
 
-        if layout is None:
-            # Compute layout
-            def process_finished():
-                computed_layout = worker.result()
-                if computed_layout is not None:
-                    self.apply_layout('t-sne', computed_layout)
-
-            worker = workers.TSNEWorker(self.network.scores, self.network.options.tsne)
-            worker.finished.connect(process_finished)
-
-            return worker
-        else:
-            worker = workers.GenericWorker(self.apply_layout, 't-sne', layout)
-            return worker
+        worker = self.prepare_apply_tsne_layout_worker(layout)
+        return worker
 
     @debug
     def prepare_compute_scores_worker(self, spectra, use_multiprocessing):
@@ -1081,7 +1102,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.network.scores = worker.result()
             self.network.interactions = None
             self.tvEdges.model().sourceModel().endResetModel()
-            self.create_graph()
             self.draw()
             if metadata_filename is not None:
                 worker = self.prepare_read_metadata_worker(metadata_filename, metadata_options)

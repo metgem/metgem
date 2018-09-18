@@ -13,12 +13,14 @@ try:
     from libmetgem.cosine import cosine_score, compute_distance_matrix, compare_spectra_to_reference
     from libmetgem import mgf
     from libmetgem.filter import filter_data, filter_data_multi
+    from libmetgem.network import generate_network
     from libmetgem.database import query
 
     USE_LIBMETGEM = True
 except ImportError:
     import time
     import numpy as np
+    import itertools
     import operator
     import sqlite3
     from pyteomics import mgf
@@ -155,6 +157,54 @@ except ImportError:
             callback(size % 10)
 
         return result
+
+
+    def generate_network(scores_matrix, mzs, pairs_min_cosine, top_k, callback=None):
+        interactions = []
+        size = len(mzs)
+
+        triu = np.triu(scores_matrix)
+        triu[triu <= pairs_min_cosine] = 0
+        for i in range(size):
+            # indexes = np.argpartition(triu[i, ], -options.top_k)[-options.top_k:] # Should be faster and give the same results
+            indexes = np.argsort(triu[i,])[-top_k:]
+            indexes = indexes[triu[i, indexes] > 0]
+
+            for index in indexes:
+                interactions.append((i, index, mzs[i] - mzs[index], triu[i, index]))
+
+            if callback is not None and i > 0 and i % 100 == 0:
+                if not callback(100):
+                    return []
+
+        interactions = np.array(interactions, dtype=[('Source', int), ('Target', int), ('Delta MZ', np.float32),
+                                                     ('Cosine', np.float32)])
+
+        size = interactions.shape[0]
+        if callback is not None and size % 100 != 0:
+            if not callback(size % 100):
+                return []
+            callback(-size)  # Negative value means new maximum
+
+        interactions = interactions[np.argsort(interactions, order='Cosine')[::-1]]
+
+        # Top K algorithm, keep only edges between two nodes if and only if each of the node appeared in each other’s respective top k most similar nodes
+        mask = np.zeros(interactions.shape[0], dtype=bool)
+        for i, (x, y, _, _) in enumerate(interactions):
+            x_ind = np.where(np.logical_or(interactions['Source'] == x, interactions['Target'] == x))[0][:top_k]
+            y_ind = np.where(np.logical_or(interactions['Source'] == y, interactions['Target'] == y))[0][:top_k]
+            if (x in interactions[y_ind]['Source'] or x in interactions[y_ind]['Target']) \
+                    and (y in interactions[x_ind]['Source'] or y in interactions[x_ind]['Target']):
+                mask[i] = True
+            if callback is not None and i > 0 and i % 100 == 0:
+                if not callback(100):
+                    return []
+        interactions = interactions[mask]
+
+        if callback is not None and size % 100 != 0:
+            callback(size % 100)
+
+        return interactions
 
     def query(fname: str, indices: list, mzvec: list, datavec: list, databases: list, mz_tolerance: float,
               min_matched_peaks: int, min_intensity: int, parent_filter_tolerance: int, matched_peaks_window: int,
