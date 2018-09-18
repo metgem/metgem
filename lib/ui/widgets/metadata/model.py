@@ -152,6 +152,8 @@ class NodesModel(QAbstractTableModel):
                 except IndexError:
                     mappped_columns = self.mappings[column - 2]
                     data = sum(self.infos[row, c] for c in mappped_columns)
+                if isinstance(data, np.generic):
+                    data = data.item()
                 return str(data) if role in (FilterRole, LabelRole) else data
 
     def setData(self, index: QModelIndex, value, role=Qt.EditRole):
