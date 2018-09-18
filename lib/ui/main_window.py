@@ -481,7 +481,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 if attr.startswith('__'):
                     del g.vs[attr]
                 else:
-                    g.vs[attr] = [str(x) for x in g.vs[attr]]
+                    g.vs[attr] = [str(x+1) for x in g.vs[attr]]
             if view == self.gvTSNE:
                 g.delete_edges(g.es)  # in a t-SNE layout, edges does not makes any sense
             else:
@@ -490,7 +490,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                     if attr.startswith('__'):
                         del g.es[attr]
                     else:
-                        g.es[attr] = [str(x) for x in g.es[attr]]
+                        g.es[attr] = [str(x+1) for x in g.es[attr]]
 
             # cy.session.delete()
             logger.debug('CyREST: Creating network')
