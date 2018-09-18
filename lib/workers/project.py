@@ -48,6 +48,16 @@ class LoadProjectWorker(BaseWorker):
                         self.canceled.emit()
                         return
 
+                    # Load interactions
+                    try:
+                        network.interactions = fid['0/interactions']
+                    except KeyError:
+                        network.interactions = None
+
+                    if self.isStopped():
+                        self.canceled.emit()
+                        return
+
                     # Load infos
                     network.infos = fid['0/infos']
 
@@ -146,10 +156,13 @@ class LoadProjectWorker(BaseWorker):
 class SaveProjectWorker(BaseWorker):
     """Save current project to a file for future access"""
 
-    def __init__(self, filename, graph, network, options):
+    def __init__(self, filename, graph, network, options, original_fname=None):
         super().__init__()
 
         self.filename = filename
+        self.original_fname = original_fname
+        path, fname = os.path.split(filename)
+        self.tmp_filename = os.path.join(path, f".tmp-{fname}")
         self.graph = graph
         self.network = network
         self.options = options
@@ -163,7 +176,7 @@ class SaveProjectWorker(BaseWorker):
 
         # Create dict for saving
         d = {'0/scores': getattr(self.network, 'scores', np.array([])),
-             '0/spectra/index.json': spec_infos,
+             '0/interactions': getattr(self.network, 'interactions', np.array([])),
              '0/infos': getattr(self.network, 'infos', np.array([])),
              '0/graph.graphml': gxl,
              '0/network_layout': getattr(self.graph, 'network_layout', np.array([])),

@@ -1157,7 +1157,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
             else:
                 raise e
 
-        worker = workers.SaveProjectWorker(fname, self.network.graph, self.network, self.network.options)
+        worker = workers.SaveProjectWorker(fname, self.network.graph, self.network, self.network.options,
+                                           original_fname=self.fname)
         worker.finished.connect(process_finished)
         worker.error.connect(error)
 
