@@ -75,17 +75,15 @@ except ImportError:
 
     def compute_distance_matrix(mzs, spectra, mz_tolerance, min_matched_peaks, callback=None):
         size = len(mzs)
-        has_callback = callback is not None
         matrix = np.empty((size, size), dtype=np.float32)
         for i in range(size):
             for j in range(i):
                 matrix[i, j] = matrix[j, i] = cosine_score(mzs[i], spectra[i], mzs[j], spectra[j],
                                                            mz_tolerance, min_matched_peaks)
-                if has_callback:
-                    callback(size-1)
+            if callback is not None:
+                if not callback(i-1):
+                    return matrix
         np.fill_diagonal(matrix, 1)
-        if has_callback:
-            callback(size)
         matrix[matrix > 1] = 1
         return matrix
 
