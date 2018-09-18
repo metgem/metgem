@@ -43,7 +43,6 @@ class WorkerSet(set):
         if use_thread:
             thread = QThread(self.parent())
             worker.moveToThread(thread)
-            thread.setPriority(QThread.IdlePriority)
 
         self.widgetProgress.setValue(0)
         self.widgetProgress.setMinimum(0)
