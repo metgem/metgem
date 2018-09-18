@@ -22,11 +22,14 @@ else:
     logger.setLevel(logging.WARN)
     file_handler.setLevel(logging.WARN)
 
-
 def debug(func):
-    def new_func(*args, **kwargs):
-        logger.debug(f"Calling {func.__name__}({args}, {kwargs})")
-        out = func(*args, **kwargs)
-        logger.debug(f"Finished {func.__name__} -> {out}")
-        return out
-    return new_func
+    if DEBUG:
+        def new_func(*args, **kwargs):
+            logger.debug(f"Calling {func.__name__}({args}, {kwargs})")
+            out = func(*args, **kwargs)
+            logger.debug(f"Finished {func.__name__} -> {out}")
+            return out
+
+        return new_func
+    else:
+        return func
