@@ -1,5 +1,6 @@
 import numpy as np
-from PyQt5.QtGui import QColor
+import zipfile
+import os
 
 from .base import BaseWorker
 from ..save import MnzFile, savez
