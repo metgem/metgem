@@ -88,11 +88,12 @@ class GraphMLParser:
                     graph.vs[id_][name] = value
 
         # Load edges
-        for id_, edge in enumerate(g.findall('edge', namespaces=root.nsmap)):
-            source = vertices.get(edge.attrib['source'], edge.attrib['source'])
-            target = vertices.get(edge.attrib['target'], edge.attrib['target'])
+        edges = list(g.findall('edge', namespaces=root.nsmap))
+        graph.add_edges([(vertices.get(edge.attrib['source'], edge.attrib['source']),
+                          vertices.get(edge.attrib['target'], edge.attrib['target']))
+                         for edge in edges])
 
-            graph.add_edge(source, target)
+        for id_, edge in enumerate(edges):
             for data in edge.findall('data', namespaces=root.nsmap):
                 key = data.attrib['key']
                 if key in self._keys and self._keys[key]['for'] == 'edge':
