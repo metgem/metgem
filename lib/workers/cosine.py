@@ -45,15 +45,12 @@ class ComputeScoresWorker(BaseWorker):
     def run(self):
         def callback(value):
             self.updated.emit(value)
-            if self.isStopped():
-                raise UserRequestedStopError()
+            return not self.isStopped()
 
-        try:
-            scores_matrix = compute_distance_matrix(self._mzs, self._spectra,
-                                                    self.options.mz_tolerance, self.options.min_matched_peaks,
-                                                    callback=callback)
-        except UserRequestedStopError:
+        scores_matrix = compute_distance_matrix(self._mzs, self._spectra,
+                                                self.options.mz_tolerance, self.options.min_matched_peaks,
+                                                callback=callback)
+        if not self.isStopped():
+            return scores_matrix
+        else:
             self.canceled.emit()
-            return
-
-        return scores_matrix

@@ -61,7 +61,8 @@ class QueryDatabasesWorker(BaseWorker):
                    bool(self.options.positive_polarity), callback=callback)
 
         if qr is None:  # User canceled the process
-            return results
+            self.canceled.emit()
+            return
 
         # Get list of data banks
         with SpectraLibrary(SQL_PATH, echo=DEBUG) as lib:
