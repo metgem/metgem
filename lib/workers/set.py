@@ -52,7 +52,10 @@ class WorkerSet(set):
         else:
             worker.started.connect(lambda: self.widgetProgress.setFormat(worker.desc.format(value=0, max=worker.max)))
 
-        self.widgetProgress.rejected.connect(lambda: worker.stop())
+        # TODO: This doesn't work if connected directly to worker.stop, not sure why
+        worker._reject = lambda: worker.stop()
+        self.widgetProgress.rejected.connect(worker._reject)
+
         worker.started.connect(lambda: self.show_progressbar(worker))
         worker.finished.connect(lambda: self.remove(worker))
         worker.canceled.connect(lambda: self.remove(worker))
@@ -65,6 +68,12 @@ class WorkerSet(set):
             thread.start()
         else:
             worker.start()
+
+    def disconnect_events(self, worker):
+        try:
+            self.widgetProgress.rejected.disconnect(worker._reject)
+        except TypeError:
+            pass
 
     def add(self, worker):
         super().add(worker)
@@ -80,7 +89,7 @@ class WorkerSet(set):
     def remove(self, worker):
         if worker.thread() != self.parent().thread():
             worker.thread().quit()
-        if worker in self:
-            super().remove(worker)
-            self.hide_progressbar()
 
+        self.disconnect_events(worker)
+        super().remove(worker)
+        self.hide_progressbar()
