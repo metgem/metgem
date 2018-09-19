@@ -42,11 +42,12 @@ class AboutDialog(AboutDialogDialogBase, AboutDialogUI):
         authors += f"""<p>David Touboul <a href=\"mailto:{mail}\">{mail}</a><br />
                       <i>Project Manager</i></p>"""
         authors += """<p><b>Credits</b></p>
-            <p><i>Various Suggestions &amp; Testing:</i> Cyrille Santerre, Simon Remy</p>"""
+            <p><i>Various Suggestions &amp; Testing:</i> Cyrille Santerre, Simon Remy, Florence Mondeguer</p>"""
         self.setAuthors(authors)
 
         self.setData(
             """<p><b>Icons</b></p>
+            <p>MetGem Logo can be used freely under the terms of the <a href=\"http://creativecommons.org/publicdomain/zero/1.0/\">CC0 1.0 Universal</a> license.</p>
             <p>Some icons are taken or derived from <a href=\"http://tango.freedesktop.org/Tango_Desktop_Project">Tango Desktop Project</a>.
             These icons are released to the Public Domain.</p>
             <p>Some icons are taken or derived from <a href=\"https://commons.wikimedia.org/wiki/GNOME_Desktop_icons">Gnome Desktop Icons</a>.
