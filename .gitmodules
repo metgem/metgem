@@ -8,3 +8,6 @@
 [submodule "forceatlas2"]
 	path = forceatlas2
 	url = ../forceatlas2.git
+[submodule "metgem-docs"]
+	path = metgem-docs
+	url = ../metgem-docs.git
