@@ -16,12 +16,14 @@ class ReadGroupMappingWorker(BaseWorker):
             with open(self.filename) as f:
                 mapping = {}
                 for line in f:
-                    key, value = line.strip('\n').split('=')
-                    if key.startswith('GROUP_'):
-                        key = key[6:]
-                        cols = [v.strip() for v in value.split(';')]
-                        if len(cols):
-                            mapping[key] = cols
+                    line = line.strip('\n')
+                    if '=' in line:
+                        key, value = line.split('=')
+                        if key.startswith('GROUP_'):
+                            key = key[6:]
+                            cols = [v.strip() for v in value.split(';')]
+                            if len(cols):
+                                mapping[key] = cols
                 self.updated.emit(1)
             return mapping
         except(FileNotFoundError, IOError, ValueError) as e:
