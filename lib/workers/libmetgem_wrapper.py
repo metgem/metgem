@@ -205,7 +205,8 @@ except ImportError:
 
         if len(databases) > 0:
             dbs = ','.join([str(x) for x in databases])
-            c = conn.execute("SELECT id, pepmass, name, peaks, bank_id FROM spectra WHERE bank_id IN ?4 AND (positive = ?1 OR positive IS NULL) AND PEPMASS BETWEEN ?2 AND ?3",
+            print(dbs)
+            c = conn.execute("SELECT id, pepmass, name, peaks, bank_id FROM spectra WHERE bank_id IN (?4) AND (positive = ?1 OR positive IS NULL) AND PEPMASS BETWEEN ?2 AND ?3",
                              (positive_polarity, mz_min-tol, mz_max+tol, dbs))
         else:
             c = conn.execute("SELECT id, pepmass, name, peaks, bank_id FROM spectra WHERE (positive = ?1 OR positive IS NULL) AND PEPMASS BETWEEN ?2 AND ?3",
