@@ -14,6 +14,23 @@ from ..workers.databases import StandardsResult
 CURRENT_FORMAT_VERSION = 2
 
 
+class SpectraList(list):
+
+    def __init__(self, filename):
+        self.fid = MnzFile(filename, 'r')
+
+    def __getitem__(self, index):
+        data = super().__getitem__(index)
+        if isinstance(data, str):
+            data = self.fid[data]
+            super().__setitem__(index, data)
+
+        return data
+
+    def __del__(self):
+        self.fid.close()
+
+
 class LoadProjectWorker(BaseWorker):
     """Load project from a previously saved file"""
 
@@ -79,7 +96,7 @@ class LoadProjectWorker(BaseWorker):
                     # Load table of spectra
                     spec_infos = fid['0/spectra/index.json']
                     network.mzs = []
-                    network.spectra = []
+                    network.spectra = SpectraList(self.filename)
                     for s in spec_infos:
                         if self.isStopped():
                             self.canceled.emit()

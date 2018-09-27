@@ -575,13 +575,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                         node = self.current_view.scene().selectedNodes()[0]
                     node_idx = node.index()
 
-                data = self.network.spectra[node_idx]
-                if isinstance(data, str):
-                    with MnzFile(self.fname) as fid:
-                        data = fid[data]
-                        self.network.spectra[node_idx] = data
-
-                data = workers.human_readable_data(data)
+                data = workers.human_readable_data(self.network.spectra[node_idx])
 
                 mz_parent = self.network.mzs[node_idx]
             except IndexError:

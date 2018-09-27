@@ -91,5 +91,6 @@ class WorkerSet(set):
             worker.thread().quit()
 
         self.disconnect_events(worker)
-        super().remove(worker)
+        if worker in self:
+            super().remove(worker)
         self.hide_progressbar()
