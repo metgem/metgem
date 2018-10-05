@@ -17,18 +17,18 @@ CURRENT_FORMAT_VERSION = 2
 class SpectraList(list):
 
     def __init__(self, filename):
-        self.fid = MnzFile(filename, 'r')
+        self._file = MnzFile(filename, 'r')
 
     def __getitem__(self, index):
         data = super().__getitem__(index)
         if isinstance(data, str):
-            data = self.fid[data]
+            data = self._file[data]
             super().__setitem__(index, data)
 
         return data
 
     def __del__(self):
-        self.fid.close()
+        self._file.close()
 
 
 class LoadProjectWorker(BaseWorker):

@@ -28,8 +28,15 @@ from .config import FILE_EXTENSION
 
 class MnzFile(NpzFile):
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, file, *args, **kwargs):
+        if isinstance(file, basestring):
+            fid = open(file, "rb")
+            own_fid = True
+        else:
+            fid = file
+            own_fid = False
+
+        super().__init__(fid, own_fid, *args, **kwargs)
         self.parquet_files = [x[:-8] for x in self._files if x.endswith('.parquet')]
 
     def __getitem__(self, key):
