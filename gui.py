@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-if __name__ == '__main__':
+
+def main():
     import os
     import sys
 
@@ -35,3 +36,7 @@ if __name__ == '__main__':
             window.load_project(fname)
 
     sys.exit(app.exec_())
+
+
+if __name__ == '__main__':
+    main()
