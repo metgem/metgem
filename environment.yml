@@ -1,0 +1,18 @@
+name: metgem
+dependencies:
+    - pandas>=0.22
+    - lxml>=4.0
+    - numpy>=1.14
+    - pyqt>=5.9
+    - pyteomics>=3.4
+    - python-igraph>=0.7.1
+    - scikit-learn>=0.19
+    - scipy>=1.0.0
+    - sip>=4.19
+    - qtconsole>=4.3
+    - matplotlib>=2.2
+    - requests>=2.18
+    - SQLAlchemy>=1.2
+    - py2cytoscape>=0.7.0
+    - pyarrow>=0.9.0
+    - pywin32>=223          [win]
