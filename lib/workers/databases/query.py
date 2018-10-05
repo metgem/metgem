@@ -1,5 +1,5 @@
 from ..base import BaseWorker
-from ..libmetgem_wrapper import query
+from ...libmetgem_wrapper import query
 from ..cosine import CosineComputationOptions
 from ...database import SpectraLibrary, Bank
 from ...config import SQL_PATH, DEBUG

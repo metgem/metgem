@@ -84,10 +84,6 @@ splash.showMessage("Loading lxml library...")
 import lxml
 splash.setValue(30)
 
-splash.showMessage("Loading pyteomics library...")
-import pyteomics
-splash.setValue(35)
-
 splash.showMessage("Loading sklearn library...")
 import sklearn
 splash.setValue(40)

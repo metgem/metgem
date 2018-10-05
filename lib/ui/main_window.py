@@ -2,7 +2,6 @@ import sys
 import os
 import json
 
-import pyteomics
 import requests
 
 import numpy as np
@@ -16,8 +15,8 @@ from PyQt5.QtGui import QPainter, QImage, QCursor, QColor, QKeyEvent, QIcon
 
 from PyQt5 import uic
 
-from lib.save import MnzFile
 from .. import config, ui, utils, workers, errors
+from ..libmetgem_wrapper import human_readable_data
 from ..utils.network import Network
 from ..utils import colors
 from ..logger import logger, debug
@@ -575,7 +574,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                         node = self.current_view.scene().selectedNodes()[0]
                     node_idx = node.index()
 
-                data = workers.human_readable_data(self.network.spectra[node_idx])
+                data = human_readable_data(self.network.spectra[node_idx])
 
                 mz_parent = self.network.mzs[node_idx]
             except IndexError:
@@ -1092,10 +1091,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 self._workers.add(worker)
 
         def error(e):
-            if e.__class__ == pyteomics.auxiliary.PyteomicsError:
-                QMessageBox.warning(self, None, e.message)
-            elif e.__class__ == KeyError and e.args[0] == "pepmass":
+            if e.__class__ == KeyError and e.args[0] == "pepmass":
                 QMessageBox.warning(self, None, f"File format is incorrect. At least one scan has no pepmass defined.")
+            elif hasattr(e, 'message'):
+                QMessageBox.warning(self, None, e.message)
             else:
                 QMessageBox.warning(self, None, str(e))
 
@@ -1167,8 +1166,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.sliderTSNEScale.resetValue()
 
             self.tvNodes.model().sourceModel().beginResetModel()
+            self.tvEdges.model().sourceModel().beginResetModel()
             self.network = worker.result()
             self.tvNodes.model().sourceModel().endResetModel()
+            self.tvEdges.model().sourceModel().endResetModel()
 
             # Draw
             self.draw(compute_layouts=False)

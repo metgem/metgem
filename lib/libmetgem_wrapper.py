@@ -24,9 +24,23 @@ except ImportError:
     import operator
     import sqlite3
     from pyteomics import mgf
-    from pyteomics.auxiliary import PyteomicsError
 
     USE_LIBMETGEM = False
+
+    # Monkey patch mgf.read to serve a libmetgem-like interface
+    def libmetgemize(read):
+        def inner(*args, **kwargs):
+            for entry in read(args[0], convert_arrays=1, read_charges=True, dtype=np.float32):
+                params = entry.get('params', {})
+                for key in ('pepmass', 'charge'):
+                    if key in params and isinstance(params[key], (list, tuple)):
+                        params[key] = params[key][0]
+
+                mz = entry.get('m/z array', None)
+                intensity = entry.get('intensity array', None)
+                yield params, np.column_stack((mz, intensity))
+        return inner
+    mgf.read = libmetgemize(mgf.read)
 
     def cosine_score(spectrum1_mz, spectrum1_data, spectrum2_mz, spectrum2_data, mz_tolerance, min_matched_peaks):
         """Compute cosine score from two spectra.

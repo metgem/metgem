@@ -12,4 +12,3 @@ from .databases import (ListGNPSDatabasesWorker, DownloadGNPSDatabasesWorker,
                         GetGNPSDatabasesMtimeWorker, ConvertDatabasesWorker,
                         QueryDatabasesWorker, QueryDatabasesOptions,
                         StandardsResult)
-from .libmetgem_wrapper import human_readable_data

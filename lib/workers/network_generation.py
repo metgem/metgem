@@ -1,5 +1,5 @@
 from .base import BaseWorker
-from .libmetgem_wrapper import generate_network
+from ..libmetgem_wrapper import generate_network
 from ..utils import AttrDict
 
 

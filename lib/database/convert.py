@@ -3,7 +3,7 @@ import os
 import numpy as np
 from sqlalchemy.exc import OperationalError
 
-from pyteomics import mgf
+from ..libmetgem_wrapper import mgf, INTENSITY
 
 from ..utils import grouper
 from .session import create_session
@@ -34,7 +34,7 @@ def convert_polarity(string):
 
 
 def chunk_read_mgf(filename, chunk_size=1000):
-    yield from grouper(mgf.read(filename, convert_arrays=1, read_charges=True, dtype=np.float32), n=chunk_size)
+    yield from grouper(mgf.read(filename, ignore_unknown=False), n=chunk_size)
 
 
 class DataBaseBuilder:
@@ -131,24 +131,35 @@ class DataBaseBuilder:
                 if entry is None:
                     break
 
-                params = entry['params']
+                params, peaks = entry
+                pepmass = params.get('pepmass', -1)
+                charge = params.get('charge', 1)
+                positive = convert_polarity(params.get('ionmode', 'Positive').lower())
+                name = params.get('name', None)
+                mslevel = int(params.get('mslevel', 0))
+                inchi = params.get('inchi', None)
+                inchiaux = params.get('inchiaux', None)
+                smiles = params.get('smiles', None)
+                pubmed = params.get('pubmed', None)
+                libraryquality = int(params.get('libraryquality', 0))
+                spectrumid = params.get('spectrumid', None)
 
                 # Set-up a dictionary with all the values needed to build a Spectrum object
                 spectrum = {
                             'id': next(self.spectrum_pkey),
                             'bank_id': self._uniques['bank'][bank],
-                            'pepmass': float(params.get('pepmass', [-1])[0]),
-                            'mslevel': int(params.get('mslevel', 0)),
-                            'positive': convert_polarity(params.get('ionmode', 'Positive').lower()),
-                            'charge': params.get('charge', [1])[0],
-                            'name': params.get('name', None),
-                            'inchi': clean_string(params.get('inchi', None)),
-                            'inchiaux': clean_string(params.get('inchiaux', None)),
-                            'smiles': clean_string(params.get('smiles', None)),
-                            'pubmed': clean_string(params.get('pubmed', None)),
-                            'submituser': clean_string(params.get('inchi', None)),
-                            'libraryquality': int(params.get('libraryquality', 0)),
-                            'spectrumid': clean_string(params.get('spectrumid', None))
+                            'pepmass': pepmass,
+                            'mslevel': mslevel,
+                            'positive': positive,
+                            'charge': charge,
+                            'name': name,
+                            'inchi': clean_string(inchi),
+                            'inchiaux': clean_string(inchiaux),
+                            'smiles': clean_string(smiles),
+                            'pubmed': clean_string(pubmed),
+                            'submituser': clean_string(inchi),
+                            'libraryquality': libraryquality,
+                            'spectrumid': clean_string(spectrumid)
                            }
 
                 # Add foreign keys
@@ -163,11 +174,8 @@ class DataBaseBuilder:
                         spectrum[f'{key}_id'] = None
 
                 # build a list of dictionnaries representing peaks
-                mz = entry.get('m/z array', None)
-                intensity = entry.get('intensity array', None)
-                if mz is not None and intensity is not None and mz.size > 0 and intensity.size > 0:
-                    intensity = intensity / intensity.max() * 100
-                    peaks = np.column_stack((mz, intensity))
+                if peaks is not None and peaks.size > 0:
+                    peaks[:, INTENSITY] = peaks[:, INTENSITY] / peaks[:, INTENSITY].max() * 100
                     spectrum['peaks'] = peaks
                 else:
                     spectrum['peaks'] = np.array([], dtype=np.float32)
