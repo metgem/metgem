@@ -260,10 +260,14 @@ class EdgesModel(QAbstractTableModel):
                     return ' ; '.join(interpretations)
                 else:
                     return
-            elif role in (FilterRole, LabelRole):
-                return str(self.interactions[row][column])
             else:
-                return self.interactions[row][column]
+                data = self.interactions[row][column]
+                if column == 0 or column == 1:
+                    data += 1
+                if role in (FilterRole, LabelRole):
+                    return str(data)
+                else:
+                    return data
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if role != Qt.DisplayRole:
