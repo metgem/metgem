@@ -901,19 +901,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
         settings.endGroup()
 
     @debug
-    def create_graph(self, keep_vertices=False):
-        # Delete all previously created edges and nodes
-        self.network.graph.delete_edges(self.network.graph.es)
-
-        if not keep_vertices:
-            self.network.graph.delete_vertices(self.network.graph.vs)
-            nodes_idx = np.arange(self.network.scores.shape[0])
-            self.network.graph.add_vertices(nodes_idx.tolist())
-
-        interactions = self.network.interactions
-        self.network.graph.add_edges(zip(interactions['Source'], interactions['Target']))
-
-    @debug
     def draw(self, compute_layouts=True, which='all', keep_vertices=False):
         if which == 'all':
             which = {'network', 't-sne'}
@@ -995,30 +982,20 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def prepare_generate_network_worker(self, keep_vertices=False):
         def interactions_generated():
             nonlocal worker
-            self.network.interactions = worker.result()
-            self.create_graph(keep_vertices)
+            interactions, graph = worker.result()
+            self.network.interactions = interactions
+            self.network.graph = graph
 
-        worker = workers.GenerateNetworkWorker(self.network.scores, self.network.mzs, self.network.options.network)
+        worker = workers.GenerateNetworkWorker(self.network.scores, self.network.mzs, self.network.graph,
+                                               self.network.options.network, keep_vertices=keep_vertices)
         worker.finished.connect(interactions_generated)
 
         return worker
 
     @debug
     def prepare_draw_network_worker(self, layout=None):
-        interactions = self.network.interactions
         scene = self.gvNetwork.scene()
         scene.removeAllEdges()
-
-        widths = np.array(interactions['Cosine'])
-        min_ = max(0, widths.min() - 0.1)
-        max_ = config.RADIUS
-        if min_ != widths.max():
-            widths = (max_ - 1) * (widths - min_) / (widths.max() - min_) + 1
-        else:
-            widths = max_
-
-        self.network.graph.es['__weight'] = interactions['Cosine']
-        self.network.graph.es['__width'] = widths
 
         colors = self.network.graph.vs['__color'] \
             if '__color' in self.network.graph.vs.attributes() else []
@@ -1037,7 +1014,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
         # Add edges
         edges_attr = [(e.index, nodes[e.source], nodes[e.target], e['__weight'], e['__width'])
                       for e in self.network.graph.es if not e.is_loop()]
-        scene.addEdges(*zip(*edges_attr))
+        if edges_attr:
+            scene.addEdges(*zip(*edges_attr))
 
         worker = self.prepare_apply_network_layout_worker(layout)
         return worker

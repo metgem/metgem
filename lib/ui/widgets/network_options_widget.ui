@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>244</width>
+    <width>250</width>
     <height>111</height>
    </rect>
   </property>
@@ -14,32 +14,6 @@
    <string>Network Visualization</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_3">
-   <item row="2" column="1">
-    <widget class="QSpinBox" name="spinNetworkMaxConnectedComponentSize">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <property name="minimum">
-      <number>1</number>
-     </property>
-     <property name="maximum">
-      <number>5000</number>
-     </property>
-     <property name="value">
-      <number>1000</number>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="label_4">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <property name="text">
-      <string>Max. Connected Component Size </string>
-     </property>
-    </widget>
-   </item>
    <item row="0" column="1">
     <widget class="QSpinBox" name="spinNetworkMaxNeighbor">
      <property name="enabled">
@@ -114,6 +88,32 @@
       </size>
      </property>
     </spacer>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="label_4">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="text">
+      <string>Max. Connected Component Size </string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QSpinBox" name="spinNetworkMaxConnectedComponentSize">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="minimum">
+      <number>0</number>
+     </property>
+     <property name="maximum">
+      <number>10000</number>
+     </property>
+     <property name="value">
+      <number>1000</number>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>

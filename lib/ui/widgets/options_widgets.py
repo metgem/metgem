@@ -1,13 +1,12 @@
-#!/usr/bin/env python
-from PyQt5.QtWidgets import QGroupBox
-from PyQt5 import uic
-
-import os
-
 from ...workers.network_generation import NetworkVisualizationOptions
 from ...workers.tsne import TSNEVisualizationOptions
 from ...workers.cosine import CosineComputationOptions
 from ...workers.databases.query import QueryDatabasesOptions
+
+from PyQt5.QtWidgets import QGroupBox
+from PyQt5 import uic
+
+import os
 
 
 class NetworkOptionsWidget(QGroupBox):

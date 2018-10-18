@@ -11,7 +11,7 @@ from ..graphml import GraphMLParser, GraphMLWriter
 from ..errors import UnsupportedVersionError
 from ..workers.databases import StandardsResult
 
-CURRENT_FORMAT_VERSION = 2
+CURRENT_FORMAT_VERSION = 3
 
 
 class SpectraList(list):
@@ -54,7 +54,7 @@ class LoadProjectWorker(BaseWorker):
                                                   + "This file format is not supported anymore.\n"
                                                   + "Please generate networks from raw data again")
 
-                elif version == CURRENT_FORMAT_VERSION:
+                elif version in (2, CURRENT_FORMAT_VERSION):
                     # Create network object
                     network = Network()
                     network.lazyloaded = True
@@ -117,6 +117,10 @@ class LoadProjectWorker(BaseWorker):
                         if key in network.options:
                             opt.update(network.options[key])
                         network.options[key] = opt
+                    # Prior to version 3, max_connected_nodes value was set 1000 but ignored
+                    # Set it to 0 to keep the same behavior
+                    if version < 3:
+                        network.options.network.max_connected_nodes = 0
 
                     if self.isStopped():
                         self.canceled.emit()
