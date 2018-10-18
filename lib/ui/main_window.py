@@ -761,6 +761,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                     options = dialog.getValues()
                     if options != self.network.options.network:
                         self.network.options.network = options
+                        self.network.interactions = None
                         self.has_unsaved_changes = True
 
                         self.draw(which='network', keep_vertices=True)
