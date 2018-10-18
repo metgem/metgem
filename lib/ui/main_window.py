@@ -15,8 +15,9 @@ from PyQt5.QtGui import QPainter, QImage, QCursor, QColor, QKeyEvent, QIcon
 
 from PyQt5 import uic
 
+from libmetgem import human_readable_data
+
 from .. import config, ui, utils, workers, errors
-from ..libmetgem_wrapper import human_readable_data
 from ..utils.network import Network
 from ..utils import colors
 from ..logger import logger, debug

@@ -1,6 +1,9 @@
 from .base import BaseWorker
-from ..libmetgem_wrapper import generate_network
 from ..utils import AttrDict
+from ..config import RADIUS
+from libmetgem.network import generate_network
+
+import numpy as np
 
 
 class NetworkVisualizationOptions(AttrDict):

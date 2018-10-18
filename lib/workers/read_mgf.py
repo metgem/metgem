@@ -1,5 +1,7 @@
 from .base import BaseWorker
-from ..libmetgem_wrapper import mgf, filter_data_multi
+
+from libmetgem.mgf import read as read_mgf
+from libmetgem.filter import filter_data_multi
 
 
 class ReadMGFWorker(BaseWorker):
@@ -21,7 +23,7 @@ class ReadMGFWorker(BaseWorker):
         matched_peaks_window = self.options.matched_peaks_window
         min_matched_peaks_search = self.options.min_matched_peaks_search
 
-        for params, data in mgf.read(self.filename, ignore_unknown=True):
+        for params, data in read_mgf(self.filename, ignore_unknown=True):
             if self.isStopped():
                 self.canceled.emit()
                 return

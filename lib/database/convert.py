@@ -3,7 +3,8 @@ import os
 import numpy as np
 from sqlalchemy.exc import OperationalError
 
-from ..libmetgem_wrapper import mgf, INTENSITY
+from libmetgem.mgf import read as read_mgf
+from libmetgem import INTENSITY
 
 from ..utils import grouper
 from .session import create_session
@@ -34,7 +35,7 @@ def convert_polarity(string):
 
 
 def chunk_read_mgf(filename, chunk_size=1000):
-    yield from grouper(mgf.read(filename, ignore_unknown=False), n=chunk_size)
+    yield from grouper(read_mgf(filename, ignore_unknown=False), n=chunk_size)
 
 
 class DataBaseBuilder:

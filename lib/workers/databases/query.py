@@ -1,11 +1,12 @@
 from ..base import BaseWorker
-from ...libmetgem_wrapper import query
 from ..cosine import CosineComputationOptions
 from ...database import SpectraLibrary, Bank
 from ...config import SQL_PATH, DEBUG
 
 import operator
 from collections import namedtuple
+
+from libmetgem.database import query
 
 StandardsResult = namedtuple('StandardsResult', ['score', 'bank', 'id', 'text'])
 

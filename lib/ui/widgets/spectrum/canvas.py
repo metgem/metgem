@@ -4,7 +4,8 @@ from matplotlib.ticker import FuncFormatter, AutoMinorLocator
 
 import numpy as np
 
-from .base import BaseCanvas, MZ, INTENSITY
+from .base import BaseCanvas
+from libmetgem import MZ, INTENSITY
 
 
 class SpectrumCanvas(BaseCanvas):

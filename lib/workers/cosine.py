@@ -1,6 +1,7 @@
 from .base import BaseWorker
-from ..libmetgem_wrapper import compute_distance_matrix
 from ..utils import AttrDict
+
+from libmetgem.cosine import compute_distance_matrix
 
 
 class CosineComputationOptions(AttrDict):
