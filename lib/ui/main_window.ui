@@ -579,7 +579,7 @@
   <action name="actionProcessFile">
    <property name="icon">
     <iconset resource="ui.qrc">
-     <normaloff>:/icons/images/system-run.svg</normaloff>:/icons/images/system-run.svg</iconset>
+     <normaloff>:/icons/images/import-mgf.svg</normaloff>:/icons/images/import-mgf.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Process New MGF File...</string>
@@ -1079,7 +1079,7 @@
   <action name="actionImportGroupMapping">
    <property name="icon">
     <iconset resource="ui.qrc">
-     <normaloff>:/icons/images/mapping.svg</normaloff>:/icons/images/mapping.svg</iconset>
+     <normaloff>:/icons/images/import-mapping.svg</normaloff>:/icons/images/import-mapping.svg</iconset>
    </property>
    <property name="text">
     <string>Import &amp;Group Mapping</string>
