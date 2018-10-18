@@ -13,8 +13,8 @@ class SpectrumCanvas(BaseCanvas):
     def __init__(self, parent=None, spectrum1_data=None, spectrum2_data=None, title=None):
         self._spectrum1_data = None
         self._spectrum2_data = None
-        self._spectrum1_label = None
-        self._spectrum2_label = None
+        self._spectrum1_parent = None
+        self._spectrum2_parent = None
         self._spectrum1_idx = None
         self._spectrum2_idx = None
         self._spectrum1_plot = None
@@ -43,6 +43,15 @@ class SpectrumCanvas(BaseCanvas):
         # Place X minor ticks
         self.axes.xaxis.set_minor_locator(AutoMinorLocator())
 
+    def format_label(self, idx, parent):
+        if idx is not None:
+            if parent is not None:
+                return f"{idx+1} ($m/z$ {parent})"
+            else:
+                return f"{idx+1}"
+        else:
+            return
+
     def _set_data(self, type_, data):
         self.axes.clear()
 
@@ -61,19 +70,20 @@ class SpectrumCanvas(BaseCanvas):
             if self.toolbar is not None:
                 self.toolbar.setVisible(True)
 
-            self._spectrum1_plot = self.plot_spectrum(self._spectrum1_data, colors='r', label=self._spectrum1_label)
+            label = self.format_label(self._spectrum1_idx, self._spectrum1_parent)
+            self._spectrum1_plot = self.plot_spectrum(self._spectrum1_data, colors='r', label=label)
             if self._spectrum2_data is not None:
-                self._spectrum2_plot = self.plot_spectrum(self._spectrum2_data, yinverted=True, colors='b',
-                                                          label=self._spectrum2_label)
+                label = self.format_label(self._spectrum2_idx, self._spectrum2_parent)
+                self._spectrum2_plot = self.plot_spectrum(self._spectrum2_data, yinverted=True,
+                                                          colors='b', label=label)
                 self.axes.set_xmax(max(self._spectrum1_data.max(), self._spectrum2_data.max()) + 50)
             else:
                 self._spectrum2_plot = None
                 self.axes.set_xmax(self._spectrum1_data.max() + 50)
 
             self.axes.axhline(0, color='k', linewidth=0.5)
-            handles = [handle for handle, label in ((self._spectrum1_plot, self._spectrum1_label),
-                                                    (self._spectrum2_plot, self._spectrum2_label))
-                       if handle is not None and label is not None]
+            handles = [handle for handle in (self._spectrum1_plot, self._spectrum2_plot)
+                       if handle is not None and handle.get_label() is not None]
             if len(handles) > 0:
                 self.axes.legend(handles=handles)
             self.dataLoaded.emit()
@@ -94,14 +104,14 @@ class SpectrumCanvas(BaseCanvas):
         self._set_data('spectrum1', data)
 
     @pyqtProperty(str)
-    def spectrum1_label(self):
-        return self._spectrum1_label
+    def spectrum1_parent(self):
+        return self._spectrum1_parent
 
-    @spectrum1_label.setter
-    def spectrum1_label(self, label):
-        self._spectrum1_label = label
+    @spectrum1_parent.setter
+    def spectrum1_parent(self, mz):
+        self._spectrum1_parent = mz
         if self._spectrum1_plot is not None:
-            self._spectrum1_plot.set_label(label)
+            self._spectrum1_plot.set_label(self.format_label(self._spectrum1_idx, self._spectrum1_parent))
 
     @pyqtProperty(int)
     def spectrum1_index(self):
@@ -110,6 +120,8 @@ class SpectrumCanvas(BaseCanvas):
     @spectrum1_index.setter
     def spectrum1_index(self, idx):
         self._spectrum1_idx = idx
+        if self._spectrum1_plot is not None:
+            self._spectrum1_plot.set_label(self.format_label(self._spectrum1_idx, self._spectrum1_parent))
 
     @pyqtProperty(np.ndarray)
     def spectrum2(self):
@@ -120,22 +132,24 @@ class SpectrumCanvas(BaseCanvas):
         self._set_data('spectrum2', data)
 
     @pyqtProperty(str)
-    def spectrum2_label(self):
-        return self._spectrum2_label
+    def spectrum2_parent(self):
+        return self._spectrum2_parent
 
-    @spectrum2_label.setter
-    def spectrum2_label(self, label):
-        self._spectrum2_label = label
+    @spectrum2_parent.setter
+    def spectrum2_parent(self, mz):
+        self._spectrum2_parent = mz
         if self._spectrum2_plot is not None:
-            self._spectrum2_plot.set_label(label)
+            self._spectrum2_plot.set_label(self.format_label(self._spectrum2_idx, self._spectrum2_parent))
 
     @pyqtProperty(int)
-    def spectrum1_index(self):
-        return self._spectrum1_idx
+    def spectrum2_index(self):
+        return self._spectrum2_idx
 
-    @spectrum1_index.setter
-    def spectrum1_index(self, idx):
-        self._spectrum1_idx = idx
+    @spectrum2_index.setter
+    def spectrum2_index(self, idx):
+        self._spectrum2_idx = idx
+        if self._spectrum2_plot is not None:
+            self._spectrum2_plot.set_label(self.format_label(self._spectrum2_idx, self._spectrum2_parent))
 
     @pyqtProperty(str)
     def title(self):
@@ -162,3 +176,42 @@ class SpectrumCanvas(BaseCanvas):
                 min_ = 0
 
             self.axes.set_ylim(-min_ - self.Y_SPACING, max_ + self.Y_SPACING)
+
+    def get_supported_filetypes(self):
+        types = super().get_supported_filetypes()
+        types['mgf'] = 'Mascot Generic Format'
+        return types
+
+    def get_supported_filetypes_grouped(self):
+        types = super().get_supported_filetypes_grouped()
+        types['Mascot Generic Format'] = ['mgf']
+        return types
+
+    def get_default_filetype(self):
+        return 'mgf'
+
+    def get_default_filename(self):
+        if self.spectrum1 is not None and self.spectrum2 is not None:
+            return f"spectra{self.spectrum1_index+1}_{self.spectrum2_index+1}.mgf"
+
+        if self.spectrum1 is not None or self.spectrum2 is not None:
+            idx = self.spectrum1_index if self.spectrum1_index is not None else self.spectrum2_index
+            return f"spectrum{idx+1}.mgf"
+
+        return "spectrum.mgf"
+
+    def print_mgf(self, fname, **kwargs):
+        def save_mgf(f, pepmass, data):
+            if data is not None:
+                f.write("BEGIN IONS\n")
+                f.write(f"PEPMASS={pepmass}\n")
+                for row in data:
+                    f.write(f"{row[MZ]}\t{row[INTENSITY]}\n")
+                f.write("END IONS\n")
+                f.write("\n")
+
+        if self.spectrum1 is not None or self.spectrum2 is not None:
+            with open(fname, 'w', encoding="utf-8") as f:
+                save_mgf(f, self.spectrum1_parent, self.spectrum1)
+                save_mgf(f, self.spectrum2_parent, self.spectrum2)
+

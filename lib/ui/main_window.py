@@ -584,9 +584,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 QMessageBox.warning(self, None, 'Selected spectrum does not exists.')
             else:
                 # Set data as first or second spectrum
-                label = f"{node_idx+1} ($m/z$ {mz_parent})"
                 if type_ == 'compare':
-                    score = self.network.scores[self.cvSpectrum.spectrum1_index, node_idx]\
+                    score = self.network.scores[self.cvSpectrum.spectrum1_index, node_idx] \
                         if self.cvSpectrum.spectrum1_index is not None else None
                     set_spectrum = self.cvSpectrum.set_spectrum2
                 else:
@@ -595,7 +594,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                     set_spectrum = self.cvSpectrum.set_spectrum1
                 if score is not None:
                     self.cvSpectrum.set_title(f'Score: {score:.4f}')
-                set_spectrum(data, node_idx, label)
+                set_spectrum(data, node_idx, mz_parent)
 
                 # Show spectrum tab
                 self.dockSpectra.show()

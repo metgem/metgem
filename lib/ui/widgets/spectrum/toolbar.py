@@ -54,7 +54,7 @@ class SpectrumNavigationToolbar(NavigationToolbar):
         self.custom_basedir = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'images')
 
         self.toolitems = [t for t in self.toolitems if
-                          t[0] in ('Home', 'Back', 'Forward', None, 'Pan', 'Zoom')]
+                          t[0] in ('Home', 'Back', 'Forward', None, 'Pan', 'Zoom', 'Save')]
 
         if self._extended_mode:
             self.toolitems.extend([('Reset', 'Reset data', 'reset', 'reset_data')])
