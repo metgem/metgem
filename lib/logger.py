@@ -37,5 +37,7 @@ def debug(func):
             out = func(*args, **kwargs)
             logger.debug(f"Finished {func.__name__} -> {out}")
             return out
+        else:
+            return func(*args, **kwargs)
 
     return new_func
