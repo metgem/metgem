@@ -1,11 +1,10 @@
 import os
 import sys
 import traceback
+import logging
 
 from PyQt5.QtCore import QCoreApplication
 from PyQt5.QtWidgets import QMessageBox, qApp
-
-from .logger import logger
 
 
 class UserRequestedStopError(Exception):
@@ -39,6 +38,7 @@ def exceptionHandler(exctype, value, trace):
         msg = f"{exctype.__name__} in {trace.tb_frame.f_code.co_name}"
     else:
         msg = exctype.__name__
+    logger = logging.getLogger()
     logger.error(msg, exc_info=(exctype, value, trace))
     msg = QMessageBox(qApp.activeWindow())
     msg.setWindowTitle("Unhandled exception")

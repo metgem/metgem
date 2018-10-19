@@ -1,7 +1,7 @@
 from ..base import BaseWorker
 from ..cosine import CosineComputationOptions
 from ...database import SpectraLibrary, Bank
-from ...config import SQL_PATH, DEBUG
+from ...config import SQL_PATH, get_debug_flag
 
 import operator
 from collections import namedtuple
@@ -66,7 +66,7 @@ class QueryDatabasesWorker(BaseWorker):
             return
 
         # Get list of data banks
-        with SpectraLibrary(SQL_PATH, echo=DEBUG) as lib:
+        with SpectraLibrary(SQL_PATH, echo=get_debug_flag()) as lib:
             bank_names = dict(lib.query(Bank.id, Bank.name).all())
 
         # Re-organize results

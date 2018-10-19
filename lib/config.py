@@ -14,8 +14,8 @@ try:
 except (FileNotFoundError, IOError):
     LICENSE_TEXT = ""
 
-DEBUG = os.getenv('DEBUG_MODE', 'false').lower() in ('true', '1')
-EMBED_JUPYTER = os.getenv('EMBED_JUPYTER', 'false').lower() in ('true', '1')
+DEBUG = False
+EMBED_JUPYTER = False
 
 if sys.platform.startswith('win'):
     USER_PATH = os.path.join(os.path.expandvars(r'%APPDATA%'), 'MetGem')
@@ -42,3 +42,21 @@ if not os.path.exists(LOG_PATH):
 
 if not os.path.exists(STYLES_PATH):
     os.makedirs(STYLES_PATH)
+
+
+def get_debug_flag() -> bool:
+    return DEBUG
+
+
+def set_debug_flag(val: bool):
+    global DEBUG
+    DEBUG = val
+
+
+def get_jupyter_flag() -> bool:
+    return EMBED_JUPYTER
+
+
+def set_jupyter_flag(val: bool):
+    global EMBED_JUPYTER
+    EMBED_JUPYTER = val

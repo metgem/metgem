@@ -9,7 +9,7 @@ UI_FILE = os.path.join(os.path.dirname(__file__), 'query_databases_dialog.ui')
 from .widgets import QueryDatabasesOptionsWidget, AutoToolTipItemDelegate
 from ..workers.databases import QueryDatabasesOptions
 from ..database import SpectraLibrary, Bank
-from ..config import SQL_PATH, DEBUG
+from ..config import SQL_PATH, get_debug_flag
 
 QueryDatabasesDialogUI, QueryDatabasesDialogBase = uic.loadUiType(UI_FILE, from_imports='lib.ui', import_from='lib.ui')
 
@@ -37,7 +37,7 @@ class QueryDatabasesDialog(QueryDatabasesDialogBase, QueryDatabasesDialogUI):
         self.lstDatabases.setFocus()
         self.lstDatabases.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.lstDatabases.setItemDelegate(AutoToolTipItemDelegate())
-        with SpectraLibrary(SQL_PATH, echo=DEBUG) as lib:
+        with SpectraLibrary(SQL_PATH, echo=get_debug_flag()) as lib:
             for bank in lib.query(Bank):
                 item = QListWidgetItem(bank.name)
                 item.setData(QueryDatabasesDialog.IdsRole, bank.id)

@@ -20,7 +20,7 @@ from libmetgem import human_readable_data
 from .. import config, ui, utils, workers, errors
 from ..utils.network import Network
 from ..utils import colors
-from ..logger import logger, debug
+from ..logger import get_logger, debug
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'main_window.ui')
 if getattr(sys, 'frozen', False):
@@ -35,6 +35,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        self._logger = get_logger()
 
         # Keep track of unsaved changes
         self._has_unsaved_changes = False
@@ -339,13 +341,13 @@ class MainWindow(MainWindowBase, MainWindowUI):
         super().showEvent(event)
 
     def closeEvent(self, event):
-        if not config.DEBUG:
+        if not config.get_debug_flag():
             reply = self.confirm_save_changes()
             if reply == QMessageBox.Cancel:
                 event.ignore()
                 return
 
-        if not config.DEBUG and self._workers:
+        if not config.get_debug_flag() and self._workers:
             reply = QMessageBox.question(self, None,
                                          "There is process running. Do you really want to exit?",
                                          QMessageBox.Close | QMessageBox.Cancel)
@@ -476,7 +478,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
             cy = CyRestClient()
 
-            logger.debug('Creating exportable copy of the graph object')
+            self._logger.debug('Creating exportable copy of the graph object')
             g = self.network.graph.copy()
             for attr in g.vs.attributes():
                 if attr.startswith('__'):
@@ -494,7 +496,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                         g.es[attr] = [str(x+1) for x in g.es[attr]]
 
             # cy.session.delete()
-            logger.debug('CyREST: Creating network')
+            self._logger.debug('CyREST: Creating network')
             g_cy = cy.network.create_from_igraph(g)
 
             logger.debug('CyREST: Set layout')
@@ -504,23 +506,23 @@ class MainWindow(MainWindowBase, MainWindowUI):
             positions = [(suid, x, y) for suid, (x, y) in zip(g_cy.get_nodes()[::-1], layout)]
             cy.layout.apply_from_presets(network=g_cy, positions=positions)
 
-            logger.debug('CyREST: Set style')
+            self._logger.debug('CyREST: Set style')
             style_js = ui.widgets.style_to_cytoscape(view.scene().networkStyle())
             style = cy.style.create(style_js['title'], style_js)
             cy.style.apply(style, g_cy)
         except (ConnectionRefusedError, requests.ConnectionError):
             QMessageBox.information(self, None,
                                     'Please launch Cytoscape before trying to export.')
-            logger.error('Cytoscape was not launched.')
+            self._logger.error('Cytoscape was not launched.')
         except json.decoder.JSONDecodeError:
             QMessageBox.information(self, None,
                                     'Cytoscape was not ready to receive data. Please try again.')
-            logger.error('Cytoscape was not ready to receive data.')
+            self._logger.error('Cytoscape was not ready to receive data.')
         except ImportError:
             QMessageBox.information(self, None,
                                     ('py2tocytoscape is required for this action '
                                      'https://pypi.python.org/pypi/py2cytoscape).'))
-            logger.error('py2cytoscape not found.')
+            self._logger.error('py2cytoscape not found.')
 
     @debug
     def on_export_as_image_triggered(self, type_):
