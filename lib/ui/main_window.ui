@@ -588,7 +588,7 @@
     <string>Open and process a new MGF file</string>
    </property>
    <property name="statusTip">
-    <string>Open and procress a new MGF file</string>
+    <string>Open and process a new MGF file</string>
    </property>
   </action>
   <action name="actionQuit">
