@@ -93,6 +93,8 @@ class DownloadGNPSDatabasesWorker(BaseWorker):
         self.desc = 'Downloading databases...'
 
     def run(self):
+        id_ = None
+        unreachable_ids = []
         try:
             with ftplib.FTP(FTP_URL) as ftp:
                 ftp.login()
@@ -103,6 +105,7 @@ class DownloadGNPSDatabasesWorker(BaseWorker):
                     try:
                         size = ftp.size(f'{id_}.mgf')
                     except ftplib.error_perm:
+                        unreachable_ids.append(id_)
                         self._filesizes[id_] = 0
                     else:
                         self._filesizes[id_] = size
@@ -113,6 +116,9 @@ class DownloadGNPSDatabasesWorker(BaseWorker):
                     if self.isStopped():
                         self.canceled.emit()
                         return
+
+                    if self._filesizes[id_] == 0:
+                        continue
 
                     path = os.path.join(self.path, f'{id_}.mgf')
                     with open(path, 'wb') as f:
@@ -125,7 +131,14 @@ class DownloadGNPSDatabasesWorker(BaseWorker):
                                 self.canceled.emit()
 
                         ftp.retrbinary(f'RETR {id_}.mgf', write_callback)
+
+            if len(unreachable_ids) > 0:
+                w = UserWarning("One or more databases were not accessible in the remote server:\n{}"
+                                .format(", ".join(unreachable_ids)))
+                self.error.emit(w)
+
             return True
         except ftplib.all_errors as e:
+            e.id = id_
             self.error.emit(e)
             return

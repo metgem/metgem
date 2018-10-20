@@ -1,3 +1,9 @@
+from .widgets import AutoToolTipItemDelegate
+from ..workers import WorkerSet
+from ..workers import (ListGNPSDatabasesWorker, DownloadGNPSDatabasesWorker,
+                       GetGNPSDatabasesMtimeWorker, ConvertDatabasesWorker)
+from .progress_dialog import ProgressDialog
+
 import os
 from datetime import datetime
 
@@ -10,12 +16,6 @@ from PyQt5.QtCore import Qt, QSize
 from PyQt5 import uic
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'download_databases_dialog.ui')
-
-from .widgets import AutoToolTipItemDelegate
-from ..workers import WorkerSet
-from ..workers import (ListGNPSDatabasesWorker, DownloadGNPSDatabasesWorker,
-                       GetGNPSDatabasesMtimeWorker, ConvertDatabasesWorker)
-from .progress_dialog import ProgressDialog
 
 DownloadDatabasesDialogUI, DownloadDatabasesDialogBase = uic.loadUiType(UI_FILE,
                                                                         from_imports='lib.ui',
@@ -111,8 +111,15 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
             QMessageBox.warning(self, None,
                                 'Connection failed. Please check your network connection.')
         elif isinstance(e, ftplib.all_errors):
-            QMessageBox.warning(self, None,
-                                f'Connection failed. Please check your network connection.\n{str(e)}')
+            if e.id is not None:
+                QMessageBox.warning(self, None,
+                                    f'Connection failed while downloading {e.id} database.\n'
+                                    f'Please check your network connection.\n{str(e)}')
+            else:
+                QMessageBox.warning(self, None,
+                                    f'Connection failed. Please check your network connection.\n{str(e)}')
+        else:
+            QMessageBox.warning(self, None, str(e))
 
     def select(self, type_):
         for i in range(self.lstDatabases.count()):
@@ -221,4 +228,4 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
         return worker
 
     def getValues(self):
-        return None
+        return
