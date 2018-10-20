@@ -499,7 +499,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self._logger.debug('CyREST: Creating network')
             g_cy = cy.network.create_from_igraph(g)
 
-            logger.debug('CyREST: Set layout')
+            self._logger.debug('CyREST: Set layout')
             layout = np.empty((g.vcount(), 2))
             for item in view.scene().nodes():
                 layout[item.index()] = (item.x(), item.y())
