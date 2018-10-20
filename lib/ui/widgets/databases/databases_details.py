@@ -67,6 +67,8 @@ class SpectrumDataWidgetMapper(QDataWidgetMapper):
             property_name = b'spectrum1'
             if isinstance(widget, SpectrumWidget):
                 widget = widget.canvas
+        elif section == Spectrum.pepmass:
+            property_name = b'spectrum1_parent'
         elif section == Spectrum.inchi:
             property_name = b'inchi'
         elif section == Spectrum.smiles:
@@ -113,6 +115,7 @@ class SpectrumDetailsWidget(QWidget):
         self._mapper.addMapping(self.lblDataCollector, Spectrum.datacollector_id)
         self._mapper.addMapping(self.lblSubmitUser, Spectrum.submituser_id)
         self._mapper.addMapping(self.widgetSpectrum, Spectrum.peaks)
+        self._mapper.addMapping(self.widgetSpectrum, Spectrum.pepmass)
         self._mapper.addMapping(self.widgetStructure, Spectrum.inchi)
         self._mapper.addMapping(self.widgetStructure, Spectrum.smiles)
 

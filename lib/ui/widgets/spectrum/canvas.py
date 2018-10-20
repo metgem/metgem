@@ -1,4 +1,4 @@
-from PyQt5.QtCore import pyqtProperty
+from PyQt5.QtCore import pyqtProperty, QVariant
 
 from matplotlib.ticker import FuncFormatter, AutoMinorLocator
 
@@ -83,7 +83,8 @@ class SpectrumCanvas(BaseCanvas):
 
             self.axes.axhline(0, color='k', linewidth=0.5)
             handles = [handle for handle in (self._spectrum1_plot, self._spectrum2_plot)
-                       if handle is not None and handle.get_label() is not None]
+                       if handle is not None and handle.get_label() is not None
+                       and not handle.get_label().startswith('_')]
             if len(handles) > 0:
                 self.axes.legend(handles=handles)
             self.dataLoaded.emit()
@@ -95,7 +96,7 @@ class SpectrumCanvas(BaseCanvas):
 
         self.draw()
 
-    @pyqtProperty(np.ndarray)
+    @pyqtProperty(QVariant)
     def spectrum1(self):
         return self._spectrum1_data
 
@@ -123,7 +124,7 @@ class SpectrumCanvas(BaseCanvas):
         if self._spectrum1_plot is not None:
             self._spectrum1_plot.set_label(self.format_label(self._spectrum1_idx, self._spectrum1_parent))
 
-    @pyqtProperty(np.ndarray)
+    @pyqtProperty(QVariant)
     def spectrum2(self):
         return self._spectrum2_data
 
@@ -196,7 +197,8 @@ class SpectrumCanvas(BaseCanvas):
 
         if self.spectrum1 is not None or self.spectrum2 is not None:
             idx = self.spectrum1_index if self.spectrum1_index is not None else self.spectrum2_index
-            return f"spectrum{idx+1}.mgf"
+            if idx is not None:
+                return f"spectrum{idx+1}.mgf"
 
         return "spectrum.mgf"
 
@@ -204,7 +206,8 @@ class SpectrumCanvas(BaseCanvas):
         def save_mgf(f, pepmass, data):
             if data is not None:
                 f.write("BEGIN IONS\n")
-                f.write(f"PEPMASS={pepmass}\n")
+                if pepmass is not None:
+                    f.write(f"PEPMASS={pepmass}\n")
                 for row in data:
                     f.write(f"{row[MZ]}\t{row[INTENSITY]}\n")
                 f.write("END IONS\n")

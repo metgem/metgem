@@ -1,4 +1,4 @@
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtProperty
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QSizePolicy, QVBoxLayout
 
 from .toolbar import SpectrumNavigationToolbar
@@ -22,6 +22,14 @@ class SpectrumWidget(QWidget):
         self.setLayout(layout)
 
         self.toolbar.setVisible(False)
+
+    @pyqtProperty(str)
+    def spectrum1_parent(self):
+        return self.canvas.spectrum1_parent
+
+    @spectrum1_parent.setter
+    def spectrum1_parent(self, mz):
+        self.canvas.spectrum1_parent = mz
 
     def set_spectrum1(self, data, idx=None, parent=None):
         if data is not None:

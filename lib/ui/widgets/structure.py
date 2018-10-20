@@ -29,11 +29,12 @@ class SecondColumnMapping(QWidget):
 
     @pyqtProperty(str)
     def smiles(self):
-        return self.parent()._smiles
+        return self.parent().smiles
 
     @smiles.setter
     def smiles(self, smiles):
         self.parent().smiles = smiles
+
 
 class StructureSvgWidget(QSvgWidget):
     def __init__(self, *args, **kwargs):
