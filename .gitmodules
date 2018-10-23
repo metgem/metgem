@@ -1,13 +1,13 @@
 
 [submodule "libmetgem"]
 	path = libmetgem
-	url = ../libmetgem.git
+	url = https://github.com/metgem/libmetgem.git
 [submodule "NetworkView"]
 	path = NetworkView
-	url = ../NetworkView.git
+	url = https://github.com/metgem/NetworkView.git
 [submodule "forceatlas2"]
 	path = forceatlas2
-	url = ../forceatlas2.git
+	url = https://github.com/metgem/forceatlas2.git
 [submodule "metgem-docs"]
 	path = metgem-docs
-	url = ../metgem-docs.git
+	url = https://github.com/metgem/metgem-docs.git
