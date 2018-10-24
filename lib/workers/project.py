@@ -170,7 +170,7 @@ class LoadProjectWorker(BaseWorker):
                     return network
                 else:
                     raise UnsupportedVersionError(f"Unrecognized file format version (version={version}).")
-        except (FileNotFoundError, KeyError, UnsupportedVersionError) as e:
+        except (FileNotFoundError, KeyError, zipfile.BadZipFile, UnsupportedVersionError) as e:
             self.error.emit(e)
             return
 

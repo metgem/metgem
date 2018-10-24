@@ -1,6 +1,7 @@
 import sys
 import os
 import json
+import zipfile
 
 import requests
 
@@ -1166,6 +1167,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 QMessageBox.warning(self, None, str(e))
             elif isinstance(e, KeyError):
                 QMessageBox.critical(self, None, str(e))
+            elif isinstance(e, zipfile.BadZipFile):
+                QMessageBox.warning(self, None,
+                                    f"Selected file is not a valid {QCoreApplication.applicationName()} file")
             else:
                 raise e
 
