@@ -43,6 +43,10 @@ class ReadMetadataWorker(BaseWorker):
             elif ext in (".csv", ".txt", ".tsv"):
                 with open(self.filename, encoding='utf-8') as f:
                     data = pd.read_csv(f, **kwargs)   # Workaround for Pandas's bug #15086
+
+            # Drop columns full of na values
+            data = data.dropna(how='all', axis=1)
+
             if data is not None and data.size > 0:
                 return data
         except(FileNotFoundError, IOError, pd.errors.ParserError, pd.errors.EmptyDataError, ValueError) as e:
