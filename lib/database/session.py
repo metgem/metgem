@@ -4,6 +4,7 @@ from sqlalchemy.orm import sessionmaker
 
 from .models import Base
 
+
 def create_session(filename=None, echo=False, drop_all=False, read_only=False):
     if read_only:
         engine = create_engine(f'sqlite:///', echo=echo,

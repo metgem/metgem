@@ -1,6 +1,6 @@
-from PyQt5.QtGui import QPainter, QMouseEvent
+from PyQt5.QtGui import QPainter, QMouseEvent, QPalette
 from PyQt5.QtWidgets import QTableView, QAbstractButton, QHeaderView
-from PyQt5.QtCore import Qt, QObject, QEvent, QRect, QItemSelectionModel, pyqtSignal, QModelIndex
+from PyQt5.QtCore import Qt, QObject, QEvent, QRect, QItemSelectionModel, pyqtSignal, QTimer, QModelIndex
 
 from lib.ui.widgets.delegates import StandardsResultsDelegate
 from .model import ProxyModel
@@ -124,6 +124,8 @@ class NodeTableView(MetadataTableView):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self.timers = {}
+
         header = HeaderView(Qt.Horizontal, self)
         header.setHighlightSections(True)
         header.setSectionsClickable(True)
@@ -144,6 +146,31 @@ class NodeTableView(MetadataTableView):
         selection = model.selection()
         selection.select(index, index)
         model.select(selection, QItemSelectionModel.Select | QItemSelectionModel.Columns)
+
+    def setColumnBlinking(self, section: int, blink: bool):
+        if section in self.timers:
+            self.timers[section].stop()
+            del self.timers[section]
+            self.model().setHeaderData(section, Qt.Horizontal, None, role=Qt.BackgroundColorRole)
+
+        if blink:
+            timer = self.timers[section] = QTimer()
+            colored = True
+
+            def update():
+                nonlocal colored
+                color = self.palette().color(QPalette.Highlight) if colored else None
+                if color is not None:
+                    color.setAlpha(100)
+                self.model().setHeaderData(section, Qt.Horizontal, color, role=Qt.BackgroundColorRole)
+                colored = not colored
+
+            timer.timeout.connect(update)
+            timer.start(500)
+
+    def currentChanged(self, current: QModelIndex, previous: QModelIndex):
+        self.setColumnBlinking(current.column(), False)
+        return super().currentChanged(current, previous)
 
 
 class EdgeTableView(MetadataTableView):

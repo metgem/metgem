@@ -12,7 +12,7 @@ import sqlalchemy
 from PyQt5.QtWidgets import (QDialog, QFileDialog, QMessageBox, QWidget, QMenu, QActionGroup,
                              QAction, QDockWidget, qApp, QWidgetAction, QTableView, QComboBox)
 from PyQt5.QtCore import QSettings, Qt, QCoreApplication
-from PyQt5.QtGui import QPainter, QImage, QCursor, QColor, QKeyEvent, QIcon
+from PyQt5.QtGui import QPainter, QImage, QCursor, QColor, QKeyEvent, QIcon, QFontMetrics
 
 from PyQt5 import uic
 
@@ -1195,8 +1195,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 self.tvNodes.model().sourceModel().beginResetModel()
                 type_ = "analogs" if options.analog_search else "standards"
                 # Update db_results with these new results
+                num_results = 0
                 for row in result:
                     if result[row][type_]:
+                        num_results += len(result[row][type_])
                         if row in self.network.db_results:
                             self.network.db_results[row][type_] = result[row][type_]
                         else:
@@ -1207,12 +1209,23 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 self.tvNodes.model().sourceModel().endResetModel()
 
                 # Show column if db_results is not empty
+                was_hidden = self.tvNodes.isColumnHidden(1)
+                self.tvNodes.setColumnBlinking(1, True)
                 self.tvNodes.setColumnHidden(1, self.network.db_results is None or len(self.network.db_results) == 0)
+                if was_hidden:
+                    fm = QFontMetrics(self.tvNodes.font())
+                    width = fm.width(self.tvNodes.model().headerData(1, Qt.Horizontal)) + 36
+                    self.tvNodes.setColumnWidth(1, width)
+
+                QMessageBox.information(self, None, f'{num_results} results found.')
+            else:
+                QMessageBox.warning(self, None, 'No results found.')
 
         def error(e):
             if e.__class__ == sqlalchemy.exc.OperationalError:
                 QMessageBox.warning(self, None, 'You have to download at least one database before trying to query it.')
 
+        worker.started.connect(lambda: self.tvNodes.setColumnBlinking(1, False))
         worker.finished.connect(query_finished)
         worker.error.connect(error)
         return worker

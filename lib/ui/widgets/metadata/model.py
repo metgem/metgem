@@ -1,5 +1,5 @@
 import numpy as np
-from PyQt5.QtCore import Qt, QAbstractTableModel, QModelIndex, QSortFilterProxyModel, QSettings, pyqtSignal
+from PyQt5.QtCore import Qt, QAbstractTableModel, QModelIndex, QSortFilterProxyModel, QSettings
 from PyQt5.QtGui import QIcon
 
 try:
@@ -59,7 +59,7 @@ class NodesModel(QAbstractTableModel):
         self.mzs = []
         self.db_results = None
         self.headers = None
-        self.headers_colors = None
+        self.headers_colors = {}
         self.mappings = {}
 
     def rowCount(self, parent=QModelIndex()):
@@ -195,22 +195,24 @@ class NodesModel(QAbstractTableModel):
             if orientation == Qt.Horizontal and self.headers_colors is not None and section in self.headers_colors:
                 return self.headers_colors[section]
         elif role == Qt.DecorationRole:
-            if orientation == Qt.Horizontal and section - 2 in self.mappings:
-                return QIcon(":/icons/images/mapping.svg")
+            if orientation == Qt.Horizontal:
+                if section == 1:
+                    return QIcon(":/icons/images/library.svg")
+                elif section - 2 in self.mappings:
+                    return QIcon(":/icons/images/mapping.svg")
         else:
             super().headerData(section, orientation, role)
 
     def setHeaderData(self, section: int, orientation: int, value, role=Qt.EditRole):
         if role == Qt.BackgroundColorRole:
-            if self.headers_colors is not None:
-                self.headers_colors[section] = value
-                self.headerDataChanged.emit(orientation, section, section)
-                return True
-        else:
-            super().setHeaderData(section, orientation, value, role)
+            self.headers_colors[section] = value
+            self.headerDataChanged.emit(orientation, section, section)
+            return True
+
+        return super().setHeaderData(section, orientation, value, role)
 
     def flags(self, index: QModelIndex):
-        return super().flags(index)| Qt.ItemIsEditable
+        return super().flags(index) | Qt.ItemIsEditable
 
 
 class EdgesModel(QAbstractTableModel):
