@@ -17,6 +17,8 @@ class ConvertDatabasesWorker(BaseWorker):
         self.desc = 'Converting databases...'
 
     def run(self):
+        converted_ids = []
+
         with DataBaseBuilder(os.path.join(self.input_path, 'spectra')) as db:
             for i, (id_, name) in enumerate(zip(self.ids, self.names)):
                 id_ = f'{id_}.mgf' if not id_.endswith('.mgf') else id_
@@ -24,4 +26,6 @@ class ConvertDatabasesWorker(BaseWorker):
                 if os.path.exists(path):
                     db.add_bank(path, name=name)
                 self.updated.emit(i)
-        return True
+                converted_ids.append(id_)
+
+        return converted_ids

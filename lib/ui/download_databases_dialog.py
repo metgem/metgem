@@ -1,13 +1,13 @@
 from .widgets import AutoToolTipItemDelegate
 from ..workers import WorkerSet
-from ..workers import (ListGNPSDatabasesWorker, DownloadGNPSDatabasesWorker,
+from ..workers import (ListDatabasesWorker, DownloadDatabasesWorker,
                        GetGNPSDatabasesMtimeWorker, ConvertDatabasesWorker)
 from .progress_dialog import ProgressDialog
 
 import os
 from datetime import datetime
 
-from requests.exceptions import ConnectionError
+from requests.exceptions import ConnectionError, RequestException
 import ftplib
 
 from PyQt5.QtWidgets import QListWidgetItem, QDialogButtonBox, QMessageBox
@@ -25,6 +25,7 @@ DownloadDatabasesDialogUI, DownloadDatabasesDialogBase = uic.loadUiType(UI_FILE,
 class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialogBase):
     IdsRole = Qt.UserRole + 1
     DescRole = Qt.UserRole + 2
+    OriginRole = Qt.UserRole + 3
 
     def __init__(self, *args, base_path=None, **kwargs):
         super().__init__(*args, **kwargs)
@@ -79,6 +80,7 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
             item.setCheckState(Qt.Unchecked)
             item.setData(DownloadDatabasesDialog.IdsRole, dict_item['ids'])
             item.setData(DownloadDatabasesDialog.DescRole, dict_item['desc'])
+            item.setData(DownloadDatabasesDialog.OriginRole, dict_item['origin'])
             self.lstDatabases.addItem(item)
 
         def process_finished():
@@ -87,7 +89,7 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
             worker = self.prepare_get_mtimes_worker()
             self._workers.add(worker)
 
-        worker = ListGNPSDatabasesWorker()
+        worker = ListDatabasesWorker()
         worker.itemReady.connect(update_list)
         worker.error.connect(self.on_error)
         worker.finished.connect(process_finished)
@@ -99,7 +101,7 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
             self._mtimes = worker.result()
             self.update_badges()
 
-        ids = self.get_ids()
+        ids = self.get_ids(origin=['GNPS'])
         worker = GetGNPSDatabasesMtimeWorker(ids)
         worker.finished.connect(process_finished)
 
@@ -110,8 +112,8 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
             self.close()
             QMessageBox.warning(self, None,
                                 'Connection failed. Please check your network connection.')
-        elif isinstance(e, ftplib.all_errors):
-            if e.id is not None:
+        elif isinstance(e, ftplib.all_errors) or isinstance(e, RequestException):
+            if hasattr(e.id) and e.id is not None:
                 QMessageBox.warning(self, None,
                                     f'Connection failed while downloading {e.id} database.\n'
                                     f'Please check your network connection.\n{str(e)}')
@@ -131,11 +133,12 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
             elif type_ == 'invert':
                 item.setCheckState(Qt.Checked if item.checkState() == Qt.Unchecked else Qt.Unchecked)
 
-    def get_ids(self, selected_only=False):
+    def get_ids(self, selected_only: bool=False, origin: list=[]):
         items = [self.lstDatabases.item(i) for i in range(self.lstDatabases.count())
                  if not selected_only or self.lstDatabases.item(i).checkState() == Qt.Checked]
         ids = [id_ for item in items for id_ in item.data(DownloadDatabasesDialog.IdsRole)
-               if item.data(DownloadDatabasesDialog.IdsRole) is not None]
+               if item.data(DownloadDatabasesDialog.IdsRole) is not None and
+               (not origin or item.data(DownloadDatabasesDialog.OriginRole) in origin)]
         return ids
 
     def check_selection(self, item):
@@ -203,12 +206,22 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
             self.update_badges()
 
         def download_finished():
-            self.update_badges()
-            worker = self.prepare_convert_databases_worker(ids)
-            if worker is not None:
-                self._workers.add(worker)
+            nonlocal worker
 
-        worker = DownloadGNPSDatabasesWorker(ids, self.base_path)
+            self.update_badges()
+            downloaded_ids, unreachable_ids = worker.result()
+
+            if unreachable_ids:
+                QMessageBox.warning(self, None,
+                                    "One or more databases were not accessible in the remote server:\n{}"
+                                    .format(", ".join(unreachable_ids)))
+
+            if downloaded_ids:
+                worker = self.prepare_convert_databases_worker(downloaded_ids)
+                if worker is not None:
+                    self._workers.add(worker)
+
+        worker = DownloadDatabasesWorker(ids, self.base_path)
         worker.error.connect(clean_up)
         worker.error.connect(self.on_error)
         worker.finished.connect(download_finished)
@@ -220,11 +233,25 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
             self.setEnabled(True)
             self.update_badges()
 
+        def conversion_finished():
+            nonlocal worker
+            converted_ids = worker.result()
+
+            clean_up()
+
+            num_converted = len(converted_ids)
+            if num_converted > 0:
+                QMessageBox.information(self, None,
+                                        f"{num_converted} librar{'y' if num_converted == 1 else 'ies'} "
+                                        "successfully downloaded.")
+            else:
+                QMessageBox.warning(self, None, "No library downloaded.")
+
         worker = ConvertDatabasesWorker(ids, output_path=self.base_path)
         worker.error.connect(clean_up)
         worker.error.connect(self.on_error)
         worker.canceled.connect(clean_up)
-        worker.finished.connect(clean_up)
+        worker.finished.connect(conversion_finished)
         return worker
 
     def getValues(self):

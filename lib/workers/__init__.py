@@ -8,7 +8,8 @@ from .read_mgf import ReadMGFWorker
 from .read_metadata import ReadMetadataOptions, ReadMetadataWorker
 from .read_group_mapping import ReadGroupMappingWorker
 from .project import LoadProjectWorker, SaveProjectWorker
-from .databases import (ListGNPSDatabasesWorker, DownloadGNPSDatabasesWorker,
+from .databases import (ListDatabasesWorker, DownloadDatabasesWorker,
                         GetGNPSDatabasesMtimeWorker, ConvertDatabasesWorker,
                         QueryDatabasesWorker, QueryDatabasesOptions,
                         StandardsResult)
+
