@@ -6,11 +6,11 @@
       <excludeFolder url="file://$MODULE_DIR$/packaging/build" />
       <excludeFolder url="file://$MODULE_DIR$/packaging/dist" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.6 virtualenv at E:\git\metgem\packaging" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.7 (metgem)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="TestRunnerService">
-    <option name="projectConfiguration" value="py.test" />
+    <option name="projectConfiguration" value="pytest" />
     <option name="PROJECT_TEST_RUNNER" value="py.test" />
   </component>
 </module>
