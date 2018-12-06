@@ -129,7 +129,7 @@
   <customwidget>
    <class>NetworkView</class>
    <extends>QGraphicsView</extends>
-   <header>lib/ui/widgets.h</header>
+   <header>PyQtNetworkView.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

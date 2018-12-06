@@ -1,3 +1,8 @@
+from .. import config, ui, utils, workers, errors
+from ..utils.network import Network
+from ..utils import colors
+from ..logger import get_logger, debug
+
 import sys
 import os
 import json
@@ -16,12 +21,10 @@ from PyQt5.QtGui import QPainter, QImage, QCursor, QColor, QKeyEvent, QIcon, QFo
 
 from PyQt5 import uic
 
+from PyQtNetworkView import NetworkScene, style_from_css, style_to_cytoscape
+
 from libmetgem import human_readable_data
 
-from .. import config, ui, utils, workers, errors
-from ..utils.network import Network
-from ..utils import colors
-from ..logger import get_logger, debug
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'main_window.ui')
 if getattr(sys, 'frozen', False):
@@ -50,7 +53,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         # Setup User interface
         self.setupUi(self)
+        self.gvNetwork.setScene(NetworkScene())
         self.gvNetwork.setFocus()
+        self.gvTSNE.setScene(NetworkScene())
 
         # Add model to table views
         self.tvNodes.setModel(ui.widgets.NodesModel(self))
@@ -508,7 +513,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             cy.layout.apply_from_presets(network=g_cy, positions=positions)
 
             self._logger.debug('CyREST: Set style')
-            style_js = ui.widgets.style_to_cytoscape(view.scene().networkStyle())
+            style_js = style_to_cytoscape(view.scene().networkStyle())
             style = cy.style.create(style_js['title'], style_js)
             cy.style.apply(style, g_cy)
         except (ConnectionRefusedError, requests.ConnectionError):
@@ -898,7 +903,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         settings.beginGroup('NetworkView')
         setting = settings.value('style', None)
-        style = ui.widgets.style_from_css(setting)
+        style = style_from_css(setting)
         self.gvNetwork.scene().setNetworkStyle(style)
         self.gvTSNE.scene().setNetworkStyle(style)
         settings.endGroup()
@@ -1015,7 +1020,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             scene.setNodesColors(colors)
 
         # Add edges
-        edges_attr = [(e.index, nodes[e.source], nodes[e.target], e['__weight'], e['__width'])
+        edges_attr = [(e.index, nodes[e.source], nodes[e.target], e['__width'])
                       for e in self.network.graph.es if not e.is_loop()]
         if edges_attr:
             scene.addEdges(*zip(*edges_attr))
