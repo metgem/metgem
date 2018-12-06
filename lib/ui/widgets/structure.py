@@ -10,19 +10,20 @@ try:
         from rdkit.Chem.inchi import MolFromInchi
 except ImportError:
     RDKIT_AVAILABLE = False
-    INCHI_AVAILABLE = False
+    RDKIT_INCHI = False
 else:
     RDKIT_AVAILABLE = True
+    RDKIT_INCHI = INCHI_AVAILABLE
 
 try:
     import pybel
     from lxml import etree
 except ImportError:
     OPENBABEL_AVAILABLE = False
-    INCHI_AVAILABLE = False
+    OPENBABEL_INCHI = False
 else:
     OPENBABEL_AVAILABLE = True
-    INCHI_AVAILABLE = 'inchi' in pybel.informats.keys()
+    OPENBABEL_INCHI = 'inchi' in pybel.informats.keys()
 
 
 class SecondColumnMapping(QWidget):
@@ -96,10 +97,11 @@ class StructureSvgWidget(QSvgWidget):
         # Try to render structure from InChI or SMILES
         if RDKIT_AVAILABLE:
             mol = None
-            if INCHI_AVAILABLE and self._inchi:  # Use InChI first
+            if RDKIT_INCHI and self._inchi:  # Use InChI first
                 mol = MolFromInchi(self._inchi)
             elif self._smiles is not None:  # If InChI not available, use SMILES as a fallback
                 mol = MolFromSmiles(self._smiles)
+
             if mol is not None:
                 if not mol.GetNumConformers():
                     rdDepictor.Compute2DCoords(mol)
@@ -114,7 +116,7 @@ class StructureSvgWidget(QSvgWidget):
         elif OPENBABEL_AVAILABLE:  # If RDkit not available, try to use OpenBabel
             mol = None
             try:
-                if INCHI_AVAILABLE and self._inchi:
+                if OPENBABEL_INCHI and self._inchi:
                     mol = pybel.readstring('inchi', self._inchi)
                 elif self._smiles:
                     mol = pybel.readstring('smiles', self._smiles)
