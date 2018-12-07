@@ -36,7 +36,7 @@ class SpectraModel(QAbstractTableModel):
                 if key in selection:
                     for res in selection[key]:
                         query = lib.query(Spectrum).options(joinedload('*'))\
-                            .filter(Spectrum.bank.has(name=res.bank), Spectrum.spectrumid == res.id)
+                            .filter(Spectrum.id == res.id)
                         self._data[key].append(query.first())
 
     def rowCount(self, parent=QModelIndex()):
