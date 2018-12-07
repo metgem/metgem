@@ -3,9 +3,19 @@
 import os
 import sys
 import glob
+
 from PyInstaller.utils.hooks import qt_plugins_binaries, get_module_file_attribute
 
-DEBUG = os.getenv('DEBUG_MODE', 'false').lower() in ('true', '1')
+# On Anaconda distributions, qt_plugins_binaries can't be found because QLibraryInfo returns wrong path
+import PyInstaller.utils.hooks.qt
+location = PyInstaller.utils.hooks.qt.pyqt5_library_info.location
+for k in location.keys():
+    if not os.path.exists(location[k]) and "Library" in location[k]:
+        s = location[k].split("Library")[1]
+        location[k] = os.path.join(sys.prefix, "Library" + s)
+    
+# if --debug flag is passed, make a debug release
+DEBUG = '--debug' in sys.argv
 
 pathex = []
 binaries = []
@@ -25,14 +35,19 @@ excludes.extend(['FixTk', 'tcl', 'tk', '_tkinter', 'tkinter', 'Tkinter', 'matplo
 # Remove lib2to3
 excludes.extend(['lib2to3'])
 
+# Try to locate Qt base directory
+qt_base_dir = os.path.join(os.path.dirname(get_module_file_attribute('PyQt5')), 'Qt')
+if not os.path.exists(qt_base_dir):
+    qt_base_dir = os.path.join(sys.prefix, 'Library')
+
 # Add some useful folders to path
 if sys.platform.startswith('win'):
-    pathex.append(sys.prefix + r'\Lib\site-packages\scipy\extra-dll')
+    pathex.append(os.path.join(sys.prefix, 'Lib', 'site-packages', 'scipy', 'extra-dll'))
 
 # Gather data files
-datas = [('../splash.png', ''),
+datas = [('../splash.png', '.'),
          ('../styles/*.css', 'styles'),
-         ('../LICENSE', ''),
+         ('../LICENSE', '.'),
          ('../lib/ui/*_rc.py', 'lib/ui'),
          ('../lib/ui/*.ui', 'lib/ui'),
          ('../lib/ui/widgets/images/*', 'lib/ui/widgets/images'),
@@ -46,12 +61,17 @@ if not sys.platform.startswith('darwin'):
 binaries.extend(qt_plugins_binaries('styles', namespace='PyQt5'))
 
 # Add pybel
-hiddenimports.extend(['pybel'])
+try:
+    import pybel
+except ImportError:
+    pass
+else:
+    hiddenimports.extend(['pybel'])
 
 # Adds Qt OpenGL
 hiddenimports.extend(['PyQt5.QtOpenGL'])
 if sys.platform.startswith('win'):
-    binaries.extend([(os.path.join(os.path.dirname(get_module_file_attribute('PyQt5')), 'Qt', 'bin', dll), r'PyQt5\Qt\bin')
+    binaries.extend([(os.path.join(qt_base_dir, 'bin', dll), r'PyQt5\Qt\bin')
                       for dll in ('libEGL.dll', 'libGLESv2.dll')])
     
 # Define path for build hooks
