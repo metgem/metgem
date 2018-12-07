@@ -116,15 +116,18 @@ exe = EXE(pyz,
           upx=False,
           console=DEBUG)
           
+coll_name = 'MetGem'
+if DEBUG:
+    coll_name += '_debug'
 coll = COLLECT(exe,
                a.binaries,
                a.zipfiles,
                a.datas,
                strip=False,
                upx=False,
-               name='MetGem')
+               name=coll_name)
                
-if sys.platform.startswith('darwin'):
+if sys.platform.startswith('darwin') and not DEBUG:
     app = BUNDLE(coll,
                  name='MetGem.app',
                  icon='main.icns',
