@@ -1,10 +1,8 @@
 import os
 import sys
-import glob
-import pkg_resources
 import shutil
 
-from invoke import task, call
+from invoke import task
 
 DIST = 'dist'
 NAME = 'MetGem'
@@ -31,21 +29,7 @@ if sys.platform.startswith('win'):
 
 
 @task
-def check_dependencies(ctx, build=False):
-    if build and sys.prefix == sys.base_prefix:
-        raise RuntimeError("Build should be done in a virtual env.")
-
-    with open('../requirements.txt', 'r') as f:
-        dependencies = f.readlines()
-
-    if build:
-        dependencies.append('pyinstaller>=3.3')
-
-        if sys.platform.startswith('darwin'):
-            dependencies.append('dmgbuild>=1.3')
-
-    pkg_resources.require(dependencies)
-
+def check_dependencies(ctx):
     if sys.platform.startswith('win') and not os.path.exists('bin'):
         print('Download binaries needed for build...', end='\t')
         download_file(WINDOWS_BIN_URL, 'bin.zip')
@@ -70,39 +54,10 @@ def clean(ctx, dist=False, bytecode=False, extra=''):
             ctx.run("rm -rf {}".format(pattern))
 
 
-@task(call(check_dependencies, build=True))
+@task(check_dependencies)
 def build(ctx, clean=False):
     exe(ctx, clean)
     installer(ctx)
-
-@task
-def build_modules(ctx):
-    lib_ext = '.pyd' if sys.platform == 'win32' else '.so'
-
-    packaging_dir = os.path.dirname(__file__)
-
-    # Build libmetgem extension
-    path = os.path.join(packaging_dir, '..', 'libmetgem')
-    ctx.run('pip uninstall -y libmetgem')
-    ctx.run(f'pushd {path} && python setup.py bdist_wheel && popd')
-    for wheel in glob.glob(os.path.join(path, 'dist', 'libmetgem*.whl')):
-        ctx.run(f'pip install {wheel}')
-
-    # Build force atlas 2 extension
-    path = os.path.join(packaging_dir, '..', 'forceatlas2')
-    ctx.run('pip uninstall -y fa2')
-    ctx.run(rf'pushd {path} && python setup.py bdist_wheel && popd')
-    for wheel in glob.glob(os.path.join(path, 'dist', 'fa2*.whl')):
-        ctx.run(f'pip install {wheel}')
-
-    # Build NetworkView extension
-    path = os.path.join(packaging_dir, '..', 'NetworkView')
-    module = os.path.join(path, 'modules', f'NetworkView{lib_ext}')
-    dest = os.path.join(packaging_dir, '..', 'lib', 'ui', 'widgets', 'network_view')
-    if not os.path.exists(module):
-        raise FileNotFoundError('Please compile NetworkView module before packaging.')
-    else:
-        shutil.copy(module, dest)
 
 @task(check_dependencies)
 def icon(ctx):
@@ -117,9 +72,8 @@ def rc(ctx):
     ctx.run("pyrcc5 ../lib/ui/ui.qrc -o ../lib/ui/ui_rc.py")
 
 
-@task(call(check_dependencies, build=True))
+@task(check_dependencies)
 def exe(ctx, clean=False):
-    build_modules(ctx)
     icon(ctx)
     rc(ctx)
     switchs = "--clean" if clean else ""
