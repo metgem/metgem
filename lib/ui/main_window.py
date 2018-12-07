@@ -921,7 +921,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.gvTSNE.scene().setNetworkStyle(style)
         settings.endGroup()
 
-    def reset_layout(self):
+    @debug
+    def reset_layout(self, *args):
         for w in self.findChildren(QDockWidget):
             self.removeDockWidget(w)
             w.setVisible(True)

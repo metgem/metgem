@@ -6,6 +6,8 @@ from functools import wraps
 import logging
 from logging.handlers import RotatingFileHandler
 
+import numpy as np
+
 
 def get_logger():
     logger = logging.getLogger()
@@ -29,11 +31,15 @@ def get_logger():
 
 
 def debug(func):
+    np.set_string_function(lambda arr: '<array>')
+
     @wraps(func)
     def new_func(*args, **kwargs):
         if get_debug_flag():
             logger = logging.getLogger()
-            logger.debug(f"Calling {func.__name__}({args}, {kwargs})")
+            str_args = ', '.join([repr(a) for a in args])
+            str_kwargs = ', '.join([f"{k}={v}" for k, v in kwargs.items()])
+            logger.debug(f"Calling {func.__name__}({str_args}{', ' if str_kwargs else ''}{str_kwargs})")
             out = func(*args, **kwargs)
             logger.debug(f"Finished {func.__name__} -> {out}")
             return out
