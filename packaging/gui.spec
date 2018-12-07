@@ -55,7 +55,14 @@ datas = [('../splash.png', '.'),
          ('../lib/ui/widgets/*.ui', 'lib/ui/widgets'),
          ('../lib/ui/widgets/databases/*.ui', 'lib/ui/widgets/databases')]
 if not sys.platform.startswith('darwin'):
-    datas.extend([('../examples/*', 'examples')])
+    datas.extend([('../examples/Codiaeum.csv', 'examples'),
+                  ('../examples/Codiaeum.mgf', 'examples'),
+                  ('../examples/Codiaeum.mnz', 'examples'),
+                  ('../examples/Stillingia SFE.csv', 'examples'),
+                  ('../examples/Stillingia SFE.mgf', 'examples'),
+                  ('../examples/Stillingia SFE.mnz', 'examples'),
+                  ('../examples/Stillingia group mapping.txt', 'examples')])
+                   	
          
 # Get Qt styles dll
 binaries.extend(qt_plugins_binaries('styles', namespace='PyQt5'))
@@ -93,7 +100,7 @@ a = Analysis(['../gui.py'],
              cipher=block_cipher)
              
 # Remove MKL binaries
-a.binaries = [bin for bin in a.binaries if not bin[0].startswith('mkl_')]
+a.binaries = [bin for bin in a.binaries if not bin[0].startswith('mkl_') or bin[0].startswith('mkl_rt')]
 
 # Remove unused IPython data files
 a.datas = [dat for dat in a.datas if not dat[0].startswith('IPython')]
