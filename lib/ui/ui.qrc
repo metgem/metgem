@@ -5,7 +5,7 @@
     <file>images/new-library-user.svg</file>
     <file>images/node-size.svg</file>
     <file>images/node-color.svg</file>
-	<file>images/mapping.svg</file>
+    <file>images/mapping.svg</file>
     <file>images/import-mapping.svg</file>
     <file>images/library-more.svg</file>
     <file>images/library-query-analogs.svg</file>
@@ -57,6 +57,7 @@
     <file>images/node.svg</file>
     <file>images/folder-open.svg</file>
     <file>images/main.svg</file>
+    <file>images/reset-layout.svg</file>
   </qresource>
   <qresource prefix="logo">
     <file>images/main-wide.svg</file>

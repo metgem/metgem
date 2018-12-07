@@ -158,7 +158,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.actionImportMetadata.triggered.connect(self.on_import_metadata_triggered)
         self.actionImportGroupMapping.triggered.connect(self.on_import_group_mapping_triggered)
         self.actionCurrentParameters.triggered.connect(self.on_current_parameters_triggered)
-        self.actionSettings.triggered.connect(self.on_settings_triggered)
+        self.actionPreferences.triggered.connect(self.on_preferences_triggered)
+        self.actionResetLayout.triggered.connect(self.reset_layout)
         self.actionZoomIn.triggered.connect(lambda: self.current_view.scaleView(1.2))
         self.actionZoomOut.triggered.connect(lambda: self.current_view.scaleView(1 / 1.2))
         self.actionZoomToFit.triggered.connect(lambda: self.current_view.zoomToFit())
@@ -701,7 +702,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         dialog.exec_()
 
     @debug
-    def on_settings_triggered(self, *args):
+    def on_preferences_triggered(self, *args):
         dialog = ui.SettingsDialog(self)
         if dialog.exec_() == QDialog.Accepted:
             style = dialog.getValues()
@@ -907,6 +908,30 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.gvNetwork.scene().setNetworkStyle(style)
         self.gvTSNE.scene().setNetworkStyle(style)
         settings.endGroup()
+
+    def reset_layout(self):
+        for w in self.findChildren(QDockWidget):
+            self.removeDockWidget(w)
+            w.setVisible(True)
+            if w.objectName() == "jupyter":
+                self.addDockWidget(Qt.TopDockWidgetArea, w)
+            else:
+                self.addDockWidget(Qt.BottomDockWidgetArea, w)
+            w.setFloating(False)
+
+        self.tabifyDockWidget(self.dockNodes, self.dockEdges)
+        self.tabifyDockWidget(self.dockEdges, self.dockSpectra)
+        self.dockNodes.raise_()
+
+        # Make sure all toolbars are visible
+        for w in self.findChildren(QToolBar):
+            if w.objectName() != "":
+                w.setVisible(True)
+                self.addToolBar(w)
+
+        for w in self.findChildren(QSplitter):
+            w.refresh()
+            w.setSizes(w.sizes())
 
     @debug
     def draw(self, compute_layouts=True, which='all', keep_vertices=False):
