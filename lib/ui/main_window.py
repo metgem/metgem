@@ -15,7 +15,7 @@ import igraph as ig
 import sqlalchemy
 
 from PyQt5.QtWidgets import (QDialog, QFileDialog, QMessageBox, QWidget, QMenu, QActionGroup,
-                             QAction, QDockWidget, qApp, QWidgetAction, QTableView, QComboBox)
+                             QAction, QDockWidget, qApp, QWidgetAction, QTableView, QComboBox, QToolBar, QSplitter)
 from PyQt5.QtCore import QSettings, Qt, QCoreApplication
 from PyQt5.QtGui import QPainter, QImage, QCursor, QColor, QKeyEvent, QIcon, QFontMetrics
 
@@ -133,13 +133,17 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.jupyter_widget.exit_requested.connect(stop)
             qApp.aboutToQuit.connect(stop)
 
-            dock_widget = QDockWidget()
-            dock_widget.setObjectName('jupyter')
-            dock_widget.setWindowTitle('Jupyter Console')
-            dock_widget.setWidget(self.jupyter_widget)
+            self.jupyter_dock_widget = QDockWidget()
+            self.jupyter_dock_widget.setObjectName('jupyter')
+            self.jupyter_dock_widget.setWindowTitle('Jupyter Console')
+            self.jupyter_dock_widget.setWidget(self.jupyter_widget)
 
-            self.addDockWidget(Qt.TopDockWidgetArea, dock_widget)
+            self.addDockWidget(Qt.TopDockWidgetArea, self.jupyter_dock_widget)
             kernel_manager.kernel.shell.push({'app': qApp, 'win': self})
+
+            # Fix issue with Jupyter 5.0+, see https://github.com/ipython/ipykernel/pull/376
+            if hasattr(kernel_manager.kernel, '_abort_queue'):
+                kernel_manager.kernel._abort_queues = kernel_manager.kernel._abort_queue
 
         # Connect events
         self.tvNodes.customContextMenuRequested.connect(self.on_nodes_table_contextmenu)
