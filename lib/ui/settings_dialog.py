@@ -9,7 +9,7 @@ from PyQt5.QtCore import Qt, QSettings, QPointF
 from PyQt5.QtGui import QShowEvent
 from PyQt5.QtWidgets import QDialog, QListWidgetItem
 
-from PyQtNetworkView import style_from_css
+from PyQtNetworkView import style_from_css, NetworkScene
 
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'settings_dialog.ui')
@@ -21,7 +21,7 @@ SettingsDialogUI, SettingsDialogBase = uic.loadUiType(UI_FILE,
 POSITIONS = [(14, 47), (34, 37), (15, 21), (40, 14), (58, 33),
              (60, 59), (46, 77), (70, 80), (84, 63), (76, 42)]
 LINKS = [(0, 1), (1, 2), (1, 3), (1, 4), (1, 5), (4, 5), (5, 6), (5, 7), (5, 8), (5, 9)]
-WIDTHS = (2.756, 2.467, 3.376, 1.666, 2.486, 2.509, 1.996, 2.757, 1.616, 2.126)
+WIDTHS = (11.024, 9.868, 13.504, 6.664, 9.944, 10.036, 7.984, 11.028, 6.464, 8.504)
 
 
 class SettingsDialog(SettingsDialogUI, SettingsDialogBase):
@@ -40,16 +40,17 @@ class SettingsDialog(SettingsDialogUI, SettingsDialogBase):
         if value is not None:
             self.spinNeutralTolerance.setValue(value)
 
-        nodes = self.gvStylePreview.scene().addNodes(range(len(POSITIONS)),
-                                                     labels=[f"{random.randint(100000, 900000)/1000:.4f}"
-                                                             for x in POSITIONS],
-                                                     positions=[QPointF(x, 96-y) for x, y in POSITIONS])
+        scene = NetworkScene()
+        self.gvStylePreview.setScene(scene)
+        nodes = scene.addNodes(range(len(POSITIONS)),
+                               labels=[f"{random.randint(100000, 900000)/1000:.4f}" for x in POSITIONS],
+                               positions=[QPointF(x, 96-y) for x, y in POSITIONS])
         sources, dests = zip(*LINKS)
         edges = self.gvStylePreview.scene().addEdges(range(len(LINKS)), [nodes[x] for x in sources],
-                                                     [nodes[x] for x in dests], WIDTHS, [x*4 for x in WIDTHS])
+                                                     [nodes[x] for x in dests], WIDTHS)
 
         self.gvStylePreview.minimap.setVisible(False)
-        self.gvStylePreview.scene().setScale(4)
+        scene.setScale(4)
         nodes[4].setSelected(True)
         edges[3].setSelected(True)
         edges[4].setSelected(True)

@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1497</width>
-    <height>863</height>
+    <width>923</width>
+    <height>532</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -189,12 +189,6 @@
       <enum>Qt::Horizontal</enum>
      </property>
      <widget class="QTableView" name="tvSpectra">
-      <property name="minimumSize">
-       <size>
-        <width>900</width>
-        <height>0</height>
-       </size>
-      </property>
       <property name="alternatingRowColors">
        <bool>true</bool>
       </property>
