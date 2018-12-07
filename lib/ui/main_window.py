@@ -347,9 +347,16 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 self.gvNetwork.setFocus(Qt.TabFocusReason)
 
     def showEvent(self, event):
-        self.gvNetwork.setMinimumHeight(self.height() / 2)
-        self.load_settings()
         super().showEvent(event)
+        if not hasattr(self, '_first_show'):
+            self.load_settings()
+            self._first_show = False
+        self.gvNetwork.setMinimumHeight(self.height() / 2)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self.gvNetwork.setMinimumWidth(self.width() / 3)
+        self.gvTSNE.setMinimumWidth(self.width() / 3)
 
     def closeEvent(self, event):
         if not config.get_debug_flag():
@@ -889,6 +896,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
     @debug
     def save_settings(self):
         settings = QSettings()
+
         settings.beginGroup('MainWindow')
         settings.setValue('Geometry', self.saveGeometry())
         settings.setValue('State', self.saveState())
