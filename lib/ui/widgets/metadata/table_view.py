@@ -129,6 +129,7 @@ class NodeTableView(MetadataTableView):
         header = HeaderView(Qt.Horizontal, self)
         header.setHighlightSections(True)
         header.setSectionsClickable(True)
+        header.setSectionsMovable(True)
         header.setAllowRightMouseSelection(True)
         header.sectionPressedRight.connect(self.selectColumn)
         header.sectionEnteredRight.connect(self.on_section_entered)
@@ -182,6 +183,7 @@ class EdgeTableView(MetadataTableView):
         # so we don't want to sort or resize column from content
         self.horizontalHeader().sortIndicatorChanged.connect(self.on_sort_indicator_changed)
         self.horizontalHeader().setStretchLastSection(True)
+        self.horizontalHeader().setSectionsMovable(True)
 
     def sizeHintForColumn(self, column: int):
         if column == self.model().columnCount() - 1:
