@@ -239,7 +239,8 @@ class SaveProjectWorker(BaseWorker):
         else:
             try:
                 os.remove(self.filename)
-            except OSError:
-                pass
-            os.rename(self.tmp_filename, self.filename)
-            return True
+                os.rename(self.tmp_filename, self.filename)
+            except OSError as e:
+                self.error.emit(e)
+            else:
+                return True
