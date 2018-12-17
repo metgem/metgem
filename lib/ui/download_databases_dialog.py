@@ -113,7 +113,7 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
             QMessageBox.warning(self, None,
                                 'Connection failed. Please check your network connection.')
         elif isinstance(e, ftplib.all_errors) or isinstance(e, RequestException):
-            if hasattr(e.id) and e.id is not None:
+            if hasattr(e, 'id') and e.id is not None:
                 QMessageBox.warning(self, None,
                                     f'Connection failed while downloading {e.id} database.\n'
                                     f'Please check your network connection.\n{str(e)}')
