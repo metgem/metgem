@@ -6,8 +6,8 @@ APPLICATION = "MetGem"
 MAJOR = 1
 MINOR = 1
 MICRO = 0
-RELEASE = "RC4"
-VERSION = f"{MAJOR}.{MINOR}.{MICRO} {RELEASE}"
+RELEASE = ""
+VERSION = f"{MAJOR}.{MINOR}.{MICRO}{' ' if RELEASE else ''}{RELEASE}"
 FULLVERSION = VERSION
 
 if os.path.exists('.git'):
