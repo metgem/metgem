@@ -610,7 +610,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                     set_spectrum = self.cvSpectrum.set_spectrum2
                 else:
                     score = self.network.scores[node_idx, self.cvSpectrum.spectrum2_index] \
-                        if self.cvSpectrum.spectrum1_index is not None else None
+                        if self.cvSpectrum.spectrum2_index is not None else None
                     set_spectrum = self.cvSpectrum.set_spectrum1
                 if score is not None:
                     self.cvSpectrum.set_title(f'Score: {score:.4f}')
