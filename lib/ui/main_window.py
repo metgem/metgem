@@ -302,6 +302,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
     @debug
     def load_project(self, filename):
+        self.reset_project()
         worker = self.prepare_load_project_worker(filename)
         if worker is not None:
             self._workers.add(worker)
@@ -311,6 +312,23 @@ class MainWindow(MainWindowBase, MainWindowUI):
         worker = self.prepare_save_project_worker(filename)
         if worker is not None:
             self._workers.add(worker)
+
+    @debug
+    def reset_project(self):
+        self.fname = None
+        self.has_unsaved_changes = False
+        self.tvNodes.model().sourceModel().beginResetModel()
+        self.tvEdges.model().sourceModel().beginResetModel()
+        self.init_project()
+        self.tvNodes.model().sourceModel().endResetModel()
+        self.tvEdges.model().sourceModel().endResetModel()
+        self.sliderNetworkScale.resetValue()
+        self.sliderTSNEScale.resetValue()
+        self.gvNetwork.scene().clear()
+        self.gvTSNE.scene().clear()
+        self.cvSpectrum.set_spectrum1(None)
+        self.cvSpectrum.set_spectrum2(None)
+        self.update_search_menu()
 
     @debug
     def update_search_menu(self, table: QTableView=None):
@@ -439,26 +457,13 @@ class MainWindow(MainWindowBase, MainWindowUI):
         reply = self.confirm_save_changes()
 
         if reply != QMessageBox.Cancel:
-            self.fname = None
-            self.has_unsaved_changes = False
-            self.tvNodes.model().sourceModel().beginResetModel()
-            self.tvEdges.model().sourceModel().beginResetModel()
-            self.init_project()
-            self.tvNodes.model().sourceModel().endResetModel()
-            self.tvEdges.model().sourceModel().endResetModel()
-            self.sliderNetworkScale.resetValue()
-            self.sliderTSNEScale.resetValue()
-            self.gvNetwork.scene().clear()
-            self.gvTSNE.scene().clear()
-            self.cvSpectrum.set_spectrum1(None)
-            self.cvSpectrum.set_spectrum2(None)
-            self.update_search_menu()
+            self.reset_project()
 
         return reply
 
     @debug
     def on_open_project_triggered(self, *args):
-        reply = self.on_new_project_triggered()
+        reply = self.confirm_save_changes()
         if reply == QMessageBox.Cancel:
             return
 
@@ -738,10 +743,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         dialog = ui.ProcessMgfDialog(self, options=self.network.options)
         if dialog.exec_() == QDialog.Accepted:
-            self.fname = None
-            self.has_unsaved_changes = True
-            self.gvNetwork.scene().clear()
-            self.gvTSNE.scene().clear()
+            self.reset_project()
 
             process_file, use_metadata, metadata_file, metadata_options, \
                 compute_options, tsne_options, network_options = dialog.getValues()
