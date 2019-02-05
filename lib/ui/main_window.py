@@ -551,10 +551,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
         if type_ == 'current':
             filter_.remove("SVG - Scalable Vector Graphics (*.svg)")
 
+        view = self.current_view
+
         filename, filter_ = QFileDialog.getSaveFileName(self, "Save image",
                                                         filter=";;".join(filter_))
         if filename:
-            view = self.current_view
             if filter_.endswith("(*.svg)"):
                 try:
                     from PyQt5.QtSvg import QSvgGenerator
