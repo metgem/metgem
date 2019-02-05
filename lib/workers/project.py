@@ -17,18 +17,28 @@ CURRENT_FORMAT_VERSION = 3
 class SpectraList(list):
 
     def __init__(self, filename):
-        self._file = MnzFile(filename, 'r')
+        self.load(filename)
 
     def __getitem__(self, index):
         data = super().__getitem__(index)
-        if isinstance(data, str):
-            data = self._file[data]
+        if isinstance(data, int):
+            data = self._file[f'0/spectra/{data}']
             super().__setitem__(index, data)
 
         return data
 
     def __del__(self):
+        self.close()
+
+    def close(self):
         self._file.close()
+
+    def load(self, filename):
+        self._file = MnzFile(filename, 'r')
+
+        self.clear()
+        for s in self._file['0/spectra/index.json']:
+            self.append(s['id'])
 
 
 class LoadProjectWorker(BaseWorker):
@@ -94,16 +104,10 @@ class LoadProjectWorker(BaseWorker):
                         return
 
                     # Load table of spectra
-                    spec_infos = fid['0/spectra/index.json']
-                    network.mzs = []
                     network.spectra = SpectraList(self.filename)
-                    for s in spec_infos:
-                        if self.isStopped():
-                            self.canceled.emit()
-                            return
-
+                    network.mzs = []
+                    for s in fid['0/spectra/index.json']:
                         network.mzs.append(s['mz_parent'])
-                        network.spectra.append(f'0/spectra/{s["id"]}')
 
                     if self.isStopped():
                         self.canceled.emit()
@@ -214,6 +218,8 @@ class SaveProjectWorker(BaseWorker):
             d['0/mappings.json'] = mappings
 
         if self.network.lazyloaded and os.path.exists(self.original_fname):
+            self.network.spectra.close()
+
             # create a temp copy of the archive without filename
             with zipfile.ZipFile(self.original_fname, 'r') as zin:
                 with zipfile.ZipFile(self.tmp_filename, 'w') as zout:
@@ -240,6 +246,7 @@ class SaveProjectWorker(BaseWorker):
             try:
                 os.remove(self.filename)
                 os.rename(self.tmp_filename, self.filename)
+                self.network.spectra.load(self.filename)
             except OSError as e:
                 self.error.emit(e)
             else:
