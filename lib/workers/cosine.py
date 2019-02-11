@@ -47,9 +47,14 @@ class ComputeScoresWorker(BaseWorker):
             self.updated.emit(value)
             return not self.isStopped()
 
-        scores_matrix = compute_distance_matrix(self._mzs, self._spectra,
-                                                self.options.mz_tolerance, self.options.min_matched_peaks,
-                                                callback=callback)
+        try:
+            scores_matrix = compute_distance_matrix(self._mzs, self._spectra,
+                                                    self.options.mz_tolerance, self.options.min_matched_peaks,
+                                                    callback=callback)
+        except MemoryError as e:
+            self.error.emit(e)
+            return
+
         if not self.isStopped():
             return scores_matrix
         else:
