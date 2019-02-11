@@ -1136,10 +1136,10 @@
     <string>Import &amp;user database</string>
    </property>
    <property name="toolTip">
-    <string>Import user database from MGF file</string>
+    <string>Import user database from local file</string>
    </property>
    <property name="statusTip">
-    <string>Import user database from MGF file</string>
+    <string>Import user database from local file</string>
    </property>
    <property name="shortcut">
     <string>Alt+U</string>

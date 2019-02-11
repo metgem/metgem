@@ -7,15 +7,15 @@ from PyQt5.QtGui import QPalette, QColor
 from PyQt5.QtCore import Qt, QDir
 from PyQt5 import uic
 
-UI_FILE = os.path.join(os.path.dirname(__file__), 'process_mgf_dialog.ui')
+UI_FILE = os.path.join(os.path.dirname(__file__), 'process_data_dialog.ui')
 
-ProcessMgfDialogUI, ProcessMgfDialogBase = uic.loadUiType(UI_FILE, from_imports='lib.ui', import_from='lib.ui')
+ProcessDataDialogUI, ProcessDataDialogBase = uic.loadUiType(UI_FILE, from_imports='lib.ui', import_from='lib.ui')
 from .widgets import TSNEOptionsWidget, NetworkOptionsWidget, CosineOptionsWidget
 from ..ui.import_metadata_dialog import ImportMetadataDialog
 from ..workers.read_metadata import ReadMetadataOptions
 
 
-class ProcessMgfDialog(ProcessMgfDialogBase, ProcessMgfDialogUI):
+class ProcessDataDialog(ProcessDataDialogBase, ProcessDataDialogUI):
     """Create and open a dialog to process a new .mgf file.
 
     Creates a dialog containing 4 widgets:
@@ -52,7 +52,7 @@ class ProcessMgfDialog(ProcessMgfDialogBase, ProcessMgfDialogUI):
             model.setFilter(QDir.AllDirs | QDir.Files | QDir.NoDotAndDotDot)
             if edit == self.editProcessFile:
                 model.setNameFilterDisables(False)
-                model.setNameFilters(['*.mgf'])
+                model.setNameFilters(['*.mgf', '*.msp'])
             model.setRootPath(QDir.currentPath())
             completer.setModel(model)
             edit.setText(QDir.currentPath())
@@ -115,7 +115,7 @@ class ProcessMgfDialog(ProcessMgfDialogBase, ProcessMgfDialogUI):
         if r == QDialog.Accepted:
             process_file = self.editProcessFile.text()
             metadata_file = self.editMetadataFile.text()
-            if len(process_file) > 0 and os.path.exists(process_file) and os.path.splitext(process_file)[1] == '.mgf':
+            if len(process_file) > 0 and os.path.exists(process_file) and os.path.splitext(process_file)[1] in ('.mgf', '.msp'):
                 if not self.gbMetadata.isChecked() or (os.path.exists(metadata_file) and os.path.isfile(metadata_file)):
                     super().done(r)
                 else:
@@ -149,7 +149,9 @@ class ProcessMgfDialog(ProcessMgfDialogBase, ProcessMgfDialogUI):
         dialog.setFileMode(QFileDialog.ExistingFile)
 
         if type_ == 'process':
-            dialog.setNameFilters(["MGF Files (*.mgf)", "All files (*.*)"])
+            dialog.setNameFilters(["Mascot Generic Format (*.mgf)",
+                                   "NIST Text Format of Individual Spectra (*.msp)",
+                                   "All files (*.*)"])
         elif type_ == 'metadata':
             dialog.setNameFilters(["Metadata File (*.csv; *.tsv; *.txt)", "All files (*.*)"])
 

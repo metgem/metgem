@@ -4,7 +4,7 @@ import sys
 from PyQt5 import uic
 from PyQt5.QtCore import Qt, QDir
 from PyQt5.QtGui import QPalette, QColor, QIcon
-from PyQt5.QtWidgets import QCompleter, QFileSystemModel, QDialog, QFileDialog, QDialogButtonBox
+from PyQt5.QtWidgets import QCompleter, QFileSystemModel, QDialog, QFileDialog, QDialogButtonBox, QMessageBox
 
 from ..workers import ConvertDatabasesWorker
 from ..workers import WorkerSet
@@ -47,7 +47,7 @@ class ImportUserDatabaseDialog(ImportUserDatabaseDialogBase, ImportUserDatabaseD
         model = QFileSystemModel(completer)
         model.setFilter(QDir.AllDirs | QDir.Files | QDir.NoDotAndDotDot)
         model.setNameFilterDisables(False)
-        model.setNameFilters(['*.mgf'])
+        model.setNameFilters(['*.mgf', '*.msp'])
         model.setRootPath(QDir.currentPath())
         completer.setModel(model)
         self.editInputFile.setText(QDir.currentPath())
@@ -67,16 +67,20 @@ class ImportUserDatabaseDialog(ImportUserDatabaseDialogBase, ImportUserDatabaseD
 
         dialog = QFileDialog(self)
         dialog.setFileMode(QFileDialog.ExistingFile)
-        dialog.setNameFilters(["MGF Files (*.mgf)", "All files (*.*)"])
+        dialog.setNameFilters(["Mascot Generic Format (*.mgf)",
+                               "NIST Text Format of Individual Spectra (*.msp)",
+                               "All files (*.*)"])
 
         if dialog.exec_() == QDialog.Accepted:
             filename = dialog.selectedFiles()[0]
             self.editInputFile.setText(filename)
+            self.editDatabaseName.setText(os.path.splitext(os.path.basename(filename))[0])
             self.editInputFile.setPalette(self.style().standardPalette())
 
     def import_database(self):
         input_file = self.editInputFile.text()
-        if len(input_file) == 0 or not os.path.exists(input_file) or os.path.splitext(input_file)[1] != '.mgf':
+        if len(input_file) == 0 or not os.path.exists(input_file) \
+                or os.path.splitext(input_file)[1] not in ('.mgf', '.msp'):
             self.editInputFile.setPalette(self._error_palette)
 
         name = self.editDatabaseName.text()
@@ -88,5 +92,15 @@ class ImportUserDatabaseDialog(ImportUserDatabaseDialogBase, ImportUserDatabaseD
             self._workers.add(worker)
 
     def prepare_convert_database_worker(self, id_, name):
+        def error(e):
+            if isinstance(e, NotImplementedError):
+                QMessageBox.warning(self, None, "File format is not supported.")
+
+        def finished():
+            QMessageBox.information(self, None,
+                                    "Database was successfully imported.")
+
         worker = ConvertDatabasesWorker([id_], names=[name], output_path=self.base_path)
+        worker.error.connect(error)
+        worker.finished.connect(finished)
         return worker

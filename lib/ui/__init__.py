@@ -1,5 +1,5 @@
 from .main_window import MainWindow
-from .process_mgf_dialog import ProcessMgfDialog
+from .process_data_dialog import ProcessDataDialog
 from .edit_options_dialog import EditTSNEOptionsDialog, EditNetworkOptionsDialog
 from .current_parameters_dialog import CurrentParametersDialog
 from .download_databases_dialog import DownloadDatabasesDialog

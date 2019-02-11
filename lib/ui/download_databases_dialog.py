@@ -120,6 +120,8 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
             else:
                 QMessageBox.warning(self, None,
                                     f'Connection failed. Please check your network connection.\n{str(e)}')
+        elif isinstance(e, NotImplementedError):
+            QMessageBox.warning(self, None, "File format is not supported.")
         else:
             QMessageBox.warning(self, None, str(e))
 

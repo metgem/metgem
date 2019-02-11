@@ -21,7 +21,9 @@ class ConvertDatabasesWorker(BaseWorker):
 
         with DataBaseBuilder(os.path.join(self.input_path, 'spectra')) as db:
             for i, (id_, name) in enumerate(zip(self.ids, self.names)):
-                id_ = f'{id_}.mgf' if not id_.endswith('.mgf') else id_
+                ext = os.path.splitext(id_)[1]
+                if not ext:
+                    id_ = f'{id_}.mgf'
                 path = os.path.join(self.input_path, id_)
                 if os.path.exists(path):
                     db.add_bank(path, name=name)

@@ -741,7 +741,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         if reply == QMessageBox.Cancel:
             return
 
-        dialog = ui.ProcessMgfDialog(self, options=self.network.options)
+        dialog = ui.ProcessDataDialog(self, options=self.network.options)
         if dialog.exec_() == QDialog.Accepted:
             self.reset_project()
 
@@ -1093,8 +1093,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
     @debug
     def prepare_compute_scores_worker(self, spectra, use_multiprocessing):
         def error(e):
-            if e.__class__ == OSError:
+            if isinstance(e, OSError):
                 QMessageBox.warning(self, None, str(e))
+            if isinstance(e, MemoryError):
+                QMessageBox.critical(self, None, "Not enough memory was available to compute scores matrix.")
             else:
                 raise e
 
@@ -1106,7 +1108,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
     @debug
     def prepare_read_mgf_worker(self, mgf_filename, metadata_filename=None,
                                 metadata_options=workers.ReadMetadataOptions()):
-        worker = workers.ReadMGFWorker(mgf_filename, self.network.options.cosine)
+        worker = workers.ReadDataWorker(mgf_filename, self.network.options.cosine)
 
         def file_read():
             nonlocal worker
@@ -1119,8 +1121,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 self._workers.add(worker)
 
         def error(e):
-            if e.__class__ == KeyError and e.args[0] == "pepmass":
-                QMessageBox.warning(self, None, f"File format is incorrect. At least one scan has no pepmass defined.")
+            if isinstance(e, KeyError) and e.args[0] in ("pepmass", "precursormz"):
+                QMessageBox.warning(self, None, "File format is incorrect. At least one scan has no parent's "
+                                                "m/z defined.")
+            elif isinstance(e, NotImplementedError):
+                QMessageBox.warning(self, None, "File format is not supported.")
             elif hasattr(e, 'message'):
                 QMessageBox.warning(self, None, e.message)
             else:
@@ -1173,7 +1178,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.has_unsaved_changes = False
 
         def error(e):
-            if e.__class__ == PermissionError:
+            if isinstance(e, PermissionError):
                 QMessageBox.warning(self, None, str(e))
             else:
                 raise e
@@ -1268,7 +1273,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 QMessageBox.warning(self, None, 'No results found.')
 
         def error(e):
-            if e.__class__ == sqlalchemy.exc.OperationalError:
+            if isinstance(e, sqlalchemy.exc.OperationalError):
                 QMessageBox.warning(self, None, 'You have to download at least one database before trying to query it.')
 
         worker.started.connect(lambda: self.tvNodes.setColumnBlinking(1, False))

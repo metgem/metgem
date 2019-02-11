@@ -4,6 +4,7 @@ import numpy as np
 from sqlalchemy.exc import OperationalError
 
 from libmetgem.mgf import read as read_mgf
+from libmetgem.msp import read as read_msp
 from libmetgem import INTENSITY
 
 from ..utils import grouper
@@ -34,8 +35,8 @@ def convert_polarity(string):
         return None
 
 
-def chunk_read_mgf(filename, chunk_size=1000):
-    yield from grouper(read_mgf(filename, ignore_unknown=False), n=chunk_size)
+def chunk_read_data(filename, read_func=read_mgf, chunk_size=1000):
+    yield from grouper(read_func(filename, ignore_unknown=False), n=chunk_size)
 
 
 class DataBaseBuilder:
@@ -112,8 +113,16 @@ class DataBaseBuilder:
         except OperationalError:
             pass
 
-    def add_bank(self, mgf_path, name=None):
-        bank = os.path.splitext(os.path.basename(mgf_path))[0] if name is None else name
+    def add_bank(self, data_path, name=None):
+        base, ext = os.path.splitext(os.path.basename(data_path))
+        bank = base if name is None else name
+
+        if ext == '.mgf':
+            read = read_mgf
+        elif ext == '.msp':
+            read = read_msp
+        else:
+            raise NotImplementedError
 
         if bank in self._uniques['bank']:
             q = self.session.query(Spectrum).filter(Spectrum.bank_id == self._uniques['bank'][bank])
@@ -124,7 +133,8 @@ class DataBaseBuilder:
         else:
             self._uniques['bank'][bank] = self._indexes['bank']
 
-        for batch in chunk_read_mgf(mgf_path, 1000):  # Read mgf file by batch of 1000 spectra
+        # Read mgf file by batch of 1000 spectra
+        for batch in chunk_read_data(data_path, read_func=read, chunk_size=1000):
             spectra = []
 
             for entry in batch:
@@ -133,13 +143,19 @@ class DataBaseBuilder:
                     break
 
                 params, peaks = entry
-                pepmass = params.get('pepmass', -1)
+                if ext == '.mgf':
+                    pepmass = params.get('pepmass', -1)
+                    inchiaux = params.get('inchiaux', None)
+                elif ext == '.msp':
+                    pepmass = params.get('precursormz', -1)
+                    inchiaux = params.get('inchikey', None)
+                else:
+                    pepmass = None
                 charge = params.get('charge', 1)
                 positive = convert_polarity(params.get('ionmode', 'Positive').lower())
                 name = params.get('name', None)
                 mslevel = int(params.get('mslevel', 0))
                 inchi = params.get('inchi', None)
-                inchiaux = params.get('inchiaux', None)
                 smiles = params.get('smiles', None)
                 pubmed = params.get('pubmed', None)
                 libraryquality = int(params.get('libraryquality', 0))
