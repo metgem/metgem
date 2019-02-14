@@ -33,6 +33,7 @@ if sys.platform.startswith('darwin'):
 else:
     LOG_PATH = os.path.join(USER_PATH, 'log')
 STYLES_PATH = os.path.join(USER_PATH, 'styles')
+PLUGINS_PATH = os.path.join(USER_PATH, 'plugins')
 
 if not os.path.exists(DATABASES_PATH):
     os.makedirs(DATABASES_PATH)

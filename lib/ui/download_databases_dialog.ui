@@ -117,7 +117,7 @@
     </layout>
    </item>
    <item>
-    <widget class="LoadingListWidget" name="lstDatabases">
+    <widget class="LoadingTreeWidget" name="treeDatabases">
      <property name="editTriggers">
       <set>QAbstractItemView::NoEditTriggers</set>
      </property>
@@ -127,9 +127,14 @@
      <property name="alternatingRowColors">
       <bool>true</bool>
      </property>
-     <property name="sortingEnabled">
+     <property name="headerHidden">
       <bool>true</bool>
      </property>
+     <column>
+      <property name="text">
+       <string notr="true">1</string>
+      </property>
+     </column>
     </widget>
    </item>
    <item>
@@ -162,8 +167,8 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>LoadingListWidget</class>
-   <extends>QListWidget</extends>
+   <class>LoadingTreeWidget</class>
+   <extends>QTreeWidget</extends>
    <header>lib/ui/widgets.h</header>
   </customwidget>
  </customwidgets>

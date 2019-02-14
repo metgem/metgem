@@ -114,14 +114,18 @@ splash.setValue(75)
 
 splash.showMessage("Loading User interface module...")
 import lib.ui
-splash.setValue(90)
+splash.setValue(80)
 
 splash.showMessage("Loading Workers module...")
 import lib.workers
-splash.setValue(95)
+splash.setValue(85)
 
 splash.showMessage("Loading Project module...")
 import lib.save
+splash.setValue(90)
+
+splash.showMessage("Loading plugins...")
+import lib.plugins
 splash.setValue(100)
 
 splash.showMessage("")

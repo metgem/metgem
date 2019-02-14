@@ -3,18 +3,16 @@ import ftplib
 from datetime import datetime
 
 import requests
+from urllib.parse import urljoin
 from lxml import html, etree
 
 from PyQt5.QtCore import pyqtSignal
 
 from ..base import BaseWorker
+from ...plugins import get_db_sources
 
 GNPS_LIB_URL = "https://gnps.ucsd.edu/ProteoSAFe/libraries.jsp"
 GNPS_FTP_URL = "ccms-ftp.ucsd.edu"
-
-ISDB_HTTP_FMT = "https://raw.githubusercontent.com/oolonek/ISDB/master/Data/dbs/{name}.mgf"
-ISDB_NAME_FMT = "UNPD_ISDB_R_p0{}"
-ISDB_ID = "UNPD_ISDB_R"
 
 
 class ListDatabasesWorker(BaseWorker):
@@ -43,7 +41,7 @@ class ListDatabasesWorker(BaseWorker):
                         ids = tds[1].findall('a')
                         if ids is None:
                             continue
-                        ids = [id_.attrib['href'].split('=')[1].split('#')[0] for id_ in ids
+                        ids = [id_.attrib['href'].split('=')[1].split('#')[0] + '.mgf' for id_ in ids
                                if 'href' in id_.attrib and '=' in id_.attrib['href']]
                         desc = tds[2].text if tds[2].text is not None else ''
                         desc += ''.join([etree.tostring(child).decode() for child in tds[2].iterdescendants()])
@@ -53,11 +51,42 @@ class ListDatabasesWorker(BaseWorker):
                             items.append(item)
                             self.itemReady.emit(item)
 
-        # Add ISDB
-        item = {'name': 'ISDB', 'ids': [ISDB_ID],
-                'desc': 'A database of In-Silico predicted MS/MS spectrum of Natural Products',
-                'origin': 'ISDB'}
-        self.itemReady.emit(item)
+        # Plugins
+        for plugin in get_db_sources():
+            origin = plugin.name
+            if not isinstance(origin, str):
+                continue
+
+            try:
+                url = plugin.page
+                if url is not None:
+                    r = requests.get(url)
+            except (requests.exceptions.ConnectionError, requests.exceptions.MissingSchema) as e:
+                self.error.emit(e)
+                return False
+            else:
+                if url is None or r.status_code == 200:
+                    if url is not None:
+                        tree = html.fromstring(r.content)
+                        gen = plugin.get_items(tree)
+                    else:
+                        gen = plugin.get_items()
+
+                    for item in gen:
+                        try:
+                            title, ids, desc = item
+                        except (ValueError, AssertionError):
+                            pass
+                        else:
+                            if not isinstance(title, str) or not isinstance(ids, list) or not isinstance(desc, str):
+                                continue
+
+                            for id_ in ids:
+                                if not isinstance(id_, str):
+                                    continue
+
+                            item = {'name': title, 'ids': ids, 'desc': desc, 'origin': origin}
+                            self.itemReady.emit(item)
 
         self._result = items
         self.finished.emit()
@@ -82,7 +111,7 @@ class GetGNPSDatabasesMtimeWorker(BaseWorker):
                         self.canceled.emit()
                         return False
 
-                    rd = ftp.sendcmd(f'MDTM {id_}.mgf')
+                    rd = ftp.sendcmd(f'MDTM {id_}')
                     mtimes[id_] = datetime.strptime(rd[4:], '%Y%m%d%H%M%S')
         except ftplib.all_errors as e:
             self.error.emit(e)
@@ -98,84 +127,81 @@ class DownloadDatabasesWorker(BaseWorker):
         super().__init__()
         self.ids = ids
         self.path = path
-        self._filesizes = {}
         self.iterative_update = True
         self.max = 0
         self.desc = 'Downloading databases...'
 
     def run(self):
-        id_ = None
-        downloaded_ids = []
-        unreachable_ids = []
-
-        gnps_ids = [id_ for id_ in self.ids if id_ != ISDB_ID]
+        downloaded = {}
+        unreachable = {}
+        filesizes = {}
+        for k in self.ids.keys():
+            downloaded[k] = set()
+            unreachable[k] = set()
+            filesizes[k] = {}
 
         # First step, get file sizes
         # ---------------------------
 
-        # ISDB
-        if ISDB_ID in self.ids:
-            try:
-                self._filesizes[ISDB_ID] = 0
-                for i in range(1, 10):
-                    name = ISDB_NAME_FMT.format(i)
-                    url = ISDB_HTTP_FMT.format(name=name)
-
-                    with requests.head(url) as r:
-                        self._filesizes[ISDB_ID] += int(r.headers['content-length'])
-            except requests.ConnectionError:
-                unreachable_ids.append(ISDB_ID)
-
         # GNPS
+        gnps_ids = self.ids.get('GNPS', [])
         if gnps_ids:
             try:
                 with ftplib.FTP(GNPS_FTP_URL) as ftp:
                     ftp.login()
                     ftp.cwd('Spectral_Libraries')
 
-                    # First, get files' sizes
-                    for i, id_ in enumerate(gnps_ids):
-                        try:
-                            size = ftp.size(f'{id_}.mgf')
-                        except ftplib.error_perm:
-                            unreachable_ids.append(id_)
-                            self._filesizes[id_] = 0
-                        else:
-                            self._filesizes[id_] = size
+                    for name in gnps_ids:
+                        for id_ in gnps_ids[name]:
+                            filesizes['GNPS'][name] = 0
+                            try:
+                                size = ftp.size(f'{id_}')
+                            except ftplib.error_perm:
+                                unreachable['GNPS'].add(name)
+                            else:
+                                filesizes['GNPS'][name] += size
             except ftplib.all_errors as e:
-                e.id = id_
+                e.name = name
                 self.error.emit(e)
                 return
 
-        self.max = sum(self._filesizes.values())
+        # Plugins
+        for plugin in get_db_sources():
+            origin = plugin.name
+            url = plugin.page
+            items_base_url = plugin.items_base_url
+
+            if not isinstance(origin, str) or (url is not None and not isinstance(url, str)):
+                continue
+
+            if items_base_url is None:
+                items_base_url = url + '/'
+            else:
+                items_base_url += '/'
+
+            ids = self.ids.get(origin, [])
+            if not ids:
+                continue
+
+            for name in ids:
+                for id_ in ids[name]:
+                    try:
+                        filesizes[origin][name] = 0
+
+                        with requests.head(urljoin(items_base_url, id_)) as r:
+                            filesizes[origin][name] += int(r.headers['content-length'])
+
+                        if r.status_code != 200:
+                            raise requests.ConnectionError
+                    except (requests.ConnectionError, KeyError):
+                        filesizes[origin][name] = 0
+                        unreachable[origin].add(name)
+
+        self.max = sum([v for f in filesizes.values() for v in f.values()])
 
         # Second step, download files
         # ---------------------------
 
-        # ISDB
-        if ISDB_ID in self.ids and ISDB_ID not in unreachable_ids:
-            path = os.path.join(self.path, f'{ISDB_ID}.mgf')
-            try:
-                with open(path, 'wb') as f:
-                    for i in range(1, 10):
-                        name = ISDB_NAME_FMT.format(i)
-                        url = ISDB_HTTP_FMT.format(name=name)
-
-                        with requests.get(url, stream=True) as r:
-                            for chunk in r.iter_content(chunk_size=1024):
-                                if chunk:  # filter out keep-alive new chunks
-                                    f.write(chunk)
-                                    self.updated.emit(1024)
-
-                                if self.isStopped():
-                                    self.canceled.emit()
-
-                    downloaded_ids.append(ISDB_ID)
-            except requests.ConnectionError as e:
-                e.id = id_
-                self.error.emit(e)
-                return
-
         # GNPS
         if gnps_ids:
             try:
@@ -183,32 +209,71 @@ class DownloadDatabasesWorker(BaseWorker):
                     ftp.login()
                     ftp.cwd('Spectral_Libraries')
 
-                    # Then try to download files
-                    for i, id_ in enumerate(gnps_ids):
-                        if self.isStopped():
-                            self.canceled.emit()
-                            return
+                    for name in gnps_ids:
+                        for i, id_ in enumerate(gnps_ids[name]):
+                            if self.isStopped():
+                                self.canceled.emit()
+                                return
 
-                        if self._filesizes[id_] == 0:
-                            continue
+                            if filesizes['GNPS'][name] == 0:
+                                continue
 
-                        path = os.path.join(self.path, f'{id_}.mgf')
+                            path = os.path.join(self.path, f'{id_}')
 
-                        with open(path, 'wb') as f:
-                            def write_callback(chunk):
-                                f.write(chunk)
-                                self.updated.emit(len(chunk))
+                            with open(path, 'wb') as f:
+                                def write_callback(chunk):
+                                    f.write(chunk)
+                                    self.updated.emit(len(chunk))
 
-                                if self.isStopped():
-                                    ftp.abort()
-                                    self.canceled.emit()
+                                    if self.isStopped():
+                                        ftp.abort()
+                                        self.canceled.emit()
 
-                            ftp.retrbinary(f'RETR {id_}.mgf', write_callback)
-                            downloaded_ids.append(id_)
+                                ftp.retrbinary(f'RETR {id_}', write_callback)
+                                downloaded['GNPS'].add(name)
 
             except ftplib.all_errors as e:
-                e.id = id_
+                e.name = name
                 self.error.emit(e)
                 return
 
-        return downloaded_ids, unreachable_ids
+        # Plugins
+        for plugin in get_db_sources():
+            origin = plugin.name
+            url = plugin.page
+            items_base_url = plugin.items_base_url
+
+            if not isinstance(origin, str) or (url is not None and not isinstance(url, str)):
+                continue
+
+            if items_base_url is None:
+                items_base_url = url + '/'
+            else:
+                items_base_url += '/'
+
+            ids = self.ids.get(origin, [])
+            if not ids:
+                continue
+
+            for name in ids:
+                for id_ in ids[name]:
+                    if id_ not in unreachable[origin]:
+                        path = os.path.join(self.path, os.path.basename(id_))
+                        try:
+                            with open(path, 'wb') as f:
+                                with requests.get(urljoin(items_base_url, id_), stream=True) as r:
+                                    for chunk in r.iter_content(chunk_size=1024):
+                                        if chunk:  # filter out keep-alive new chunks
+                                            f.write(chunk)
+                                            self.updated.emit(1024)
+
+                                        if self.isStopped():
+                                            self.canceled.emit()
+
+                                downloaded[origin].add(name)
+                        except requests.ConnectionError as e:
+                            e.name = name
+                            self.error.emit(e)
+                            return
+
+        return downloaded, unreachable

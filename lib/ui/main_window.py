@@ -3,7 +3,6 @@ from ..utils.network import Network
 from ..utils import colors
 from ..logger import get_logger, debug
 
-import sys
 import os
 import json
 import zipfile
@@ -27,10 +26,6 @@ from libmetgem import human_readable_data
 
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'main_window.ui')
-if getattr(sys, 'frozen', False):
-    # noinspection PyProtectedMember
-    MAIN_UI_FILE = os.path.join(sys._MEIPASS, UI_FILE)
-
 MainWindowUI, MainWindowBase = uic.loadUiType(UI_FILE, from_imports='lib.ui', import_from='lib.ui')
 
 

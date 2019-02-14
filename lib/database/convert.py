@@ -113,97 +113,100 @@ class DataBaseBuilder:
         except OperationalError:
             pass
 
-    def add_bank(self, data_path, name=None):
-        base, ext = os.path.splitext(os.path.basename(data_path))
-        bank = base if name is None else name
+    def add_bank(self, filenames, bank_name=None):
+        if not isinstance(filenames, list):
+            filenames = [filenames]
 
-        if ext == '.mgf':
-            read = read_mgf
-        elif ext == '.msp':
-            read = read_msp
-        else:
-            raise NotImplementedError
-
-        if bank in self._uniques['bank']:
-            q = self.session.query(Spectrum).filter(Spectrum.bank_id == self._uniques['bank'][bank])
+        if bank_name in self._uniques['bank']:
+            q = self.session.query(Spectrum).filter(Spectrum.bank_id == self._uniques['bank'][bank_name])
             if q.count() > 0:
                 self._free_pkeys.append((q.first().id, q.order_by(Spectrum.id.desc()).first().id))
                 q.delete()
                 self.session.flush()
         else:
-            self._uniques['bank'][bank] = self._indexes['bank']
+            self._uniques['bank'][bank_name] = self._indexes['bank']
 
-        # Read mgf file by batch of 1000 spectra
-        for batch in chunk_read_data(data_path, read_func=read, chunk_size=1000):
-            spectra = []
+        for path in filenames:
+            ext = os.path.splitext(os.path.basename(path))[1]
 
-            for entry in batch:
-                # If entry is None, we are in a non-complete batch (end of file), just break
-                if entry is None:
-                    break
+            if ext == '.mgf':
+                read = read_mgf
+            elif ext == '.msp':
+                read = read_msp
+            else:
+                raise NotImplementedError
 
-                params, peaks = entry
-                if ext == '.mgf':
-                    pepmass = params.get('pepmass', -1)
-                    inchiaux = params.get('inchiaux', None)
-                elif ext == '.msp':
-                    pepmass = params.get('precursormz', -1)
-                    inchiaux = params.get('inchikey', None)
-                else:
-                    pepmass = None
-                charge = params.get('charge', 1)
-                positive = convert_polarity(params.get('ionmode', 'Positive').lower())
-                name = params.get('name', None)
-                mslevel = int(params.get('mslevel', 0))
-                inchi = params.get('inchi', None)
-                smiles = params.get('smiles', None)
-                pubmed = params.get('pubmed', None)
-                libraryquality = int(params.get('libraryquality', 0))
-                spectrumid = params.get('spectrumid', None)
+            # Read mgf file by batch of 1000 spectra
+            for batch in chunk_read_data(path, read_func=read, chunk_size=1000):
+                spectra = []
 
-                # Set-up a dictionary with all the values needed to build a Spectrum object
-                spectrum = {
-                            'id': next(self.spectrum_pkey),
-                            'bank_id': self._uniques['bank'][bank],
-                            'pepmass': pepmass,
-                            'mslevel': mslevel,
-                            'positive': positive,
-                            'charge': charge,
-                            'name': name,
-                            'inchi': clean_string(inchi),
-                            'inchiaux': clean_string(inchiaux),
-                            'smiles': clean_string(smiles),
-                            'pubmed': clean_string(pubmed),
-                            'submituser': clean_string(inchi),
-                            'libraryquality': libraryquality,
-                            'spectrumid': clean_string(spectrumid)
-                           }
+                for entry in batch:
+                    # If entry is None, we are in a non-complete batch (end of file), just break
+                    if entry is None:
+                        break
 
-                # Add foreign keys
-                for key in ('organism', 'pi', 'submituser', 'datacollector', 'source_instrument'):
-                    value = clean_string(params.get(key, None))
-                    if value is not None:
-                        if value not in self._uniques[key]:
-                            self._uniques[key][value] = self._indexes[key]
-                            self._indexes[key] += 1
-                        spectrum[f'{key}_id'] = self._uniques[key][value]
+                    params, peaks = entry
+                    if ext == '.mgf':
+                        pepmass = params.get('pepmass', -1)
+                        inchiaux = params.get('inchiaux', None)
+                    elif ext == '.msp':
+                        pepmass = params.get('precursormz', -1)
+                        inchiaux = params.get('inchikey', None)
                     else:
-                        spectrum[f'{key}_id'] = None
+                        pepmass = None
+                    charge = params.get('charge', 1)
+                    positive = convert_polarity(params.get('ionmode', 'Positive').lower())
+                    name = params.get('name', None)
+                    mslevel = int(params.get('mslevel', 0))
+                    inchi = params.get('inchi', None)
+                    smiles = params.get('smiles', None)
+                    pubmed = params.get('pubmed', None)
+                    libraryquality = int(params.get('libraryquality', 0))
+                    spectrumid = params.get('spectrumid', None)
 
-                # build a list of dictionnaries representing peaks
-                if peaks is not None and peaks.size > 0:
-                    peaks[:, INTENSITY] = peaks[:, INTENSITY] / peaks[:, INTENSITY].max() * 100
-                    spectrum['peaks'] = peaks
-                else:
-                    spectrum['peaks'] = np.array([], dtype=np.float32)
+                    # Set-up a dictionary with all the values needed to build a Spectrum object
+                    spectrum = {
+                                'id': next(self.spectrum_pkey),
+                                'bank_id': self._uniques['bank'][bank_name],
+                                'pepmass': pepmass,
+                                'mslevel': mslevel,
+                                'positive': positive,
+                                'charge': charge,
+                                'name': name,
+                                'inchi': clean_string(inchi),
+                                'inchiaux': clean_string(inchiaux),
+                                'smiles': clean_string(smiles),
+                                'pubmed': clean_string(pubmed),
+                                'submituser': clean_string(inchi),
+                                'libraryquality': libraryquality,
+                                'spectrumid': clean_string(spectrumid)
+                               }
 
-                spectra.append(spectrum)
+                    # Add foreign keys
+                    for key in ('organism', 'pi', 'submituser', 'datacollector', 'source_instrument'):
+                        value = clean_string(params.get(key, None))
+                        if value is not None:
+                            if value not in self._uniques[key]:
+                                self._uniques[key][value] = self._indexes[key]
+                                self._indexes[key] += 1
+                            spectrum[f'{key}_id'] = self._uniques[key][value]
+                        else:
+                            spectrum[f'{key}_id'] = None
 
-            # Add spectra and peaks
-            # We can't use ORM because we have a lot of insertions to do
-            # See http://docs.sqlalchemy.org/en/latest/faq/performance.html#i-m-inserting-400-000-rows-with-the-orm-and-it-s-really-slow
-            self.session.execute(Spectrum.__table__.insert(), spectra)
-            self.session.flush()
+                    # build a list of dictionnaries representing peaks
+                    if peaks is not None and peaks.size > 0:
+                        peaks[:, INTENSITY] = peaks[:, INTENSITY] / peaks[:, INTENSITY].max() * 100
+                        spectrum['peaks'] = peaks
+                    else:
+                        spectrum['peaks'] = np.array([], dtype=np.float32)
+
+                    spectra.append(spectrum)
+
+                # Add spectra and peaks
+                # We can't use ORM because we have a lot of insertions to do
+                # See http://docs.sqlalchemy.org/en/latest/faq/performance.html#i-m-inserting-400-000-rows-with-the-orm-and-it-s-really-slow
+                self.session.execute(Spectrum.__table__.insert(), spectra)
+                self.session.flush()
 
         self.session.commit()
         self._indexes['bank'] += 1

@@ -87,11 +87,12 @@ class ImportUserDatabaseDialog(ImportUserDatabaseDialogBase, ImportUserDatabaseD
         if len(name) == 0:
             self.editDatabaseName.setPalette(self._error_palette)
 
-        worker = self.prepare_convert_database_worker(input_file, f'{name}*')
+        id_ = {'User': {name: [input_file]}}
+        worker = self.prepare_convert_database_worker(id_)
         if worker is not None:
             self._workers.add(worker)
 
-    def prepare_convert_database_worker(self, id_, name):
+    def prepare_convert_database_worker(self, id_):
         def error(e):
             if isinstance(e, NotImplementedError):
                 QMessageBox.warning(self, None, "File format is not supported.")
@@ -100,7 +101,7 @@ class ImportUserDatabaseDialog(ImportUserDatabaseDialogBase, ImportUserDatabaseD
             QMessageBox.information(self, None,
                                     "Database was successfully imported.")
 
-        worker = ConvertDatabasesWorker([id_], names=[name], output_path=self.base_path)
+        worker = ConvertDatabasesWorker(id_, output_path=self.base_path)
         worker.error.connect(error)
         worker.finished.connect(finished)
         return worker

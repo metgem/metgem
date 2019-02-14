@@ -2,7 +2,7 @@ import os
 
 from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtGui import QMovie, QPainter
-from PyQt5.QtWidgets import QListView, QListWidget, QTableView, QTableWidget
+from PyQt5.QtWidgets import QListView, QListWidget, QTableView, QTableWidget, QTreeView, QTreeWidget
 
 LOADING_MOVIE = os.path.join(os.path.dirname(__file__), 'images', 'loading.gif')
 
@@ -97,4 +97,12 @@ class LoadingTableView(LoadingViewMixin, QTableView):
 
 
 class LoadingTableWidget(LoadingViewMixin, QTableWidget):
+    pass
+
+
+class LoadingTreeView(LoadingViewMixin, QTreeView):
+    pass
+
+
+class LoadingTreeWidget(LoadingViewMixin, QTreeWidget):
     pass
