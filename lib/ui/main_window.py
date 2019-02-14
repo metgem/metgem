@@ -4,8 +4,10 @@ from ..utils import colors
 from ..logger import get_logger, debug
 
 import os
+import sys
 import json
 import zipfile
+import subprocess
 
 import requests
 
@@ -159,6 +161,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.actionCurrentParameters.triggered.connect(self.on_current_parameters_triggered)
         self.actionPreferences.triggered.connect(self.on_preferences_triggered)
         self.actionResetLayout.triggered.connect(self.reset_layout)
+        self.actionOpenUserFolder.triggered.connect(self.on_open_user_folder_triggered)
         self.actionZoomIn.triggered.connect(lambda: self.current_view.scaleView(1.2))
         self.actionZoomOut.triggered.connect(lambda: self.current_view.scaleView(1 / 1.2))
         self.actionZoomToFit.triggered.connect(lambda: self.current_view.zoomToFit())
@@ -720,6 +723,15 @@ class MainWindow(MainWindowBase, MainWindowUI):
             style = dialog.getValues()
             self.gvNetwork.scene().setNetworkStyle(style)
             self.gvTSNE.scene().setNetworkStyle(style)
+
+    @debug
+    def on_open_user_folder_triggered(self, *args):
+        if sys.platform.startswith('win'):
+            os.startfile(config.USER_PATH)
+        elif sys.platform.startswith('osx'):
+            subprocess.Popen(["open", config.USER_PATH])
+        else:
+            subprocess.Popen(["xdg-open", config.USER_PATH])
 
     @debug
     def on_full_screen_triggered(self, *args):

@@ -58,6 +58,7 @@
     <file>images/folder-open.svg</file>
     <file>images/main.svg</file>
     <file>images/reset-layout.svg</file>
+    <file>images/user-home.svg</file>
   </qresource>
   <qresource prefix="logo">
     <file>images/main-wide.svg</file>
