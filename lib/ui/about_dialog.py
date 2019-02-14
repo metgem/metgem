@@ -84,6 +84,8 @@ class AboutDialog(AboutDialogDialogBase, AboutDialogUI):
             "<li><a href=\"https://github.com/cytoscape/py2cytoscape\">py2cytoscape</a>: MIT</li>"
             "<li><a href=\"https://github.com/mhammond/pywin32\">pywin32</a>: Python Software Foundation License</li>"
             "<li><a href=\"https://github.com/bhargavchippada/forceatlas2\">Gephi's ForceAtlas2</a>: GPLv3</li>"
+            "<li><a href=\"https://qtconsole.readthedocs.io/en/stable\">qtconsole</a>: 3-clause BSD</li>"
+            "<li><a href=\"http://pluginbase.pocoo.org/\">pluginbase</a>: 3-clause BSD</li>"
             "</ul></p>"
         )
 
