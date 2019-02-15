@@ -190,6 +190,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.actionExportToCytoscape.triggered.connect(self.on_export_to_cytoscape_triggered)
         self.actionExportAsImage.triggered.connect(lambda: self.on_export_as_image_triggered('full'))
         self.actionExportCurrentViewAsImage.triggered.connect(lambda: self.on_export_as_image_triggered('current'))
+        self.actionExportMetadata.triggered.connect(self.on_export_metadata)
 
         self.actionDownloadDatabases.triggered.connect(self.on_download_databases_triggered)
         self.actionImportUserDatabase.triggered.connect(self.on_import_user_database_triggered)
@@ -588,6 +589,24 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 painter.setRenderHint(QPainter.Antialiasing)
                 view.render(painter, source=rect) if type_ == 'current' else view.scene().render(painter)
                 image.save(filename)
+
+    @debug
+    def on_export_metadata(self, *args):
+        filter_ = ["CSV - Comma Separated Values (*.csv)",
+                   "TSV - Tab Separated Values (*.tsv)"]
+
+        filename, filter_ = QFileDialog.getSaveFileName(self, "Save image",
+                                                        filter=";;".join(filter_))
+
+        if filename:
+            if filter_.endswith("(*.tsv)"):
+                sep = '\t'
+            else:
+                sep = ','
+
+            worker = self.prepare_export_metadata_worker(filename, self.tvNodes.model(), sep)
+            if worker is not None:
+                self._workers.add(worker)
 
     @debug
     def on_show_spectrum_triggered(self, type_, node=None, node_idx=None):
@@ -1306,7 +1325,23 @@ class MainWindow(MainWindowBase, MainWindowUI):
             elif isinstance(e, FileNotFoundError):
                 QMessageBox.warning(self, None, "Group mapping file does not exist.")
             else:
-                QMessageBox.warning(self, None, f"Group mapping was not loaded because the following error occured: {str(e)}")
+                QMessageBox.warning(self, None,
+                                    f"Group mapping was not loaded because the following error occurred: {str(e)}")
+
+        worker.finished.connect(finished)
+        worker.error.connect(error)
+        return worker
+
+    @debug
+    def prepare_export_metadata_worker(self, filename, model, sep):
+        worker = workers.ExportMetadataWorker(filename, model, sep)
+
+        def finished():
+            QMessageBox.information(self, None, f"Metadata were successfully exported to \"{filename}\".")
+
+        def error(e):
+            QMessageBox.warning(self, None,
+                                f"Metadata were not exported because the following error occurred: {str(e)})")
 
         worker.finished.connect(finished)
         worker.error.connect(error)

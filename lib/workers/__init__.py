@@ -7,6 +7,7 @@ from .cosine import ComputeScoresWorker, CosineComputationOptions
 from .read_data import ReadDataWorker
 from .read_metadata import ReadMetadataOptions, ReadMetadataWorker
 from .read_group_mapping import ReadGroupMappingWorker
+from .export_metadata import ExportMetadataWorker
 from .project import LoadProjectWorker, SaveProjectWorker
 from .databases import (ListDatabasesWorker, DownloadDatabasesWorker,
                         GetGNPSDatabasesMtimeWorker, ConvertDatabasesWorker,

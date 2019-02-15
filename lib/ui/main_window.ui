@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1084</width>
-    <height>768</height>
+    <width>1076</width>
+    <height>763</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -303,8 +303,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1084</width>
-     <height>20</height>
+     <width>1076</width>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -313,6 +313,13 @@
     </property>
     <addaction name="actionOpen"/>
     <addaction name="actionProcessFile"/>
+    <addaction name="actionImportMetadata"/>
+    <addaction name="actionImportGroupMapping"/>
+    <addaction name="separator"/>
+    <addaction name="actionExportToCytoscape"/>
+    <addaction name="actionExportAsImage"/>
+    <addaction name="actionExportCurrentViewAsImage"/>
+    <addaction name="actionExportMetadata"/>
     <addaction name="separator"/>
     <addaction name="actionSave"/>
     <addaction name="actionSaveAs"/>
@@ -1172,6 +1179,21 @@
    </property>
    <property name="statusTip">
     <string>Open user's folder</string>
+   </property>
+  </action>
+  <action name="actionExportMetadata">
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/export-metadata.svg</normaloff>:/icons/images/export-metadata.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Export &amp;metadata as CSV</string>
+   </property>
+   <property name="toolTip">
+    <string>Export data of nodes table in a text file (Comma Separated Values format)</string>
+   </property>
+   <property name="statusTip">
+    <string>Export data of nodes table in a text file (Comma Separated Values format)</string>
    </property>
   </action>
  </widget>

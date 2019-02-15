@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="icons">
+    <file>images/export-metadata.svg</file>
     <file>images/ruler.svg</file>
     <file>images/import-database.svg</file>
     <file>images/new-library-user.svg</file>
