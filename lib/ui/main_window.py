@@ -191,6 +191,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.actionExportAsImage.triggered.connect(lambda: self.on_export_as_image_triggered('full'))
         self.actionExportCurrentViewAsImage.triggered.connect(lambda: self.on_export_as_image_triggered('current'))
         self.actionExportMetadata.triggered.connect(self.on_export_metadata)
+        self.actionExportDatabaseResults.triggered.connect(self.on_export_db_results)
 
         self.actionDownloadDatabases.triggered.connect(self.on_download_databases_triggered)
         self.actionImportUserDatabase.triggered.connect(self.on_import_user_database_triggered)
@@ -595,16 +596,27 @@ class MainWindow(MainWindowBase, MainWindowUI):
         filter_ = ["CSV - Comma Separated Values (*.csv)",
                    "TSV - Tab Separated Values (*.tsv)"]
 
-        filename, filter_ = QFileDialog.getSaveFileName(self, "Save image",
+        filename, filter_ = QFileDialog.getSaveFileName(self, "Export metadata",
                                                         filter=";;".join(filter_))
 
         if filename:
-            if filter_.endswith("(*.tsv)"):
-                sep = '\t'
-            else:
-                sep = ','
+            sep = '\t' if filter_.endswith("(*.tsv)") else ','
 
-            worker = self.prepare_export_metadata_worker(filename, self.tvNodes.model(), sep)
+            worker = self.prepare_export_metadata_worker(filename, self.tvNodes.model().sourceModel(), sep)
+            if worker is not None:
+                self._workers.add(worker)
+
+    @debug
+    def on_export_db_results(self, *args):
+        filter_ = ["YAML - YAML Ain't Markup Language (*.yaml)",
+                   "JSON - JavaScript Notation Object (*.json)"]
+
+        filename, filter_ = QFileDialog.getSaveFileName(self, "Export Database Results",
+                                                        filter=";;".join(filter_))
+
+        if filename:
+            fmt = 'json' if filter_.endswith("(*.json)") else 'yaml'
+            worker = self.prepare_export_db_results_worker(filename, self.tvNodes.model().sourceModel(), fmt=fmt)
             if worker is not None:
                 self._workers.add(worker)
 
@@ -1342,6 +1354,21 @@ class MainWindow(MainWindowBase, MainWindowUI):
         def error(e):
             QMessageBox.warning(self, None,
                                 f"Metadata were not exported because the following error occurred: {str(e)})")
+
+        worker.finished.connect(finished)
+        worker.error.connect(error)
+        return worker
+
+    @debug
+    def prepare_export_db_results_worker(self, filename, model, fmt):
+        worker = workers.ExportDbResultsWorker(filename, model, fmt)
+
+        def finished():
+            QMessageBox.information(self, None, f"Database results were successfully exported to \"{filename}\".")
+
+        def error(e):
+            QMessageBox.warning(self, None,
+                                f"Database results were not exported because the following error occurred: {str(e)})")
 
         worker.finished.connect(finished)
         worker.error.connect(error)

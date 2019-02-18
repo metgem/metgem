@@ -320,6 +320,7 @@
     <addaction name="actionExportAsImage"/>
     <addaction name="actionExportCurrentViewAsImage"/>
     <addaction name="actionExportMetadata"/>
+    <addaction name="actionExportDatabaseResults"/>
     <addaction name="separator"/>
     <addaction name="actionSave"/>
     <addaction name="actionSaveAs"/>
@@ -1194,6 +1195,18 @@
    </property>
    <property name="statusTip">
     <string>Export data of nodes table in a text file (Comma Separated Values format)</string>
+   </property>
+  </action>
+  <action name="actionExportDatabaseResults">
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/export-metadata.svg</normaloff>:/icons/images/export-metadata.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Export &amp;Database results</string>
+   </property>
+   <property name="statusTip">
+    <string>Export Database results</string>
    </property>
   </action>
  </widget>

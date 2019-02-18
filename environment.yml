@@ -21,5 +21,6 @@ dependencies:
     - pyarrow>=0.9.0
     - pywin32>=223          [win]
     - pluginbase>1.0
+    - pyyaml>=3.13
     - pip:
         - py2cytoscape>=0.7.0
