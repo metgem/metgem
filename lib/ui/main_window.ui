@@ -415,6 +415,8 @@
    <addaction name="separator"/>
    <addaction name="actionSetNodesColor"/>
    <addaction name="actionSetNodesSize"/>
+   <addaction name="separator"/>
+   <addaction name="actionSetPieChartsVisibility"/>
   </widget>
   <widget class="QToolBar" name="tbExport">
    <property name="windowTitle">
@@ -1207,6 +1209,30 @@
    </property>
    <property name="statusTip">
     <string>Export Database results</string>
+   </property>
+  </action>
+  <action name="actionSetPieChartsVisibility">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/pie.svg</normaloff>:/icons/images/pie.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Show &amp;pie charts</string>
+   </property>
+   <property name="toolTip">
+    <string>Temporarily show/hide pie charts</string>
+   </property>
+   <property name="statusTip">
+    <string>Temporarily show/hide pie charts</string>
+   </property>
+   <property name="shortcut">
+    <string>P</string>
    </property>
   </action>
  </widget>

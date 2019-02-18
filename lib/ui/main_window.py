@@ -147,10 +147,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.btUseColumnsForPieCharts.clicked.connect(lambda: self.on_use_columns_for('pie charts'))
         self.btUseColumnForLabels.clicked.connect(lambda: self.on_use_columns_for('labels'))
 
-        self.gvNetwork.scene().selectionChanged.connect(self.on_scene_selection_changed)
-        self.gvNetwork.focusedIn.connect(lambda: self.on_scene_selection_changed(update_view=False))
-        self.gvTSNE.scene().selectionChanged.connect(self.on_scene_selection_changed)
-        self.gvTSNE.focusedIn.connect(lambda: self.on_scene_selection_changed(update_view=False))
+        for view in (self.gvNetwork, self.gvTSNE):
+            view.scene().selectionChanged.connect(self.on_scene_selection_changed)
+            view.focusedIn.connect(lambda: self.on_scene_selection_changed(update_view=False))
+            view.scene().pieChartsVisibilityChanged.connect(
+                lambda visibility: self.actionSetPieChartsVisibility.setChecked(visibility))
 
         self.actionQuit.triggered.connect(self.close)
         self.actionAbout.triggered.connect(lambda: ui.AboutDialog().exec_())
@@ -187,6 +188,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         size_combo.currentIndexChanged['QString'].connect(self.on_set_selected_nodes_size)
         self.actionNeighbors.triggered.connect(
             lambda: self.on_select_first_neighbors_triggered(self.current_view.scene().selectedNodes()))
+        self.actionSetPieChartsVisibility.toggled.connect(self.on_set_pie_charts_visibility_toggled)
         self.actionExportToCytoscape.triggered.connect(self.on_export_to_cytoscape_triggered)
         self.actionExportAsImage.triggered.connect(lambda: self.on_export_as_image_triggered('full'))
         self.actionExportCurrentViewAsImage.triggered.connect(lambda: self.on_export_as_image_triggered('current'))
@@ -491,6 +493,13 @@ class MainWindow(MainWindowBase, MainWindowUI):
         if dialog.exec_() == QDialog.Accepted:
             filename = dialog.selectedFiles()[0]
             self.save_project(filename)
+
+    @debug
+    def on_set_pie_charts_visibility_toggled(self, visibility):
+        for view in (self.gvNetwork, self.gvTSNE):
+            scene = view.scene()
+            scene.setPieChartsVisibility(visibility)
+            view.updateVisibleItems()
 
     @debug
     def on_export_to_cytoscape_triggered(self, *args):
@@ -918,16 +927,20 @@ class MainWindow(MainWindowBase, MainWindowUI):
         model = self.tvNodes.model().sourceModel()
         if column_ids is not None:
             colors_list = colors.get_colors(len(column_ids), cmap=cmap)
-            self.gvNetwork.scene().setPieColors(colors_list)
-            self.gvTSNE.scene().setPieColors(colors_list)
+
             for column in range(model.columnCount()):
                 model.setHeaderData(column, Qt.Horizontal, None, role=Qt.BackgroundColorRole)
+
             for column, color in zip(column_ids, colors_list):
                 color = QColor(color)
                 color.setAlpha(128)
                 model.setHeaderData(column, Qt.Horizontal, color, role=Qt.BackgroundColorRole)
-            self.gvNetwork.scene().setPieChartsFromModel(model, column_ids)
-            self.gvTSNE.scene().setPieChartsFromModel(model, column_ids)
+
+            for view in (self.gvNetwork, self.gvTSNE):
+                scene = view.scene()
+                scene.setPieColors(colors_list)
+                scene.setPieChartsFromModel(model, column_ids)
+                scene.setPieChartsVisibility(True)
         else:
             for column in range(model.columnCount()):
                 model.setHeaderData(column, Qt.Horizontal, None, role=Qt.BackgroundColorRole)
