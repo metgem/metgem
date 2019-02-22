@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1076</width>
+    <width>1106</width>
     <height>763</height>
    </rect>
   </property>
@@ -303,7 +303,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1076</width>
+     <width>1106</width>
      <height>21</height>
     </rect>
    </property>
@@ -496,6 +496,9 @@
           <iconset resource="ui.qrc">
            <normaloff>:/icons/images/label.svg</normaloff>:/icons/images/label.svg</iconset>
          </property>
+         <property name="popupMode">
+          <enum>QToolButton::MenuButtonPopup</enum>
+         </property>
         </widget>
        </item>
        <item>
@@ -514,7 +517,7 @@
            <normaloff>:/icons/images/pie.svg</normaloff>:/icons/images/pie.svg</iconset>
          </property>
          <property name="popupMode">
-          <enum>QToolButton::DelayedPopup</enum>
+          <enum>QToolButton::MenuButtonPopup</enum>
          </property>
         </widget>
        </item>
@@ -1233,6 +1236,54 @@
    </property>
    <property name="shortcut">
     <string>P</string>
+   </property>
+  </action>
+  <action name="actionResetColorMapping">
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/node-empty.svg</normaloff>:/icons/images/node-empty.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Reset color mapping</string>
+   </property>
+   <property name="toolTip">
+    <string>Remove pie charts</string>
+   </property>
+  </action>
+  <action name="actionUseColumnsForPieCharts">
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/pie.svg</normaloff>:/icons/images/pie.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Use Columns for Pie Charts</string>
+   </property>
+   <property name="toolTip">
+    <string>Use selected columns as source for nodes' pie charts</string>
+   </property>
+  </action>
+  <action name="actionResetLabelMapping">
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/label.svg</normaloff>:/icons/images/label.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Reset label mapping</string>
+   </property>
+   <property name="toolTip">
+    <string>Restore default nodes' labels</string>
+   </property>
+  </action>
+  <action name="actionUseColumnForLabels">
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/label.svg</normaloff>:/icons/images/label.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Use Column for Labels</string>
+   </property>
+   <property name="toolTip">
+    <string>Use selected column as source for nodes' labels</string>
    </property>
   </action>
  </widget>

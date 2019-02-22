@@ -1,6 +1,7 @@
+from typing import List
+
 from .. import config, ui, utils, workers, errors
 from ..utils.network import Network
-from ..utils import colors
 from ..logger import get_logger, debug
 
 import os
@@ -29,6 +30,10 @@ from libmetgem import human_readable_data
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'main_window.ui')
 MainWindowUI, MainWindowBase = uic.loadUiType(UI_FILE, from_imports='lib.ui', import_from='lib.ui')
+
+
+COLUMN_MAPPING_PIE_CHARTS = 0
+COLUMN_MAPPING_LABELS = 1
 
 
 # noinspection PyCallByClass,PyArgumentList
@@ -71,6 +76,19 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.tabifyDockWidget(self.dockNodes, self.dockEdges)
         self.tabifyDockWidget(self.dockEdges, self.dockSpectra)
         self.dockNodes.raise_()
+
+        # Create node mappings toolbar button's menus
+        menu = QMenu()
+        menu.addAction(self.actionUseColumnForLabels)
+        menu.addAction(self.actionResetLabelMapping)
+        self.btUseColumnForLabels.setMenu(menu)
+        self.btUseColumnForLabels.setDefaultAction(self.actionUseColumnForLabels)
+
+        menu = QMenu()
+        menu.addAction(self.actionUseColumnsForPieCharts)
+        menu.addAction(self.actionResetColorMapping)
+        self.btUseColumnsForPieCharts.setMenu(menu)
+        self.btUseColumnsForPieCharts.setDefaultAction(self.actionUseColumnsForPieCharts)
 
         # Reorganise export as image actions
         export_button = ui.widgets.ToolBarMenu()
@@ -144,8 +162,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         # Connect events
         self.tvNodes.customContextMenuRequested.connect(self.on_nodes_table_contextmenu)
-        self.btUseColumnsForPieCharts.clicked.connect(lambda: self.on_use_columns_for('pie charts'))
-        self.btUseColumnForLabels.clicked.connect(lambda: self.on_use_columns_for('labels'))
+        self.actionUseColumnsForPieCharts.triggered.connect(lambda: self.on_use_columns_for(COLUMN_MAPPING_PIE_CHARTS))
+        self.actionResetColorMapping.triggered.connect(lambda: self.set_nodes_pie_chart_values(None))
+        self.actionUseColumnForLabels.triggered.connect(lambda: self.on_use_columns_for(COLUMN_MAPPING_LABELS))
+        self.actionResetLabelMapping.triggered.connect(lambda: self.set_nodes_label(None))
 
         for view in (self.gvNetwork, self.gvTSNE):
             view.scene().selectionChanged.connect(self.on_scene_selection_changed)
@@ -211,21 +231,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         self.tvNodes.viewDetailsClicked.connect(self.on_view_details_clicked)
         self.tvNodes.model().dataChanged.connect(self.on_nodes_table_data_changed)
-
-        # Create list of colormaps
-        menu = QMenu(self)
-        group = QActionGroup(menu, exclusive=True)
-        for cmap in colors.COLORMAPS:
-            action = group.addAction(QWidgetAction(menu, checkable=True))
-            pixmap = colors.cmap2pixmap(cmap)
-            if pixmap is not None:
-                label = ui.widgets.ColorMapFrame(cmap, pixmap, parent=menu)
-                action.setDefaultWidget(label)
-                action.setData(cmap)
-                menu.addAction(action)
-
-        self.btUseColumnsForPieCharts.setMenu(menu)
-        group.triggered.connect(lambda act: self.on_use_columns_for("pie charts", cmap=act.data()))
 
         # Add a menu to show/hide toolbars
         popup_menu = self.createPopupMenu()
@@ -674,38 +679,22 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.gvTSNE.scene().setNodesSelection(neighbors)
 
     @debug
-    def on_use_columns_for(self, type_, cmap=None):
+    def on_use_columns_for(self, type_):
         if self.tvNodes.model().columnCount() <= 1:
             return
 
-        selected_columns_ids = self.tvNodes.selectionModel().selectedColumns(0)
-        len_ = len(selected_columns_ids)
-        if type_ == "pie charts":
-            if len_ > 0:
-                if cmap is None:
-                    cmap = QSettings().value('ColorMap', 'auto')
-                else:
-                    QSettings().setValue('ColorMap', cmap)
-                ids = [index.column() for index in selected_columns_ids]
-                self.set_nodes_pie_chart_values(ids, cmap=cmap)
-            elif cmap is None:
-                reply = QMessageBox.question(self, None,
-                                             "No column selected. Do you want to remove pie charts?",
-                                             QMessageBox.Yes | QMessageBox.No)
-                if reply == QMessageBox.Yes:
-                    self.set_nodes_pie_chart_values(None)
-        elif type_ == "labels":
-            if len_ > 1:
+        selected_columns_indexes = self.tvNodes.selectionModel().selectedColumns(0)
+        if type_ == COLUMN_MAPPING_PIE_CHARTS:
+            dialog = ui.ColorMappingDialog(self.tvNodes.model(), selected_columns_indexes)
+            if dialog.exec_() == QDialog.Accepted:
+                columns, colors = dialog.getValues()
+                self.set_nodes_pie_chart_values(columns, colors)
+        elif type_ == COLUMN_MAPPING_LABELS:
+            if len(selected_columns_indexes) > 1:
                 QMessageBox.information(self, None, "Please select only one column.")
-            elif len_ == 1:
-                id_ = selected_columns_ids[0].column()
-                self.set_nodes_label(id_)
             else:
-                reply = QMessageBox.question(self, None,
-                                             "No column selected. Do you want to reset labels?",
-                                             QMessageBox.Yes | QMessageBox.No)
-                if reply == QMessageBox.Yes:
-                    self.set_nodes_label(None)
+                id_ = selected_columns_indexes[0].column()
+                self.set_nodes_label(id_)
 
     @debug
     def on_nodes_table_contextmenu(self, event):
@@ -923,27 +912,28 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.gvTSNE.scene().resetLabels()
 
     @debug
-    def set_nodes_pie_chart_values(self, column_ids, cmap='auto'):
+    def set_nodes_pie_chart_values(self, column_ids, colors: List[QColor]=()):
         model = self.tvNodes.model().sourceModel()
         if column_ids is not None:
-            colors_list = colors.get_colors(len(column_ids), cmap=cmap)
+            if len(colors) < len(column_ids):
+                QMessageBox.error(self, None, "There is more columns selected than colors available.")
+                return
 
             for column in range(model.columnCount()):
-                model.setHeaderData(column, Qt.Horizontal, None, role=Qt.BackgroundColorRole)
+                model.setHeaderData(column, Qt.Horizontal, None, role=ui.widgets.metadata.ColorMarkRole)
 
-            for column, color in zip(column_ids, colors_list):
+            for column, color in zip(column_ids, colors):
                 color = QColor(color)
-                color.setAlpha(128)
-                model.setHeaderData(column, Qt.Horizontal, color, role=Qt.BackgroundColorRole)
+                model.setHeaderData(column, Qt.Horizontal, color, role=ui.widgets.metadata.ColorMarkRole)
 
             for view in (self.gvNetwork, self.gvTSNE):
                 scene = view.scene()
-                scene.setPieColors(colors_list)
+                scene.setPieColors(colors)
                 scene.setPieChartsFromModel(model, column_ids)
                 scene.setPieChartsVisibility(True)
         else:
             for column in range(model.columnCount()):
-                model.setHeaderData(column, Qt.Horizontal, None, role=Qt.BackgroundColorRole)
+                model.setHeaderData(column, Qt.Horizontal, None, role=ui.widgets.metadata.ColorMarkRole)
             self.gvNetwork.scene().resetPieCharts()
             self.gvTSNE.scene().resetPieCharts()
 

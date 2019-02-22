@@ -3,14 +3,14 @@ from PyQt5.QtWidgets import QTableView, QAbstractButton, QHeaderView
 from PyQt5.QtCore import Qt, QObject, QEvent, QRect, QItemSelectionModel, pyqtSignal, QTimer, QModelIndex
 
 from lib.ui.widgets.delegates import StandardsResultsDelegate
-from .model import ProxyModel
+from .model import ProxyModel, ColorMarkRole
 from ..delegates import EnsureStringItemDelegate
 from ....utils import SignalBlocker
 
 
 class HeaderView(QHeaderView):
-    """QHeaderView that can have a different color background for each section and selection of columns with
-    right mouse button."""
+    """QHeaderView that can have a different color background and or color mark for each section and selection
+    of columns with right mouse button."""
 
     sectionPressedRight = pyqtSignal(int)
     sectionEnteredRight = pyqtSignal(int)
@@ -23,13 +23,18 @@ class HeaderView(QHeaderView):
 
     def paintSection(self, painter: QPainter, rect: QRect, logical_index: int):
         bg = self.model().headerData(logical_index, Qt.Horizontal, Qt.BackgroundColorRole)
+        cm = self.model().headerData(logical_index, Qt.Horizontal, ColorMarkRole)
 
         painter.save()
         super().paintSection(painter, rect, logical_index)
         painter.restore()
 
         if bg is not None and bg.isValid():
+            bg.setAlpha(100)
             painter.fillRect(rect, bg)
+
+        if cm is not None and cm.isValid():
+            painter.fillRect(rect.adjusted(0, 0, 0, -int(7 * rect.height() / 8)), cm)
 
     def allowRightMouseSelection(self):
         return self._right_selection_active
@@ -161,8 +166,6 @@ class NodeTableView(MetadataTableView):
             def update():
                 nonlocal colored
                 color = self.palette().color(QPalette.Highlight) if colored else None
-                if color is not None:
-                    color.setAlpha(100)
                 self.model().setHeaderData(section, Qt.Horizontal, color, role=Qt.BackgroundColorRole)
                 colored = not colored
 

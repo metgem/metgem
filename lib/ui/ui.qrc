@@ -1,5 +1,14 @@
 <RCC>
   <qresource prefix="icons">
+    <file>images/node-empty.svg</file>
+    <file>images/go-bottom.svg</file>
+    <file>images/magic.svg</file>
+    <file>images/go-down.svg</file>
+    <file>images/go-top.svg</file>
+    <file>images/go-up.svg</file>
+    <file>images/pencil.svg</file>
+    <file>images/list-add.svg</file>
+    <file>images/list-remove.svg</file>
     <file>images/export-metadata.svg</file>
     <file>images/ruler.svg</file>
     <file>images/import-database.svg</file>

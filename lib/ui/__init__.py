@@ -11,3 +11,4 @@ from .query_databases_dialog import QueryDatabasesDialog
 from .view_standards_results_dialog import ViewStandardsResultsDialog
 from .import_user_database_dialog import ImportUserDatabaseDialog
 from .about_dialog import AboutDialog
+from .color_mapping_dialog import ColorMappingDialog

@@ -15,6 +15,7 @@ LabelRole = Qt.UserRole + 2
 StandardsRole = Qt.UserRole + 3
 AnalogsRole = Qt.UserRole + 4
 DbResultsRole = Qt.UserRole + 5
+ColorMarkRole = Qt.UserRole + 6
 
 
 class ProxyModel(QSortFilterProxyModel):
@@ -60,6 +61,7 @@ class NodesModel(QAbstractTableModel):
         self.db_results = None
         self.headers = None
         self.headers_colors = {}
+        self.headers_bgcolors = {}
         self.mappings = {}
 
     def rowCount(self, parent=QModelIndex()):
@@ -191,9 +193,12 @@ class NodesModel(QAbstractTableModel):
                     return text
             elif orientation == Qt.Vertical:
                 return str(section+1)
-        elif role == Qt.BackgroundColorRole:
+        elif role == ColorMarkRole:
             if orientation == Qt.Horizontal and self.headers_colors is not None and section in self.headers_colors:
                 return self.headers_colors[section]
+        elif role == Qt.BackgroundRole:
+            if orientation == Qt.Horizontal and self.headers_bgcolors is not None and section in self.headers_bgcolors:
+                return self.headers_bgcolors[section]
         elif role == Qt.DecorationRole:
             if orientation == Qt.Horizontal:
                 if section == 1:
@@ -204,8 +209,12 @@ class NodesModel(QAbstractTableModel):
             super().headerData(section, orientation, role)
 
     def setHeaderData(self, section: int, orientation: int, value, role=Qt.EditRole):
-        if role == Qt.BackgroundColorRole:
+        if role == ColorMarkRole:
             self.headers_colors[section] = value
+            self.headerDataChanged.emit(orientation, section, section)
+            return True
+        elif role == Qt.BackgroundRole:
+            self.headers_bgcolors[section] = value
             self.headerDataChanged.emit(orientation, section, section)
             return True
 
