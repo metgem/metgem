@@ -33,11 +33,15 @@
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="theme">
+      <attribute name="icon">
+       <iconset resource="ui.qrc">
+        <normaloff>:/icons/images/main.svg</normaloff>:/icons/images/main.svg</iconset>
+      </attribute>
       <attribute name="title">
-       <string>Theme</string>
+       <string>&amp;Theme</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_3">
        <item row="0" column="0">
@@ -66,8 +70,12 @@
       </layout>
      </widget>
      <widget class="QWidget" name="edges">
+      <attribute name="icon">
+       <iconset resource="ui.qrc">
+        <normaloff>:/icons/images/edge.svg</normaloff>:/icons/images/edge.svg</iconset>
+      </attribute>
       <attribute name="title">
-       <string>Edges</string>
+       <string>&amp;Edges</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_2">
        <item row="0" column="2">
@@ -132,7 +140,9 @@
    <header>PyQtNetworkView.h</header>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="ui.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>buttonBox</sender>

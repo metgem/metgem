@@ -23,11 +23,11 @@ POSITIONS = [(14, 47), (34, 37), (15, 21), (40, 14), (58, 33),
 LINKS = [(0, 1), (1, 2), (1, 3), (1, 4), (1, 5), (4, 5), (5, 6), (5, 7), (5, 8), (5, 9)]
 WIDTHS = (11.024, 9.868, 13.504, 6.664, 9.944, 10.036, 7.984, 11.028, 6.464, 8.504)
 
+StyleRole = Qt.UserRole + 1
+CssRole = Qt.UserRole + 2
+
 
 class SettingsDialog(SettingsDialogUI, SettingsDialogBase):
-
-    StyleRole = Qt.UserRole + 1
-    CssRole = Qt.UserRole + 2
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -36,10 +36,8 @@ class SettingsDialog(SettingsDialogUI, SettingsDialogBase):
         self.setWindowFlags(Qt.Tool | Qt.CustomizeWindowHint | Qt.WindowCloseButtonHint)
 
         settings = QSettings()
-        value = settings.value('Metadata/neutral_tolerance')
-        if value is not None:
-            self.spinNeutralTolerance.setValue(value)
 
+        # Theme tab
         scene = NetworkScene()
         self.gvStylePreview.setScene(scene)
         nodes = scene.addNodes(range(len(POSITIONS)),
@@ -65,20 +63,24 @@ class SettingsDialog(SettingsDialogUI, SettingsDialogBase):
         for css in styles:
             style = style_from_css(css)
             item = QListWidgetItem(style.styleName())
-            item.setData(SettingsDialog.StyleRole, style)
-            item.setData(SettingsDialog.CssRole, css)
+            item.setData(StyleRole, style)
+            item.setData(CssRole, css)
             if css == current_style:
                 current_item = item
             self.lstStyles.addItem(item)
 
-        # Connect events
         self.lstStyles.currentItemChanged.connect(
-            lambda item: self.gvStylePreview.scene().setNetworkStyle(item.data(SettingsDialog.StyleRole)))
+            lambda item: self.gvStylePreview.scene().setNetworkStyle(item.data(StyleRole)))
 
         if current_item is not None:
             self.lstStyles.setCurrentItem(current_item)
         else:
             self.lstStyles.setCurrentRow(0)
+
+        # Edges tab
+        value = settings.value('Metadata/neutral_tolerance')
+        if value is not None:
+            self.spinNeutralTolerance.setValue(value)
 
     def showEvent(self, event: QShowEvent):
         self.tabWidget.setCurrentIndex(0)
@@ -89,8 +91,9 @@ class SettingsDialog(SettingsDialogUI, SettingsDialogBase):
         if r == QDialog.Accepted:
             settings = QSettings()
             settings.setValue('Metadata/neutral_tolerance', self.spinNeutralTolerance.value())
-            settings.setValue('NetworkView/style', self.lstStyles.currentItem().data(SettingsDialog.CssRole))
+            settings.setValue('NetworkView/style', self.lstStyles.currentItem().data(CssRole))
         super().done(r)
 
     def getValues(self):
         return self.gvStylePreview.scene().networkStyle()
+
