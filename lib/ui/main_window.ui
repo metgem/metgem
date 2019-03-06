@@ -522,6 +522,26 @@
         </widget>
        </item>
        <item>
+        <widget class="QToolButton" name="btUseColumnForNodesSizes">
+         <property name="toolTip">
+          <string>Use selected columns as source for nodes' sizes</string>
+         </property>
+         <property name="statusTip">
+          <string>Use selected columns as source for nodes' sizes</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="ui.qrc">
+           <normaloff>:/icons/images/node-size.svg</normaloff>:/icons/images/node-size.svg</iconset>
+         </property>
+         <property name="popupMode">
+          <enum>QToolButton::MenuButtonPopup</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
         <spacer name="verticalSpacer">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
@@ -1284,6 +1304,30 @@
    </property>
    <property name="toolTip">
     <string>Use selected column as source for nodes' labels</string>
+   </property>
+  </action>
+  <action name="actionResetSizeMapping">
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/node-size.svg</normaloff>:/icons/images/node-size.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Reset size mapping</string>
+   </property>
+   <property name="toolTip">
+    <string>Restore default nodes' sizes</string>
+   </property>
+  </action>
+  <action name="actionUseColumnForNodesSizes">
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/node-size.svg</normaloff>:/icons/images/node-size.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Use Column for Nodes Sizes</string>
+   </property>
+   <property name="toolTip">
+    <string>Use selected column as source for nodes' sizes</string>
    </property>
   </action>
  </widget>

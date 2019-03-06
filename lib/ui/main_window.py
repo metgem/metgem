@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Callable
 
 from .. import config, ui, utils, workers, errors
 from ..utils.network import Network
@@ -34,6 +34,7 @@ MainWindowUI, MainWindowBase = uic.loadUiType(UI_FILE, from_imports='lib.ui', im
 
 COLUMN_MAPPING_PIE_CHARTS = 0
 COLUMN_MAPPING_LABELS = 1
+COLUMN_MAPPING_NODES_SIZES = 2
 
 
 # noinspection PyCallByClass,PyArgumentList
@@ -89,6 +90,12 @@ class MainWindow(MainWindowBase, MainWindowUI):
         menu.addAction(self.actionResetColorMapping)
         self.btUseColumnsForPieCharts.setMenu(menu)
         self.btUseColumnsForPieCharts.setDefaultAction(self.actionUseColumnsForPieCharts)
+
+        menu = QMenu()
+        menu.addAction(self.actionUseColumnForNodesSizes)
+        menu.addAction(self.actionResetSizeMapping)
+        self.btUseColumnForNodesSizes.setMenu(menu)
+        self.btUseColumnForNodesSizes.setDefaultAction(self.actionUseColumnForNodesSizes)
 
         # Reorganise export as image actions
         export_button = ui.widgets.ToolBarMenu()
@@ -162,10 +169,15 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         # Connect events
         self.tvNodes.customContextMenuRequested.connect(self.on_nodes_table_contextmenu)
-        self.actionUseColumnsForPieCharts.triggered.connect(lambda: self.on_use_columns_for(COLUMN_MAPPING_PIE_CHARTS))
-        self.actionResetColorMapping.triggered.connect(lambda: self.set_nodes_pie_chart_values(None))
-        self.actionUseColumnForLabels.triggered.connect(lambda: self.on_use_columns_for(COLUMN_MAPPING_LABELS))
+        self.actionUseColumnForLabels.triggered.connect(
+            lambda: self.on_use_columns_for(COLUMN_MAPPING_LABELS))
         self.actionResetLabelMapping.triggered.connect(lambda: self.set_nodes_label(None))
+        self.actionUseColumnsForPieCharts.triggered.connect(
+            lambda: self.on_use_columns_for(COLUMN_MAPPING_PIE_CHARTS))
+        self.actionResetColorMapping.triggered.connect(lambda: self.set_nodes_pie_chart_values(None))
+        self.actionUseColumnForNodesSizes.triggered.connect(
+            lambda: self.on_use_columns_for(COLUMN_MAPPING_NODES_SIZES))
+        self.actionResetSizeMapping.triggered.connect(lambda: self.set_nodes_sizes_values(None))
 
         for view in (self.gvNetwork, self.gvTSNE):
             view.scene().selectionChanged.connect(self.on_scene_selection_changed)
@@ -684,17 +696,31 @@ class MainWindow(MainWindowBase, MainWindowUI):
             return
 
         selected_columns_indexes = self.tvNodes.selectionModel().selectedColumns(0)
-        if type_ == COLUMN_MAPPING_PIE_CHARTS:
-            dialog = ui.ColorMappingDialog(self.tvNodes.model(), selected_columns_indexes)
-            if dialog.exec_() == QDialog.Accepted:
-                columns, colors = dialog.getValues()
-                self.set_nodes_pie_chart_values(columns, colors)
-        elif type_ == COLUMN_MAPPING_LABELS:
-            if len(selected_columns_indexes) > 1:
+        len_ = len(selected_columns_indexes)
+
+        if type_ == COLUMN_MAPPING_LABELS:
+            if len_ == 0:
+                return
+            elif len_ > 1:
                 QMessageBox.information(self, None, "Please select only one column.")
             else:
                 id_ = selected_columns_indexes[0].column()
                 self.set_nodes_label(id_)
+        elif type_ == COLUMN_MAPPING_PIE_CHARTS:
+            dialog = ui.ColorMappingDialog(self.tvNodes.model(), selected_columns_indexes)
+            if dialog.exec_() == QDialog.Accepted:
+                columns, colors = dialog.getValues()
+                self.set_nodes_pie_chart_values(columns, colors)
+        elif type_ == COLUMN_MAPPING_NODES_SIZES:
+            if len_ > 1:
+                QMessageBox.information(self, None, "Please select only one column.")
+            else:
+                id_ = selected_columns_indexes[0].column() if len_ > 0 else -1
+                dialog = ui.SizeMappingDialog(self.tvNodes.model(), id_)
+                if dialog.exec_() == QDialog.Accepted:
+                    id_, func = dialog.getValues()
+                    if id_ > 0:
+                        self.set_nodes_sizes_values(id_, func)
 
     @debug
     def on_nodes_table_contextmenu(self, event):
@@ -934,8 +960,19 @@ class MainWindow(MainWindowBase, MainWindowUI):
         else:
             for column in range(model.columnCount()):
                 model.setHeaderData(column, Qt.Horizontal, None, role=ui.widgets.metadata.ColorMarkRole)
-            self.gvNetwork.scene().resetPieCharts()
-            self.gvTSNE.scene().resetPieCharts()
+            for view in (self.gvNetwork, self.gvTSNE):
+                view.scene().resetPieCharts()
+
+    @debug
+    def set_nodes_sizes_values(self, column_ids, func: Callable=None):
+        model = self.tvNodes.model().sourceModel()
+        if column_ids is not None:
+            for view in (self.gvNetwork, self.gvTSNE):
+                scene = view.scene()
+                scene.setNodesRadiiFromModel(model, column_ids, Qt.DisplayRole, func)
+        else:
+            for view in (self.gvNetwork, self.gvTSNE):
+                view.scene().resetNodesRadii()
 
     @debug
     def save_settings(self):
