@@ -52,6 +52,5 @@ class ReadDataWorker(BaseWorker):
 
         spectra = filter_data_multi(mzs, spectra, min_intensity, parent_filter_tolerance,
                                     matched_peaks_window, min_matched_peaks_search)
-        print(len(spectra))
             
         return mzs, spectra
