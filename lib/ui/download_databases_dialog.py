@@ -246,8 +246,15 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
                                     .format("\n".join(msg)))
 
             if any(downloaded.values()):
-                to_be_converted = {origin: {name: ids} for origin, values in ids.items() for name, ids in values.items()
-                                   if name if downloaded[origin]}
+                to_be_converted = {}
+                for origin, values in ids.items():
+                    for name, ids in values.items():
+                        if name in downloaded[origin]:
+                            if origin in to_be_converted:
+                                to_be_converted[origin][name] = ids
+                            else:
+                                to_be_converted[origin] = {name: ids}
+
                 worker = self.prepare_convert_databases_worker(to_be_converted)
                 if worker is not None:
                     self._workers.add(worker)
@@ -270,7 +277,7 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
 
             clean_up()
 
-            num_converted = len(converted_ids)
+            num_converted = sum(len(ids) for origin, ids in converted_ids.items())
             if num_converted > 0:
                 QMessageBox.information(self, None,
                                         f"{num_converted} librar{'y' if num_converted == 1 else 'ies'} "

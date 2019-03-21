@@ -46,7 +46,7 @@ class ListDatabasesWorker(BaseWorker):
                         desc = tds[2].text if tds[2].text is not None else ''
                         desc += ''.join([etree.tostring(child).decode() for child in tds[2].iterdescendants()])
 
-                        if len(ids) > 0 and not ids[0] == 'all':
+                        if len(ids) > 0 and not ids[0] == 'all.mgf':
                             item = {'name': name, 'ids': ids, 'desc': desc, 'origin': 'GNPS'}
                             items.append(item)
                             self.itemReady.emit(item)
