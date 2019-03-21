@@ -1,7 +1,7 @@
 import os
 
-from PyQt5.QtGui import QPixmap
-from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QPixmap, QPainter
+from PyQt5.QtCore import Qt, QRect
 from PyQt5.QtWidgets import QSplashScreen, QProgressBar, QLabel, qApp
 
 from version import FULLVERSION
@@ -10,10 +10,15 @@ from version import FULLVERSION
 class SplashScreen(QSplashScreen):
     def __init__(self):
         splash_pix = QPixmap(os.path.join(os.path.dirname(__file__), 'splash.png'))
-        super().__init__(splash_pix, Qt.WindowStaysOnTopHint)
-        self.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
+        super().__init__(splash_pix, Qt.WindowStaysOnTopHint | Qt.SplashScreen)
+
         self.setMask(splash_pix.mask())
         self.setAttribute(Qt.WA_TranslucentBackground)
+
+        self.__message = ""
+        self.__color = Qt.black
+        self.__alignment = Qt.AlignBottom | Qt.AlignCenter
+        self.__msgrect = self.rect().adjusted(5, 5, -5, -85)
 
         self.pbar = QProgressBar(self)
         self.pbar.setMaximum(100)
@@ -54,8 +59,17 @@ class SplashScreen(QSplashScreen):
         qApp.processEvents()
 
     def showMessage(self, message: str, alignment: int=Qt.AlignBottom | Qt.AlignCenter, color=Qt.black):
-        super().showMessage(message, alignment, color)
+        self.__message = message
+        self.__alignment = alignment
+        self.__color = color
+        self.messageChanged.emit(message)
+        self.repaint()
         qApp.processEvents()
+
+    def drawContents(self, painter: QPainter):
+        painter.setPen(self.__color)
+        painter.drawText(self.__msgrect, self.__alignment, self.__message)
+
 
 splash = SplashScreen()
 splash.show()
