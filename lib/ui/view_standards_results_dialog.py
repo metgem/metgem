@@ -1,4 +1,9 @@
+from ..database import SpectraLibrary, Spectrum, Base
+from .widgets.delegates.quality import LibraryQualityDelegate
+
 import os
+import numpy as np
+from sqlalchemy.orm import joinedload
 
 from PyQt5.QtGui import QStandardItemModel, QIcon, QStandardItem
 from PyQt5.QtWidgets import QAbstractItemView, QDialog
@@ -7,11 +12,6 @@ from PyQt5.QtCore import Qt, QAbstractTableModel, QModelIndex, QItemSelection, Q
 from PyQt5 import uic
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'view_standards_results_dialog.ui')
-
-from ..database import SpectraLibrary, Spectrum, Base
-from .widgets.delegates.quality import LibraryQualityDelegate
-
-from sqlalchemy.orm import joinedload
 
 ViewStandardsResultsDialogUI, ViewStandardsResultsDialogBase = uic.loadUiType(UI_FILE,
                                                                               from_imports='lib.ui',
@@ -105,13 +105,16 @@ class SpectraModel(QAbstractTableModel):
 
 class ViewStandardsResultsDialog(ViewStandardsResultsDialogUI, ViewStandardsResultsDialogBase):
 
-    def __init__(self, *args, base_path=None, selection: dict = None, **kwargs):
+    def __init__(self, *args, spectrum: np.ndarray=None, base_path=None, selection: dict = None, **kwargs):
         super().__init__(*args, **kwargs)
 
         self._selected_index = QModelIndex()
 
         self.setupUi(self)
         self.setWindowFlags(Qt.Tool | Qt.CustomizeWindowHint | Qt.WindowCloseButtonHint)
+
+        if spectrum is not None:
+            self.widgetSpectrumDetails.widgetSpectrum.set_spectrum2(spectrum)
 
         self.current = selection['current'] if 'current' in selection else 0
 

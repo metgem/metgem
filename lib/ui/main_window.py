@@ -895,7 +895,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
         if selection:
             path = config.SQL_PATH
             if os.path.exists(path) and os.path.isfile(path) and os.path.getsize(path) > 0:
-                dialog = ui.ViewStandardsResultsDialog(self, selection=selection, base_path=config.DATABASES_PATH)
+                spectrum = human_readable_data(self.network.spectra[row])
+                dialog = ui.ViewStandardsResultsDialog(self, spectrum=spectrum,
+                                                       selection=selection, base_path=config.DATABASES_PATH)
                 if dialog.exec_() == QDialog.Accepted:
                     current = dialog.getValues()
                     if current is not None:
