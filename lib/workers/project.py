@@ -2,6 +2,8 @@ import numpy as np
 import zipfile
 import os
 
+from PyQt5.QtGui import QColor
+
 from .base import BaseWorker
 from ..save import MnzFile, savez
 from ..utils import AttrDict
@@ -10,6 +12,7 @@ from ..workers import NetworkVisualizationOptions, TSNEVisualizationOptions, Cos
 from ..graphml import GraphMLParser, GraphMLWriter
 from ..errors import UnsupportedVersionError
 from ..workers.databases import StandardsResult
+from ..ui.size_mapping_dialog import SizeMappingFunc, MODE_LINEAR
 
 CURRENT_FORMAT_VERSION = 3
 
@@ -102,6 +105,28 @@ class LoadProjectWorker(BaseWorker):
                     if self.isStopped():
                         self.canceled.emit()
                         return
+
+                    # Load columns mappings
+                    try:
+                        columns_mappings = fid['0/columns_mappings.json']
+                    except KeyError:
+                        network.columns_mappings = {}
+                    else:
+                        ids, colors = columns_mappings.get('pies', (None, None))
+                        if ids is not None and colors is not None:
+                            colors = [QColor(color) for color in colors]
+                            columns_mappings['pies'] = (ids, colors)
+
+                        id_, func = columns_mappings.get('size', (None, None))
+                        if id_ is not None and func is not None:
+                            func = SizeMappingFunc(func.get('xs', []),
+                                                   func.get('ys', []),
+                                                   func.get('ymin', 0),
+                                                   func.get('ymax', 100),
+                                                   func.get('mode', MODE_LINEAR))
+                            columns_mappings['size'] = (id_, func)
+
+                        network.columns_mappings = columns_mappings
 
                     # Load table of spectra
                     network.spectra = SpectraList(self.filename)
@@ -216,6 +241,14 @@ class SaveProjectWorker(BaseWorker):
         mappings = getattr(self.network, 'mappings', None)
         if mappings is not None:
             d['0/mappings.json'] = mappings
+
+        columns_mappings = getattr(self.network, 'columns_mappings', None)
+        if columns_mappings:
+            ids, colors = columns_mappings.get('pies', (None, None))
+            if colors is not None:
+                colors = [color.name() for color in colors]
+                columns_mappings['pies'] = (ids, colors)
+            d['0/columns_mappings.json'] = columns_mappings
 
         if self.network.lazyloaded and os.path.exists(self.original_fname):
             self.network.spectra.close()

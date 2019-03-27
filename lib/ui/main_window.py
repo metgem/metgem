@@ -19,7 +19,7 @@ import sqlalchemy
 from PyQt5.QtWidgets import (QDialog, QFileDialog, QMessageBox, QWidget, QMenu, QActionGroup,
                              QAction, QDockWidget, qApp, QWidgetAction, QTableView, QComboBox, QToolBar, QSplitter)
 from PyQt5.QtCore import QSettings, Qt, QCoreApplication
-from PyQt5.QtGui import QPainter, QImage, QCursor, QColor, QKeyEvent, QIcon, QFontMetrics
+from PyQt5.QtGui import QPainter, QImage, QCursor, QColor, QKeyEvent, QIcon, QFontMetrics, QFont
 
 from PyQt5 import uic
 
@@ -706,11 +706,13 @@ class MainWindow(MainWindowBase, MainWindowUI):
             else:
                 id_ = selected_columns_indexes[0].column()
                 self.set_nodes_label(id_)
+                self.has_unsaved_changes = True
         elif type_ == COLUMN_MAPPING_PIE_CHARTS:
             dialog = ui.ColorMappingDialog(self.tvNodes.model(), selected_columns_indexes)
             if dialog.exec_() == QDialog.Accepted:
                 columns, colors = dialog.getValues()
                 self.set_nodes_pie_chart_values(columns, colors)
+                self.has_unsaved_changes = True
         elif type_ == COLUMN_MAPPING_NODES_SIZES:
             if len_ > 1:
                 QMessageBox.information(self, None, "Please select only one column.")
@@ -721,6 +723,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                     id_, func = dialog.getValues()
                     if id_ > 0:
                         self.set_nodes_sizes_values(id_, func)
+                self.has_unsaved_changes = True
 
     @debug
     def on_nodes_table_contextmenu(self, event):
@@ -931,27 +934,41 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
     @debug
     def set_nodes_label(self, column_id):
+        model = self.tvNodes.model().sourceModel()
+        for column in range(model.columnCount()):
+            font = model.headerData(column, Qt.Horizontal, role=Qt.FontRole)
+            if font is not None and font.overline():
+                model.setHeaderData(column, Qt.Horizontal, None, role=Qt.FontRole)
+
         if column_id is not None:
-            model = self.tvNodes.model().sourceModel()
+            font = model.headerData(column_id, Qt.Horizontal, role=Qt.FontRole)
+            font = font if font is not None else QFont()
+            font.setOverline(True)
+            model.setHeaderData(column_id, Qt.Horizontal, font, role=Qt.FontRole)
+
             self.gvNetwork.scene().setLabelsFromModel(model, column_id, ui.widgets.LabelRole)
             self.gvTSNE.scene().setLabelsFromModel(model, column_id, ui.widgets.LabelRole)
+            self.network.columns_mappings['label'] = column_id
         else:
             self.gvNetwork.scene().resetLabels()
             self.gvTSNE.scene().resetLabels()
+            self.network.columns_mappings['label'] = None
 
     @debug
     def set_nodes_pie_chart_values(self, column_ids, colors: List[QColor]=()):
         model = self.tvNodes.model().sourceModel()
         if column_ids is not None:
             if len(colors) < len(column_ids):
-                QMessageBox.error(self, None, "There is more columns selected than colors available.")
+                QMessageBox.critical(self, None, "There is more columns selected than colors available.")
                 return
 
             for column in range(model.columnCount()):
                 model.setHeaderData(column, Qt.Horizontal, None, role=ui.widgets.metadata.ColorMarkRole)
 
+            save_colors = []
             for column, color in zip(column_ids, colors):
                 color = QColor(color)
+                save_colors.append(color)
                 model.setHeaderData(column, Qt.Horizontal, color, role=ui.widgets.metadata.ColorMarkRole)
 
             for view in (self.gvNetwork, self.gvTSNE):
@@ -959,22 +976,37 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 scene.setPieColors(colors)
                 scene.setPieChartsFromModel(model, column_ids)
                 scene.setPieChartsVisibility(True)
+
+            self.network.columns_mappings['pies'] = (column_ids, save_colors)
         else:
             for column in range(model.columnCount()):
                 model.setHeaderData(column, Qt.Horizontal, None, role=ui.widgets.metadata.ColorMarkRole)
             for view in (self.gvNetwork, self.gvTSNE):
                 view.scene().resetPieCharts()
+            self.network.columns_mappings['pies'] = None
 
     @debug
-    def set_nodes_sizes_values(self, column_ids, func: Callable=None):
+    def set_nodes_sizes_values(self, column_id, func: Callable=None):
         model = self.tvNodes.model().sourceModel()
-        if column_ids is not None:
+        for column in range(model.columnCount()):
+            font = model.headerData(column, Qt.Horizontal, role=Qt.FontRole)
+            if font is not None and font.underline():
+                model.setHeaderData(column, Qt.Horizontal, None, role=Qt.FontRole)
+
+        if column_id is not None:
+            font = model.headerData(column_id, Qt.Horizontal, role=Qt.FontRole)
+            font = font if font is not None else QFont()
+            font.setUnderline(True)
+            model.setHeaderData(column_id, Qt.Horizontal, font, role=Qt.FontRole)
+
             for view in (self.gvNetwork, self.gvTSNE):
                 scene = view.scene()
-                scene.setNodesRadiiFromModel(model, column_ids, Qt.DisplayRole, func)
+                scene.setNodesRadiiFromModel(model, column_id, Qt.DisplayRole, func)
+            self.network.columns_mappings['size'] = (column_id, func)
         else:
             for view in (self.gvNetwork, self.gvTSNE):
                 view.scene().resetNodesRadii()
+            self.network.columns_mappings['size'] = None
 
     @debug
     def save_settings(self):
@@ -1074,6 +1106,22 @@ class MainWindow(MainWindowBase, MainWindowUI):
         elif type_ == 't-sne':
             self.gvTSNE.scene().setLayout(layout)
             self.network.graph.tsne_layout = layout
+
+    @debug
+    def update_columns_mappings(self):
+        columns_mappings = getattr(self.network, 'columns_mappings', {})
+
+        id_ = columns_mappings.get('label', None)
+        if id_ is not None:
+            self.set_nodes_label(id_)
+
+        ids, colors = columns_mappings.get('pies', (None, None))
+        if ids is not None and colors is not None:
+            self.set_nodes_pie_chart_values(ids, colors)
+
+        id_, func = columns_mappings.get('size', (None, None))
+        if id_ is not None and func is not None:
+             self.set_nodes_sizes_values(id_, func)
 
     @debug
     def prepare_apply_network_layout_worker(self, layout=None):
@@ -1286,6 +1334,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
             # Draw
             self.draw(compute_layouts=False)
+
+            self.update_columns_mappings()
 
             # Save filename and set window title
             self.fname = fname

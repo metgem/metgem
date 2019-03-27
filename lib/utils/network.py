@@ -3,7 +3,8 @@ from PyQt5.QtCore import QObject, pyqtSignal
 
 class Network(QObject):
     __slots__ = 'mzs', 'spectra', 'scores', 'graph', 'options', '_infos', '_interactions', \
-                'db_results', 'mappings', 'lazyloaded'
+                'db_results', 'mappings', 'columns_mappings', \
+                'lazyloaded'
 
     infosAboutToChange = pyqtSignal()
     infosChanged = pyqtSignal()
@@ -15,6 +16,7 @@ class Network(QObject):
         self._interactions = None
         self._infos = None
         self.db_results = {}
+        self.columns_mappings = {}
         self.lazyloaded = False
 
     @property

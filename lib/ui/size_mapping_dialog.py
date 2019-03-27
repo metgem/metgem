@@ -21,6 +21,9 @@ SizeMappingDialogUI, SizeMappingDialogBase = uic.loadUiType(UI_FILE,
 
 ColumnRole = Qt.UserRole + 1
 
+MODE_LINEAR = 0
+MODE_LOG = 1
+
 
 class IterInstances:
     """"Metaclass to keep track of instances of a class"""
@@ -312,9 +315,6 @@ class ColumnListWidgetItem(QListWidgetItem):
 
 class SizeMappingDialog(SizeMappingDialogUI, SizeMappingDialogBase):
 
-    MODE_LINEAR = 0
-    MODE_LOG = 1
-
     def __init__(self, model: QAbstractTableModel, column_id: int, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -341,8 +341,8 @@ class SizeMappingDialog(SizeMappingDialogUI, SizeMappingDialogBase):
 
         self.cbMode.addItems(["Linear", "Log"])
         self.cbMode.activated[int].connect(self.on_mode_changed)
-        self._current_mode = SizeMappingDialog.MODE_LINEAR
-        self.cbMode.setCurrentIndex(SizeMappingDialog.MODE_LINEAR)
+        self._current_mode = MODE_LINEAR
+        self.cbMode.setCurrentIndex(MODE_LINEAR)
 
         self.lstColumns.selectionModel().currentChanged.connect(self.on_column_changed)
 
@@ -374,14 +374,14 @@ class SizeMappingDialog(SizeMappingDialogUI, SizeMappingDialogBase):
         if mode is None:
             mode = self.cbMode.currentIndex()
 
-        if mode == SizeMappingDialog.MODE_LOG:
+        if mode == MODE_LOG:
             xmin = np.log10(xmin) if xmin > 0 else 0
             xmax = np.log10(xmax) if xmax > 0 else 0
 
         x = (pos.x() - dr.left()) / dr.width() * (xmax - xmin) + xmin
         y = (dr.height() - (pos.y() - dr.top())) / dr.height() * (ymax - ymin) + ymin
 
-        if mode == SizeMappingDialog.MODE_LOG:
+        if mode == MODE_LOG:
             x = np.power(10, x)
 
         return QPointF(x, y)
@@ -397,7 +397,7 @@ class SizeMappingDialog(SizeMappingDialogUI, SizeMappingDialogBase):
             mode = self.cbMode.currentIndex()
 
         x = pos.x()
-        if mode == SizeMappingDialog.MODE_LOG:
+        if mode == MODE_LOG:
             x = np.log10(x) if x > 0 else 0
             xmin = np.log10(xmin) if xmin > 0 else 0
             xmax = np.log10(xmax) if xmax > 0 else 0
@@ -514,16 +514,32 @@ class SizeMappingDialog(SizeMappingDialogUI, SizeMappingDialogBase):
                 xs.append(pos.x())
                 ys.append(pos.y())
 
-        if self.cbMode.currentIndex() == SizeMappingDialog.MODE_LOG:
-            xs = np.array(xs)
+        return id_, SizeMappingFunc(xs, ys, ymin, ymax, mode=self.cbMode.currentIndex())
+
+
+class SizeMappingFunc(dict):
+
+    def __init__(self, xs, ys, ymin, ymax, mode=MODE_LINEAR):
+        if mode == MODE_LOG:
+            xsarr = np.array(xs)
             with np.errstate(divide='ignore'):
-                xs = np.log10(xs)
-            xs[np.isneginf(xs)] = 0
-            f = interp1d(xs, ys, bounds_error=False, fill_value=(ymin, ymax), copy=False)
+                xsarr = np.log10(xs)
+            xsarr[np.isneginf(xsarr)] = 0
+            f = interp1d(xsarr, ys, bounds_error=False, fill_value=(ymin, ymax), copy=False)
 
             def f2(x):
                 return f(np.log10(x)) if x > 0 else ymin
 
-            return id_, f2
+            self._func = f2
         else:
-            return id_, interp1d(xs, ys, bounds_error=False, fill_value=(ymin, ymax), copy=False)
+            self._func = interp1d(xs, ys, bounds_error=False, fill_value=(ymin, ymax), copy=False)
+
+        # Store values as items in a subclassed dict instead of attributes of the class to allow serialization (json)
+        self.__setitem__('xs', xs)
+        self.__setitem__('ys', ys)
+        self.__setitem__('ymin', ymin)
+        self.__setitem__('ymax', ymax)
+        self.__setitem__('mode', mode)
+
+    def __call__(self, *args, **kwargs):
+        return self._func(*args, **kwargs)

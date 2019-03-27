@@ -62,6 +62,7 @@ class NodesModel(QAbstractTableModel):
         self.headers = None
         self.headers_colors = {}
         self.headers_bgcolors = {}
+        self.headers_fonts = {}
         self.mappings = {}
 
     def rowCount(self, parent=QModelIndex()):
@@ -84,6 +85,7 @@ class NodesModel(QAbstractTableModel):
             self.infos = None
             self.headers = None
         self.headers_colors = {}
+        self.headers_fonts = {}
 
         # Convert column name's mappings to index mapping
         if self.headers is not None:
@@ -199,6 +201,9 @@ class NodesModel(QAbstractTableModel):
         elif role == Qt.BackgroundRole:
             if orientation == Qt.Horizontal and self.headers_bgcolors is not None and section in self.headers_bgcolors:
                 return self.headers_bgcolors[section]
+        elif role == Qt.FontRole:
+            if orientation == Qt.Horizontal and self.headers_fonts is not None and section in self.headers_fonts:
+                return self.headers_fonts[section]
         elif role == Qt.DecorationRole:
             if orientation == Qt.Horizontal:
                 if section == 1:
@@ -215,6 +220,10 @@ class NodesModel(QAbstractTableModel):
             return True
         elif role == Qt.BackgroundRole:
             self.headers_bgcolors[section] = value
+            self.headerDataChanged.emit(orientation, section, section)
+            return True
+        elif role == Qt.FontRole:
+            self.headers_fonts[section] = value
             self.headerDataChanged.emit(orientation, section, section)
             return True
 
