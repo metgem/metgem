@@ -54,7 +54,8 @@ datas = [('../splash.png', '.'),
          ('../lib/ui/widgets/spectrum/images/*', 'lib/ui/widgets/spectrum/images'),
          ('../lib/ui/widgets/*.ui', 'lib/ui/widgets'),
          ('../lib/ui/widgets/databases/*.ui', 'lib/ui/widgets/databases'),
-         ('../lib/ui/widgets/metadata/*.csv', 'lib/ui/widgets/metadata')]
+         ('../lib/ui/widgets/metadata/*.csv', 'lib/ui/widgets/metadata'),
+         ('../plugins/*.py', 'plugins')]
 if not sys.platform.startswith('darwin'):
     datas.extend([('../examples/Codiaeum.csv', 'examples'),
                   ('../examples/Codiaeum.mgf', 'examples'),
