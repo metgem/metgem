@@ -1,4 +1,6 @@
-from ..config import PLUGINS_PATH
+import os
+
+from ..config import PLUGINS_PATH, APP_PATH
 
 from pluginbase import PluginBase
 from PyQt5.QtCore import QCoreApplication
@@ -67,7 +69,9 @@ def load_plugin(source, plugin_name):
 __db_sources = []
 
 base = PluginBase(package='lib.plugins')
-source = base.make_plugin_source(searchpath=[PLUGINS_PATH, 'plugins'], identifier=QCoreApplication.applicationName())
+source = base.make_plugin_source(searchpath=[PLUGINS_PATH,
+                                             os.path.join(APP_PATH, 'plugins')],
+                                 identifier=QCoreApplication.applicationName())
 
 for plugin_name in source.list_plugins():
     plugin = load_plugin(source, plugin_name)
