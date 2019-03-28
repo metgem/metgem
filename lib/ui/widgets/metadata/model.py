@@ -249,10 +249,7 @@ class EdgesModel(QAbstractTableModel):
     def columnCount(self, parent=QModelIndex()):
         data = self.interactions
         if data is not None:
-            if NEUTRAL_LOSSES is not None:
-                return len(data[0]) + 1
-            else:
-                return len(data[0])
+            return len(data[0]) + 1
         else:
             return 0
 
@@ -294,7 +291,7 @@ class EdgesModel(QAbstractTableModel):
             return
 
         if orientation == Qt.Horizontal:
-            if section == self.columnCount()-1:
+            if section == self.columnCount() - 1:
                 return 'Possible interpretation'
             return self.interactions.dtype.names[section]
         elif orientation == Qt.Vertical:

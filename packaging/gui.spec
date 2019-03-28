@@ -53,7 +53,8 @@ datas = [('../splash.png', '.'),
          ('../lib/ui/widgets/images/*', 'lib/ui/widgets/images'),
          ('../lib/ui/widgets/spectrum/images/*', 'lib/ui/widgets/spectrum/images'),
          ('../lib/ui/widgets/*.ui', 'lib/ui/widgets'),
-         ('../lib/ui/widgets/databases/*.ui', 'lib/ui/widgets/databases')]
+         ('../lib/ui/widgets/databases/*.ui', 'lib/ui/widgets/databases'),
+         ('../lib/ui/widgets/metadata/*.csv', 'lib/ui/widgets/metadata')]
 if not sys.platform.startswith('darwin'):
     datas.extend([('../examples/Codiaeum.csv', 'examples'),
                   ('../examples/Codiaeum.mgf', 'examples'),
@@ -98,10 +99,6 @@ a = Analysis(['../gui.py'],
              win_no_prefer_redirects=False,
              win_private_assemblies=False,
              cipher=block_cipher)
-             
-# Remove MKL binaries
-a.binaries = [bin for bin in a.binaries if not bin[0].startswith('mkl_') or bin[0].startswith('mkl_rt')
-              or bin[0].startswith('mkl_intel_thread')]
 
 # Remove unused IPython data files
 a.datas = [dat for dat in a.datas if not dat[0].startswith('IPython')]
