@@ -80,7 +80,7 @@ class ImportUserDatabaseDialog(ImportUserDatabaseDialogBase, ImportUserDatabaseD
     def import_database(self):
         input_file = self.editInputFile.text()
         if len(input_file) == 0 or not os.path.exists(input_file) \
-                or os.path.splitext(input_file)[1] not in ('.mgf', '.msp'):
+                or os.path.splitext(input_file)[1].lower() not in ('.mgf', '.msp'):
             self.editInputFile.setPalette(self._error_palette)
 
         name = self.editDatabaseName.text()

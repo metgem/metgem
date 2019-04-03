@@ -12,7 +12,7 @@ class ReadDataWorker(BaseWorker):
     def __init__(self, filename, options):
         super().__init__()
         self.filename = filename
-        self.ext = os.path.splitext(filename)[1]
+        self.ext = os.path.splitext(filename)[1].lower()
         self.options = options
         self.iterative_update = True
         self.max = 0

@@ -115,7 +115,7 @@ class ProcessDataDialog(ProcessDataDialogBase, ProcessDataDialogUI):
         if r == QDialog.Accepted:
             process_file = self.editProcessFile.text()
             metadata_file = self.editMetadataFile.text()
-            if len(process_file) > 0 and os.path.exists(process_file) and os.path.splitext(process_file)[1] in ('.mgf', '.msp'):
+            if len(process_file) > 0 and os.path.exists(process_file) and os.path.splitext(process_file)[1].lower() in ('.mgf', '.msp'):
                 if not self.gbMetadata.isChecked() or (os.path.exists(metadata_file) and os.path.isfile(metadata_file)):
                     super().done(r)
                 else:
