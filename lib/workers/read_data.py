@@ -34,7 +34,8 @@ class ReadDataWorker(BaseWorker):
             read = read_msp
             mz_key = 'precursormz'
         else:
-            raise NotImplementedError
+            self.error.emit(NotImplementedError())
+            return
 
         for params, data in read(self.filename, ignore_unknown=True):
             if self.isStopped():
