@@ -38,10 +38,10 @@ class ReadMetadataWorker(BaseWorker):
             data = None
             if ext in (".xls", ".xlsx"):
                 kwargs['header'] = kwargs['header'] if type(kwargs['header']) is not str else 0
-                with open(self.filename, encoding='utf-8') as f:
+                with open(self.filename, encoding='utf-8', errors='ignore') as f:
                     data = pd.read_excel(f, **kwargs)  # Workaround for Pandas's bug #15086
             elif ext in (".csv", ".txt", ".tsv"):
-                with open(self.filename, encoding='utf-8') as f:
+                with open(self.filename, encoding='utf-8', errors='ignore') as f:
                     data = pd.read_csv(f, **kwargs)   # Workaround for Pandas's bug #15086
 
             # Drop columns full of na values
