@@ -277,7 +277,8 @@ class SaveProjectWorker(BaseWorker):
             self.error.emit(e)
         else:
             try:
-                os.remove(self.filename)
+                if os.path.exists(self.filename):
+                    os.remove(self.filename)
                 os.rename(self.tmp_filename, self.filename)
                 self.network.spectra.load(self.filename)
             except OSError as e:
