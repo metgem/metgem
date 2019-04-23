@@ -1,3 +1,5 @@
+import csv
+import io
 from typing import List, Callable
 
 from .. import config, ui, utils, workers, errors
@@ -20,7 +22,7 @@ from PyQt5.QtWidgets import (QDialog, QFileDialog, QMessageBox, QWidget, QMenu, 
                              QAction, QDockWidget, qApp, QWidgetAction, QTableView, QComboBox, QToolBar, QSplitter,
                              QGraphicsLineItem, QApplication, QGraphicsView)
 from PyQt5.QtCore import QSettings, Qt, QCoreApplication
-from PyQt5.QtGui import QPainter, QImage, QCursor, QColor, QKeyEvent, QIcon, QFontMetrics, QFont, QPen
+from PyQt5.QtGui import QPainter, QImage, QCursor, QColor, QKeyEvent, QIcon, QFontMetrics, QFont, QPen, QKeySequence
 
 from PyQt5 import uic
 
@@ -378,18 +380,50 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self._last_table = table
 
     def keyPressEvent(self, event: QKeyEvent):
-        key = event.key()
-        modifiers = event.modifiers()
-        if key == Qt.Key_Tab and modifiers & Qt.ControlModifier:  # Navigate between GraphicsViews
+        widget = QApplication.focusWidget()
+
+        # Navigate between GraphicsViews
+        if event.matches(QKeySequence.NextChild):
             if self.gvNetwork.hasFocus():
                 self.gvTSNE.setFocus(Qt.TabFocusReason)
             else:
                 self.gvNetwork.setFocus(Qt.TabFocusReason)
-        elif key == Qt.Key_C and modifiers & Qt.ControlModifier:  # Copy to clipboard
-            widget = QApplication.focusWidget()
-            if widget and isinstance(widget, QGraphicsView):
-                type_ = 'full' if modifiers & Qt.ShiftModifier else 'current'
-                self.on_export_as_image_triggered(type_, to_clipboard=True)
+
+        elif widget is not None:
+            # Copy to clipboard
+            if isinstance(widget, QGraphicsView):
+                event_without_shift = QKeyEvent(event.type(), event.key(), event.modifiers() ^ Qt.ShiftModifier)
+                if event.matches(QKeySequence.Copy) or event_without_shift.matches(QKeySequence.Copy):
+                    type_ = 'full' if event.modifiers() & Qt.ShiftModifier else 'current'
+                    self.on_export_as_image_triggered(type_, to_clipboard=True)
+            elif isinstance(widget, QTableView) and event.matches(QKeySequence.Copy):
+                selection = widget.selectedIndexes()
+                if selection is not None:
+                    rows = sorted(index.row() for index in selection)
+                    first_row = rows[0]
+                    columns = sorted(index.column() for index in selection)
+                    first_column = columns[0]
+                    rowcount = rows[-1] - first_row + 1
+                    colcount = columns[-1] - first_column + 1
+                    selected_columns = widget.selectionModel().selectedColumns()
+                    add_header = len(selected_columns) > 0
+
+                    if add_header:
+                        rowcount += 1
+
+                    table = [[''] * colcount for _ in range(rowcount)]
+
+                    if add_header:
+                        table[0] = [widget.model().headerData(c.column(), Qt.Horizontal) for c in selected_columns]
+
+                    for index in selection:
+                        row = index.row() - first_row + add_header
+                        column = index.column() - first_column
+                        table[row][column] = index.data()
+
+                    stream = io.StringIO()
+                    csv.writer(stream, delimiter='\t').writerows(table)
+                    QApplication.clipboard().setText(stream.getvalue())
 
     def showEvent(self, event):
         super().showEvent(event)
