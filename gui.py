@@ -14,6 +14,7 @@ def main():
     parser.add_argument('--jupyter', action='store_true',
                         help=(f"Embed a Jupyter console inside {APPLICATION} to programmatically modify "
                               f"some {APPLICATION}'s behavior."))
+    parser.add_argument('--disable-opengl', action='store_true', help="Disable use of OpenGL for older computers.")
 
     args = parser.parse_args()
 
@@ -32,6 +33,7 @@ def main():
     from lib import config
     config.set_debug_flag(args.debug)
     config.set_jupyter_flag(args.jupyter)
+    config.set_use_opengl_flag(not args.disable_opengl)
 
     from lib.ui import MainWindow
     window = MainWindow()

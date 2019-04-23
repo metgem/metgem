@@ -23,7 +23,7 @@ from PyQt5.QtGui import QPainter, QImage, QCursor, QColor, QKeyEvent, QIcon, QFo
 
 from PyQt5 import uic
 
-from PyQtNetworkView import NetworkScene, style_from_css, style_to_cytoscape
+from PyQtNetworkView import NetworkScene, style_from_css, style_to_cytoscape, disable_opengl
 
 from libmetgem import human_readable_data
 
@@ -55,6 +55,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self._workers = workers.WorkerSet(self, ui.ProgressDialog(self))
 
         # Setup User interface
+        if not config.get_use_opengl_flag():
+            disable_opengl(True)
         self.setupUi(self)
         self.gvNetwork.setScene(NetworkScene())
         self.gvNetwork.setFocus()

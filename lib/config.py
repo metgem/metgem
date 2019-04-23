@@ -21,6 +21,7 @@ except (FileNotFoundError, IOError):
 
 DEBUG = False
 EMBED_JUPYTER = False
+USE_OPENGL = True
 
 if sys.platform.startswith('win'):
     USER_PATH = os.path.join(os.path.expandvars(r'%APPDATA%'), 'MetGem')
@@ -66,3 +67,12 @@ def get_jupyter_flag() -> bool:
 def set_jupyter_flag(val: bool):
     global EMBED_JUPYTER
     EMBED_JUPYTER = val
+
+
+def get_use_opengl_flag() -> bool:
+    return USE_OPENGL
+
+
+def set_use_opengl_flag(val: bool):
+    global USE_OPENGL
+    USE_OPENGL = val
