@@ -191,6 +191,10 @@ class LoadProjectWorker(BaseWorker):
 
                     # Load t-SNE layout
                     network.graph.tsne_layout = fid['0/tsne_layout']
+                    try:
+                        network.graph.tsne_layout_line = fid['0/tsne_layout_line']
+                    except KeyError:
+                        pass
 
                     if self.isStopped():
                         self.canceled.emit()
@@ -233,6 +237,14 @@ class SaveProjectWorker(BaseWorker):
              '0/network_layout': getattr(self.graph, 'network_layout', np.array([])),
              '0/tsne_layout': getattr(self.graph, 'tsne_layout', np.array([])),
              '0/options.json': self.network.options}
+
+        if getattr(self.graph, 'tsne_layout_line', None) is not None:
+            line = self.graph.tsne_layout_line
+            try:
+                line = line.line()
+                d['0/tsne_layout_line'] = (line.x1(), line.y1(), line.x2(), line.y2())
+            except AttributeError:
+                pass
 
         db_results = getattr(self.network, 'db_results', None)
         if db_results is not None:
@@ -280,7 +292,10 @@ class SaveProjectWorker(BaseWorker):
                 if os.path.exists(self.filename):
                     os.remove(self.filename)
                 os.rename(self.tmp_filename, self.filename)
-                self.network.spectra.load(self.filename)
+                if isinstance(self.network.spectra, list):
+                    self.network.spectra = SpectraList(self.filename)
+                else:
+                    self.network.spectra.load(self.filename)
             except OSError as e:
                 self.error.emit(e)
             else:

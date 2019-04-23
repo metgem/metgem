@@ -17,9 +17,10 @@ import igraph as ig
 import sqlalchemy
 
 from PyQt5.QtWidgets import (QDialog, QFileDialog, QMessageBox, QWidget, QMenu, QActionGroup,
-                             QAction, QDockWidget, qApp, QWidgetAction, QTableView, QComboBox, QToolBar, QSplitter)
+                             QAction, QDockWidget, qApp, QWidgetAction, QTableView, QComboBox, QToolBar, QSplitter,
+                             QGraphicsLineItem, QApplication, QGraphicsView)
 from PyQt5.QtCore import QSettings, Qt, QCoreApplication
-from PyQt5.QtGui import QPainter, QImage, QCursor, QColor, QKeyEvent, QIcon, QFontMetrics, QFont
+from PyQt5.QtGui import QPainter, QImage, QCursor, QColor, QKeyEvent, QIcon, QFontMetrics, QFont, QPen
 
 from PyQt5 import uic
 
@@ -1097,9 +1098,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         def draw_tsne():
             if not compute_layouts and self.network.graph.tsne_layout is not None:
-                tsne_worker = self.prepare_draw_tsne_worker(layout=self.network.graph.tsne_layout)
+                tsne_worker = self.prepare_draw_tsne_worker(layout=self.network.graph.tsne_layout,
+                                                            line=getattr(self.network.graph, 'tsne_layout_line', None))
             else:
-                tsne_worker = self.prepare_draw_tsne_worker()
+                tsne_worker = self.prepare_draw_tsne_worker(line=getattr(self.network.graph, 'tsne_layout_line', None))
             self._workers.add(tsne_worker)
 
         if 'network' in which:
@@ -1115,12 +1117,17 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.update_search_menu()
 
     @debug
-    def apply_layout(self, type_, layout):
+    def apply_layout(self, type_, layout, line=None):
         if type_ == 'network':
             self.gvNetwork.scene().setLayout(layout)
             self.network.graph.network_layout = layout
         elif type_ == 't-sne':
             self.gvTSNE.scene().setLayout(layout)
+            line = getattr(self.network.graph, 'tsne_layout_line', None)
+            if line is not None and isinstance(line, QGraphicsLineItem):
+                self.gvTSNE.scene().removeItem(line)
+            if line is not None:
+                self.network.graph.tsne_layout_line = self.gvTSNE.scene().addLine(*line, pen=QPen(Qt.gray, 5))
             self.network.graph.tsne_layout = layout
 
     @debug
@@ -1155,20 +1162,20 @@ class MainWindow(MainWindowBase, MainWindowUI):
         return worker
 
     @debug
-    def prepare_apply_tsne_layout_worker(self, layout=None):
+    def prepare_apply_tsne_layout_worker(self, layout=None, line=None):
         if layout is None:
             # Compute layout
             def process_finished():
-                computed_layout = worker.result()
+                computed_layout, line = worker.result()
                 if computed_layout is not None:
-                    self.apply_layout('t-sne', computed_layout)
+                    self.apply_layout('t-sne', computed_layout, line)
 
             worker = workers.TSNEWorker(self.network.scores, self.network.options.tsne)
             worker.finished.connect(process_finished)
 
             return worker
         else:
-            worker = workers.GenericWorker(self.apply_layout, 't-sne', layout)
+            worker = workers.GenericWorker(self.apply_layout, 't-sne', layout, line)
             return worker
 
     @debug
@@ -1190,19 +1197,17 @@ class MainWindow(MainWindowBase, MainWindowUI):
         scene = self.gvNetwork.scene()
         scene.removeAllEdges()
 
-        colors = self.network.graph.vs['__color'] \
-            if '__color' in self.network.graph.vs.attributes() else []
-
-        radii = self.network.graph.vs['__size'] \
-            if '__size' in self.network.graph.vs.attributes() else []
-
         # Add nodes
         nodes = scene.nodes()
         num_nodes = len(nodes)
         if num_nodes == 0:
-            nodes = scene.addNodes(self.network.graph.vs.indices, colors=colors, radii=radii)
-        elif num_nodes == len(colors):
-            scene.setNodesColors(colors)
+            colors = self.network.graph.vs['__color'] \
+                if '__color' in self.network.graph.vs.attributes() else []
+
+            radii = self.network.graph.vs['__size'] \
+                if '__size' in self.network.graph.vs.attributes() else []
+
+            nodes = scene.addNodes(self.network.graph.vs['name'], colors=colors, radii=radii)
 
         # Add edges
         edges_attr = [(e.index, nodes[e.source], nodes[e.target], e['__width'])
@@ -1214,24 +1219,21 @@ class MainWindow(MainWindowBase, MainWindowUI):
         return worker
 
     @debug
-    def prepare_draw_tsne_worker(self, layout=None):
+    def prepare_draw_tsne_worker(self, layout=None, line=None):
         scene = self.gvTSNE.scene()
 
-        colors = self.network.graph.vs['__color'] \
-            if '__color' in self.network.graph.vs.attributes() else []
-
-        radii = self.network.graph.vs['__size'] \
-            if '__size' in self.network.graph.vs.attributes() else []
-
         # Add nodes
-        nodes = scene.nodes()
-        num_nodes = len(nodes)
+        num_nodes = len(scene.nodes())
         if num_nodes == 0:
-            scene.addNodes(self.network.graph.vs.indices, colors=colors, radii=radii)
-        elif num_nodes == len(colors):
-            scene.setNodesColors(colors)
+            colors = self.network.graph.vs['__color'] \
+                if '__color' in self.network.graph.vs.attributes() else []
 
-        worker = self.prepare_apply_tsne_layout_worker(layout)
+            radii = self.network.graph.vs['__size'] \
+                if '__size' in self.network.graph.vs.attributes() else []
+
+            scene.addNodes(self.network.graph.vs['name'], colors=colors, radii=radii)
+
+        worker = self.prepare_apply_tsne_layout_worker(layout, line)
         return worker
 
     @debug
