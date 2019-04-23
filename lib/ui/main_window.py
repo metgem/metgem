@@ -382,6 +382,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 self.gvTSNE.setFocus(Qt.TabFocusReason)
             else:
                 self.gvNetwork.setFocus(Qt.TabFocusReason)
+        elif key == Qt.Key_C and modifiers & Qt.ControlModifier:  # Copy to clipboard
+            widget = QApplication.focusWidget()
+            if widget and isinstance(widget, QGraphicsView):
+                type_ = 'full' if modifiers & Qt.ShiftModifier else 'current'
+                self.on_export_as_image_triggered(type_, to_clipboard=True)
 
     def showEvent(self, event):
         super().showEvent(event)
@@ -574,18 +579,23 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self._logger.error('py2cytoscape not found.')
 
     @debug
-    def on_export_as_image_triggered(self, type_):
-        filter_ = ["PNG - Portable Network Graphics (*.png)",
-                   "JPEG - Joint Photographic Experts Group (*.JPEG)",
-                   "SVG - Scalable Vector Graphics (*.svg)",
-                   "BMP - Windows Bitmap (*.bmp)"]
-        if type_ == 'current':
-            filter_.remove("SVG - Scalable Vector Graphics (*.svg)")
-
+    def on_export_as_image_triggered(self, type_, to_clipboard=False):
         view = self.current_view
 
-        filename, filter_ = QFileDialog.getSaveFileName(self, "Save image",
-                                                        filter=";;".join(filter_))
+        if to_clipboard:
+            filename = '__clipboard__'
+            filter_ = ''
+        else:
+            filter_ = ["PNG - Portable Network Graphics (*.png)",
+                       "JPEG - Joint Photographic Experts Group (*.jpeg)",
+                       "SVG - Scalable Vector Graphics (*.svg)",
+                       "BMP - Windows Bitmap (*.bmp)"]
+            if type_ == 'current':
+                filter_.remove("SVG - Scalable Vector Graphics (*.svg)")
+
+            filename, filter_ = QFileDialog.getSaveFileName(self, "Save image",
+                                                            filter=";;".join(filter_))
+
         if filename:
             if filter_.endswith("(*.svg)"):
                 try:
@@ -615,7 +625,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 painter = QPainter(image)
                 painter.setRenderHint(QPainter.Antialiasing)
                 view.render(painter, source=rect) if type_ == 'current' else view.scene().render(painter)
-                image.save(filename)
+
+                if to_clipboard:
+                    QApplication.clipboard().setImage(image)
+                else:
+                    image.save(filename)
 
     @debug
     def on_export_metadata(self, *args):
