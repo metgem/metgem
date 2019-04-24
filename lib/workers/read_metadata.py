@@ -34,7 +34,7 @@ class ReadMetadataWorker(BaseWorker):
     def run(self):  # TODO: Allow updates (read metadata file in a loop)
         try:
             ext = os.path.splitext(self.filename)[1]
-            kwargs = dict(**self.options, prefix='Column ', engine='c', float_precision='round_trip')
+            kwargs = dict(**self.options, prefix='Column ', engine='c', float_precision='high')
             data = None
             if ext in (".xls", ".xlsx"):
                 kwargs['header'] = kwargs['header'] if type(kwargs['header']) is not str else 0
