@@ -45,7 +45,8 @@ class ReadMetadataWorker(BaseWorker):
                     data = pd.read_csv(f, **kwargs)   # Workaround for Pandas's bug #15086
 
             # Drop columns full of na values
-            data = data.dropna(how='all', axis=1)
+            if data is not None:
+                data = data.dropna(how='all', axis=1)
 
             if data is not None and data.size > 0:
                 return data
