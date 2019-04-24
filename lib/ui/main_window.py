@@ -255,6 +255,21 @@ class MainWindow(MainWindowBase, MainWindowUI):
         popup_menu.setTitle("Toolbars")
         self.menuView.addMenu(popup_menu)
 
+        # Populate list of recently opened projects
+        menu = QMenu()
+        self.recent_projects = []
+
+        self.actionRecentProjects.setMenu(menu)
+        for i in range(10):
+            action = QAction(self)
+            action.setVisible(False)
+            action.triggered.connect(self.on_open_recent_project_triggered)
+            menu.addAction(action)
+        menu.addSeparator()
+        action = QAction("&Clear menu", self)
+        action.triggered.connect(lambda: self.update_recent_projects(clear=True))
+        menu.addAction(action)
+
         # Build research bar
         self._last_table = self.tvNodes
         self.update_search_menu()
@@ -379,6 +394,37 @@ class MainWindow(MainWindowBase, MainWindowUI):
         model.setFilterKeyColumn(-1)
 
         self._last_table = table
+
+    def update_recent_projects(self, add_fname=None, remove_fname=None, clear=False):
+        if clear:
+            self.recent_projects = []
+        elif remove_fname is not None:
+            try:
+                self.recent_projects.remove(remove_fname)
+            except ValueError:
+                pass
+
+        if add_fname is not None:
+            try:
+                self.recent_projects.remove(add_fname)
+            except ValueError:
+                pass
+            self.recent_projects.insert(0, add_fname)
+
+        self.recent_projects = self.recent_projects[:10]
+
+        actions = self.actionRecentProjects.menu().actions()
+        for i, act in enumerate(actions):
+            if act.isSeparator():
+                break
+
+            try:
+                fname = self.recent_projects[i]
+                act.setText(f"{i+1} | {fname}")
+                act.setData(fname)
+                act.setVisible(True)
+            except IndexError:
+                act.setVisible(False)
 
     def keyPressEvent(self, event: QKeyEvent):
         widget = QApplication.focusWidget()
@@ -522,6 +568,12 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.reset_project()
 
         return reply
+
+    @debug
+    def on_open_recent_project_triggered(self, *args):
+        action = self.sender()
+        if action is not None:
+            self.load_project(action.data())
 
     @debug
     def on_open_project_triggered(self, *args):
@@ -1067,6 +1119,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         settings.beginGroup('MainWindow')
         settings.setValue('Geometry', self.saveGeometry())
         settings.setValue('State', self.saveState())
+        settings.setValue('RecentProjects', self.recent_projects)
         settings.endGroup()
 
     @debug
@@ -1079,6 +1132,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
         setting = settings.value('State')
         if setting is not None:
             self.restoreState(setting)
+        self.recent_projects = settings.value('RecentProjects', [])
+        self.update_recent_projects()
         settings.endGroup()
 
         settings.beginGroup('NetworkView')
@@ -1369,8 +1424,12 @@ class MainWindow(MainWindowBase, MainWindowUI):
         """Save current project to a file for future access"""
 
         def process_finished():
+            # Save filename and set window title
             self.fname = fname
             self.has_unsaved_changes = False
+
+            # Update list of recent projects
+            self.update_recent_projects(fname)
 
         def error(e):
             if isinstance(e, PermissionError):
@@ -1408,9 +1467,13 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.fname = fname
             self.has_unsaved_changes = False
 
+            # Update list of recent projects
+            self.update_recent_projects(fname)
+
         def error(e):
             if isinstance(e, FileNotFoundError):
-                QMessageBox.warning(self, None, f"File '{self.filename}' not found.")
+                QMessageBox.warning(self, None, f"File '{fname}' not found.")
+                self.update_recent_projects(remove_fname=fname)
             elif isinstance(e, errors.UnsupportedVersionError):
                 QMessageBox.warning(self, None, str(e))
             elif isinstance(e, KeyError):

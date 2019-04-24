@@ -312,6 +312,7 @@
      <string>Fi&amp;le</string>
     </property>
     <addaction name="actionOpen"/>
+    <addaction name="actionRecentProjects"/>
     <addaction name="actionProcessFile"/>
     <addaction name="actionImportMetadata"/>
     <addaction name="actionImportGroupMapping"/>
@@ -1347,6 +1348,14 @@
    </property>
    <property name="shortcut">
     <string>I</string>
+   </property>
+  </action>
+  <action name="actionRecentProjects">
+   <property name="text">
+    <string>Recent Projects</string>
+   </property>
+   <property name="toolTip">
+    <string>List recently opened projects</string>
    </property>
   </action>
  </widget>
