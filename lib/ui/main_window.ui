@@ -412,6 +412,7 @@
    <addaction name="separator"/>
    <addaction name="actionHideSelected"/>
    <addaction name="actionShowAll"/>
+   <addaction name="actionHideIsolatedNodes"/>
    <addaction name="separator"/>
    <addaction name="actionSetNodesColor"/>
    <addaction name="actionSetNodesSize"/>
@@ -1328,6 +1329,24 @@
    </property>
    <property name="toolTip">
     <string>Use selected column as source for nodes' sizes</string>
+   </property>
+  </action>
+  <action name="actionHideIsolatedNodes">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/hide-isolated-nodes.svg</normaloff>:/icons/images/hide-isolated-nodes.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Hide Isolated Nodes</string>
+   </property>
+   <property name="toolTip">
+    <string>Show/Hide Isolated Nodes</string>
+   </property>
+   <property name="shortcut">
+    <string>I</string>
    </property>
   </action>
  </widget>

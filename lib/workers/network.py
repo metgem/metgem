@@ -17,7 +17,7 @@ class NetworkWorker(BaseWorker):
         self.desc = 'Computing layout: {value:d} vertices of {max:d}.'
 
     def run(self):
-        layout = np.zeros((self.max, 2))
+        layout = np.empty((self.max, 2))
 
         forceatlas2 = ForceAtlas2(adjustSizes=True, scalingRatio=RADIUS, verbose=False)
 
@@ -65,4 +65,4 @@ class NetworkWorker(BaseWorker):
             total_count += vcount
             self.updated.emit(total_count)
 
-        return layout
+        return layout, None

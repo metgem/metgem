@@ -73,8 +73,9 @@ class TSNEWorker(BaseWorker):
 
         # Compute layout
         mask = (self._scores >= self.options.min_score).sum(axis=0) > self.options.min_scores_above_threshold
-        layout = np.zeros((self._scores.shape[0], 2))
-        line = None
+        layout = np.empty((self._scores.shape[0], 2))
+        isolated_nodes = []
+
         if np.any(mask):
             try:
                 layout[mask] = self._tsne.fit_transform(1 - self._scores[mask][:, mask])
@@ -88,10 +89,10 @@ class TSNEWorker(BaseWorker):
                 layout *= (2*RADIUS**2 / bb.width)
 
                 # Calculate positions for excluded nodes
+                isolated_nodes = np.where(~mask)[0]
                 bb = BoundingBox(layout[mask])
-                dx, dy = 0, 5 * RADIUS
-                line = (bb.left-bb.width/2-5*RADIUS, bb.bottom+5*RADIUS/2, bb.left+bb.width*3/2, bb.bottom+5*RADIUS/2)
-                for index in np.where(~mask)[0]:
+                dx, dy = 0, 10 * RADIUS
+                for index in isolated_nodes:
                     layout[index] = (bb.left - bb.width/2 + dx, bb.bottom + dy)
                     dx += 5 * RADIUS
                     if dx >= bb.width*2:
@@ -99,4 +100,4 @@ class TSNEWorker(BaseWorker):
                         dy += 5 * RADIUS
 
         sys.stdout = sys.__stdout__
-        return layout, line
+        return layout, isolated_nodes

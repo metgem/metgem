@@ -221,6 +221,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.actionFullScreen.triggered.connect(self.on_full_screen_triggered)
         self.actionHideSelected.triggered.connect(lambda: self.current_view.scene().hideSelectedItems())
         self.actionShowAll.triggered.connect(lambda: self.current_view.scene().showAllItems())
+        self.actionHideIsolatedNodes.triggered.connect(lambda: self.draw(compute_layouts=False))
         color_button.colorSelected.connect(self.on_set_selected_nodes_color)
         size_combo.currentIndexChanged['QString'].connect(self.on_set_selected_nodes_size)
         self.actionNeighbors.triggered.connect(
@@ -1120,10 +1121,12 @@ class MainWindow(MainWindowBase, MainWindowUI):
             which = {which}
 
         def draw_network():
+            isolated_nodes = np.where(np.asarray(self.network.graph.degree()) <= 2)[0]
             if not compute_layouts and self.network.graph.network_layout is not None:
-                network_worker = self.prepare_draw_network_worker(layout=self.network.graph.network_layout)
+                network_worker = self.prepare_draw_network_worker(layout=self.network.graph.network_layout,
+                                                                  isolated_nodes=isolated_nodes)
             else:
-                network_worker = self.prepare_draw_network_worker()
+                network_worker = self.prepare_draw_network_worker(isolated_nodes=isolated_nodes)
 
             if 't-sne' in which:
                 network_worker.finished.connect(draw_tsne)
@@ -1133,9 +1136,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
         def draw_tsne():
             if not compute_layouts and self.network.graph.tsne_layout is not None:
                 tsne_worker = self.prepare_draw_tsne_worker(layout=self.network.graph.tsne_layout,
-                                                            line=getattr(self.network.graph, 'tsne_layout_line', None))
+                                                            isolated_nodes=getattr(self.network, 'tsne_isolated_nodes', None))
             else:
-                tsne_worker = self.prepare_draw_tsne_worker(line=getattr(self.network.graph, 'tsne_layout_line', None))
+                tsne_worker = self.prepare_draw_tsne_worker(isolated_nodes=getattr(self.network, 'tsne_isolated_nodes', None))
             self._workers.add(tsne_worker)
 
         if 'network' in which:
@@ -1151,17 +1154,29 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.update_search_menu()
 
     @debug
-    def apply_layout(self, type_, layout, line=None):
+    def apply_layout(self, type_, layout, isolated_nodes=None):
+        hide_isolated_nodes = self.actionHideIsolatedNodes.isChecked()
+
         if type_ == 'network':
-            self.gvNetwork.scene().setLayout(layout)
+            self.gvNetwork.scene().setLayout(layout, isolated_nodes=isolated_nodes if hide_isolated_nodes else None)
             self.network.graph.network_layout = layout
         elif type_ == 't-sne':
-            self.gvTSNE.scene().setLayout(layout)
+            self.gvTSNE.scene().setLayout(layout, isolated_nodes=isolated_nodes if hide_isolated_nodes else None)
+            self.network.tsne_isolated_nodes = isolated_nodes
+
+            # Remove line separating isolated nodes from others
             line = getattr(self.network.graph, 'tsne_layout_line', None)
             if line is not None and isinstance(line, QGraphicsLineItem):
                 self.gvTSNE.scene().removeItem(line)
-            if line is not None:
-                self.network.graph.tsne_layout_line = self.gvTSNE.scene().addLine(*line, pen=QPen(Qt.gray, 5))
+
+            # Add a new line if needed
+            if not hide_isolated_nodes and isolated_nodes is not None:
+                l = layout[isolated_nodes]
+                x1 = l.min(axis=0)[0] - 5 * config.RADIUS
+                x2 = l.max(axis=0)[0] + 5 * config.RADIUS
+                y = l.max(axis=1)[1] - 5 * config.RADIUS
+                self.network.graph.tsne_layout_line = self.gvTSNE.scene().addLine(x1, y, x2, y, pen=QPen(Qt.gray, 5))
+
             self.network.graph.tsne_layout = layout
 
     @debug
@@ -1181,35 +1196,35 @@ class MainWindow(MainWindowBase, MainWindowUI):
              self.set_nodes_sizes_values(id_, func)
 
     @debug
-    def prepare_apply_network_layout_worker(self, layout=None):
+    def prepare_apply_network_layout_worker(self, layout=None, isolated_nodes=None):
         if layout is None:
             # Compute layout
             def process_finished():
-                computed_layout = worker.result()
+                computed_layout, isolated_nodes = worker.result()
                 if computed_layout is not None:
-                    self.apply_layout('network', computed_layout)
+                    self.apply_layout('network', computed_layout, isolated_nodes)
 
             worker = workers.NetworkWorker(self.network.graph, self.gvNetwork.scene().nodesRadii())
             worker.finished.connect(process_finished)
         else:
-            worker = workers.GenericWorker(self.apply_layout, 'network', layout)
+            worker = workers.GenericWorker(self.apply_layout, 'network', layout, isolated_nodes)
         return worker
 
     @debug
-    def prepare_apply_tsne_layout_worker(self, layout=None, line=None):
+    def prepare_apply_tsne_layout_worker(self, layout=None, isolated_nodes=None):
         if layout is None:
             # Compute layout
             def process_finished():
-                computed_layout, line = worker.result()
+                computed_layout, isolated_nodes = worker.result()
                 if computed_layout is not None:
-                    self.apply_layout('t-sne', computed_layout, line)
+                    self.apply_layout('t-sne', computed_layout, isolated_nodes)
 
             worker = workers.TSNEWorker(self.network.scores, self.network.options.tsne)
             worker.finished.connect(process_finished)
 
             return worker
         else:
-            worker = workers.GenericWorker(self.apply_layout, 't-sne', layout, line)
+            worker = workers.GenericWorker(self.apply_layout, 't-sne', layout, isolated_nodes)
             return worker
 
     @debug
@@ -1227,7 +1242,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         return worker
 
     @debug
-    def prepare_draw_network_worker(self, layout=None):
+    def prepare_draw_network_worker(self, layout=None, isolated_nodes=None):
         scene = self.gvNetwork.scene()
         scene.removeAllEdges()
 
@@ -1249,11 +1264,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
         if edges_attr:
             scene.addEdges(*zip(*edges_attr))
 
-        worker = self.prepare_apply_network_layout_worker(layout)
+        worker = self.prepare_apply_network_layout_worker(layout, isolated_nodes)
         return worker
 
     @debug
-    def prepare_draw_tsne_worker(self, layout=None, line=None):
+    def prepare_draw_tsne_worker(self, layout=None, isolated_nodes=None):
         scene = self.gvTSNE.scene()
 
         # Add nodes
@@ -1267,7 +1282,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
             scene.addNodes(self.network.graph.vs['name'], colors=colors, radii=radii)
 
-        worker = self.prepare_apply_tsne_layout_worker(layout, line)
+        worker = self.prepare_apply_tsne_layout_worker(layout, isolated_nodes)
         return worker
 
     @debug
