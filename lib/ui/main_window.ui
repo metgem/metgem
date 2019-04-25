@@ -55,6 +55,12 @@
           </item>
           <item>
            <widget class="QToolButton" name="btNetworkLock">
+            <property name="toolTip">
+             <string>Prevent the movement of nodes in this view</string>
+            </property>
+            <property name="statusTip">
+             <string>Prevent the movement of nodes in this view</string>
+            </property>
             <property name="text">
              <string>...</string>
             </property>
@@ -170,6 +176,12 @@
           </item>
           <item>
            <widget class="QToolButton" name="btTSNELock">
+            <property name="toolTip">
+             <string>Prevent the movement of nodes in this view</string>
+            </property>
+            <property name="statusTip">
+             <string>Prevent the movement of nodes in this view</string>
+            </property>
             <property name="text">
              <string>...</string>
             </property>
@@ -1438,6 +1450,9 @@
     <string>Lock/Unlock Current View</string>
    </property>
    <property name="toolTip">
+    <string>Prevent the movement of nodes in the currently selected view</string>
+   </property>
+   <property name="statusTip">
     <string>Prevent the movement of nodes in the currently selected view</string>
    </property>
    <property name="shortcut">
