@@ -650,6 +650,14 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
             self._logger.debug('Creating exportable copy of the graph object')
             g = self.network.graph.copy()
+
+            try:
+                g.es['cosine'] = g.es['__weight']
+                g.es['interaction'] = 'interacts with'
+                g.es['name'] = [f"{e.source} (interacts with) {e.target}" for e in g.es]
+            except KeyError:
+                pass
+
             for attr in g.vs.attributes():
                 if attr.startswith('__'):
                     del g.vs[attr]
@@ -662,8 +670,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 for attr in g.es.attributes():
                     if attr.startswith('__'):
                         del g.es[attr]
-                    else:
-                        g.es[attr] = [str(x+1) for x in g.es[attr]]
 
             # cy.session.delete()
             self._logger.debug('CyREST: Creating network')
@@ -693,6 +699,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
                                     ('py2tocytoscape is required for this action '
                                      'https://pypi.python.org/pypi/py2cytoscape).'))
             self._logger.error('py2cytoscape not found.')
+        except requests.exceptions.HTTPError as e:
+            QMessageBox.warning(self, None, 'The following error occurred during export to Cytoscape: {str(e)}')
+            e.strerror
+            self._logger.error(f'py2cytoscape HTTPError: {str(e)}')
 
     @debug
     def on_export_as_image_triggered(self, type_, to_clipboard=False):
