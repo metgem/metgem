@@ -20,6 +20,7 @@ ViewStandardsResultsDialogUI, ViewStandardsResultsDialogBase = uic.loadUiType(UI
 
 class SpectraModel(QAbstractTableModel):
     TypeRole = Qt.UserRole + 1
+    RowRole = Qt.UserRole + 2
 
     def __init__(self, base_path, selection: dict):
         columns = [col for col in Spectrum.__table__.columns]
@@ -142,6 +143,7 @@ class ViewStandardsResultsDialog(ViewStandardsResultsDialogUI, ViewStandardsResu
         analogs_item.setData("analogs", role=SpectraModel.TypeRole)
         tree_model.appendRow(analogs_item)
 
+        standards_rows = 0
         for row in range(model.rowCount()):
             values = []
             for column in range(model.columnCount()):
@@ -155,6 +157,9 @@ class ViewStandardsResultsDialog(ViewStandardsResultsDialogUI, ViewStandardsResu
                 analogs_item.appendRow(values)
             else:
                 standards_item.appendRow(values)
+                standards_rows += 1
+        standards_item.setData(0, SpectraModel.RowRole)
+        analogs_item.setData(standards_rows, SpectraModel.RowRole)
 
         self.tvSpectra.setModel(tree_model)
         self.tvSpectra.expandAll()
@@ -183,7 +188,8 @@ class ViewStandardsResultsDialog(ViewStandardsResultsDialogUI, ViewStandardsResu
 
         parent = index.parent()
         if parent.isValid():
-            self.widgetSpectrumDetails.setCurrentIndex(index.row() + parent.row())  # Update description labels
+            # Update description labels
+            self.widgetSpectrumDetails.setCurrentIndex(index.row() + parent.data(SpectraModel.RowRole))
             self._selected_index = index
 
     def closeEvent(self, event):
