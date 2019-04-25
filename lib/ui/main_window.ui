@@ -1424,9 +1424,12 @@
      <normaloff>:/icons/images/hide-isolated-nodes.svg</normaloff>:/icons/images/hide-isolated-nodes.svg</iconset>
    </property>
    <property name="text">
-    <string>Hide Isolated Nodes</string>
+    <string>Show/Hide Isolated Nodes</string>
    </property>
    <property name="toolTip">
+    <string>Show/Hide Isolated Nodes</string>
+   </property>
+   <property name="statusTip">
     <string>Show/Hide Isolated Nodes</string>
    </property>
    <property name="shortcut">
