@@ -1445,12 +1445,15 @@
    </property>
   </action>
   <action name="actionLockCurrentView">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset resource="ui.qrc">
      <normaloff>:/icons/images/lock.svg</normaloff>:/icons/images/lock.svg</iconset>
    </property>
    <property name="text">
-    <string>Lock/Unlock Current View</string>
+    <string>Unlock Current View</string>
    </property>
    <property name="toolTip">
     <string>Prevent the movement of nodes in the currently selected view</string>

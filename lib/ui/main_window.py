@@ -249,6 +249,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.actionLockCurrentView.triggered.connect(self.on_lock_current_view_triggered)
         self.btNetworkLock.toggled.connect(lambda x: self.gvNetwork.scene().lock(x))
         self.btTSNELock.toggled.connect(lambda x: self.gvTSNE.scene().lock(x))
+        self.gvNetwork.scene().locked.connect(self.on_scene_locked)
+        self.gvTSNE.scene().locked.connect(self.on_scene_locked)
 
         self.btNetworkOptions.clicked.connect(lambda: self.on_edit_options_triggered('network'))
         self.btTSNEOptions.clicked.connect(lambda: self.on_edit_options_triggered('t-sne'))
@@ -451,6 +453,12 @@ class MainWindow(MainWindowBase, MainWindowUI):
         else:
             self.btNetworkLock.setChecked(not self.btNetworkLock.isChecked())
 
+    def on_scene_locked(self, locked: bool=True, scene=None):
+        scene = scene if scene is not None else self.sender()
+        locked = self.btTSNELock.isChecked() if scene == self.gvTSNE.scene() else self.btNetworkLock.isChecked()
+        self.actionLockCurrentView.setChecked(locked)
+        self.actionLockCurrentView.setText(f"{'Unlock' if locked else 'Lock'} Current View")
+
     def keyPressEvent(self, event: QKeyEvent):
         widget = QApplication.focusWidget()
 
@@ -535,6 +543,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def on_focus_changed(self, old: QWidget, now: QWidget):
         if now in (self.gvNetwork, self.gvTSNE):
             self.actionViewMiniMap.setChecked(self.current_view.minimap.isVisible())
+            self.on_scene_locked(scene=now.scene())
 
     @debug
     def on_switch_minimap_visibility(self, *args):
