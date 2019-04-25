@@ -168,13 +168,6 @@ class ViewStandardsResultsDialog(ViewStandardsResultsDialogUI, ViewStandardsResu
         # Connect events
         self.tvSpectra.selectionModel().currentChanged.connect(self.on_selection_changed)
 
-    def done(self, r):
-        if r == QDialog.Accepted:
-            if self.getValues() is not None:
-                super().done(r)
-        else:
-            super().done(r)
-
     def getValues(self):
         if self._selected_index.isValid():
             parent = self._selected_index.parent()
