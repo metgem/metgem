@@ -357,6 +357,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def reset_project(self):
         self.fname = None
         self.has_unsaved_changes = False
+        try:
+            self.network.spectra.close()
+        except AttributeError:
+            pass
         self.tvNodes.model().sourceModel().beginResetModel()
         self.tvEdges.model().sourceModel().beginResetModel()
         self.init_project()
