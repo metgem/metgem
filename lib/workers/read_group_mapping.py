@@ -21,7 +21,7 @@ class ReadGroupMappingWorker(BaseWorker):
                         key, value = line.split('=')
                         if key.startswith('GROUP_'):
                             key = key[6:]
-                            cols = [v.strip() for v in value.split(';')]
+                            cols = [v.strip() for v in value.split(';') if v.strip() != '']
                             if len(cols):
                                 mapping[key] = cols
                 self.updated.emit(1)
