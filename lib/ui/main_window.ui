@@ -961,7 +961,7 @@
    </property>
    <property name="icon">
     <iconset resource="ui.qrc">
-     <normaloff>:/icons/images/lock.svg</normaloff>:/icons/images/lock.svg</iconset>
+     <normaloff>:/icons/images/chain-link.svg</normaloff>:/icons/images/chain-link.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Link views</string>
@@ -1403,9 +1403,6 @@
     <string>Lock/Unlock Current View</string>
    </property>
    <property name="toolTip">
-    <string>Prevent the movement of nodes in the currently selected view</string>
-   </property>
-   <property name="statusTip">
     <string>Prevent the movement of nodes in the currently selected view</string>
    </property>
    <property name="shortcut">

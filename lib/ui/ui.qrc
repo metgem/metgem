@@ -1,6 +1,7 @@
 <RCC>
   <qresource prefix="icons">
     <file>images/node-empty.svg</file>
+    <file>images/chain-link.svg</file>
     <file>images/go-bottom.svg</file>
     <file>images/magic.svg</file>
     <file>images/go-down.svg</file>
