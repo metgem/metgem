@@ -28,21 +28,23 @@ class AboutDialog(AboutDialogDialogBase, AboutDialogUI):
                       f"<p><a href='https://metgem.github.io/'>{appname}</a></p>"
                       "<p><a href='https://github.com/metgem'>Source Code</a></p>")
 
-        authors = f"<p><b>Active Development Team of {appname}</b></p>"
+        authors = f"<p><b>Active Development Team</b></p>"
         mail = base64.b64decode(b'bmljb2xhcy5lbGllQGNucnMuZnI=').decode()
         authors += f"""<p>Nicolas Elie <a href=\"mailto:{mail}\">{mail}</a><br />
-                       <i>Developer and Original Author</i></p>"""
-        mail = base64.b64decode(b'ZmxvcmVudC5vbGl2b25AY25ycy5mcg==').decode()
-        authors += f"""<p>Florent Olivon <a href=\"mailto:{mail}\">{mail}</a><br />
-                      <i>Original Author and Tester</i></p>"""
-        mail = base64.b64decode(b'Z3dlbmRhbC5ncmVsaWVyQGNucnMuZnI=').decode()
-        authors += f"""<p>Gwendal Grelier <a href=\"mailto:{mail}\">{mail}</a><br />
-                      <i>Developer and Tester</i></p>"""
+                       <i>Main Developer and Original Author</i></p>"""
         mail = base64.b64decode(b'ZGF2aWQudG91Ym91bEBjbnJzLmZy=').decode()
         authors += f"""<p>David Touboul <a href=\"mailto:{mail}\">{mail}</a><br />
-                      <i>Project Manager</i></p>"""
+                      <i>Project Manager and Tester</i></p>"""
+        authors += f"<p><b>Former Development Team</b></p>"
+        mail = base64.b64decode(b'ZmxvcmVudC5vbGl2b25AY25ycy5mcg==').decode()
+        authors += f"""<p>Florent Olivon <a href=\"mailto:{mail}\">{mail}</a><br />
+                              <i>Original Author and Tester</i></p>"""
+        mail = base64.b64decode(b'Z3dlbmRhbC5ncmVsaWVyQGNucnMuZnI=').decode()
+        authors += f"""<p>Gwendal Grelier <a href=\"mailto:{mail}\">{mail}</a><br />
+                              <i>Developer and Tester</i></p>"""
         authors += """<p><b>Credits</b></p>
-            <p><i>Various Suggestions &amp; Testing:</i> Cyrille Santerre, Simon Remy, Florence Mondeguer</p>"""
+            <p><i>Various Suggestions &amp; Testing:</i> Cyrille Santerre, Simon Remy, Florence Mondeguer, Orianne Brel,
+            Morgane Barthélémy, Téo Hebra</p>"""
         self.setAuthors(authors)
 
         self.setData(
