@@ -237,6 +237,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.actionImportUserDatabase.triggered.connect(self.on_import_user_database_triggered)
         self.actionViewDatabases.triggered.connect(self.on_view_databases_triggered)
 
+        self.actionLockCurrentView.triggered.connect(self.on_lock_current_view_triggered)
+        self.btNetworkLock.toggled.connect(lambda x: self.gvNetwork.scene().lock(x))
+        self.btTSNELock.toggled.connect(lambda x: self.gvTSNE.scene().lock(x))
+
         self.btNetworkOptions.clicked.connect(lambda: self.on_edit_options_triggered('network'))
         self.btTSNEOptions.clicked.connect(lambda: self.on_edit_options_triggered('t-sne'))
 
@@ -430,24 +434,33 @@ class MainWindow(MainWindowBase, MainWindowUI):
             except IndexError:
                 act.setVisible(False)
 
+    def on_lock_current_view_triggered(self):
+        """Switch lock mode of network views"""
+
+        if self.current_view == self.gvTSNE:
+            self.btTSNELock.setChecked(not self.btTSNELock.isChecked())
+        else:
+            self.btNetworkLock.setChecked(not self.btNetworkLock.isChecked())
+
     def keyPressEvent(self, event: QKeyEvent):
         widget = QApplication.focusWidget()
 
-        # Navigate between GraphicsViews
         if event.matches(QKeySequence.NextChild):
+            # Navigate between GraphicsViews
             if self.gvNetwork.hasFocus():
                 self.gvTSNE.setFocus(Qt.TabFocusReason)
             else:
                 self.gvNetwork.setFocus(Qt.TabFocusReason)
 
         elif widget is not None:
-            # Copy to clipboard
             if isinstance(widget, QGraphicsView):
+                # Copy image to clipboard
                 event_without_shift = QKeyEvent(event.type(), event.key(), event.modifiers() ^ Qt.ShiftModifier)
                 if event.matches(QKeySequence.Copy) or event_without_shift.matches(QKeySequence.Copy):
                     type_ = 'full' if event.modifiers() & Qt.ShiftModifier else 'current'
                     self.on_export_as_image_triggered(type_, to_clipboard=True)
             elif isinstance(widget, QTableView) and event.matches(QKeySequence.Copy):
+                # Copy data to clipboard
                 selection = widget.selectedIndexes()
                 if selection is not None:
                     rows = sorted(index.row() for index in selection)
@@ -1219,9 +1232,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
         if type_ == 'network':
             self.gvNetwork.scene().setLayout(layout, isolated_nodes=isolated_nodes if hide_isolated_nodes else None)
             self.network.graph.network_layout = layout
+            self.gvNetwork.scene().lock(self.btNetworkLock.isChecked())
         elif type_ == 't-sne':
             self.gvTSNE.scene().setLayout(layout, isolated_nodes=isolated_nodes if hide_isolated_nodes else None)
             self.network.tsne_isolated_nodes = isolated_nodes
+            self.gvTSNE.scene().lock(self.btTSNELock.isChecked())
 
             # Remove line separating isolated nodes from others
             line = getattr(self.network.graph, 'tsne_layout_line', None)
