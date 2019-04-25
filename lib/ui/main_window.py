@@ -111,6 +111,15 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.tbExport.removeAction(self.actionExportAsImage)
         self.tbExport.removeAction(self.actionExportCurrentViewAsImage)
 
+        # Reorganize export metadata actions
+        export_button = ui.widgets.ToolBarMenu()
+        export_button.setDefaultAction(self.actionExportMetadata)
+        export_button.addAction(self.actionExportMetadata)
+        export_button.addAction(self.actionExportDatabaseResults)
+        self.tbExport.insertWidget(self.actionExportMetadata, export_button)
+        self.tbExport.removeAction(self.actionExportMetadata)
+        self.tbExport.removeAction(self.actionExportDatabaseResults)
+
         color_button = ui.widgets.ColorPicker(self.actionSetNodesColor, color_group='Node', default_color=Qt.blue)
         self.tbNetwork.insertWidget(self.actionSetNodesColor, color_button)
         self.tbNetwork.removeAction(self.actionSetNodesColor)

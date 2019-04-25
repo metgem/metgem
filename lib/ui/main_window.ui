@@ -343,7 +343,7 @@
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
-     <string>Fi&amp;le</string>
+     <string>&amp;File</string>
     </property>
     <addaction name="actionOpen"/>
     <addaction name="actionRecentProjects"/>
@@ -377,7 +377,12 @@
     <addaction name="actionViewSpectrum"/>
     <addaction name="actionViewCompareSpectrum"/>
     <addaction name="separator"/>
-    <addaction name="actionLockCurrentView"/>
+    <addaction name="actionZoomIn"/>
+    <addaction name="actionZoomOut"/>
+    <addaction name="actionZoomToFit"/>
+    <addaction name="actionZoomSelectedRegion"/>
+    <addaction name="separator"/>
+    <addaction name="actionFullScreen"/>
     <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menuSettings">
@@ -385,12 +390,38 @@
      <string>Settings</string>
     </property>
     <addaction name="actionPreferences"/>
+    <addaction name="actionCurrentParameters"/>
     <addaction name="separator"/>
     <addaction name="actionResetLayout"/>
     <addaction name="actionOpenUserFolder"/>
    </widget>
+   <widget class="QMenu" name="menu_Network">
+    <property name="title">
+     <string>&amp;Network</string>
+    </property>
+    <addaction name="actionLinkViews"/>
+    <addaction name="actionNeighbors"/>
+    <addaction name="actionLockCurrentView"/>
+    <addaction name="separator"/>
+    <addaction name="actionHideSelected"/>
+    <addaction name="actionShowAll"/>
+    <addaction name="actionHideIsolatedNodes"/>
+    <addaction name="separator"/>
+    <addaction name="actionSetPieChartsVisibility"/>
+   </widget>
+   <widget class="QMenu" name="menu_Databases">
+    <property name="title">
+     <string>&amp;Databases</string>
+    </property>
+    <addaction name="actionDownloadDatabases"/>
+    <addaction name="actionImportUserDatabase"/>
+    <addaction name="separator"/>
+    <addaction name="actionViewDatabases"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
+   <addaction name="menu_Network"/>
+   <addaction name="menu_Databases"/>
    <addaction name="menuSettings"/>
    <addaction name="menuAbout"/>
   </widget>
@@ -469,6 +500,9 @@
    <addaction name="actionExportToCytoscape"/>
    <addaction name="actionExportAsImage"/>
    <addaction name="actionExportCurrentViewAsImage"/>
+   <addaction name="separator"/>
+   <addaction name="actionExportMetadata"/>
+   <addaction name="actionExportDatabaseResults"/>
   </widget>
   <widget class="QToolBar" name="tbDatabase">
    <property name="windowTitle">
@@ -485,6 +519,7 @@
    </attribute>
    <addaction name="actionDownloadDatabases"/>
    <addaction name="actionImportUserDatabase"/>
+   <addaction name="separator"/>
    <addaction name="actionViewDatabases"/>
   </widget>
   <widget class="QToolBar" name="tbSearch">
@@ -949,7 +984,7 @@
     <string>Export current network as image</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+I</string>
+    <string>Ctrl+Shift+I</string>
    </property>
   </action>
   <action name="actionLinkViews">
@@ -1096,7 +1131,7 @@
     <string>Export current view of network as image</string>
    </property>
    <property name="shortcut">
-    <string>Alt+E</string>
+    <string>Ctrl+I</string>
    </property>
   </action>
   <action name="actionViewMiniMap">
@@ -1251,7 +1286,7 @@
      <normaloff>:/icons/images/export-metadata.svg</normaloff>:/icons/images/export-metadata.svg</iconset>
    </property>
    <property name="text">
-    <string>Export &amp;metadata as CSV</string>
+    <string>Export &amp;Metadata as CSV</string>
    </property>
    <property name="toolTip">
     <string>Export data of nodes table in a text file (Comma Separated Values format)</string>
@@ -1407,6 +1442,24 @@
    </property>
    <property name="shortcut">
     <string>L</string>
+   </property>
+  </action>
+  <action name="actionCopyAsImage">
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/emblem-photos.svg</normaloff>:/icons/images/emblem-photos.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Copy Network Image</string>
+   </property>
+   <property name="toolTip">
+    <string>Copy current network image to clipboard</string>
+   </property>
+   <property name="statusTip">
+    <string>Export current network as image</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+C</string>
    </property>
   </action>
  </widget>
