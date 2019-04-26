@@ -935,7 +935,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def on_open_user_folder_triggered(self, *args):
         if sys.platform.startswith('win'):
             os.startfile(config.USER_PATH)
-        elif sys.platform.startswith('osx'):
+        elif sys.platform.startswith('darwin'):
             subprocess.Popen(["open", config.USER_PATH])
         else:
             subprocess.Popen(["xdg-open", config.USER_PATH])
