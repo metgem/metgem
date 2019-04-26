@@ -1273,11 +1273,14 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
             # Add a new line if needed
             if not hide_isolated_nodes and isolated_nodes is not None:
-                l = layout[isolated_nodes]
-                x1 = l.min(axis=0)[0] - 5 * config.RADIUS
-                x2 = l.max(axis=0)[0] + 5 * config.RADIUS
-                y = l.max(axis=1)[1] - 5 * config.RADIUS
-                self.network.graph.tsne_layout_line = self.gvTSNE.scene().addLine(x1, y, x2, y, pen=QPen(Qt.gray, 5))
+                try:
+                    l = layout[isolated_nodes]
+                    x1 = l.min(axis=0)[0] - 5 * config.RADIUS
+                    x2 = l.max(axis=0)[0] + 5 * config.RADIUS
+                    y = l.max(axis=1)[1] - 5 * config.RADIUS
+                    self.network.graph.tsne_layout_line = self.gvTSNE.scene().addLine(x1, y, x2, y, pen=QPen(Qt.gray, 5))
+                except ValueError:
+                    pass
 
             self.network.graph.tsne_layout = layout
 
