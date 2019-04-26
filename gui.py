@@ -6,6 +6,9 @@ def main():
     import sys
     import argparse
 
+    # Make sure decimal separator is dot
+    os.environ['LC_NUMERIC'] = 'C'
+
     from version import DOMAIN, ORGANIZATION, APPLICATION, FULLVERSION
 
     parser = argparse.ArgumentParser(description=f'Launch {APPLICATION}.')
