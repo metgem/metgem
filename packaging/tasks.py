@@ -63,8 +63,6 @@ def build(ctx, clean=False):
 def icon(ctx):
     if sys.platform.startswith('win'):
         ctx.run("bin\ImageMagick\convert.exe -density 384 -background transparent ../lib/ui/images/main.svg -define icon:auto-resize -colors 256 main.ico")
-    elif sys.platform.startswith('darwin'):
-        ctx.run("./make_icns.sh ../lib/ui/images/main.svg")
 
 
 @task(check_dependencies)

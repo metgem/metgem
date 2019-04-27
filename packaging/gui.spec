@@ -56,6 +56,7 @@ datas = [('../splash.png', '.'),
          ('../lib/ui/widgets/databases/*.ui', 'lib/ui/widgets/databases'),
          ('../lib/ui/widgets/metadata/*.csv', 'lib/ui/widgets/metadata'),
          ('../plugins/*.py', 'plugins')]
+
 if not sys.platform.startswith('darwin'):
     datas.extend([('../examples/Codiaeum.csv', 'examples'),
                   ('../examples/Codiaeum.mgf', 'examples'),
@@ -68,6 +69,10 @@ if not sys.platform.startswith('darwin'):
          
 # Get Qt styles dll
 binaries.extend(qt_plugins_binaries('styles', namespace='PyQt5'))
+binaries.extend(qt_plugins_binaries('platforms', namespace='PyQt5'))
+binaries.extend(qt_plugins_binaries('iconengines', namespace='PyQt5'))
+binaries.extend(qt_plugins_binaries('imageformats', namespace='PyQt5'))
+
 
 # Add pybel
 try:
@@ -138,3 +143,4 @@ if sys.platform.startswith('darwin') and not DEBUG:
                  name='MetGem.app',
                  icon='main.icns',
                  bundle_identifier=None)
+
