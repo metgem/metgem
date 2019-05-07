@@ -1164,7 +1164,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
         settings.beginGroup('MainWindow')
         settings.setValue('Geometry', self.saveGeometry())
         settings.setValue('State', self.saveState())
-        settings.setValue('RecentProjects', self.recent_projects)
+        if self.recent_projects:
+            settings.setValue('RecentProjects', self.recent_projects)
         settings.endGroup()
 
     @debug
@@ -1177,7 +1178,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         setting = settings.value('State')
         if setting is not None:
             self.restoreState(setting)
-        self.recent_projects = settings.value('RecentProjects', [])
+        self.recent_projects = settings.value('RecentProjects', type=list)
         self.update_recent_projects()
         settings.endGroup()
 
