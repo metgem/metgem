@@ -13,6 +13,7 @@ from ..graphml import GraphMLParser, GraphMLWriter
 from ..errors import UnsupportedVersionError
 from ..workers.databases import StandardsResult
 from ..ui.size_mapping_dialog import SizeMappingFunc, MODE_LINEAR
+from ..config import FILE_EXTENSION
 
 CURRENT_FORMAT_VERSION = 3
 
@@ -214,6 +215,9 @@ class SaveProjectWorker(BaseWorker):
     def __init__(self, filename, graph, network, options, original_fname=None):
         super().__init__()
 
+        if not filename.endswith(FILE_EXTENSION):
+            filename += FILE_EXTENSION
+
         self.filename = filename
         self.original_fname = original_fname
         path, fname = os.path.split(filename)
@@ -288,7 +292,7 @@ class SaveProjectWorker(BaseWorker):
                 if os.path.exists(self.filename):
                     os.remove(self.filename)
                 os.rename(self.tmp_filename, self.filename)
-                if isinstance(self.network.spectra, list):
+                if isinstance(getattr(self.network, 'spectra', []), list):
                     self.network.spectra = SpectraList(self.filename)
                 else:
                     self.network.spectra.load(self.filename)
