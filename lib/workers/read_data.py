@@ -29,10 +29,10 @@ class ReadDataWorker(BaseWorker):
 
         if self.ext == '.mgf':
             read = read_mgf
-            mz_key = 'pepmass'
+            mz_keys = ['pepmass']
         elif self.ext == '.msp':
             read = read_msp
-            mz_key = 'precursormz'
+            mz_keys = ['precursormz', 'exactmass']
         else:
             self.error.emit(NotImplementedError())
             return
@@ -42,11 +42,17 @@ class ReadDataWorker(BaseWorker):
                 self.canceled.emit()
                 return
 
+            for key in mz_keys:
+                try:
+                    mz_parent = params[key]
+                except KeyError as e:
+                    pass
+
             try:
-                mz_parent = params[mz_key]
-            except KeyError as e:
                 self.error.emit(e)
                 return
+            except UnboundLocalError:
+                pass
 
             spectra.append(data)
             mzs.append(mz_parent)

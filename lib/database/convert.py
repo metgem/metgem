@@ -151,6 +151,8 @@ class DataBaseBuilder:
                         inchiaux = params.get('inchiaux', None)
                     elif ext == '.msp':
                         pepmass = params.get('precursormz', -1)
+                        if pepmass == -1:
+                            pepmass = params.get('exactmass', -1)
                         inchiaux = params.get('inchikey', None)
                     else:
                         pepmass = None
