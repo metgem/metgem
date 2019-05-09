@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   id="svg3844"
+   sodipodi:docname="highlight-red.svg"
+   viewBox="0 0 155 190"
+   version="1.1"
+   inkscape:version="0.92.3 (2405546, 2018-03-11)">
+  <defs
+     id="defs3848">
+    <linearGradient
+       id="linearGradient4421"
+       y2="196"
+       gradientUnits="userSpaceOnUse"
+       x2="115"
+       y1="156"
+       x1="55"
+       inkscape:collect="always">
+      <stop
+         id="stop4377"
+         style="stop-color:#ff3c00;stop-opacity:1"
+         offset="0" />
+      <stop
+         id="stop4379"
+         style="stop-color:#c82f00;stop-opacity:1"
+         offset="1" />
+    </linearGradient>
+    <radialGradient
+       id="radialGradient4423"
+       gradientUnits="userSpaceOnUse"
+       cy="205.65"
+       cx="50"
+       gradientTransform="matrix(1.9836 -.15259 .061435 .79898 -61.815 44.322)"
+       r="32.768"
+       inkscape:collect="always">
+      <stop
+         id="stop4393"
+         style="stop-color:#000000"
+         offset="0" />
+      <stop
+         id="stop4395"
+         style="stop-color:#191919"
+         offset="1" />
+    </radialGradient>
+    <linearGradient
+       id="linearGradient4425"
+       y2="96"
+       gradientUnits="userSpaceOnUse"
+       x2="165"
+       y1="96"
+       x1="60"
+       inkscape:collect="always">
+      <stop
+         id="stop4407"
+         style="stop-color:#ffffff;stop-opacity:.098039"
+         offset="0" />
+      <stop
+         id="stop4409"
+         style="stop-color:#ffffff;stop-opacity:.19608"
+         offset="1" />
+    </linearGradient>
+  </defs>
+  <sodipodi:namedview
+     id="namedview3846"
+     bordercolor="#666666"
+     inkscape:pageshadow="2"
+     guidetolerance="10"
+     pagecolor="#ffffff"
+     gridtolerance="10"
+     inkscape:window-maximized="1"
+     inkscape:zoom="1.8561553"
+     objecttolerance="10"
+     borderopacity="1"
+     inkscape:current-layer="g4415"
+     inkscape:cx="9.024329"
+     inkscape:cy="63.450834"
+     inkscape:window-y="-8"
+     inkscape:window-x="-8"
+     inkscape:window-width="1920"
+     showgrid="false"
+     inkscape:pageopacity="0"
+     inkscape:window-height="1014">
+    <inkscape:grid
+       id="grid4373"
+       enabled="true"
+       visible="true"
+       snapvisiblegridlinesonly="true"
+       type="xygrid"
+       empspacing="5" />
+  </sodipodi:namedview>
+  <g
+     id="g4415"
+     transform="translate(-40,-26)">
+    <path
+       id="rect3854"
+       d="m160 26 35 35-80 135c-5-1-59-38-60-40z"
+       sodipodi:nodetypes="ccccc"
+       style="fill:url(#linearGradient4421)"
+       inkscape:connector-curvature="0" />
+    <path
+       id="rect4385"
+       d="m55 156 60 40s-20-5-40 10c-6.6667 5-29.287 2.1458-25-5 15-25 5-45 5-45z"
+       sodipodi:nodetypes="ccssc"
+       style="fill:url(#radialGradient4423)"
+       inkscape:connector-curvature="0" />
+    <path
+       id="rect4388"
+       d="m50 201 25 5-10 10h-25z"
+       sodipodi:nodetypes="ccccc"
+       style="fill:#c82f00;fill-opacity:1"
+       inkscape:connector-curvature="0" />
+    <path
+       id="path4399"
+       sodipodi:nodetypes="ccccc"
+       style="fill:url(#linearGradient4425)"
+       inkscape:connector-curvature="0"
+       d="m160 31 5 5s-90 115-95 125c0 0-10 0-10-5z" />
+  </g>
+  <metadata
+     id="metadata19">
+    <rdf:RDF>
+      <cc:Work>
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <cc:license
+           rdf:resource="http://creativecommons.org/licenses/publicdomain/" />
+        <dc:publisher>
+          <cc:Agent
+             rdf:about="http://openclipart.org/">
+            <dc:title>Openclipart</dc:title>
+          </cc:Agent>
+        </dc:publisher>
+      </cc:Work>
+      <cc:License
+         rdf:about="http://creativecommons.org/licenses/publicdomain/">
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Reproduction" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Distribution" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#DerivativeWorks" />
+      </cc:License>
+    </rdf:RDF>
+  </metadata>
+</svg>

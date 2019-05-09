@@ -183,6 +183,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         # Connect events
         self.tvNodes.customContextMenuRequested.connect(self.on_nodes_table_contextmenu)
+        self.tvEdges.customContextMenuRequested.connect(self.on_edges_table_contextmenu)
         self.actionUseColumnForLabels.triggered.connect(
             lambda: self.on_use_columns_for(COLUMN_MAPPING_LABELS))
         self.actionResetLabelMapping.triggered.connect(lambda: self.set_nodes_label(None))
@@ -353,6 +354,12 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def nodes_selection(self):
         selected_indexes = self.tvNodes.model().mapSelectionToSource(
             self.tvNodes.selectionModel().selection()).indexes()
+        return {index.row() for index in selected_indexes}
+
+    @debug
+    def edges_selection(self):
+        selected_indexes = self.tvEdges.model().mapSelectionToSource(
+            self.tvEdges.selectionModel().selection()).indexes()
         return {index.row() for index in selected_indexes}
 
     @debug
@@ -882,7 +889,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             model = self.tvNodes.model()
             node_idx = model.mapToSource(model.index(row_index, column_index)).row()
             menu = QMenu(self)
-            action = QAction(QIcon(":/icons/images/highlight.svg"), "Highlight selected nodes", self)
+            action = QAction(QIcon(":/icons/images/highlight-yellow.svg"), "Highlight selected nodes", self)
             action.triggered.connect(self.highlight_selected_nodes)
             menu.addAction(action)
             action = QAction(self.actionViewSpectrum.icon(), "View Spectrum", self)
@@ -902,6 +909,20 @@ class MainWindow(MainWindowBase, MainWindowUI):
     @debug
     def on_nodes_table_data_changed(self, *args):
         self.has_unsaved_changes = True
+
+    @debug
+    def on_edges_table_contextmenu(self, event):
+        column_index = self.tvEdges.columnAt(event.x())
+        row_index = self.tvEdges.rowAt(event.y())
+        if column_index != -1 and row_index != -1:
+            menu = QMenu(self)
+            action = QAction(QIcon(":/icons/images/highlight-red.svg"), "Highlight selected edges", self)
+            action.triggered.connect(self.highlight_selected_edges)
+            menu.addAction(action)
+            action = QAction(QIcon(":/icons/images/highlight-yellow.svg"), "Highlight nodes from selected edges", self)
+            action.triggered.connect(self.highlight_nodes_from_selected_edges)
+            menu.addAction(action)
+            menu.popup(QCursor.pos())
 
     @debug
     def on_query_databases(self, type_='standards'):
@@ -1080,6 +1101,26 @@ class MainWindow(MainWindowBase, MainWindowUI):
         with utils.SignalBlocker(self.gvNetwork.scene(), self.gvTSNE.scene()):
             self.gvNetwork.scene().setNodesSelection(selected)
             self.gvTSNE.scene().setNodesSelection(selected)
+
+    @debug
+    def highlight_selected_edges(self, *args):
+        selected = self.edges_selection()
+        with utils.SignalBlocker(self.gvNetwork.scene(), self.gvTSNE.scene()):
+            self.gvNetwork.scene().setEdgesSelection(selected)
+
+    @debug
+    def highlight_nodes_from_selected_edges(self, *args):
+        selected = self.edges_selection()
+        model = self.tvEdges.model().sourceModel()
+        sel = set()
+        for row in selected:
+            source = model.index(row, 0).data() - 1
+            dest = model.index(row, 1).data() - 1
+            sel.add(source)
+            sel.add(dest)
+
+        with utils.SignalBlocker(self.gvNetwork.scene(), self.gvTSNE.scene()):
+            self.gvNetwork.scene().setNodesSelection(sel)
 
     @debug
     def set_nodes_label(self, column_id):

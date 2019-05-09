@@ -22,8 +22,9 @@
     <file>images/library-more.svg</file>
     <file>images/library-query-analogs.svg</file>
     <file>images/library-query.svg</file>
-    <file>images/highlight.svg</file>
     <file>images/spectrum-inverted.svg</file>
+    <file>images/highlight-red.svg</file>
+    <file>images/highlight-yellow.svg</file>
     <file>images/label.svg</file>
     <file>images/pie.svg</file>
     <file>images/new-document.svg</file>

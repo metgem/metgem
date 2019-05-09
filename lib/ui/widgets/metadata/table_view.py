@@ -188,6 +188,8 @@ class EdgeTableView(MetadataTableView):
         self.horizontalHeader().setStretchLastSection(True)
         self.horizontalHeader().setSectionsMovable(True)
 
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
+
     def sizeHintForColumn(self, column: int):
         if column == self.model().columnCount() - 1:
             return 0
