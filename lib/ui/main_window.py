@@ -659,6 +659,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def on_export_to_cytoscape_triggered(self, *args):
         try:
             from py2cytoscape.data.cyrest_client import CyRestClient
+            from py2cytoscape import cyrest
 
             view = self.current_view
 
@@ -702,6 +703,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
             style_js = style_to_cytoscape(view.scene().networkStyle())
             style = cy.style.create(style_js['title'], style_js)
             cy.style.apply(style, g_cy)
+
+            # Fit view to content
+            cyrest.cyclient().view.fit_content()
         except (ConnectionRefusedError, requests.ConnectionError):
             QMessageBox.information(self, None,
                                     'Please launch Cytoscape before trying to export.')
