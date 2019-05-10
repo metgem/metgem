@@ -58,7 +58,7 @@ class GenerateNetworkWorker(BaseWorker):
 
         # Add edges from edges table
         graph.add_edges(zip(interactions['Source'], interactions['Target']))
-        graph.es['__weight'] = interactions['Cosine']
+        graph.es['__weight'] = interactions['Cosine'].tolist()
 
         # Set width for all edges based on their weight
         widths = np.array(interactions['Cosine'])
