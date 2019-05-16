@@ -1351,7 +1351,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         if layout is None:
             # Compute layout
             def process_finished():
-                computed_layout, isolated_nodes = worker.result()
+                computed_layout, _ = worker.result()
                 if computed_layout is not None:
                     self.apply_layout('network', computed_layout, isolated_nodes)
 
