@@ -38,6 +38,7 @@ def check_dependencies(ctx):
         os.remove('bin.zip')
         print('Done')
 
+
 @task
 def clean(ctx, dist=False, bytecode=False, extra=''):
     patterns = ['build']
@@ -102,4 +103,9 @@ def installer(ctx):
         ctx.run("bin\InnoSetup\ISCC.exe setup.iss")
     elif sys.platform.startswith('darwin'):
         ctx.run("dmgbuild -s dmgbuild_settings.py '' XXX.dmg")
+    elif sys.platform.startswith('linux'):
+        import tarfile
+        with tarfile.open("dist/MetGem.tar.xz", "w:xz") as tar:
+            tar.add("dist/MetGem", arcname="MetGem")
+            tar.add("MetGem.sh", arcname="MetGem.sh")
 
