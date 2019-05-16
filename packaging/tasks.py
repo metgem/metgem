@@ -60,6 +60,7 @@ def build(ctx, clean=False):
     exe(ctx, clean)
     installer(ctx)
 
+
 @task(check_dependencies)
 def icon(ctx):
     if sys.platform.startswith('win'):
@@ -108,4 +109,3 @@ def installer(ctx):
         with tarfile.open("dist/MetGem.tar.xz", "w:xz") as tar:
             tar.add("dist/MetGem", arcname="MetGem")
             tar.add("MetGem.sh", arcname="MetGem.sh")
-
