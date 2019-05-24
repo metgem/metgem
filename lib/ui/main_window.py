@@ -1065,7 +1065,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
         if type_ == 'network':
             self.gvNetwork.scene().setScale(scale / self.sliderNetworkScale.defaultValue())
         elif type_ == 't-sne':
-                self.gvTSNE.scene().setScale(scale / self.sliderNetworkScale.defaultValue())
+            self.gvTSNE.scene().setScale(scale / self.sliderNetworkScale.defaultValue())
+            self.draw_tsne_line(getattr(self.network.graph, 'tsne_layout', None),
+                                getattr(self.network, 'tsne_isolated_nodes', None))
 
     @debug
     def on_view_details_clicked(self, row: int, selection: dict):
@@ -1320,24 +1322,33 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.gvTSNE.scene().setLayout(layout, isolated_nodes=isolated_nodes if hide_isolated_nodes else None)
             self.network.tsne_isolated_nodes = isolated_nodes
             self.gvTSNE.scene().lock(self.btTSNELock.isChecked())
-
-            # Remove line separating isolated nodes from others
-            line = getattr(self.network.graph, 'tsne_layout_line', None)
-            if line is not None and isinstance(line, QGraphicsLineItem):
-                self.gvTSNE.scene().removeItem(line)
-
-            # Add a new line if needed
-            if not hide_isolated_nodes and isolated_nodes is not None:
-                try:
-                    l = layout[isolated_nodes]
-                    x1 = l.min(axis=0)[0] - 5 * config.RADIUS
-                    x2 = l.max(axis=0)[0] + 5 * config.RADIUS
-                    y = l.max(axis=1)[1] - 5 * config.RADIUS
-                    self.network.graph.tsne_layout_line = self.gvTSNE.scene().addLine(x1, y, x2, y, pen=QPen(Qt.gray, 5))
-                except ValueError:
-                    pass
+            self.draw_tsne_line(layout, isolated_nodes)
 
             self.network.graph.tsne_layout = layout
+
+    @debug
+    def draw_tsne_line(self, layout, isolated_nodes=None):
+        hide_isolated_nodes = self.actionHideIsolatedNodes.isChecked()
+
+        # Remove line separating isolated nodes from others
+        line = getattr(self.network.graph, 'tsne_layout_line', None)
+        if line is not None and isinstance(line, QGraphicsLineItem):
+            self.gvTSNE.scene().removeItem(line)
+
+        # Add a new line if needed
+        if not hide_isolated_nodes and isolated_nodes is not None:
+            try:
+                scale = self.gvTSNE.scene().scale()
+                l = layout[isolated_nodes]
+                x1 = l.min(axis=0)[0] - 5 * config.RADIUS
+                x2 = l.max(axis=0)[0] + 5 * config.RADIUS
+                y = l.max(axis=1)[1] - 5 * config.RADIUS
+                width = 5 * scale
+                self.network.graph.tsne_layout_line = self.gvTSNE.scene().addLine(x1 * scale, y * scale,
+                                                                                  x2 * scale, y * scale,
+                                                                                  pen=QPen(Qt.gray, width))
+            except ValueError:
+                pass
 
     @debug
     def update_columns_mappings(self):
