@@ -113,19 +113,27 @@ class LoadProjectWorker(BaseWorker):
                     except KeyError:
                         network.columns_mappings = {}
                     else:
-                        ids, colors = columns_mappings.get('pies', (None, None))
-                        if ids is not None and colors is not None:
-                            colors = [QColor(color) for color in colors]
-                            columns_mappings['pies'] = (ids, colors)
+                        try:
+                            ids, colors = columns_mappings.get('pies', (None, None))
+                        except TypeError:
+                            pass
+                        else:
+                            if ids is not None and colors is not None:
+                                colors = [QColor(color) for color in colors]
+                                columns_mappings['pies'] = (ids, colors)
 
-                        id_, func = columns_mappings.get('size', (None, None))
-                        if id_ is not None and func is not None:
-                            func = SizeMappingFunc(func.get('xs', []),
-                                                   func.get('ys', []),
-                                                   func.get('ymin', 0),
-                                                   func.get('ymax', 100),
-                                                   func.get('mode', MODE_LINEAR))
-                            columns_mappings['size'] = (id_, func)
+                        try:
+                            id_, func = columns_mappings.get('size', (None, None))
+                        except TypeError:
+                            pass
+                        else:
+                            if id_ is not None and func is not None:
+                                func = SizeMappingFunc(func.get('xs', []),
+                                                       func.get('ys', []),
+                                                       func.get('ymin', 0),
+                                                       func.get('ymax', 100),
+                                                       func.get('mode', MODE_LINEAR))
+                                columns_mappings['size'] = (id_, func)
 
                         network.columns_mappings = columns_mappings
 
@@ -256,11 +264,15 @@ class SaveProjectWorker(BaseWorker):
 
         columns_mappings = getattr(self.network, 'columns_mappings', None)
         if columns_mappings:
-            ids, colors = columns_mappings.get('pies', (None, None))
-            if colors is not None:
-                colors = [color.name() for color in colors]
-                columns_mappings['pies'] = (ids, colors)
-            d['0/columns_mappings.json'] = columns_mappings
+            try:
+                ids, colors = columns_mappings.get('pies', (None, None))
+            except TypeError:
+                pass
+            else:
+                if colors is not None:
+                    colors = [color.name() for color in colors]
+                    columns_mappings['pies'] = (ids, colors)
+                d['0/columns_mappings.json'] = columns_mappings
 
         if self.network.lazyloaded and os.path.exists(self.original_fname):
             self.network.spectra.close()

@@ -1146,7 +1146,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
         else:
             self.gvNetwork.scene().resetLabels()
             self.gvTSNE.scene().resetLabels()
-            self.network.columns_mappings['label'] = None
+            try:
+                del self.network.columns_mappings['label']
+            except KeyError:
+                pass
 
     @debug
     def set_nodes_pie_chart_values(self, column_ids, colors: List[QColor]=()):
@@ -1177,7 +1180,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 model.setHeaderData(column, Qt.Horizontal, None, role=ui.widgets.metadata.ColorMarkRole)
             for view in (self.gvNetwork, self.gvTSNE):
                 view.scene().resetPieCharts()
-            self.network.columns_mappings['pies'] = None
+            try:
+                del self.network.columns_mappings['pies']
+            except KeyError:
+                pass
 
     @debug
     def set_nodes_sizes_values(self, column_id, func: Callable=None):
@@ -1200,7 +1206,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
         else:
             for view in (self.gvNetwork, self.gvTSNE):
                 view.scene().resetNodesRadii()
-            self.network.columns_mappings['size'] = None
+            try:
+                del self.network.columns_mappings['size']
+            except KeyError:
+                pass
 
     @debug
     def save_settings(self):
@@ -1338,13 +1347,21 @@ class MainWindow(MainWindowBase, MainWindowUI):
         if id_ is not None:
             self.set_nodes_label(id_)
 
-        ids, colors = columns_mappings.get('pies', (None, None))
-        if ids is not None and colors is not None:
-            self.set_nodes_pie_chart_values(ids, colors)
+        try:
+            ids, colors = columns_mappings.get('pies', (None, None))
+        except TypeError:
+            pass
+        else:
+            if ids is not None and colors is not None:
+                self.set_nodes_pie_chart_values(ids, colors)
 
-        id_, func = columns_mappings.get('size', (None, None))
-        if id_ is not None and func is not None:
-             self.set_nodes_sizes_values(id_, func)
+        try:
+            id_, func = columns_mappings.get('size', (None, None))
+        except TypeError:
+            pass
+        else:
+            if id_ is not None and func is not None:
+                 self.set_nodes_sizes_values(id_, func)
 
     @debug
     def prepare_apply_network_layout_worker(self, layout=None, isolated_nodes=None):
