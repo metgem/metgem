@@ -1156,6 +1156,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
             except KeyError:
                 pass
 
+        self.has_unsaved_changes = True
+
     @debug
     def set_nodes_pie_chart_values(self, column_ids, colors: List[QColor]=()):
         model = self.tvNodes.model().sourceModel()
@@ -1190,6 +1192,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
             except KeyError:
                 pass
 
+        self.has_unsaved_changes = True
+
     @debug
     def set_nodes_sizes_values(self, column_id, func: Callable=None):
         model = self.tvNodes.model().sourceModel()
@@ -1215,6 +1219,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 del self.network.columns_mappings['size']
             except KeyError:
                 pass
+
+        self.has_unsaved_changes = True
 
     @debug
     def save_settings(self):
