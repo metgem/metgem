@@ -20,7 +20,7 @@ import sqlalchemy
 
 from PyQt5.QtWidgets import (QDialog, QFileDialog, QMessageBox, QWidget, QMenu, QActionGroup,
                              QAction, QDockWidget, qApp, QWidgetAction, QTableView, QComboBox, QToolBar, QSplitter,
-                             QGraphicsLineItem, QApplication, QGraphicsView)
+                             QGraphicsLineItem, QApplication, QGraphicsView, QLineEdit)
 from PyQt5.QtCore import QSettings, Qt, QCoreApplication
 from PyQt5.QtGui import QPainter, QImage, QCursor, QColor, QKeyEvent, QIcon, QFontMetrics, QFont, QPen, QKeySequence
 
@@ -134,7 +134,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
         size_combo.setCurrentIndex(items.index(str(config.RADIUS)))
         size_combo.setStatusTip(self.actionSetNodesSize.statusTip())
         size_combo.setToolTip(self.actionSetNodesSize.toolTip())
-        size_combo.setLineEdit(ui.widgets.LineEditIcon(self.actionSetNodesSize.icon(), size_combo))
+        edit = QLineEdit()
+        size_action = edit.addAction(self.actionSetNodesSize.icon(), QLineEdit.LeadingPosition)
+        size_combo.setLineEdit(edit)
         self.tbNetwork.insertWidget(self.actionSetNodesSize, size_combo)
         self.tbNetwork.removeAction(self.actionSetNodesSize)
 
@@ -234,6 +236,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.actionHideIsolatedNodes.triggered.connect(lambda: self.draw(compute_layouts=False))
         color_button.colorSelected.connect(self.on_set_selected_nodes_color)
         size_combo.currentIndexChanged['QString'].connect(self.on_set_selected_nodes_size)
+        size_action.triggered.connect(lambda: self.on_set_selected_nodes_size(size_combo.currentText()))
         self.actionNeighbors.triggered.connect(
             lambda: self.on_select_first_neighbors_triggered(self.current_view.scene().selectedNodes()))
         self.actionSetPieChartsVisibility.toggled.connect(self.on_set_pie_charts_visibility_toggled)

@@ -11,4 +11,3 @@ from .structure import StructureSvgWidget
 from .toolbar_menu import ToolBarMenu
 from .colormaps import ColorMapFrame
 from .color_picker import ColorPicker
-from .line_edit_icon import LineEditIcon
