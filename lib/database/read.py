@@ -1,5 +1,8 @@
 from .session import create_session
 
+import errno
+import os
+
 
 class SpectraLibrary:
 
@@ -24,6 +27,8 @@ class SpectraLibrary:
     @property
     def session(self):
         if self._session is None:
+            if not os.path.exists(self.database):
+                raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), self.database)
             self._session = create_session(self.database, echo=self.echo, read_only=True)
         return self._session
 

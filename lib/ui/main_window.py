@@ -939,12 +939,15 @@ class MainWindow(MainWindowBase, MainWindowUI):
         options = workers.QueryDatabasesOptions()
         options.analog_search = (type_ == 'analogs')
 
-        dialog = ui.QueryDatabasesDialog(self, options=options)
-        if dialog.exec_() == QDialog.Accepted:
-            options = dialog.getValues()
-            worker = self.prepare_query_database_worker(selected_idx, options)
-            if worker is not None:
-                self._workers.add(worker)
+        try:
+            dialog = ui.QueryDatabasesDialog(self, options=options)
+            if dialog.exec_() == QDialog.Accepted:
+                options = dialog.getValues()
+                worker = self.prepare_query_database_worker(selected_idx, options)
+                if worker is not None:
+                    self._workers.add(worker)
+        except FileNotFoundError:
+            QMessageBox.warning(self, None, "No database found. Please download at least one database.")
 
     @debug
     def on_current_parameters_triggered(self, *args):
