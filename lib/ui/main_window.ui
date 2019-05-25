@@ -350,7 +350,7 @@
      <x>0</x>
      <y>0</y>
      <width>1106</width>
-     <height>21</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -1029,13 +1029,16 @@
      <normaloff>:/icons/images/new-library.svg</normaloff>:/icons/images/new-library.svg</iconset>
    </property>
    <property name="text">
-    <string>&amp;Download database</string>
+    <string>&amp;Download databases</string>
+   </property>
+   <property name="iconText">
+    <string>Download databases</string>
    </property>
    <property name="toolTip">
-    <string>Download database from GNPS</string>
+    <string>Download databases from external sources</string>
    </property>
    <property name="statusTip">
-    <string>Download database from GNPS</string>
+    <string>Download databases from external sources</string>
    </property>
    <property name="shortcut">
     <string>Alt+D</string>
