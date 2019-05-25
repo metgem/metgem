@@ -84,8 +84,6 @@ class NodesModel(QAbstractTableModel):
         else:
             self.infos = None
             self.headers = None
-        self.headers_colors = {}
-        self.headers_fonts = {}
 
         # Convert column name's mappings to index mapping
         if self.headers is not None:

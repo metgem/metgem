@@ -1534,11 +1534,15 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def prepare_read_metadata_worker(self, filename, options):
         def file_read():
             nonlocal worker
-            self.tvNodes.model().sourceModel().beginResetModel()
+            model = self.tvNodes.model().sourceModel()
+            model.beginResetModel()
             self.network.infos = worker.result()  # TODO: Append metadata instead of overriding
             self.network.mappings = {}
             self.has_unsaved_changes = True
-            self.tvNodes.model().sourceModel().endResetModel()
+            self.set_nodes_pie_chart_values(None)
+            self.set_nodes_sizes_values(None)
+            self.set_nodes_label(None)
+            model.endResetModel()
 
         def error(e):
             message = str(e).strip("\n")
