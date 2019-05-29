@@ -1133,6 +1133,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         with utils.SignalBlocker(self.gvNetwork.scene(), self.gvTSNE.scene()):
             self.gvNetwork.scene().setNodesSelection(sel)
+            self.gvTSNE.scene().setNodesSelection(sel)
 
     @debug
     def set_nodes_label(self, column_id):
