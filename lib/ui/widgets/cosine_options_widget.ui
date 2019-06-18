@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>353</width>
+    <width>365</width>
     <height>220</height>
    </rect>
   </property>
@@ -253,6 +253,13 @@
       </size>
      </property>
     </spacer>
+   </item>
+   <item row="0" column="0">
+    <widget class="QCheckBox" name="chkMS1Data">
+     <property name="text">
+      <string>&amp;MS1 Data</string>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>

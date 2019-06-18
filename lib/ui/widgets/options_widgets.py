@@ -93,6 +93,7 @@ class CosineOptionsWidget(QGroupBox):
         options.min_intensity = self.spinMinIntensity.value()
         options.min_matched_peaks_search = self.spinMinMatchedPeaksSearch.value()
         options.matched_peaks_window = self.spinMatchedPeaksWindow.value()
+        options.is_ms1_data = self.chkMS1Data.isChecked()
         
         return options
 
@@ -103,6 +104,7 @@ class CosineOptionsWidget(QGroupBox):
         self.spinMinIntensity.setValue(options.min_intensity)
         self.spinMinMatchedPeaksSearch.setValue(options.min_matched_peaks_search)
         self.spinMatchedPeaksWindow.setValue(options.matched_peaks_window)
+        self.chkMS1Data.setChecked(options.is_ms1_data)
 
 
 class QueryDatabasesOptionsWidget(QGroupBox):

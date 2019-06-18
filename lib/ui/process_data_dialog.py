@@ -1,3 +1,7 @@
+from .widgets import TSNEOptionsWidget, NetworkOptionsWidget, CosineOptionsWidget
+from ..ui.import_metadata_dialog import ImportMetadataDialog
+from ..workers.read_metadata import ReadMetadataOptions
+
 import os
 import sys
 import csv
@@ -10,9 +14,6 @@ from PyQt5 import uic
 UI_FILE = os.path.join(os.path.dirname(__file__), 'process_data_dialog.ui')
 
 ProcessDataDialogUI, ProcessDataDialogBase = uic.loadUiType(UI_FILE, from_imports='lib.ui', import_from='lib.ui')
-from .widgets import TSNEOptionsWidget, NetworkOptionsWidget, CosineOptionsWidget
-from ..ui.import_metadata_dialog import ImportMetadataDialog
-from ..workers.read_metadata import ReadMetadataOptions
 
 
 class ProcessDataDialog(ProcessDataDialogBase, ProcessDataDialogUI):

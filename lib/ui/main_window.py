@@ -821,7 +821,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
                 data = human_readable_data(self.network.spectra[node_idx])
 
-                mz_parent = self.network.mzs[node_idx]
+                if self.network.mzs:
+                    mz_parent = self.network.mzs[node_idx]
+                else:
+                    mz_parent = None
             except IndexError:
                 pass
             except KeyError:
@@ -992,6 +995,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
             process_file, use_metadata, metadata_file, metadata_options, \
                 compute_options, tsne_options, network_options = dialog.getValues()
+            if not use_metadata:
+                metadata_file = None
             self.network.options.cosine = compute_options
             self.network.options.tsne = tsne_options
             self.network.options.network = network_options
@@ -1427,7 +1432,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.network.interactions = interactions
             self.network.graph = graph
 
-        worker = workers.GenerateNetworkWorker(self.network.scores, self.network.mzs, self.network.graph,
+        mzs = self.network.mzs
+        if not mzs:
+            mzs = np.zeros(self.network.scores.shape[:1], dtype=int)
+
+        worker = workers.GenerateNetworkWorker(self.network.scores, mzs, self.network.graph,
                                                self.network.options.network, keep_vertices=keep_vertices)
         worker.finished.connect(interactions_generated)
 
@@ -1502,7 +1511,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.tvNodes.model().sourceModel().beginResetModel()
             self.network.mzs, self.network.spectra = worker.result()
             self.tvNodes.model().sourceModel().endResetModel()
-            worker = self.prepare_compute_scores_worker(self.network.mzs, self.network.spectra)
+            mzs = self.network.mzs
+            if not mzs:
+                mzs = np.zeros((len(self.network.spectra), ), dtype=int)
+            worker = self.prepare_compute_scores_worker(mzs, self.network.spectra)
             if worker is not None:
                 worker.finished.connect(scores_computed)
                 self._workers.add(worker)
@@ -1636,7 +1648,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
         if (getattr(self.network, 'mzs', None) is None or getattr(self.network, 'spectra', None) is None
                 or not os.path.exists(config.SQL_PATH)):
             return
-        mzs = [self.network.mzs[index] for index in indices]
+
+        if self.network.mzs:
+            mzs = [self.network.mzs[index] for index in indices]
+        else:
+            mzs = [0] * len(indices)
         spectra = [self.network.spectra[index] for index in indices]
         worker = workers.QueryDatabasesWorker(indices, mzs, spectra, options)
 

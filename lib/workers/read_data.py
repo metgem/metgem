@@ -26,6 +26,7 @@ class ReadDataWorker(BaseWorker):
         parent_filter_tolerance = self.options.parent_filter_tolerance
         matched_peaks_window = self.options.matched_peaks_window
         min_matched_peaks_search = self.options.min_matched_peaks_search
+        is_ms1_data = self.options.is_ms1_data
 
         if self.ext == '.mgf':
             read = read_mgf
@@ -42,11 +43,15 @@ class ReadDataWorker(BaseWorker):
                 self.canceled.emit()
                 return
 
-            for key in mz_keys:
-                try:
-                    mz_parent = params[key]
-                except KeyError as e:
-                    pass
+            if not is_ms1_data:
+                for key in mz_keys:
+                    try:
+                        mz_parent = params[key]
+                    except KeyError as e:
+                        pass
+                mzs.append(mz_parent)
+            else:
+                mzs.append(0)
 
             try:
                 self.error.emit(e)
@@ -55,9 +60,11 @@ class ReadDataWorker(BaseWorker):
                 pass
 
             spectra.append(data)
-            mzs.append(mz_parent)
 
         spectra = filter_data_multi(mzs, spectra, min_intensity, parent_filter_tolerance,
                                     matched_peaks_window, min_matched_peaks_search)
-            
-        return mzs, spectra
+
+        if is_ms1_data:
+            return [], spectra
+        else:
+            return mzs, spectra

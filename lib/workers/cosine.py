@@ -25,6 +25,7 @@ class CosineComputationOptions(AttrDict):
                          min_matched_peaks=4,
                          min_matched_peaks_search=6,
                          matched_peaks_window=50,
+                         is_ms1_data=False,
                          **kwargs)
 
 
