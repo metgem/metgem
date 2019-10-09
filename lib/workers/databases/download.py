@@ -161,7 +161,10 @@ class DownloadDatabasesWorker(BaseWorker):
                             else:
                                 filesizes['GNPS'][name] += size
             except ftplib.all_errors as e:
-                e.name = name
+                try:
+                    e.name = name
+                except UnboundLocalError:
+                    pass
                 self.error.emit(e)
                 return
 
@@ -233,7 +236,10 @@ class DownloadDatabasesWorker(BaseWorker):
                                 downloaded['GNPS'].add(name)
 
             except ftplib.all_errors as e:
-                e.name = name
+                try:
+                    e.name = name
+                except UnboundLocalError:
+                    pass
                 self.error.emit(e)
                 return
 
@@ -272,7 +278,10 @@ class DownloadDatabasesWorker(BaseWorker):
 
                                 downloaded[origin].add(name)
                         except requests.ConnectionError as e:
-                            e.name = name
+                            try:
+                                e.name = name
+                            except UnboundLocalError:
+                                pass
                             self.error.emit(e)
                             return
 

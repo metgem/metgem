@@ -26,6 +26,16 @@ def clean_string(string):
     return string
 
 
+def clean_int(string):
+    try:
+        string = ''.join(ch for ch in string if ch.isdigit())
+        return int(string)
+    except ValueError:
+        return None
+    except TypeError:
+        return string
+
+
 def convert_polarity(string):
     if string == 'positive':
         return True
@@ -159,11 +169,11 @@ class DataBaseBuilder:
                     charge = params.get('charge', 1)
                     positive = convert_polarity(params.get('ionmode', 'Positive').lower())
                     name = params.get('name', None)
-                    mslevel = int(params.get('mslevel', 0))
+                    mslevel = clean_int(params.get('mslevel', 0))
                     inchi = params.get('inchi', None)
                     smiles = params.get('smiles', None)
                     pubmed = params.get('pubmed', None)
-                    libraryquality = int(params.get('libraryquality', 0))
+                    libraryquality = clean_int(params.get('libraryquality', 0))
                     spectrumid = params.get('spectrumid', None)
 
                     # Set-up a dictionary with all the values needed to build a Spectrum object
