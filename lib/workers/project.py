@@ -8,14 +8,16 @@ from .base import BaseWorker
 from ..save import MnzFile, savez
 from ..utils import AttrDict
 from ..utils.network import Network
-from ..workers import NetworkVisualizationOptions, TSNEVisualizationOptions, CosineComputationOptions
+from ..workers import (NetworkVisualizationOptions, TSNEVisualizationOptions,
+                       MDSVisualizationOptions,
+                       CosineComputationOptions, UMAPVisualizationOptions)
 from ..graphml import GraphMLParser, GraphMLWriter
 from ..errors import UnsupportedVersionError
 from ..workers.databases import StandardsResult
 from ..ui.size_mapping_dialog import SizeMappingFunc, MODE_LINEAR
 from ..config import FILE_EXTENSION
 
-CURRENT_FORMAT_VERSION = 3
+CURRENT_FORMAT_VERSION = 4
 
 
 class SpectraList(list):
@@ -68,7 +70,7 @@ class LoadProjectWorker(BaseWorker):
                                                   + "This file format is not supported anymore.\n"
                                                   + "Please generate networks from raw data again")
 
-                elif version in (2, CURRENT_FORMAT_VERSION):
+                elif version in (2, 3, CURRENT_FORMAT_VERSION):
                     # Create network object
                     network = Network()
                     network.lazyloaded = True
@@ -151,7 +153,9 @@ class LoadProjectWorker(BaseWorker):
                     network.options = AttrDict(fid['0/options.json'])
                     for opt, key in ((CosineComputationOptions(), 'cosine'),
                                      (NetworkVisualizationOptions(), 'network'),
-                                     (TSNEVisualizationOptions(), 'tsne')):
+                                     (TSNEVisualizationOptions(), 'tsne'),
+                                     (MDSVisualizationOptions(), 'mds'),
+                                     (UMAPVisualizationOptions(), 'umap')):
                         if key in network.options:
                             opt.update(network.options[key])
                         network.options[key] = opt
@@ -191,25 +195,36 @@ class LoadProjectWorker(BaseWorker):
                         self.canceled.emit()
                         return
 
-                    # Load network layout
-                    network.graph.network_layout = fid['0/network_layout']
+                    # Load layouts
+                    layouts = {}
+                    if version <= 3:
+                        layouts['network'] = {'data': fid['0/network_layout']}
 
-                    if self.isStopped():
-                        self.canceled.emit()
-                        return
+                        if self.isStopped():
+                            self.canceled.emit()
+                            return
 
-                    # Load t-SNE layout
-                    network.graph.tsne_layout = fid['0/tsne_layout']
-                    try:
-                        network.tsne_isolated_nodes = fid['0/tsne_isolated_nodes']
-                    except KeyError:
-                        pass
+                        layouts['tsne'] = {'data': fid['0/tsne_layout']}
+                        try:
+                            layouts['tsne']['isolated_nodes'] = fid['0/tsne_isolated_nodes']
+                        except KeyError:
+                            pass
 
-                    if self.isStopped():
-                        self.canceled.emit()
-                        return
+                        if self.isStopped():
+                            self.canceled.emit()
+                            return
+                    else:
+                        layouts = {}
+                        names = fid['0/layouts.json']
+                        for name in names:
+                            key = '0/layouts/{name}'.format(name=name)
+                            layout = {}
+                            for k in fid.keys():
+                                if k.startswith(key):
+                                    layout[k[len(key)+1:]] = fid[k]
+                            layouts[name] = layout
 
-                    return network
+                    return network, layouts
                 else:
                     raise UnsupportedVersionError(f"Unrecognized file format version (version={version}).")
         except (FileNotFoundError, KeyError, zipfile.BadZipFile, UnsupportedVersionError) as e:
@@ -220,7 +235,7 @@ class LoadProjectWorker(BaseWorker):
 class SaveProjectWorker(BaseWorker):
     """Save current project to a file for future access"""
 
-    def __init__(self, filename, graph, network, options, original_fname=None):
+    def __init__(self, filename, graph, network, options, layouts, original_fname=None):
         super().__init__()
 
         if not filename.endswith(FILE_EXTENSION):
@@ -232,7 +247,9 @@ class SaveProjectWorker(BaseWorker):
         self.tmp_filename = os.path.join(path, f".tmp-{fname}")
         self.graph = graph
         self.network = network
+        self.layouts = layouts
         self.options = options
+        self.layouts = layouts
         self.max = 0
         self.desc = 'Saving project...'
 
@@ -246,13 +263,13 @@ class SaveProjectWorker(BaseWorker):
              '0/interactions': getattr(self.network, 'interactions', np.array([])),
              '0/infos': getattr(self.network, 'infos', np.array([])),
              '0/graph.graphml': gxl,
-             '0/network_layout': getattr(self.graph, 'network_layout', np.array([])),
-             '0/tsne_layout': getattr(self.graph, 'tsne_layout', np.array([])),
-             '0/options.json': self.network.options}
+             '0/options.json': self.network.options,
+             '0/layouts.json': list(self.layouts.keys())}
 
-        isolated_nodes = getattr(self.network, 'tsne_isolated_nodes', None)
-        if isolated_nodes is not None:
-            d['0/tsne_isolated_nodes'] = isolated_nodes
+        for name, layout in self.layouts.items():
+            key = '0/layouts/{name}'.format(name=name)
+            for k, v in layout.items():
+                d['{key}/{k}'.format(key=key, k=k)] = v
 
         db_results = getattr(self.network, 'db_results', None)
         if db_results is not None:

@@ -13,8 +13,8 @@ class NetworkWorker(BaseWorker):
         self.graph = graph
         self.radii = radii
         self.max = self.graph.vcount()
-        self.iterative_update = False
         self.desc = 'Computing layout: {value:d} vertices of {max:d}.'
+        self.iterative_update = False
 
     def run(self):
         layout = np.empty((self.max, 2))
@@ -65,4 +65,4 @@ class NetworkWorker(BaseWorker):
             total_count += vcount
             self.updated.emit(total_count)
 
-        return layout, None
+        return layout, np.where(np.asarray(self.graph.degree()) <= 2)[0]

@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>351</width>
-    <height>201</height>
+    <width>711</width>
+    <height>339</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -23,8 +23,18 @@
    <string>Process File</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
-   <item row="0" column="3" rowspan="6">
-    <widget class="QWidget" name="wgAdvancedOptions" native="true"/>
+   <item row="4" column="0">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+     <property name="centerButtons">
+      <bool>false</bool>
+     </property>
+    </widget>
    </item>
    <item row="1" column="0">
     <widget class="QGroupBox" name="gbMetadata">
@@ -162,17 +172,181 @@
      </layout>
     </widget>
    </item>
-   <item row="7" column="0">
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+   <item row="0" column="3" rowspan="3">
+    <widget class="QGroupBox" name="gbAddViews">
+     <property name="title">
+      <string>Add Views</string>
      </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-     </property>
-     <property name="centerButtons">
-      <bool>false</bool>
-     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_3">
+      <item>
+       <widget class="QListWidget" name="lstViews">
+        <property name="dragDropMode">
+         <enum>QAbstractItemView::InternalMove</enum>
+        </property>
+        <property name="alternatingRowColors">
+         <bool>true</bool>
+        </property>
+        <property name="selectionMode">
+         <enum>QAbstractItemView::ExtendedSelection</enum>
+        </property>
+        <property name="uniformItemSizes">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <widget class="QToolButton" name="btAddView">
+          <property name="toolTip">
+           <string>Add a view to the list</string>
+          </property>
+          <property name="statusTip">
+           <string>Add a view to the list</string>
+          </property>
+          <property name="text">
+           <string>&amp;Add</string>
+          </property>
+          <property name="icon">
+           <iconset resource="ui.qrc">
+            <normaloff>:/icons/images/list-add.svg</normaloff>:/icons/images/list-add.svg</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>16</width>
+            <height>16</height>
+           </size>
+          </property>
+          <property name="popupMode">
+           <enum>QToolButton::MenuButtonPopup</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btRemoveViews">
+          <property name="toolTip">
+           <string>Remove selected view(s) from the list</string>
+          </property>
+          <property name="statusTip">
+           <string>Remove selected view(s) from the list</string>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset resource="ui.qrc">
+            <normaloff>:/icons/images/list-remove.svg</normaloff>:/icons/images/list-remove.svg</iconset>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btEditView">
+          <property name="toolTip">
+           <string>Edit selected view options</string>
+          </property>
+          <property name="statusTip">
+           <string>Edit selected view options</string>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset resource="ui.qrc">
+            <normaloff>:/icons/images/list-edit.svg</normaloff>:/icons/images/list-edit.svg</iconset>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btClear">
+          <property name="toolTip">
+           <string>Clear list</string>
+          </property>
+          <property name="statusTip">
+           <string>Clear list</string>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset resource="ui.qrc">
+            <normaloff>:/icons/images/list-clear.svg</normaloff>:/icons/images/list-clear.svg</iconset>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="Line" name="line">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btSelectAll">
+          <property name="toolTip">
+           <string>Select all items</string>
+          </property>
+          <property name="statusTip">
+           <string>Select all items</string>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset resource="ui.qrc">
+            <normaloff>:/icons/images/select-all.svg</normaloff>:/icons/images/select-all.svg</iconset>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btSelectNone">
+          <property name="toolTip">
+           <string>Select nothing</string>
+          </property>
+          <property name="statusTip">
+           <string>Select nothing</string>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset resource="ui.qrc">
+            <normaloff>:/icons/images/select-none.svg</normaloff>:/icons/images/select-none.svg</iconset>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btSelectInvert">
+          <property name="toolTip">
+           <string>Invert selection</string>
+          </property>
+          <property name="statusTip">
+           <string>Invert selection</string>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset resource="ui.qrc">
+            <normaloff>:/icons/images/select-invert.svg</normaloff>:/icons/images/select-invert.svg</iconset>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="verticalSpacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+     </layout>
     </widget>
    </item>
   </layout>

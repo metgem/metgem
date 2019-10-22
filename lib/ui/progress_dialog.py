@@ -41,3 +41,9 @@ class ProgressDialog(ProgressDialogUI, ProgressDialogBase):
 
     def setMaximum(self, value):
         self.progressBar.setMaximum(value)
+
+    def reject(self):
+        return super().reject()
+
+    def done(self, r: int):
+        return super().done(r)

@@ -20,15 +20,15 @@ CustomDumper.add_representer(float, CustomDumper.represent_float)
 
 
 class ExportDbResultsWorker(BaseWorker):
-    
+
     def __init__(self, filename, model, fmt='yaml'):
         super().__init__()
         self.filename = filename
         self.model = model
         self.fmt = 'json' if fmt == 'json' else 'yaml'
 
-        self.iterative_update = True
         self.max = self.model.rowCount()
+        self.iterative_update = True
         self.desc = 'Exporting Database results...'
 
     def run(self):

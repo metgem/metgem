@@ -27,8 +27,8 @@ class ReadMetadataWorker(BaseWorker):
         self.options.nrows = self.options.nrows if self.options.nrows is not 0 else None
 
         self.track_progress = track_progress
-        self.iterative_update = True
         self.max = 0
+        self.iterative_update = True
         self.desc = 'Reading Metadata...'
 
     def run(self):  # TODO: Allow updates (read metadata file in a loop)

@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>NodesWidget</class>
+ <widget class="QWidget" name="NodesWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string/>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout_6">
+     <item>
+      <widget class="QToolButton" name="btUseColumnForLabels">
+       <property name="toolTip">
+        <string>Use selected column as source for nodes' labels</string>
+       </property>
+       <property name="statusTip">
+        <string>Use selected column as source for nodes' labels</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="../../ui.qrc">
+         <normaloff>:/icons/images/label.svg</normaloff>:/icons/images/label.svg</iconset>
+       </property>
+       <property name="popupMode">
+        <enum>QToolButton::MenuButtonPopup</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="btUseColumnsForPieCharts">
+       <property name="toolTip">
+        <string>Use selected columns as source for nodes' pie charts</string>
+       </property>
+       <property name="statusTip">
+        <string>Use selected columns as source for nodes' pie charts</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="../../ui.qrc">
+         <normaloff>:/icons/images/pie.svg</normaloff>:/icons/images/pie.svg</iconset>
+       </property>
+       <property name="popupMode">
+        <enum>QToolButton::MenuButtonPopup</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="btUseColumnForNodesSizes">
+       <property name="toolTip">
+        <string>Use selected columns as source for nodes' sizes</string>
+       </property>
+       <property name="statusTip">
+        <string>Use selected columns as source for nodes' sizes</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="../../ui.qrc">
+         <normaloff>:/icons/images/node-size.svg</normaloff>:/icons/images/node-size.svg</iconset>
+       </property>
+       <property name="popupMode">
+        <enum>QToolButton::MenuButtonPopup</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="Line" name="line">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btHighlightSelectedNodes">
+       <property name="toolTip">
+        <string>Highlight in network views the selected nodes in the table</string>
+       </property>
+       <property name="statusTip">
+        <string>Highlight in network views the selected nodes in the table</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="../../ui.qrc">
+         <normaloff>:/icons/images/highlight-yellow.svg</normaloff>:/icons/images/highlight-yellow.svg</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="btShowSpectrum">
+       <property name="toolTip">
+        <string>Show the spectrum associated to the selected node</string>
+       </property>
+       <property name="statusTip">
+        <string>Show the spectrum associated to the selected node</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="../../ui.qrc">
+         <normaloff>:/icons/images/spectrum.svg</normaloff>:/icons/images/spectrum.svg</iconset>
+       </property>
+       <property name="popupMode">
+        <enum>QToolButton::MenuButtonPopup</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="btFindStandards">
+       <property name="toolTip">
+        <string>Search for known spectra in library similar to the selected nodes' spectra</string>
+       </property>
+       <property name="statusTip">
+        <string>Search for known spectra in library similar to the selected nodes' spectra</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="../../ui.qrc">
+         <normaloff>:/icons/images/library-query.svg</normaloff>:/icons/images/library-query.svg</iconset>
+       </property>
+       <property name="popupMode">
+        <enum>QToolButton::MenuButtonPopup</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="verticalSpacer">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="NodeTableView" name="tvNodes">
+     <property name="alternatingRowColors">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+  </layout>
+  <action name="actionViewSpectrum">
+   <property name="icon">
+    <iconset resource="../../ui.qrc">
+     <normaloff>:/icons/images/spectrum.svg</normaloff>:/icons/images/spectrum.svg</iconset>
+   </property>
+   <property name="text">
+    <string>View Spectrum</string>
+   </property>
+   <property name="toolTip">
+    <string>Show the spectrum associated to the selected node</string>
+   </property>
+   <property name="statusTip">
+    <string>Show the spectrum associated to the selected node</string>
+   </property>
+  </action>
+  <action name="actionViewCompareSpectrum">
+   <property name="icon">
+    <iconset resource="../../ui.qrc">
+     <normaloff>:/icons/images/spectrum.svg</normaloff>:/icons/images/spectrum.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Compare Spectrum</string>
+   </property>
+   <property name="toolTip">
+    <string>Compare the spectrum associated to the selected node to another one</string>
+   </property>
+   <property name="statusTip">
+    <string>Compare the spectrum associated to the selected node to another one</string>
+   </property>
+  </action>
+  <action name="actionFindStandards">
+   <property name="icon">
+    <iconset resource="../../ui.qrc">
+     <normaloff>:/icons/images/library-query.svg</normaloff>:/icons/images/library-query.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Find standards in library</string>
+   </property>
+   <property name="toolTip">
+    <string>Search for known spectra in library similar to the selected nodes' spectra with same precursor ion</string>
+   </property>
+   <property name="statusTip">
+    <string>Search for known spectra in library similar to the selected nodes' spectra with same precursor ion</string>
+   </property>
+  </action>
+  <action name="actionFindAnalogs">
+   <property name="icon">
+    <iconset resource="../../ui.qrc">
+     <normaloff>:/icons/images/library-query.svg</normaloff>:/icons/images/library-query.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Find analogs in library</string>
+   </property>
+   <property name="toolTip">
+    <string>Search for known spectra in library similar to the selected nodes' spectra with different precursor ion</string>
+   </property>
+   <property name="statusTip">
+    <string>Search for known spectra in library similar to the selected nodes' spectra with different precursor ion</string>
+   </property>
+  </action>
+  <action name="actionResetColorMapping">
+   <property name="icon">
+    <iconset resource="../../ui.qrc">
+     <normaloff>:/icons/images/node-empty.svg</normaloff>:/icons/images/node-empty.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Reset color mapping</string>
+   </property>
+   <property name="toolTip">
+    <string>Remove pie charts</string>
+   </property>
+  </action>
+  <action name="actionUseColumnsForPieCharts">
+   <property name="icon">
+    <iconset resource="../../ui.qrc">
+     <normaloff>:/icons/images/pie.svg</normaloff>:/icons/images/pie.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Use Columns for Pie Charts</string>
+   </property>
+   <property name="toolTip">
+    <string>Use selected columns as source for nodes' pie charts</string>
+   </property>
+  </action>
+  <action name="actionResetLabelMapping">
+   <property name="icon">
+    <iconset resource="../../ui.qrc">
+     <normaloff>:/icons/images/label.svg</normaloff>:/icons/images/label.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Reset label mapping</string>
+   </property>
+   <property name="toolTip">
+    <string>Restore default nodes' labels</string>
+   </property>
+  </action>
+  <action name="actionUseColumnForLabels">
+   <property name="icon">
+    <iconset resource="../../ui.qrc">
+     <normaloff>:/icons/images/label.svg</normaloff>:/icons/images/label.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Use Column for Labels</string>
+   </property>
+   <property name="toolTip">
+    <string>Use selected column as source for nodes' labels</string>
+   </property>
+  </action>
+  <action name="actionResetSizeMapping">
+   <property name="icon">
+    <iconset resource="../../ui.qrc">
+     <normaloff>:/icons/images/node-size.svg</normaloff>:/icons/images/node-size.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Reset size mapping</string>
+   </property>
+   <property name="toolTip">
+    <string>Restore default nodes' sizes</string>
+   </property>
+  </action>
+  <action name="actionUseColumnForNodesSizes">
+   <property name="icon">
+    <iconset resource="../../ui.qrc">
+     <normaloff>:/icons/images/node-size.svg</normaloff>:/icons/images/node-size.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Use Column for Nodes Sizes</string>
+   </property>
+   <property name="toolTip">
+    <string>Use selected column as source for nodes' sizes</string>
+   </property>
+  </action>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>NodeTableView</class>
+   <extends>QTableView</extends>
+   <header>lib/ui/widgets.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="../../ui.qrc"/>
+ </resources>
+ <connections/>
+</ui>

@@ -18,11 +18,12 @@ class NetworkVisualizationOptions(AttrDict):
     
     def __init__(self):
         super().__init__(top_k=10,
-                         pairs_min_cosine=0.65,
+                         pairs_min_cosine=0.7,
                          max_connected_nodes=1000)
 
 
 class GenerateNetworkWorker(BaseWorker):
+
     def __init__(self, scores, mzs, graph, options, keep_vertices=False):
         super().__init__()
         self._scores = scores

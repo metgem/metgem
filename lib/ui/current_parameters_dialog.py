@@ -14,21 +14,21 @@ class CurrentParametersDialog(QDialog):
         
         layout = QGridLayout()
 
-        for w, opt in ((CosineOptionsWidget(), options.cosine),
-                       (NetworkOptionsWidget(), options.network),
-                       (TSNEOptionsWidget(), options.tsne)):
-            # Set spin boxes readonly
-            for child in w.findChildren(QAbstractSpinBox):
-                child.setReadOnly(True)
-                child.setButtonSymbols(QSpinBox.NoButtons)
+        w = CosineOptionsWidget()
+        opt = options.cosine
 
-            # Set buttons and checkboxes readonly
-            for child in w.findChildren(QAbstractButton) + w.findChildren(QGroupBox):
-                child.setAttribute(Qt.WA_TransparentForMouseEvents)
-                child.setFocusPolicy(Qt.NoFocus)
+        # Set spin boxes readonly
+        for child in w.findChildren(QAbstractSpinBox):
+            child.setReadOnly(True)
+            child.setButtonSymbols(QSpinBox.NoButtons)
 
-            layout.addWidget(w)
-            w.setValues(opt)
+        # Set buttons and checkboxes readonly
+        for child in w.findChildren(QAbstractButton) + w.findChildren(QGroupBox):
+            child.setAttribute(Qt.WA_TransparentForMouseEvents)
+            child.setFocusPolicy(Qt.NoFocus)
+
+        layout.addWidget(w)
+        w.setValues(opt)
                 
         self.buttonBox = QDialogButtonBox(QDialogButtonBox.Close)
         layout.addWidget(self.buttonBox)

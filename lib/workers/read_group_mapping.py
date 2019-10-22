@@ -2,13 +2,13 @@ from .base import BaseWorker
 
     
 class ReadGroupMappingWorker(BaseWorker):
-    
+
     def __init__(self, filename):
         super().__init__()
         self.filename = filename
 
-        self.iterative_update = True
         self.max = 0
+        self.iterative_update = True
         self.desc = 'Reading Group mapping...'
 
     def run(self):

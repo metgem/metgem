@@ -1,4 +1,4 @@
-from .widgets import TSNEOptionsWidget, NetworkOptionsWidget, CosineOptionsWidget
+from .widgets import CosineOptionsWidget, AVAILABLE_NETWORK_WIDGETS
 from ..ui.import_metadata_dialog import ImportMetadataDialog
 from ..workers.read_metadata import ReadMetadataOptions
 
@@ -6,9 +6,10 @@ import os
 import sys
 import csv
 
-from PyQt5.QtWidgets import QFileDialog, QDialog, QVBoxLayout, QDialogButtonBox, QCompleter, QFileSystemModel
+from PyQt5.QtWidgets import QFileDialog, QDialog, QDialogButtonBox, QCompleter, QFileSystemModel, QMenu, \
+    QListWidgetItem, QMessageBox
 from PyQt5.QtGui import QPalette, QColor
-from PyQt5.QtCore import Qt, QDir
+from PyQt5.QtCore import Qt, QDir, QSize
 from PyQt5 import uic
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'process_data_dialog.ui')
@@ -30,11 +31,13 @@ class ProcessDataDialog(ProcessDataDialogBase, ProcessDataDialogUI):
                     - upon cosine score computation validation, Network and TSNE vilsualizations are created
 
     """
+    NameRole = Qt.UserRole + 1
 
     def __init__(self, *args, options=None, **kwargs):
         super().__init__(*args, **kwargs)
 
         self._metadata_options = ReadMetadataOptions()
+        self._options = options
 
         self.setupUi(self)
         self.btBrowseProcessFile.setFocus()
@@ -59,23 +62,25 @@ class ProcessDataDialog(ProcessDataDialogBase, ProcessDataDialogUI):
             edit.setText(QDir.currentPath())
             edit.setCompleter(completer)
 
-        # Add options widgets
+        # Add cosine options widget
         self.cosine_widget = CosineOptionsWidget()
-        self.tsne_widget = TSNEOptionsWidget()
-        self.network_widget = NetworkOptionsWidget()
-
-        self.layout().addWidget(self.cosine_widget, self.layout().count()-1, 0)
-        layout = QVBoxLayout()
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(self.network_widget)
-        layout.addWidget(self.tsne_widget)
+        self.layout().addWidget(self.cosine_widget, self.layout().count()-2, 0)
 
         if options:
             self.cosine_widget.setValues(options.cosine)
-            self.tsne_widget.setValues(options.tsne)
-            self.network_widget.setValues(options.network)
 
-        self.wgAdvancedOptions.setLayout(layout)
+        # Build menu to add views
+        menu = QMenu()
+        self.btAddView.setMenu(menu)
+        set_default = True
+        for view_class in AVAILABLE_NETWORK_WIDGETS.values():
+            action = menu.addAction('Add {} view'.format(view_class.title))
+            action.setIcon(self.btAddView.icon())
+            action.setData(view_class)
+            action.triggered.connect(self.on_add_view_triggered)
+            if set_default:
+                self.btAddView.setDefaultAction(action)
+                set_default = False
 
         # Add advanced option button
         self.btMore = self.buttonBox.addButton("&More >>", QDialogButtonBox.DestructiveRole)
@@ -87,6 +92,73 @@ class ProcessDataDialog(ProcessDataDialogBase, ProcessDataDialogUI):
         self.btMore.clicked.connect(self.toggle_advanced_options)
         self.btOptions.clicked.connect(self.on_show_options_dialog)
         self.cbCsvDelimiter.delimiterChanged.connect(self.on_delimiter_changed)
+        self.btRemoveViews.clicked.connect(self.on_remove_views)
+        self.btEditView.clicked.connect(self.on_edit_view)
+        self.btClear.clicked.connect(self.on_clear_view)
+        self.lstViews.itemDoubleClicked.connect(self.on_edit_view)
+        self.btSelectAll.clicked.connect(lambda: self.select('all'))
+        self.btSelectNone.clicked.connect(lambda: self.select('none'))
+        self.btSelectInvert.clicked.connect(lambda: self.select('invert'))
+
+    def select(self, type_):
+        for row in range(self.lstViews.count()):
+            item = self.lstViews.item(row)
+            if type_ == 'all':
+                item.setSelected(True)
+            elif type_ == 'none':
+                item.setSelected(False)
+            elif type_ == 'invert':
+                item.setSelected(not item.isSelected())
+
+    def on_add_view_triggered(self):
+        action = self.sender()
+        widget_class = action.data()
+        if widget_class is not None:
+            for row in range(self.lstViews.count()):
+                item = self.lstViews.item(row)
+                if item.data(ProcessDataDialog.NameRole) == widget_class.name:
+                    QMessageBox.warning(self, None, "A network of this type already exists.")
+                    return
+
+            options = self._options.get(widget_class.name, {})
+            dialog = widget_class.dialog_class(self, options=options)
+            if dialog.exec_() == QDialog.Accepted:
+                options = dialog.getValues()
+                self._options[widget_class.name] = options
+                item = QListWidgetItem(widget_class.title)
+                item.setSizeHint(QSize(0, 50))
+                item.setTextAlignment(Qt.AlignCenter)
+                item.setData(ProcessDataDialog.NameRole, widget_class.name)
+                self.lstViews.addItem(item)
+
+    def on_remove_views(self):
+        for item in self.lstViews.selectedItems():
+            self.lstViews.takeItem(self.lstViews.row(item))
+
+    def on_edit_view(self, item: QListWidgetItem = None):
+        if item is None or isinstance(item, bool):
+            items = self.lstViews.selectedItems()
+            try:
+                item = items[0]
+            except IndexError:
+                return
+
+        name = item.data(ProcessDataDialog.NameRole)
+        try:
+            widget_class = AVAILABLE_NETWORK_WIDGETS[name]
+        except KeyError:
+            return
+        else:
+            if widget_class is not None:
+                options = self._options.get(name, {})
+                dialog = widget_class.dialog_class(self, options=options)
+                if dialog.exec_() == QDialog.Accepted:
+                    options = dialog.getValues()
+                    self._options[widget_class.name] = options
+
+    def on_clear_view(self):
+        if QMessageBox.question(self, None, "Clear the list?") == QMessageBox.Yes:
+            self.lstViews.clear()
 
     def on_delimiter_changed(self, delimiter):
         self._metadata_options.sep = delimiter
@@ -127,18 +199,18 @@ class ProcessDataDialog(ProcessDataDialogBase, ProcessDataDialogUI):
             super().done(r)
 
     def showEvent(self, event):
-        self.wgAdvancedOptions.hide()
+        self.gbAddViews.hide()
         self.adjustSize()
         super().showEvent(event)
 
     def toggle_advanced_options(self):
         """Toggle the Network and t-SNE parameters widgets"""
 
-        if self.wgAdvancedOptions.isVisible():
-            self.wgAdvancedOptions.hide()
+        if self.gbAddViews.isVisible():
+            self.gbAddViews.hide()
             self.btMore.setText("&More >>")
         else:
-            self.wgAdvancedOptions.show()
+            self.gbAddViews.show()
             self.btMore.setText("<< &Less")
 
         self.adjustSize()
@@ -150,7 +222,8 @@ class ProcessDataDialog(ProcessDataDialogBase, ProcessDataDialogUI):
         dialog.setFileMode(QFileDialog.ExistingFile)
 
         if type_ == 'process':
-            dialog.setNameFilters(["Mascot Generic Format (*.mgf)",
+            dialog.setNameFilters(["All supported formats (*.mgf;*.msp)",
+                                   "Mascot Generic Format (*.mgf)",
                                    "NIST Text Format of Individual Spectra (*.msp)",
                                    "All files (*.*)"])
         elif type_ == 'metadata':
@@ -169,7 +242,7 @@ class ProcessDataDialog(ProcessDataDialogBase, ProcessDataDialogUI):
         """Returns files to process and options"""
 
         metadata_file = self.editMetadataFile.text() if os.path.isfile(self.editMetadataFile.text()) else None
-        return (self.editProcessFile.text(),
-                self.gbMetadata.isChecked(),  metadata_file,
-                self._metadata_options, self.cosine_widget.getValues(),
-                self.tsne_widget.getValues(), self.network_widget.getValues())
+        self._options.cosine = self.cosine_widget.getValues()
+        views = [self.lstViews.item(row).data(ProcessDataDialog.NameRole) for row in range(self.lstViews.count())]
+        return (self.editProcessFile.text(), self.gbMetadata.isChecked(),  metadata_file,
+                self._metadata_options, self._options, views)

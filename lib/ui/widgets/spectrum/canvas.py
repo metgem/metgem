@@ -181,11 +181,13 @@ class SpectrumCanvas(BaseCanvas):
     def get_supported_filetypes(self):
         types = super().get_supported_filetypes()
         types['mgf'] = 'Mascot Generic Format'
+        types['msp'] = 'NIST Text Format of Individual Spectra'
         return types
 
     def get_supported_filetypes_grouped(self):
         types = super().get_supported_filetypes_grouped()
         types['Mascot Generic Format'] = ['mgf']
+        types['NIST Text Format of Individual Spectra'] = ['msp']
         return types
 
     def get_default_filetype(self):
@@ -193,7 +195,10 @@ class SpectrumCanvas(BaseCanvas):
 
     def get_default_filename(self):
         if self.spectrum1 is not None and self.spectrum2 is not None:
-            return f"spectra{self.spectrum1_index+1}_{self.spectrum2_index+1}.mgf"
+            if self.spectrum1_index is not None and self.spectrum2_index is not None:
+                return f"spectra{self.spectrum1_index+1}_{self.spectrum2_index+1}.mgf"
+            else:
+                return "spectra.mgf"
 
         if self.spectrum1 is not None or self.spectrum2 is not None:
             idx = self.spectrum1_index if self.spectrum1_index is not None else self.spectrum2_index
@@ -217,4 +222,21 @@ class SpectrumCanvas(BaseCanvas):
             with open(fname, 'w', encoding="utf-8") as f:
                 save_mgf(f, self.spectrum1_parent, self.spectrum1)
                 save_mgf(f, self.spectrum2_parent, self.spectrum2)
+
+    def print_msp(self, fname, **kwargs):
+        def save_msp(f, pepmass, data):
+            if data is not None:
+                if pepmass is not None:
+                    f.write(f"PRECURSORMZ: {pepmass}\n")
+                num_peaks = len(data)
+                if num_peaks > 0:
+                    f.write(f"Num Peaks: {num_peaks}\n")
+                for row in data:
+                    f.write(f"{row[MZ]}\t{row[INTENSITY]}\n")
+                f.write("\n")
+
+        if self.spectrum1 is not None or self.spectrum2 is not None:
+            with open(fname, 'w', encoding="utf-8") as f:
+                save_msp(f, self.spectrum1_parent, self.spectrum1)
+                save_msp(f, self.spectrum2_parent, self.spectrum2)
 

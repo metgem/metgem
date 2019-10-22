@@ -8,5 +8,5 @@ class ToolBarMenu(QToolButton):
         self.setMenu(QMenu())
         self.triggered.connect(self.setDefaultAction)
 
-    def addAction(self, action: QAction):
-        self.menu().addAction(action)
+    def addAction(self, action: QAction) -> QAction:
+        return self.menu().addAction(action)

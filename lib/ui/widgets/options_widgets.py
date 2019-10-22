@@ -1,5 +1,7 @@
 from ...workers.network_generation import NetworkVisualizationOptions
-from ...workers.tsne import TSNEVisualizationOptions
+from ...workers.embedding.tsne import TSNEVisualizationOptions
+from ...workers.embedding.umap import UMAPVisualizationOptions
+from ...workers.embedding.mds import MDSVisualizationOptions
 from ...workers.cosine import CosineComputationOptions
 from ...workers.databases.query import QueryDatabasesOptions
 
@@ -36,48 +38,6 @@ class NetworkOptionsWidget(QGroupBox):
         self.spinNetworkMaxConnectedComponentSize.setValue(options.max_connected_nodes)
 
 
-class TSNEOptionsWidget(QGroupBox):
-    """Create a widget containing t-SNE visualization options"""
-    
-    def __init__(self):
-        super().__init__()
-        uic.loadUi(os.path.join(os.path.dirname(__file__), 'tsne_options_widget.ui'), self)
-
-    def getValues(self):
-        """Return t-SNE options"""
-        
-        options = TSNEVisualizationOptions()
-        options.min_score = self.spinMinScore.value()
-        options.min_scores_above_threshold = self.spinMinScoresAboveThreshold.value()
-        options.n_iter = self.spinNumIterations.value()
-        options.perplexity = self.spinTSNEPerplexity.value()
-        options.learning_rate = self.spinTSNELearningRate.value()
-        options.early_exaggeration = self.spinTSNEEarlyExaggeration.value()
-        options.barnes_hut = self.gbBarnesHut.isChecked()
-        options.angle = self.spinAngle.value()
-        options.random = self.chkRandomState.isChecked()
-        
-        return options
-
-    def setValues(self, options):
-        """Modify t-SNE perplexity and learning rate options
-
-        Args: 
-            t-SNE_visualization_options (TSNEVisualizationOptions): Modifies the Widget's spinBoxes
-            to match the t-SNE visualization options.  
-        """
-
-        self.spinMinScore.setValue(options.min_score)
-        self.spinMinScoresAboveThreshold.setValue(options.min_scores_above_threshold)
-        self.spinNumIterations.setValue(options.n_iter)
-        self.spinTSNEPerplexity.setValue(options.perplexity)
-        self.spinTSNELearningRate.setValue(options.learning_rate)
-        self.spinTSNEEarlyExaggeration.setValue(options.early_exaggeration)
-        self.gbBarnesHut.setChecked(options.barnes_hut)
-        self.spinAngle.setValue(options.angle)
-        self.chkRandomState.setChecked(options.random)
-
-
 class CosineOptionsWidget(QGroupBox):
     """Create a widget containing Cosine computations options"""
 
@@ -105,6 +65,105 @@ class CosineOptionsWidget(QGroupBox):
         self.spinMinMatchedPeaksSearch.setValue(options.min_matched_peaks_search)
         self.spinMatchedPeaksWindow.setValue(options.matched_peaks_window)
         self.chkMS1Data.setChecked(options.is_ms1_data)
+
+
+class TSNEOptionsWidget(QGroupBox):
+    """Create a widget containing t-SNE visualization options"""
+
+    def __init__(self):
+        super().__init__()
+        uic.loadUi(os.path.join(os.path.dirname(__file__), 'tsne_options_widget.ui'), self)
+
+    def getValues(self):
+        """Return t-SNE options"""
+
+        options = TSNEVisualizationOptions()
+        options.min_score = self.spinMinScore.value()
+        options.min_scores_above_threshold = self.spinMinScoresAboveThreshold.value()
+        options.n_iter = self.spinNumIterations.value()
+        options.perplexity = self.spinTSNEPerplexity.value()
+        options.learning_rate = self.spinTSNELearningRate.value()
+        options.early_exaggeration = self.spinTSNEEarlyExaggeration.value()
+        options.barnes_hut = self.gbBarnesHut.isChecked()
+        options.angle = self.spinAngle.value()
+        options.random = self.chkRandomState.isChecked()
+
+        return options
+
+    def setValues(self, options):
+        """Modify t-SNE perplexity and learning rate options
+
+        Args:
+            t-SNE_visualization_options (TSNEVisualizationOptions): Modifies the Widget's spinBoxes
+            to match the t-SNE visualization options.
+        """
+
+        self.spinMinScore.setValue(options.min_score)
+        self.spinMinScoresAboveThreshold.setValue(options.min_scores_above_threshold)
+        self.spinNumIterations.setValue(options.n_iter)
+        self.spinTSNEPerplexity.setValue(options.perplexity)
+        self.spinTSNELearningRate.setValue(options.learning_rate)
+        self.spinTSNEEarlyExaggeration.setValue(options.early_exaggeration)
+        self.gbBarnesHut.setChecked(options.barnes_hut)
+        self.spinAngle.setValue(options.angle)
+        self.chkRandomState.setChecked(options.random)
+
+
+class UMAPOptionsWidget(QGroupBox):
+    """Create a widget containing UMAP visualization options"""
+
+    def __init__(self):
+        super().__init__()
+        uic.loadUi(os.path.join(os.path.dirname(__file__), 'umap_options_widget.ui'), self)
+        self.cbNumIterations.stateChanged.connect(self.spinNumIterations.setEnabled)
+
+    def getValues(self):
+        """Return UMAP options"""
+
+        options = UMAPVisualizationOptions()
+        options.min_score = self.spinMinScore.value()
+        options.min_scores_above_threshold = self.spinMinScoresAboveThreshold.value()
+        options.n_epochs = self.spinNumIterations.value() if self.cbNumIterations.isChecked() else None
+        options.min_dist = self.spinMinDist.value()
+        options.random = self.chkRandomState.isChecked()
+
+        return options
+
+    def setValues(self, options):
+        self.spinMinScore.setValue(options.min_score)
+        self.spinMinScoresAboveThreshold.setValue(options.min_scores_above_threshold)
+        if options.n_epochs is not None:
+            self.spinNumIterations.setValue(options.n_epochs)
+            self.cbNumbIterations.setChecked(True)
+            self.spinNumIterations.setEnabled(True)
+        else:
+            self.cbNumIterations.setChecked(False)
+            self.spinNumIterations.setEnabled(False)
+        self.spinMinDist.setValue(options.min_dist)
+        self.chkRandomState.setChecked(options.random)
+
+
+class MDSOptionsWidget(QGroupBox):
+    """Create a widget containing MDS visualization options"""
+
+    def __init__(self):
+        super().__init__()
+        uic.loadUi(os.path.join(os.path.dirname(__file__), 'mds_options_widget.ui'), self)
+
+    def getValues(self):
+        options = MDSVisualizationOptions()
+        options.min_score = self.spinMinScore.value()
+        options.min_scores_above_threshold = self.spinMinScoresAboveThreshold.value()
+        options.max_iter = self.spinNumIterations.value()
+        options.random = self.chkRandomState.isChecked()
+
+        return options
+
+    def setValues(self, options):
+        self.spinMinScore.setValue(options.min_score)
+        self.spinMinScoresAboveThreshold.setValue(options.min_scores_above_threshold)
+        self.spinNumIterations.setValue(options.max_iter)
+        self.chkRandomState.setChecked(options.random)
 
 
 class QueryDatabasesOptionsWidget(QGroupBox):

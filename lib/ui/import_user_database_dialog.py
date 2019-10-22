@@ -7,7 +7,7 @@ from PyQt5.QtGui import QPalette, QColor, QIcon
 from PyQt5.QtWidgets import QCompleter, QFileSystemModel, QDialog, QFileDialog, QDialogButtonBox, QMessageBox
 
 from ..workers import ConvertDatabasesWorker
-from ..workers import WorkerSet
+from ..workers import WorkerQueue
 from .progress_dialog import ProgressDialog
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'import_user_database_dialog.ui')
@@ -24,7 +24,7 @@ class ImportUserDatabaseDialog(ImportUserDatabaseDialogBase, ImportUserDatabaseD
         self.setupUi(self)
         self.btBrowseInputFile.setFocus()
 
-        self._workers = WorkerSet(self, ProgressDialog(self))
+        self._workers = WorkerQueue(self, ProgressDialog(self))
 
         # Add import button
         self.btImport = self.buttonBox.addButton("&Import", QDialogButtonBox.ActionRole)
@@ -67,7 +67,8 @@ class ImportUserDatabaseDialog(ImportUserDatabaseDialogBase, ImportUserDatabaseD
 
         dialog = QFileDialog(self)
         dialog.setFileMode(QFileDialog.ExistingFile)
-        dialog.setNameFilters(["Mascot Generic Format (*.mgf)",
+        dialog.setNameFilters(["All supported formats (*.mgf;*.msp)",
+                               "Mascot Generic Format (*.mgf)",
                                "NIST Text Format of Individual Spectra (*.msp)",
                                "All files (*.*)"])
 
@@ -90,7 +91,8 @@ class ImportUserDatabaseDialog(ImportUserDatabaseDialogBase, ImportUserDatabaseD
         id_ = {'User': {name: [input_file]}}
         worker = self.prepare_convert_database_worker(id_)
         if worker is not None:
-            self._workers.add(worker)
+            self._workers.append(worker)
+            self._workers.start()
 
     def prepare_convert_database_worker(self, id_):
         def error(e):

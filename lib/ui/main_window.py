@@ -18,22 +18,24 @@ import numpy as np
 import igraph as ig
 import sqlalchemy
 
-from PyQt5.QtWidgets import (QDialog, QFileDialog, QMessageBox, QWidget, QMenu, QActionGroup,
-                             QAction, QDockWidget, qApp, QWidgetAction, QTableView, QComboBox, QToolBar, QSplitter,
-                             QGraphicsLineItem, QApplication, QGraphicsView, QLineEdit)
+from PyQt5.QtWidgets import (QDialog, QFileDialog, QMessageBox, QWidget, QMenu, QActionGroup, QMainWindow,
+                             QAction, qApp, QTableView, QComboBox, QToolBar,
+                             QApplication, QGraphicsView, QLineEdit)
 from PyQt5.QtCore import QSettings, Qt, QCoreApplication
-from PyQt5.QtGui import QPainter, QImage, QCursor, QColor, QKeyEvent, QIcon, QFontMetrics, QFont, QPen, QKeySequence
+from PyQt5.QtGui import QPainter, QImage, QColor, QKeyEvent, QIcon, QFontMetrics, QFont, QKeySequence
 
 from PyQt5 import uic
 
-from PyQtNetworkView import NetworkScene, style_from_css, style_to_cytoscape, disable_opengl
+from PyQtNetworkView import style_from_css, style_to_cytoscape, disable_opengl
+
+from PyQtAds.QtAds import (CDockManager, CDockWidget,
+                           BottomDockWidgetArea, CenterDockWidgetArea,
+                           TopDockWidgetArea, LeftDockWidgetArea)
 
 from libmetgem import human_readable_data
 
-
 UI_FILE = os.path.join(os.path.dirname(__file__), 'main_window.ui')
 MainWindowUI, MainWindowBase = uic.loadUiType(UI_FILE, from_imports='lib.ui', import_from='lib.ui')
-
 
 COLUMN_MAPPING_PIE_CHARTS = 0
 COLUMN_MAPPING_LABELS = 1
@@ -55,15 +57,24 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.fname = None
 
         # Workers' references
-        self._workers = workers.WorkerSet(self, ui.ProgressDialog(self))
+        self._workers = workers.WorkerQueue(self, ui.ProgressDialog(self))
+
+        # List of Network widgets
+        self._network_docks = {}
+
+        # Style of network widgets
+        self._style = None
+
+        # Network object
+        self._network = None
 
         # Setup User interface
         if not config.get_use_opengl_flag():
             disable_opengl(True)
         self.setupUi(self)
-        self.gvNetwork.setScene(NetworkScene())
-        self.gvNetwork.setFocus()
-        self.gvTSNE.setScene(NetworkScene())
+
+        # Add Dockable Windows
+        self.add_docks()
 
         # Add model to table views
         self.tvNodes.setModel(ui.widgets.NodesModel(self))
@@ -73,34 +84,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.init_project()
 
         # Move search layout to search toolbar
-        w = QWidget()
-        self.layoutSearch.setParent(None)
-        w.setLayout(self.layoutSearch)
-        self.tbSearch.addWidget(w)
-
-        # Arrange dock widgets
-        self.tabifyDockWidget(self.dockNodes, self.dockEdges)
-        self.tabifyDockWidget(self.dockEdges, self.dockSpectra)
-        self.dockNodes.raise_()
-
-        # Create node mappings toolbar button's menus
-        menu = QMenu()
-        menu.addAction(self.actionUseColumnForLabels)
-        menu.addAction(self.actionResetLabelMapping)
-        self.btUseColumnForLabels.setMenu(menu)
-        self.btUseColumnForLabels.setDefaultAction(self.actionUseColumnForLabels)
-
-        menu = QMenu()
-        menu.addAction(self.actionUseColumnsForPieCharts)
-        menu.addAction(self.actionResetColorMapping)
-        self.btUseColumnsForPieCharts.setMenu(menu)
-        self.btUseColumnsForPieCharts.setDefaultAction(self.actionUseColumnsForPieCharts)
-
-        menu = QMenu()
-        menu.addAction(self.actionUseColumnForNodesSizes)
-        menu.addAction(self.actionResetSizeMapping)
-        self.btUseColumnForNodesSizes.setMenu(menu)
-        self.btUseColumnForNodesSizes.setDefaultAction(self.actionUseColumnForNodesSizes)
+        self.search_widget = QWidget()
+        uic.loadUi(os.path.join(os.path.dirname(__file__), 'widgets', 'search.ui'), self.search_widget)
+        self.tbSearch.addWidget(self.search_widget)
 
         # Reorganise export as image actions
         export_button = ui.widgets.ToolBarMenu()
@@ -119,6 +105,21 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.tbExport.insertWidget(self.actionExportMetadata, export_button)
         self.tbExport.removeAction(self.actionExportMetadata)
         self.tbExport.removeAction(self.actionExportDatabaseResults)
+
+        # Create actions to add new views
+        create_network_button = ui.widgets.ToolBarMenu()
+        create_network_button.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        set_default = True
+        for view_class in ui.widgets.AVAILABLE_NETWORK_WIDGETS.values():
+            action = create_network_button.addAction('Add {} view'.format(view_class.title))
+            action.setIcon(self.actionAddNetworkView.icon())
+            action.setData(view_class)
+            action.triggered.connect(self.on_add_view_triggered)
+            if set_default:
+                create_network_button.setDefaultAction(action)
+                set_default = False
+        self.tbFile.insertWidget(self.actionAddNetworkView, create_network_button)
+        self.tbFile.removeAction(self.actionAddNetworkView)
 
         color_button = ui.widgets.ColorPicker(self.actionSetNodesColor, color_group='Node', default_color=Qt.blue)
         self.tbNetwork.insertWidget(self.actionSetNodesColor, color_button)
@@ -140,67 +141,37 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.tbNetwork.insertWidget(self.actionSetNodesSize, size_combo)
         self.tbNetwork.removeAction(self.actionSetNodesSize)
 
-        # Send Scale sliders to a toolbutton menu
-        for widget, button in {(self.sliderNetworkScale, self.btNetworkRuler),
-                               (self.sliderTSNEScale, self.btTSNERuler)}:
-            menu = QMenu()
-            action = QWidgetAction(self)
-            action.setDefaultWidget(widget)
-            menu.addAction(action)
-            button.setMenu(menu)
-
-        # Add a Jupyter widget
-        if config.EMBED_JUPYTER:
-            from qtconsole.rich_jupyter_widget import RichJupyterWidget
-            from qtconsole.inprocess import QtInProcessKernelManager
-
-            kernel_manager = QtInProcessKernelManager()
-            kernel_manager.start_kernel()
-
-            kernel_client = kernel_manager.client()
-            kernel_client.start_channels()
-
-            self.jupyter_widget = RichJupyterWidget()
-            self.jupyter_widget.kernel_manager = kernel_manager
-            self.jupyter_widget.kernel_client = kernel_client
-
-            def stop():
-                kernel_client.stop_channels()
-                kernel_manager.shutdown_kernel()
-
-            self.jupyter_widget.exit_requested.connect(stop)
-            qApp.aboutToQuit.connect(stop)
-
-            self.jupyter_dock_widget = QDockWidget()
-            self.jupyter_dock_widget.setObjectName('jupyter')
-            self.jupyter_dock_widget.setWindowTitle('Jupyter Console')
-            self.jupyter_dock_widget.setWidget(self.jupyter_widget)
-
-            self.addDockWidget(Qt.TopDockWidgetArea, self.jupyter_dock_widget)
-            kernel_manager.kernel.shell.push({'app': qApp, 'win': self})
-
-            # Fix issue with Jupyter 5.0+, see https://github.com/ipython/ipykernel/pull/376
-            if hasattr(kernel_manager.kernel, '_abort_queue'):
-                kernel_manager.kernel._abort_queues = kernel_manager.kernel._abort_queue
-
         # Connect events
-        self.tvNodes.customContextMenuRequested.connect(self.on_nodes_table_contextmenu)
-        self.tvEdges.customContextMenuRequested.connect(self.on_edges_table_contextmenu)
-        self.actionUseColumnForLabels.triggered.connect(
+        self.nodes_widget.actionUseColumnForLabels.triggered.connect(
             lambda: self.on_use_columns_for(COLUMN_MAPPING_LABELS))
-        self.actionResetLabelMapping.triggered.connect(lambda: self.set_nodes_label(None))
-        self.actionUseColumnsForPieCharts.triggered.connect(
+        self.nodes_widget.actionResetLabelMapping.triggered.connect(lambda: self.set_nodes_label(None))
+        self.nodes_widget.actionUseColumnsForPieCharts.triggered.connect(
             lambda: self.on_use_columns_for(COLUMN_MAPPING_PIE_CHARTS))
-        self.actionResetColorMapping.triggered.connect(lambda: self.set_nodes_pie_chart_values(None))
-        self.actionUseColumnForNodesSizes.triggered.connect(
+        self.nodes_widget.actionResetColorMapping.triggered.connect(lambda: self.set_nodes_pie_chart_values(None))
+        self.nodes_widget.actionUseColumnForNodesSizes.triggered.connect(
             lambda: self.on_use_columns_for(COLUMN_MAPPING_NODES_SIZES))
-        self.actionResetSizeMapping.triggered.connect(lambda: self.set_nodes_sizes_values(None))
+        self.nodes_widget.actionResetSizeMapping.triggered.connect(lambda: self.set_nodes_sizes_values(None))
+        self.nodes_widget.btHighlightSelectedNodes.clicked.connect(self.highlight_selected_nodes)
+        self.nodes_widget.actionViewSpectrum.triggered.connect(
+            lambda: self.on_show_spectrum_from_table_triggered('show'))
+        self.nodes_widget.actionViewCompareSpectrum.triggered.connect(
+            lambda: self.on_show_spectrum_from_table_triggered('compare'))
+        self.nodes_widget.actionFindStandards.triggered.connect(lambda: self.on_query_databases('standards'))
+        self.nodes_widget.actionFindAnalogs.triggered.connect(lambda: self.on_query_databases('analogs'))
 
-        for view in (self.gvNetwork, self.gvTSNE):
-            view.scene().selectionChanged.connect(self.on_scene_selection_changed)
+        self.edges_widget.actionHighlightSelectedEdges.triggered.connect(self.highlight_selected_edges)
+        self.edges_widget.actionHighlightNodesFromSelectedEdges.triggered.connect(
+            self.highlight_nodes_from_selected_edges)
+
+        for dock in self.network_docks.values():
+            widget = dock.widget()
+            view = dock.widget().gvNetwork
+            scene = view.scene()
+            scene.selectionChanged.connect(self.on_scene_selection_changed)
             view.focusedIn.connect(lambda: self.on_scene_selection_changed(update_view=False))
-            view.scene().pieChartsVisibilityChanged.connect(
+            scene.pieChartsVisibilityChanged.connect(
                 lambda visibility: self.actionSetPieChartsVisibility.setChecked(visibility))
+            widget.btOptions.clicked.connect(lambda: self.on_edit_options_triggered(widget))
 
         self.actionQuit.triggered.connect(self.close)
         self.actionAbout.triggered.connect(lambda: ui.AboutDialog().exec_())
@@ -212,14 +183,18 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.actionPreferences.triggered.connect(self.on_preferences_triggered)
         self.actionResetLayout.triggered.connect(self.reset_layout)
         self.actionOpenUserFolder.triggered.connect(self.on_open_user_folder_triggered)
-        self.actionZoomIn.triggered.connect(lambda: self.current_view.scaleView(1.2))
-        self.actionZoomOut.triggered.connect(lambda: self.current_view.scaleView(1 / 1.2))
-        self.actionZoomToFit.triggered.connect(lambda: self.current_view.zoomToFit())
+        self.actionZoomIn.triggered.connect(lambda: self.current_view.scaleView(1.2)
+                                            if self.current_view is not None else None)
+        self.actionZoomOut.triggered.connect(lambda: self.current_view.scaleView(1 / 1.2)
+                                             if self.current_view is not None else None)
+        self.actionZoomToFit.triggered.connect(lambda: self.current_view.zoomToFit()
+                                               if self.current_view is not None else None)
         self.actionZoomSelectedRegion.triggered.connect(
             lambda: self.current_view.fitInView(self.current_view.scene().selectedNodesBoundingRect(),
-                                                Qt.KeepAspectRatio))
-        self.leSearch.textChanged.connect(self.on_do_search)
-        self.leSearch.returnPressed.connect(self.on_do_search)
+                                                Qt.KeepAspectRatio)
+            if self.current_view is not None else None)
+        self.search_widget.leSearch.textChanged.connect(self.on_do_search)
+        self.search_widget.leSearch.returnPressed.connect(self.on_do_search)
         self.actionNewProject.triggered.connect(self.on_new_project_triggered)
         self.actionOpen.triggered.connect(self.on_open_project_triggered)
         self.actionSave.triggered.connect(self.on_save_project_triggered)
@@ -231,14 +206,18 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.actionViewCompareSpectrum.triggered.connect(lambda: self.on_show_spectrum_triggered('compare'))
 
         self.actionFullScreen.triggered.connect(self.on_full_screen_triggered)
-        self.actionHideSelected.triggered.connect(lambda: self.current_view.scene().hideSelectedItems())
-        self.actionShowAll.triggered.connect(lambda: self.current_view.scene().showAllItems())
-        self.actionHideIsolatedNodes.triggered.connect(lambda: self.draw(compute_layouts=False))
+        self.actionHideSelected.triggered.connect(lambda: self.current_view.scene().hideSelectedItems()
+                                                  if self.current_view is not None else None)
+        self.actionShowAll.triggered.connect(lambda: self.current_view.scene().showAllItems()
+                                             if self.current_view is not None else None)
+        self.actionHideIsolatedNodes.triggered.connect(lambda x: [d.widget().show_isolated_nodes(x)
+                                                                  for d in self.network_docks.values()])
         color_button.colorSelected.connect(self.on_set_selected_nodes_color)
         size_combo.currentIndexChanged['QString'].connect(self.on_set_selected_nodes_size)
         size_action.triggered.connect(lambda: self.on_set_selected_nodes_size(size_combo.currentText()))
         self.actionNeighbors.triggered.connect(
-            lambda: self.on_select_first_neighbors_triggered(self.current_view.scene().selectedNodes()))
+            lambda: self.on_select_first_neighbors_triggered(self.current_view.scene().selectedNodes())
+            if self.current_view is not None else None)
         self.actionSetPieChartsVisibility.toggled.connect(self.on_set_pie_charts_visibility_toggled)
         self.actionExportToCytoscape.triggered.connect(self.on_export_to_cytoscape_triggered)
         self.actionExportAsImage.triggered.connect(lambda: self.on_export_as_image_triggered('full'))
@@ -250,21 +229,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.actionImportUserDatabase.triggered.connect(self.on_import_user_database_triggered)
         self.actionViewDatabases.triggered.connect(self.on_view_databases_triggered)
 
-        self.actionLockCurrentView.triggered.connect(self.on_lock_current_view_triggered)
-        self.btNetworkLock.toggled.connect(lambda x: self.gvNetwork.scene().lock(x))
-        self.btTSNELock.toggled.connect(lambda x: self.gvTSNE.scene().lock(x))
-        self.gvNetwork.scene().locked.connect(self.on_scene_locked)
-        self.gvTSNE.scene().locked.connect(self.on_scene_locked)
-
-        self.btNetworkOptions.clicked.connect(lambda: self.on_edit_options_triggered('network'))
-        self.btTSNEOptions.clicked.connect(lambda: self.on_edit_options_triggered('t-sne'))
-
-        self.dockNodes.visibilityChanged.connect(lambda v: self.update_search_menu(self.tvNodes) if v else None)
-        self.dockEdges.visibilityChanged.connect(lambda v: self.update_search_menu(self.tvEdges) if v else None)
-        self.dockSpectra.visibilityChanged.connect(lambda v: self.update_search_menu(self.tvNodes) if v else None)
-
-        self.sliderNetworkScale.valueChanged.connect(lambda val: self.on_scale_changed('network', val))
-        self.sliderTSNEScale.valueChanged.connect(lambda val: self.on_scale_changed('t-sne', val))
+        self.dock_nodes.visibilityChanged.connect(lambda v: self.update_search_menu(self.tvNodes) if v else None)
+        self.dock_edges.visibilityChanged.connect(lambda v: self.update_search_menu(self.tvEdges) if v else None)
+        self.dock_spectra.visibilityChanged.connect(lambda v: self.update_search_menu(self.tvNodes) if v else None)
 
         self.tvNodes.viewDetailsClicked.connect(self.on_view_details_clicked)
         self.tvNodes.model().dataChanged.connect(self.on_nodes_table_data_changed)
@@ -293,6 +260,66 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self._last_table = self.tvNodes
         self.update_search_menu()
 
+    # noinspection PyAttributeOutsideInit
+    @debug
+    def add_docks(self):
+        self.dock_manager = CDockManager(self)
+        self.dock_manager.setViewMenuInsertionOrder(CDockManager.MenuSortedByInsertion)
+        self.dock_manager.viewMenu().setTitle("Data")
+        self.setDockOptions(QMainWindow.AllowTabbedDocks)
+
+        self.dock_placeholder = CDockWidget("Placeholder")
+        self.dock_placeholder.setObjectName("placeholder")
+        self.dock_manager.addDockWidget(TopDockWidgetArea, self.dock_placeholder)
+        self.dock_placeholder.toggleView(False)
+
+        if config.EMBED_JUPYTER:
+            try:
+                self.jupyter_widget = ui.widgets.JupyterWidget()
+            except AttributeError:
+                pass
+            else:
+                dock = CDockWidget("Jupyter Console")
+                dock.setObjectName("jupyter")
+                dock.setIcon(QIcon(":/icons/images/python.svg"))
+                dock.setWidget(self.jupyter_widget)
+                self.jupyter_widget.push(app=qApp, win=self)
+                self.dock_manager.addDockWidget(TopDockWidgetArea, dock)
+                self.dock_manager.addToggleViewActionToMenu(dock.toggleViewAction())
+
+        self.dock_nodes = CDockWidget("Nodes")
+        self.dock_nodes.setObjectName("0nodes")
+        self.dock_nodes.setIcon(QIcon(":/icons/images/node.svg"))
+        self.nodes_widget = ui.widgets.NodesWidget()
+        self.tvNodes = self.nodes_widget.tvNodes
+        self.dock_nodes.setWidget(self.nodes_widget)
+        dock_area = self.dock_manager.addDockWidget(BottomDockWidgetArea, self.dock_nodes)
+        self.dock_manager.addToggleViewActionToMenu(self.dock_nodes.toggleViewAction())
+        self.dock_nodes.toggleView(False)
+
+        self.dock_edges = CDockWidget("Edges")
+        self.dock_edges.setObjectName("1edges")
+        self.dock_edges.setIcon(QIcon(":/icons/images/edge.svg"))
+        self.edges_widget = ui.widgets.EdgesWidget()
+        self.tvEdges = self.edges_widget.tvEdges
+        self.dock_edges.setWidget(self.edges_widget)
+        self.dock_manager.addDockWidget(CenterDockWidgetArea, self.dock_edges, dock_area)
+        self.dock_manager.addToggleViewActionToMenu(self.dock_edges.toggleViewAction())
+        self.dock_edges.toggleView(False)
+
+        self.dock_spectra = CDockWidget("Spectra")
+        self.dock_spectra.setObjectName("2spectra")
+        self.dock_spectra.setIcon(QIcon(":/icons/images/spectrum.svg"))
+        self.spectra_widget = ui.widgets.spectrum.ExtendedSpectrumWidget()
+        self.dock_spectra.setWidget(self.spectra_widget)
+        self.dock_manager.addDockWidget(CenterDockWidgetArea, self.dock_spectra, dock_area)
+        self.dock_manager.addToggleViewActionToMenu(self.dock_spectra.toggleViewAction())
+        self.dock_spectra.toggleView(False)
+
+        self.dock_manager.viewMenu().addSeparator()
+        self.menuView.addMenu(self.dock_manager.viewMenu())
+        dock_area.setCurrentIndex(0)
+
     @debug
     def init_project(self):
         # Create an object to store all computed objects
@@ -301,10 +328,12 @@ class MainWindow(MainWindowBase, MainWindowUI):
         # Create graph
         self._network.graph = ig.Graph()
 
-        # Set default options
-        self._network.options = utils.AttrDict({'cosine': workers.CosineComputationOptions(),
-                                                'network': workers.NetworkVisualizationOptions(),
-                                                'tsne': workers.TSNEVisualizationOptions()})
+        # Create options dict
+        self._network.options = utils.AttrDict()
+
+        for dock in self.network_docks.values():
+            self.dock_manager.viewMenu().removeAction(dock.toggleViewAction())
+        self.network_docks = {}
 
     @property
     def window_title(self):
@@ -332,16 +361,21 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
     @property
     def current_view(self):
-        for view in (self.gvNetwork, self.gvTSNE):
+        docks = list(self.network_docks.values())
+        for dock in docks:
+            view = dock.widget().gvNetwork
             if view.hasFocus():
                 return view
-        return self.gvNetwork
+
+        try:
+            return docks[0].widget().gvNetwork
+        except IndexError:
+            return
 
     @property
     def network(self):
         return self._network
 
-    # noinspection PyAttributeOutsideInit
     @network.setter
     def network(self, network):
         network.infosAboutToChange.connect(self.tvNodes.model().sourceModel().beginResetModel)
@@ -352,6 +386,30 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.tvNodes.setColumnHidden(1, network.db_results is None or len(network.db_results) == 0)
 
         self._network = network
+
+    @property
+    def style(self):
+        return self._style
+
+    @style.setter
+    def style(self, style):
+        self._style = style
+        for dock in self.network_docks.values():
+            dock.widget().set_style(style)
+
+    @property
+    def network_docks(self):
+        return self._network_docks
+
+    @network_docks.setter
+    def network_docks(self, docks):
+        for dock in self.network_docks.values():
+            self.menuView.removeAction(dock.toggleViewAction())
+
+        self._network_docks = docks
+
+        for dock in docks:
+            self.menuView.addAction(dock.toggleViewAction())
 
     @debug
     def nodes_selection(self):
@@ -367,16 +425,56 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
     @debug
     def load_project(self, filename):
-        self.reset_project()
+        def create_draw_workers(worker: workers.LoadProjectWorker):
+            self.reset_project()
+
+            self.tvNodes.model().setSelection([])
+            self.tvEdges.model().setSelection([])
+            self.tvNodes.model().sourceModel().beginResetModel()
+            self.tvEdges.model().sourceModel().beginResetModel()
+            self.network, layouts = worker.result()
+            self.tvNodes.model().sourceModel().endResetModel()
+            self.tvEdges.model().sourceModel().endResetModel()
+            self.dock_edges.toggleView(True)
+            self.dock_nodes.toggleView(True)
+
+            self.update_columns_mappings()
+
+            # Save filename and set window title
+            self.fname = filename
+            self.has_unsaved_changes = False
+
+            # Update list of recent projects
+            self.update_recent_projects(filename)
+
+            workers = []
+            for name, value in layouts.items():
+                try:
+                    widget_class = ui.widgets.AVAILABLE_NETWORK_WIDGETS[name]
+                except KeyError:
+                    pass
+                else:
+                    widget = self.add_network_widget(widget_class)
+                    if widget is not None:
+                        self.apply_layout(widget, value.get('data'), value.get('isolated_nodes'))
+                        worker = widget.create_draw_worker(compute_layouts=False)
+                        workers.append(worker)
+
+            if workers:
+                return workers
+
         worker = self.prepare_load_project_worker(filename)
         if worker is not None:
-            self._workers.add(worker)
+            self._workers.append(worker)
+            self._workers.append(create_draw_workers)
+            self._workers.start()
 
     @debug
     def save_project(self, filename):
         worker = self.prepare_save_project_worker(filename)
         if worker is not None:
-            self._workers.add(worker)
+            self._workers.append(worker)
+            self._workers.start()
 
     @debug
     def reset_project(self):
@@ -386,21 +484,21 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.network.spectra.close()
         except AttributeError:
             pass
+
+        for dock in self.network_docks.values():
+            self.dock_manager.removeDockWidget(dock)
+
         self.tvNodes.model().sourceModel().beginResetModel()
         self.tvEdges.model().sourceModel().beginResetModel()
         self.init_project()
         self.tvNodes.model().sourceModel().endResetModel()
         self.tvEdges.model().sourceModel().endResetModel()
-        self.sliderNetworkScale.resetValue()
-        self.sliderTSNEScale.resetValue()
-        self.gvNetwork.scene().clear()
-        self.gvTSNE.scene().clear()
-        self.cvSpectrum.set_spectrum1(None)
-        self.cvSpectrum.set_spectrum2(None)
+        self.spectra_widget.set_spectrum1(None)
+        self.spectra_widget.set_spectrum2(None)
         self.update_search_menu()
 
     @debug
-    def update_search_menu(self, table: QTableView=None):
+    def update_search_menu(self, table: QTableView = None):
         if table is None:
             table = self._last_table
 
@@ -418,7 +516,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 action.setChecked(True)
                 menu.addSeparator()
 
-        self.btSearch.setMenu(menu)
+        self.search_widget.btSearch.setMenu(menu)
         group.triggered.connect(lambda act: table.model().setFilterKeyColumn(act.data() - 1))
         model.setFilterKeyColumn(-1)
 
@@ -449,35 +547,37 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
             try:
                 fname = self.recent_projects[i]
-                act.setText(f"{i+1} | {fname}")
+                act.setText(f"{i + 1} | {fname}")
                 act.setData(fname)
                 act.setVisible(True)
             except IndexError:
                 act.setVisible(False)
-
-    def on_lock_current_view_triggered(self):
-        """Switch lock mode of network views"""
-
-        if self.current_view == self.gvTSNE:
-            self.btTSNELock.setChecked(not self.btTSNELock.isChecked())
-        else:
-            self.btNetworkLock.setChecked(not self.btNetworkLock.isChecked())
-
-    def on_scene_locked(self, locked: bool=True, scene=None):
-        scene = scene if scene is not None else self.sender()
-        locked = self.btTSNELock.isChecked() if scene == self.gvTSNE.scene() else self.btNetworkLock.isChecked()
-        self.actionLockCurrentView.setChecked(locked)
-        self.actionLockCurrentView.setText(f"{'Unlock' if locked else 'Lock'} Current View")
 
     def keyPressEvent(self, event: QKeyEvent):
         widget = QApplication.focusWidget()
 
         if event.matches(QKeySequence.NextChild):
             # Navigate between GraphicsViews
-            if self.gvNetwork.hasFocus():
-                self.gvTSNE.setFocus(Qt.TabFocusReason)
-            else:
-                self.gvNetwork.setFocus(Qt.TabFocusReason)
+            docks = list(self.network_docks.values())
+            current_index = -1
+            for i, dock in enumerate(docks):
+                view = dock.widget().gvNetwork
+                if view.hasFocus():
+                    current_index = i
+                elif current_index >= 0:
+                    try:
+                        next_dock = docks[current_index + 1]
+                        if next_dock.isVisible():
+                            next_dock.widget().gvNetwork.setFocus(Qt.TabFocusReason)
+                            break
+                    except IndexError:
+                        pass
+
+            if current_index == -1 or current_index == len(docks) - 1:
+                try:
+                    docks[0].widget().gvNetwork.setFocus(Qt.TabFocusReason)
+                except IndexError:
+                    pass
 
         elif widget is not None:
             if isinstance(widget, QGraphicsView):
@@ -520,13 +620,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
         super().showEvent(event)
         if not hasattr(self, '_first_show'):
             self.load_settings()
+            self._default_state = self.dock_manager.saveState()
             self._first_show = False
-        self.gvNetwork.setMinimumHeight(self.height() / 2)
-
-    def resizeEvent(self, event):
-        super().resizeEvent(event)
-        self.gvNetwork.setMinimumWidth(self.width() / 3)
-        self.gvTSNE.setMinimumWidth(self.width() / 3)
 
     def closeEvent(self, event):
         if not config.get_debug_flag():
@@ -551,39 +646,47 @@ class MainWindow(MainWindowBase, MainWindowUI):
     # noinspection PyUnusedLocal
     @debug
     def on_focus_changed(self, old: QWidget, now: QWidget):
-        if now in (self.gvNetwork, self.gvTSNE):
-            self.actionViewMiniMap.setChecked(self.current_view.minimap.isVisible())
-            self.on_scene_locked(scene=now.scene())
+        if hasattr(now, 'name') and now in self.network_docks.values():
+            current_view = self.current_view
+            if current_view is not None:
+                self.actionViewMiniMap.setChecked(self.current_view.minimap.isVisible())
 
     @debug
     def on_switch_minimap_visibility(self, *args):
         view = self.current_view
-        visible = view.minimap.isVisible()
-        view.minimap.setVisible(not visible)
-        self.actionViewMiniMap.setChecked(not visible)
+        if view is not None:
+            visible = view.minimap.isVisible()
+            view.minimap.setVisible(not visible)
+            self.actionViewMiniMap.setChecked(not visible)
 
     @debug
     def on_scene_selection_changed(self, update_view=True):
-        view = self.current_view
-        nodes_idx = [item.index() for item in view.scene().selectedNodes()]
-        edges_idx = [item.index() for item in view.scene().selectedEdges()]
+        current_view = self.current_view
+        if current_view is None:
+            return
+
+        nodes_idx = [item.index() for item in current_view.scene().selectedNodes()]
+        edges_idx = [item.index() for item in current_view.scene().selectedEdges()]
         self.tvNodes.model().setSelection(nodes_idx)
         self.tvEdges.model().setSelection(edges_idx)
 
         if update_view and self.actionLinkViews.isChecked():
-            if view == self.gvNetwork:
-                with utils.SignalBlocker(self.gvTSNE.scene()):
-                    self.gvTSNE.scene().setNodesSelection(nodes_idx)
-            elif view == self.gvTSNE:
-                with utils.SignalBlocker(self.gvNetwork.scene()):
-                    self.gvNetwork.scene().setNodesSelection(nodes_idx)
+            for dock in self.network_docks.values():
+                view = dock.widget().gvNetwork
+                if view != current_view:
+                    with utils.SignalBlocker(view.scene()):
+                        view.scene().setNodesSelection(nodes_idx)
 
     @debug
     def on_set_selected_nodes_color(self, color: QColor):
-        for scene in (self.gvNetwork.scene(), self.gvTSNE.scene()):
-            scene.setSelectedNodesColor(color)
+        for dock in self.network_docks.values():
+            dock.widget().gvNetwork.scene().setSelectedNodesColor(color)
 
-        self.network.graph.vs['__color'] = self.gvNetwork.scene().nodesColors()
+        try:
+            self.network.graph.vs['__color'] = dock.widget().gvNetwork.scene().nodesColors()
+        except UnboundLocalError:
+            pass
+
         self.has_unsaved_changes = True
 
     @debug
@@ -593,17 +696,18 @@ class MainWindow(MainWindowBase, MainWindowUI):
         except ValueError:
             return
 
-        for scene in (self.gvNetwork.scene(), self.gvTSNE.scene()):
-            scene.setSelectedNodesRadius(size)
+        for dock in self.network_docks.values():
+            dock.widget().gvNetwork.scene().setSelectedNodesRadius(size)
 
-        self.network.graph.vs['__size'] = self.gvNetwork.scene().nodesRadii()
+        self.network.graph.vs['__size'] = dock.widget().scene().nodesRadii()
+
         self.has_unsaved_changes = True
 
     @debug
     def on_do_search(self, *args):
         if self._last_table is None:
             return
-        self._last_table.model().setFilterRegExp(str(self.leSearch.text()))
+        self._last_table.model().setFilterRegExp(str(self.search_widget.leSearch.text()))
 
     @debug
     def on_new_project_triggered(self, *args):
@@ -653,7 +757,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
     @debug
     def on_set_pie_charts_visibility_toggled(self, visibility):
-        for view in (self.gvNetwork, self.gvTSNE):
+        for dock in self.network_docks.values():
+            view = dock.widget().gvNetwork
             scene = view.scene()
             scene.setPieChartsVisibility(visibility)
             view.updateVisibleItems()
@@ -665,6 +770,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
             from py2cytoscape import cyrest
 
             view = self.current_view
+            if view is None:
+                return
 
             cy = CyRestClient()
 
@@ -682,14 +789,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 if attr.startswith('__'):
                     del g.vs[attr]
                 else:
-                    g.vs[attr] = [str(x+1) for x in g.vs[attr]]
-            if view == self.gvTSNE:
-                g.delete_edges(g.es)  # in a t-SNE layout, edges does not makes any sense
-            else:
-                g.delete_edges([edge for edge in g.es if edge.is_loop()])
-                for attr in g.es.attributes():
-                    if attr.startswith('__'):
-                        del g.es[attr]
+                    g.vs[attr] = [str(x + 1) for x in g.vs[attr]]
+
+            g = view.process_graph_before_export(g)
 
             # cy.session.delete()
             self._logger.debug('CyREST: Creating network')
@@ -730,6 +832,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
     @debug
     def on_export_as_image_triggered(self, type_, to_clipboard=False):
         view = self.current_view
+        if view is None:
+            return
 
         if to_clipboard:
             filename = '__clipboard__'
@@ -793,7 +897,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
             worker = self.prepare_export_metadata_worker(filename, self.tvNodes.model().sourceModel(), sep)
             if worker is not None:
-                self._workers.add(worker)
+                self._workers.append(worker)
+                self._workers.start()
 
     @debug
     def on_export_db_results(self, *args):
@@ -807,7 +912,24 @@ class MainWindow(MainWindowBase, MainWindowUI):
             fmt = 'json' if filter_.endswith("(*.json)") else 'yaml'
             worker = self.prepare_export_db_results_worker(filename, self.tvNodes.model().sourceModel(), fmt=fmt)
             if worker is not None:
-                self._workers.add(worker)
+                self._workers.append(worker)
+                self._workers.start()
+
+    @debug
+    def on_show_spectrum_from_table_triggered(self, type_):
+        model = self.tvNodes.model()
+        selected_indexes = model.mapSelectionToSource(
+            self.tvNodes.selectionModel().selection()).indexes()
+
+        if not selected_indexes:
+            return
+
+        try:
+            node_idx = model.mapToSource(selected_indexes[0]).row()
+        except IndexError:
+            pass
+        else:
+            self.on_show_spectrum_triggered(type_, node_idx=node_idx)
 
     @debug
     def on_show_spectrum_triggered(self, type_, node=None, node_idx=None):
@@ -816,7 +938,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 if node_idx is None:
                     if node is None:
                         # No node specified, try to get it from current view's selection
-                        node = self.current_view.scene().selectedNodes()[0]
+                        view = self.current_view
+                        if view is None:
+                            return
+                        node = view.scene().selectedNodes()[0]
                     node_idx = node.index()
 
                 data = human_readable_data(self.network.spectra[node_idx])
@@ -832,29 +957,26 @@ class MainWindow(MainWindowBase, MainWindowUI):
             else:
                 # Set data as first or second spectrum
                 if type_ == 'compare':
-                    score = self.network.scores[self.cvSpectrum.spectrum1_index, node_idx] \
-                        if self.cvSpectrum.spectrum1_index is not None else None
-                    set_spectrum = self.cvSpectrum.set_spectrum2
+                    score = self.network.scores[self.spectra_widget.spectrum1_index, node_idx] \
+                        if self.spectra_widget.spectrum1_index is not None else None
+                    set_spectrum = self.spectra_widget.set_spectrum2
                 else:
-                    score = self.network.scores[node_idx, self.cvSpectrum.spectrum2_index] \
-                        if self.cvSpectrum.spectrum2_index is not None else None
-                    set_spectrum = self.cvSpectrum.set_spectrum1
+                    score = self.network.scores[node_idx, self.spectra_widget.spectrum2_index] \
+                        if self.spectra_widget.spectrum2_index is not None else None
+                    set_spectrum = self.spectra_widget.set_spectrum1
                 if score is not None:
-                    self.cvSpectrum.set_title(f'Score: {score:.4f}')
+                    self.spectra_widget.set_title(f'Score: {score:.4f}')
                 set_spectrum(data, node_idx, mz_parent)
 
                 # Show spectrum tab
-                self.dockSpectra.show()
-                self.dockSpectra.raise_()
+                self.dock_spectra.dockAreaWidget().setCurrentDockWidget(self.dock_spectra)
 
     @debug
     def on_select_first_neighbors_triggered(self, nodes, *args):
         view = self.current_view
-        neighbors = [v.index for node in nodes for v in self.network.graph.vs[node.index()].neighbors()]
-        if view == self.gvNetwork:
-            self.gvNetwork.scene().setNodesSelection(neighbors)
-        elif view == self.gvTSNE:
-            self.gvTSNE.scene().setNodesSelection(neighbors)
+        if view is not None:
+            neighbors = [v.index for node in nodes for v in self.network.graph.vs[node.index()].neighbors()]
+            view.scene().setNodesSelection(neighbors)
 
     @debug
     def on_use_columns_for(self, type_):
@@ -892,47 +1014,14 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 self.has_unsaved_changes = True
 
     @debug
-    def on_nodes_table_contextmenu(self, event):
-        column_index = self.tvNodes.columnAt(event.x())
-        row_index = self.tvNodes.rowAt(event.y())
-        if column_index != -1 and row_index != -1:
-            model = self.tvNodes.model()
-            node_idx = model.mapToSource(model.index(row_index, column_index)).row()
-            menu = QMenu(self)
-            action = QAction(QIcon(":/icons/images/highlight-yellow.svg"), "Highlight selected nodes", self)
-            action.triggered.connect(self.highlight_selected_nodes)
-            menu.addAction(action)
-            action = QAction(self.actionViewSpectrum.icon(), "View Spectrum", self)
-            action.triggered.connect(lambda: self.on_show_spectrum_triggered('show', node_idx=node_idx))
-            menu.addAction(action)
-            action = QAction(self.actionViewCompareSpectrum.icon(), "Compare Spectrum", self)
-            action.triggered.connect(lambda: self.on_show_spectrum_triggered('compare', node_idx=node_idx))
-            menu.addAction(action)
-            action = QAction(QIcon(":/icons/images/library-query.svg"), "Find standards in library", self)
-            action.triggered.connect(lambda: self.on_query_databases('standards'))
-            menu.addAction(action)
-            action = QAction(QIcon(":/icons/images/library-query-analogs.svg"), "Find analogs in library", self)
-            action.triggered.connect(lambda: self.on_query_databases('analogs'))
-            menu.addAction(action)
-            menu.popup(QCursor.pos())
+    def on_show_spectrum(self, *args):
+        indexes = self.tvNodes.selectedIndexes()
+        if not indexes:
+            return
 
     @debug
     def on_nodes_table_data_changed(self, *args):
         self.has_unsaved_changes = True
-
-    @debug
-    def on_edges_table_contextmenu(self, event):
-        column_index = self.tvEdges.columnAt(event.x())
-        row_index = self.tvEdges.rowAt(event.y())
-        if column_index != -1 and row_index != -1:
-            menu = QMenu(self)
-            action = QAction(QIcon(":/icons/images/highlight-red.svg"), "Highlight selected edges", self)
-            action.triggered.connect(self.highlight_selected_edges)
-            menu.addAction(action)
-            action = QAction(QIcon(":/icons/images/highlight-yellow.svg"), "Highlight nodes from selected edges", self)
-            action.triggered.connect(self.highlight_nodes_from_selected_edges)
-            menu.addAction(action)
-            menu.popup(QCursor.pos())
 
     @debug
     def on_query_databases(self, type_='standards'):
@@ -948,22 +1037,22 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 options = dialog.getValues()
                 worker = self.prepare_query_database_worker(selected_idx, options)
                 if worker is not None:
-                    self._workers.add(worker)
+                    self._workers.append(worker)
+                    self._workers.start()
         except FileNotFoundError:
             QMessageBox.warning(self, None, "No database found. Please download at least one database.")
 
     @debug
     def on_current_parameters_triggered(self, *args):
-        dialog = ui.CurrentParametersDialog(self, options=self.network.options)
-        dialog.exec_()
+        if hasattr(self._network.options, 'cosine'):
+            dialog = ui.CurrentParametersDialog(self, options=self.network.options)
+            dialog.exec_()
 
     @debug
     def on_preferences_triggered(self, *args):
         dialog = ui.SettingsDialog(self)
         if dialog.exec_() == QDialog.Accepted:
-            style = dialog.getValues()
-            self.gvNetwork.scene().setNetworkStyle(style)
-            self.gvTSNE.scene().setNetworkStyle(style)
+            self.style = dialog.getValues()
 
     @debug
     def on_open_user_folder_triggered(self, *args):
@@ -991,19 +1080,59 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         dialog = ui.ProcessDataDialog(self, options=self.network.options)
         if dialog.exec_() == QDialog.Accepted:
+            def create_compute_scores_worker(worker: workers.ReadDataWorker):
+                self.tvNodes.model().setSelection([])
+                self.tvNodes.model().sourceModel().beginResetModel()
+                self.network.mzs, self.network.spectra = worker.result()
+                self.tvNodes.model().sourceModel().endResetModel()
+                mzs = self.network.mzs
+                if not mzs:
+                    mzs = np.zeros((len(self.network.spectra),), dtype=int)
+                return self.prepare_compute_scores_worker(mzs, self.network.spectra)
+
+            def store_scores(worker: workers.ComputeScoresWorker):
+                self.tvEdges.model().setSelection([])
+                scores = worker.result()
+                if not isinstance(scores, np.ndarray):
+                    return
+                self.tvEdges.model().sourceModel().beginResetModel()
+                self._network.scores = scores
+                self._network.interactions = None
+                self.tvEdges.model().sourceModel().endResetModel()
+
+                self.dock_edges.toggleView(True)
+                self.dock_nodes.toggleView(True)
+
+            def add_graph_vertices(*args):
+                nodes_idx = np.arange(self._network.scores.shape[0])
+                self._network.graph.add_vertices(nodes_idx.tolist())
+
             self.reset_project()
 
-            process_file, use_metadata, metadata_file, metadata_options, \
-                compute_options, tsne_options, network_options = dialog.getValues()
-            if not use_metadata:
-                metadata_file = None
-            self.network.options.cosine = compute_options
-            self.network.options.tsne = tsne_options
-            self.network.options.network = network_options
+            process_file, use_metadata, metadata_file, metadata_options, options, views = dialog.getValues()
 
-            worker = self.prepare_read_mgf_worker(process_file, metadata_file, metadata_options)
-            if worker is not None:
-                self._workers.add(worker)
+            self._network.options = options
+            self._workers.append(self.prepare_read_data_worker(process_file))
+            self._workers.append(create_compute_scores_worker)
+            self._workers.append(store_scores)
+            self._workers.append(add_graph_vertices)
+            if use_metadata:
+                self._workers.append(self.prepare_read_metadata_worker(metadata_file, metadata_options))
+            if 'network' in views:
+                self._workers.append(lambda _: self.prepare_generate_network_worker())
+
+            for name in views:
+                try:
+                    widget_class = ui.widgets.AVAILABLE_NETWORK_WIDGETS[name]
+                except KeyError:
+                    pass
+                else:
+                    if widget_class is not None:
+                        widget = self.add_network_widget(widget_class)
+                        if widget is not None:
+                            self._workers.append(lambda _, w=widget: w.create_draw_worker())
+
+            self._workers.start()
 
     @debug
     def on_import_metadata_triggered(self, *args):
@@ -1012,7 +1141,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
             metadata_filename, options = dialog.getValues()
             worker = self.prepare_read_metadata_worker(metadata_filename, options)
             if worker is not None:
-                self._workers.add(worker)
+                self._workers.append(worker)
+                self._workers.start()
 
     @debug
     def on_import_group_mapping_triggered(self, *args):
@@ -1023,32 +1153,47 @@ class MainWindow(MainWindowBase, MainWindowUI):
             filename = dialog.selectedFiles()[0]
             worker = self.prepare_read_group_mapping_worker(filename)
             if worker is not None:
-                self._workers.add(worker)
+                self._workers.append(worker)
+                self._workers.start()
 
     @debug
-    def on_edit_options_triggered(self, type_):
+    def on_add_view_triggered(self, *args):
+        if hasattr(self._network, 'graph') and hasattr(self._network, 'scores'):
+            action = self.sender()
+            widget_class = action.data()
+            if widget_class is not None:
+                options = self.network.options.get(widget_class.name, {})
+                dialog = widget_class.dialog_class(self, options=options)
+                if dialog.exec_() == QDialog.Accepted:
+                    options = dialog.getValues()
+                    widget = self.add_network_widget(widget_class)
+                    self.network.options[widget.name] = options
+
+                    if widget is not None:
+                        if widget.name == 'network':
+                            self._workers.append(lambda _: self.prepare_generate_network_worker())
+                        self._workers.append(widget.create_draw_worker)
+                        self._workers.start()
+
+    @debug
+    def on_edit_options_triggered(self, widget):
         if hasattr(self.network, 'scores'):
-            if type_ == 'network':
-                dialog = ui.EditNetworkOptionsDialog(self, options=self.network.options)
-                if dialog.exec_() == QDialog.Accepted:
-                    options = dialog.getValues()
-                    if options != self.network.options.network:
-                        self.network.options.network = options
-                        self.network.interactions = None
-                        self.has_unsaved_changes = True
+            options = self.network.options.get(widget.name, {})
+            dialog = widget.dialog_class(self, options=options)
+            if dialog.exec_() == QDialog.Accepted:
+                new_options = dialog.getValues()
+                if new_options != options:
+                    self.network.options[widget.name] = new_options
 
-                        self.draw(which='network', keep_vertices=True)
-                        self.update_search_menu()
-            elif type_ == 't-sne':
-                dialog = ui.EditTSNEOptionsDialog(self, options=self.network.options)
-                if dialog.exec_() == QDialog.Accepted:
-                    options = dialog.getValues()
-                    if options != self.network.options.tsne:
-                        self.network.options.tsne = options
-                        self.has_unsaved_changes = True
+                    self.has_unsaved_changes = True
 
-                        self.draw(which='t-sne')
-                        self.update_search_menu()
+                    widget.reset_layout()
+                    if widget.name == 'network':
+                        self._network.interactions = None
+                        self._workers.append(lambda _: self.prepare_generate_network_worker(keep_vertices=True))
+                    self._workers.append(widget.create_draw_worker)
+                    self._workers.start()
+                    self.update_search_menu()
         else:
             QMessageBox.information(self, None, "No network found, please open a file first.")
 
@@ -1070,15 +1215,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
             dialog.exec_()
         else:
             QMessageBox.information(self, None, "No databases found, please download one or more database first.")
-
-    @debug
-    def on_scale_changed(self, type_, scale):
-        if type_ == 'network':
-            self.gvNetwork.scene().setScale(scale / self.sliderNetworkScale.defaultValue())
-        elif type_ == 't-sne':
-            self.gvTSNE.scene().setScale(scale / self.sliderNetworkScale.defaultValue())
-            self.draw_tsne_line(getattr(self.network.graph, 'tsne_layout', None),
-                                getattr(self.network, 'tsne_isolated_nodes', None))
 
     @debug
     def on_view_details_clicked(self, row: int, selection: dict):
@@ -1115,15 +1251,18 @@ class MainWindow(MainWindowBase, MainWindowUI):
     @debug
     def highlight_selected_nodes(self, *args):
         selected = self.nodes_selection()
-        with utils.SignalBlocker(self.gvNetwork.scene(), self.gvTSNE.scene()):
-            self.gvNetwork.scene().setNodesSelection(selected)
-            self.gvTSNE.scene().setNodesSelection(selected)
+        for dock in self.network_docks.values():
+            scene = dock.widget().gvNetwork.scene()
+            with utils.SignalBlocker(scene):
+                scene.setNodesSelection(selected)
 
     @debug
     def highlight_selected_edges(self, *args):
         selected = self.edges_selection()
-        with utils.SignalBlocker(self.gvNetwork.scene(), self.gvTSNE.scene()):
-            self.gvNetwork.scene().setEdgesSelection(selected)
+        for dock in self.network_docks.values():
+            scene = dock.widget().gvNetwork.scene()
+            with utils.SignalBlocker(scene):
+                scene.setEdgesSelection(selected)
 
     @debug
     def highlight_nodes_from_selected_edges(self, *args):
@@ -1136,9 +1275,40 @@ class MainWindow(MainWindowBase, MainWindowUI):
             sel.add(source)
             sel.add(dest)
 
-        with utils.SignalBlocker(self.gvNetwork.scene(), self.gvTSNE.scene()):
-            self.gvNetwork.scene().setNodesSelection(sel)
-            self.gvTSNE.scene().setNodesSelection(sel)
+        for dock in self.network_docks.values():
+            scene = dock.widget().gvNetwork.scene()
+            with utils.SignalBlocker(scene):
+                scene.setNodesSelection(sel)
+
+    def add_network_widget(self, widget_class):
+        try:
+            dock = self.network_docks[widget_class.name]
+            QMessageBox.warning(self, None, "A network of this type already exists.")
+            if dock is not None and dock.isClosed():
+                dock.toggleView()
+            dock.widget().gvNetwork.setFocus(Qt.ActiveWindowFocusReason)
+        except KeyError:
+            widget = widget_class(self.network)
+            view = widget.gvNetwork
+            scene = view.scene()
+            scene.setNetworkStyle(self.style)
+            scene.selectionChanged.connect(self.on_scene_selection_changed)
+            view.focusedIn.connect(lambda: self.on_scene_selection_changed(update_view=False))
+            scene.pieChartsVisibilityChanged.connect(
+                lambda visibility: self.actionSetPieChartsVisibility.setChecked(visibility))
+            widget.btOptions.clicked.connect(lambda: self.on_edit_options_triggered(widget))
+
+            dock = CDockWidget(widget.title)
+            dock.setWidget(widget)
+            self.dock_manager.addDockWidget(LeftDockWidgetArea, dock, self.dock_placeholder.dockAreaWidget())
+            dock.toggleView(False)
+            self.dock_placeholder.toggleView(False)
+            dock.toggleView(True)
+            self.dock_manager.addToggleViewActionToMenu(dock.toggleViewAction())
+            self.network_docks[widget_class.name] = dock
+            self._default_state = self.dock_manager.saveState()
+
+            return widget
 
     @debug
     def set_nodes_label(self, column_id):
@@ -1154,12 +1324,14 @@ class MainWindow(MainWindowBase, MainWindowUI):
             font.setOverline(True)
             model.setHeaderData(column_id, Qt.Horizontal, font, role=Qt.FontRole)
 
-            self.gvNetwork.scene().setLabelsFromModel(model, column_id, ui.widgets.LabelRole)
-            self.gvTSNE.scene().setLabelsFromModel(model, column_id, ui.widgets.LabelRole)
+            for dock in self.network_docks.values():
+                scene = dock.widget().gvNetwork.scene()
+                scene.setLabelsFromModel(model, column_id, ui.widgets.LabelRole)
             self.network.columns_mappings['label'] = column_id
         else:
-            self.gvNetwork.scene().resetLabels()
-            self.gvTSNE.scene().resetLabels()
+            for dock in self.network_docks.values():
+                dock.widget().gvNetwork.scene().resetLabels()
+
             try:
                 del self.network.columns_mappings['label']
             except KeyError:
@@ -1168,7 +1340,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.has_unsaved_changes = True
 
     @debug
-    def set_nodes_pie_chart_values(self, column_ids, colors: List[QColor]=()):
+    def set_nodes_pie_chart_values(self, column_ids, colors: List[QColor] = ()):
         model = self.tvNodes.model().sourceModel()
         if column_ids is not None:
             if len(colors) < len(column_ids):
@@ -1184,8 +1356,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 save_colors.append(color)
                 model.setHeaderData(column, Qt.Horizontal, color, role=ui.widgets.metadata.ColorMarkRole)
 
-            for view in (self.gvNetwork, self.gvTSNE):
-                scene = view.scene()
+            for dock in self.network_docks.values():
+                scene = dock.widget().gvNetwork.scene()
                 scene.setPieColors(colors)
                 scene.setPieChartsFromModel(model, column_ids)
                 scene.setPieChartsVisibility(True)
@@ -1194,8 +1366,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
         else:
             for column in range(model.columnCount()):
                 model.setHeaderData(column, Qt.Horizontal, None, role=ui.widgets.metadata.ColorMarkRole)
-            for view in (self.gvNetwork, self.gvTSNE):
-                view.scene().resetPieCharts()
+
+            for dock in self.network_docks.values():
+                dock.widget().gvNetwork.scene().resetPieCharts()
+
             try:
                 del self.network.columns_mappings['pies']
             except KeyError:
@@ -1204,7 +1378,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.has_unsaved_changes = True
 
     @debug
-    def set_nodes_sizes_values(self, column_id, func: Callable=None):
+    def set_nodes_sizes_values(self, column_id, func: Callable = None):
         model = self.tvNodes.model().sourceModel()
         for column in range(model.columnCount()):
             font = model.headerData(column, Qt.Horizontal, role=Qt.FontRole)
@@ -1217,13 +1391,14 @@ class MainWindow(MainWindowBase, MainWindowUI):
             font.setUnderline(True)
             model.setHeaderData(column_id, Qt.Horizontal, font, role=Qt.FontRole)
 
-            for view in (self.gvNetwork, self.gvTSNE):
-                scene = view.scene()
-                scene.setNodesRadiiFromModel(model, column_id, Qt.DisplayRole, func)
+            for dock in self.network_docks.values():
+                dock.widget().gvNetwork.scene().setNodesRadiiFromModel(model, column_id, Qt.DisplayRole, func)
+
             self.network.columns_mappings['size'] = (column_id, func)
         else:
-            for view in (self.gvNetwork, self.gvTSNE):
-                view.scene().resetNodesRadii()
+            for dock in self.network_docks.values():
+                dock.widget().gvNetwork.scene().resetNodesRadii()
+
             try:
                 del self.network.columns_mappings['size']
             except KeyError:
@@ -1258,25 +1433,33 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         settings.beginGroup('NetworkView')
         setting = settings.value('style', None)
-        style = style_from_css(setting)
-        self.gvNetwork.scene().setNetworkStyle(style)
-        self.gvTSNE.scene().setNetworkStyle(style)
+        self.style = style_from_css(setting)
+
         settings.endGroup()
 
     @debug
     def reset_layout(self, *args):
-        for w in self.findChildren(QDockWidget):
-            self.removeDockWidget(w)
-            w.setVisible(True)
-            if w.objectName() == "jupyter":
-                self.addDockWidget(Qt.TopDockWidgetArea, w)
+        # Move all docks to default areas
+        dock_area = None
+        for dock in self.dock_manager.dockWidgetsMap().values():
+            if dock.objectName() == 'placeholder':
+                pass
+            elif dock.objectName() == 'jupyter':
+                self.dock_manager.addDockWidget(TopDockWidgetArea, dock)
+            elif hasattr(dock.widget(), 'gvNetwork'):
+                self.dock_manager.addDockWidget(LeftDockWidgetArea, dock, self.dock_placeholder.dockAreaWidget())
             else:
-                self.addDockWidget(Qt.BottomDockWidgetArea, w)
-            w.setFloating(False)
+                if dock_area is None:
+                    dock_area = self.dock_manager.addDockWidget(BottomDockWidgetArea, dock)
+                else:
+                    self.dock_manager.addDockWidget(CenterDockWidgetArea, dock, dock_area)
 
-        self.tabifyDockWidget(self.dockNodes, self.dockEdges)
-        self.tabifyDockWidget(self.dockEdges, self.dockSpectra)
-        self.dockNodes.raise_()
+                if dock.objectName() == '2spectra':
+                    dock.toggleView(True)
+                    dock.toggleView(False)
+
+        if dock_area is not None:
+            dock_area.setCurrentIndex(0)
 
         # Make sure all toolbars are visible
         for w in self.findChildren(QToolBar):
@@ -1284,89 +1467,15 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 w.setVisible(True)
                 self.addToolBar(w)
 
-        for w in self.findChildren(QSplitter):
-            w.refresh()
-            w.setSizes(w.sizes())
+    @debug
+    def draw(self, compute_layouts=True, keep_vertices=False):
+        for dock in self.network_docks.values():
+            dock.widget().draw(compute_layouts, keep_vertices)
 
     @debug
-    def draw(self, compute_layouts=True, which='all', keep_vertices=False):
-        if which == 'all':
-            which = {'network', 't-sne'}
-        elif isinstance(which, str):
-            which = {which}
-
-        def draw_network():
-            isolated_nodes = np.where(np.asarray(self.network.graph.degree()) <= 2)[0]
-            if not compute_layouts and self.network.graph.network_layout is not None:
-                network_worker = self.prepare_draw_network_worker(layout=self.network.graph.network_layout,
-                                                                  isolated_nodes=isolated_nodes)
-            else:
-                network_worker = self.prepare_draw_network_worker(isolated_nodes=isolated_nodes)
-
-            if 't-sne' in which:
-                network_worker.finished.connect(draw_tsne)
-
-            self._workers.add(network_worker)
-
-        def draw_tsne():
-            if not compute_layouts and self.network.graph.tsne_layout is not None:
-                tsne_worker = self.prepare_draw_tsne_worker(layout=self.network.graph.tsne_layout,
-                                                            isolated_nodes=getattr(self.network, 'tsne_isolated_nodes', None))
-            else:
-                tsne_worker = self.prepare_draw_tsne_worker(isolated_nodes=getattr(self.network, 'tsne_isolated_nodes', None))
-            self._workers.add(tsne_worker)
-
-        if 'network' in which:
-            if self.network.interactions is None:
-                worker = self.prepare_generate_network_worker(keep_vertices)
-                worker.finished.connect(draw_network)
-                self._workers.add(worker)
-            else:
-                draw_network()
-        elif 't-sne' in which:
-            draw_tsne()
-
-        self.update_search_menu()
-
-    @debug
-    def apply_layout(self, type_, layout, isolated_nodes=None):
+    def apply_layout(self, widget, layout, isolated_nodes=None):
         hide_isolated_nodes = self.actionHideIsolatedNodes.isChecked()
-
-        if type_ == 'network':
-            self.gvNetwork.scene().setLayout(layout, isolated_nodes=isolated_nodes if hide_isolated_nodes else None)
-            self.network.graph.network_layout = layout
-            self.gvNetwork.scene().lock(self.btNetworkLock.isChecked())
-        elif type_ == 't-sne':
-            self.gvTSNE.scene().setLayout(layout, isolated_nodes=isolated_nodes if hide_isolated_nodes else None)
-            self.network.tsne_isolated_nodes = isolated_nodes
-            self.gvTSNE.scene().lock(self.btTSNELock.isChecked())
-            self.draw_tsne_line(layout, isolated_nodes)
-
-            self.network.graph.tsne_layout = layout
-
-    @debug
-    def draw_tsne_line(self, layout, isolated_nodes=None):
-        hide_isolated_nodes = self.actionHideIsolatedNodes.isChecked()
-
-        # Remove line separating isolated nodes from others
-        line = getattr(self.network.graph, 'tsne_layout_line', None)
-        if line is not None and isinstance(line, QGraphicsLineItem):
-            self.gvTSNE.scene().removeItem(line)
-
-        # Add a new line if needed
-        if not hide_isolated_nodes and isolated_nodes is not None:
-            try:
-                scale = self.gvTSNE.scene().scale()
-                l = layout[isolated_nodes]
-                x1 = l.min(axis=0)[0] - 5 * config.RADIUS
-                x2 = l.max(axis=0)[0] + 5 * config.RADIUS
-                y = l.max(axis=1)[1] - 5 * config.RADIUS
-                width = 5 * scale
-                self.network.graph.tsne_layout_line = self.gvTSNE.scene().addLine(x1 * scale, y * scale,
-                                                                                  x2 * scale, y * scale,
-                                                                                  pen=QPen(Qt.gray, width))
-            except ValueError:
-                pass
+        widget.apply_layout(layout, isolated_nodes=isolated_nodes, hide_isolated_nodes=hide_isolated_nodes)
 
     @debug
     def update_columns_mappings(self):
@@ -1390,101 +1499,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             pass
         else:
             if id_ is not None and func is not None:
-                 self.set_nodes_sizes_values(id_, func)
-
-    @debug
-    def prepare_apply_network_layout_worker(self, layout=None, isolated_nodes=None):
-        if layout is None:
-            # Compute layout
-            def process_finished():
-                computed_layout, _ = worker.result()
-                if computed_layout is not None:
-                    self.apply_layout('network', computed_layout, isolated_nodes)
-
-            worker = workers.NetworkWorker(self.network.graph, self.gvNetwork.scene().nodesRadii())
-            worker.finished.connect(process_finished)
-        else:
-            worker = workers.GenericWorker(self.apply_layout, 'network', layout, isolated_nodes)
-        return worker
-
-    @debug
-    def prepare_apply_tsne_layout_worker(self, layout=None, isolated_nodes=None):
-        if layout is None:
-            # Compute layout
-            def process_finished():
-                computed_layout, isolated_nodes = worker.result()
-                if computed_layout is not None:
-                    self.apply_layout('t-sne', computed_layout, isolated_nodes)
-
-            worker = workers.TSNEWorker(self.network.scores, self.network.options.tsne)
-            worker.finished.connect(process_finished)
-
-            return worker
-        else:
-            worker = workers.GenericWorker(self.apply_layout, 't-sne', layout, isolated_nodes)
-            return worker
-
-    @debug
-    def prepare_generate_network_worker(self, keep_vertices=False):
-        def interactions_generated():
-            nonlocal worker
-            interactions, graph = worker.result()
-            self.network.interactions = interactions
-            self.network.graph = graph
-
-        mzs = self.network.mzs
-        if not mzs:
-            mzs = np.zeros(self.network.scores.shape[:1], dtype=int)
-
-        worker = workers.GenerateNetworkWorker(self.network.scores, mzs, self.network.graph,
-                                               self.network.options.network, keep_vertices=keep_vertices)
-        worker.finished.connect(interactions_generated)
-
-        return worker
-
-    @debug
-    def prepare_draw_network_worker(self, layout=None, isolated_nodes=None):
-        scene = self.gvNetwork.scene()
-        scene.removeAllEdges()
-
-        # Add nodes
-        nodes = scene.nodes()
-        num_nodes = len(nodes)
-        if num_nodes == 0:
-            colors = self.network.graph.vs['__color'] \
-                if '__color' in self.network.graph.vs.attributes() else []
-
-            radii = self.network.graph.vs['__size'] \
-                if '__size' in self.network.graph.vs.attributes() else []
-
-            nodes = scene.addNodes(self.network.graph.vs['name'], colors=colors, radii=radii)
-
-        # Add edges
-        edges_attr = [(e.index, nodes[e.source], nodes[e.target], e['__width'])
-                      for e in self.network.graph.es if not e.is_loop()]
-        if edges_attr:
-            scene.addEdges(*zip(*edges_attr))
-
-        worker = self.prepare_apply_network_layout_worker(layout, isolated_nodes)
-        return worker
-
-    @debug
-    def prepare_draw_tsne_worker(self, layout=None, isolated_nodes=None):
-        scene = self.gvTSNE.scene()
-
-        # Add nodes
-        num_nodes = len(scene.nodes())
-        if num_nodes == 0:
-            colors = self.network.graph.vs['__color'] \
-                if '__color' in self.network.graph.vs.attributes() else []
-
-            radii = self.network.graph.vs['__size'] \
-                if '__size' in self.network.graph.vs.attributes() else []
-
-            scene.addNodes(self.network.graph.vs['name'], colors=colors, radii=radii)
-
-        worker = self.prepare_apply_tsne_layout_worker(layout, isolated_nodes)
-        return worker
+                self.set_nodes_sizes_values(id_, func)
 
     @debug
     def prepare_compute_scores_worker(self, spectra, use_multiprocessing):
@@ -1502,23 +1517,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         return worker
 
     @debug
-    def prepare_read_mgf_worker(self, mgf_filename, metadata_filename=None,
-                                metadata_options=workers.ReadMetadataOptions()):
-        worker = workers.ReadDataWorker(mgf_filename, self.network.options.cosine)
-
-        def file_read():
-            nonlocal worker
-            self.tvNodes.model().sourceModel().beginResetModel()
-            self.network.mzs, self.network.spectra = worker.result()
-            self.tvNodes.model().sourceModel().endResetModel()
-            mzs = self.network.mzs
-            if not mzs:
-                mzs = np.zeros((len(self.network.spectra), ), dtype=int)
-            worker = self.prepare_compute_scores_worker(mzs, self.network.spectra)
-            if worker is not None:
-                worker.finished.connect(scores_computed)
-                self._workers.add(worker)
-
+    def prepare_read_data_worker(self, mgf_filename):
         def error(e):
             if isinstance(e, KeyError) and e.args[0] in ("pepmass", "precursormz"):
                 QMessageBox.warning(self, None, "File format is incorrect. At least one scan has no parent's "
@@ -1530,21 +1529,29 @@ class MainWindow(MainWindowBase, MainWindowUI):
             else:
                 QMessageBox.warning(self, None, str(e))
 
-        def scores_computed():
-            nonlocal worker
-            self.tvEdges.model().sourceModel().beginResetModel()
-            self.network.scores = worker.result()
-            self.network.interactions = None
-            self.tvEdges.model().sourceModel().endResetModel()
-            self.draw()
-            if metadata_filename is not None:
-                worker = self.prepare_read_metadata_worker(metadata_filename, metadata_options)
-                if worker is not None:
-                    self._workers.add(worker)
-
-        worker.finished.connect(file_read)
+        worker = workers.ReadDataWorker(mgf_filename, self.network.options.cosine)
         worker.error.connect(error)
+
         return worker
+
+    @debug
+    def prepare_generate_network_worker(self, keep_vertices=False):
+        if self._network.interactions is not None:
+            return
+
+        mzs = self._network.mzs
+        if not mzs:
+            mzs = np.zeros(self._network.scores.shape[:1], dtype=int)
+
+        worker = workers.GenerateNetworkWorker(self._network.scores, mzs, self._network.graph,
+                                               self._network.options.network, keep_vertices=keep_vertices)
+
+        def store_interactions(worker: workers.GenerateNetworkWorker):
+            interactions, graph = worker.result()
+            self._network.interactions = interactions
+            self._network.graph = graph
+
+        return [worker, store_interactions]
 
     @debug
     def prepare_read_metadata_worker(self, filename, options):
@@ -1591,6 +1598,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 raise e
 
         worker = workers.SaveProjectWorker(fname, self.network.graph, self.network, self.network.options,
+                                           layouts={d.widget().name: d.widget().get_layout_data() for d in
+                                                    self.network_docks.values()},
                                            original_fname=self.fname)
         worker.finished.connect(process_finished)
         worker.error.connect(error)
@@ -1600,28 +1609,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
     @debug
     def prepare_load_project_worker(self, fname):
         """Load project from a previously saved file"""
-
-        def process_finished():
-            self.sliderNetworkScale.resetValue()
-            self.sliderTSNEScale.resetValue()
-
-            self.tvNodes.model().sourceModel().beginResetModel()
-            self.tvEdges.model().sourceModel().beginResetModel()
-            self.network = worker.result()
-            self.tvNodes.model().sourceModel().endResetModel()
-            self.tvEdges.model().sourceModel().endResetModel()
-
-            # Draw
-            self.draw(compute_layouts=False)
-
-            self.update_columns_mappings()
-
-            # Save filename and set window title
-            self.fname = fname
-            self.has_unsaved_changes = False
-
-            # Update list of recent projects
-            self.update_recent_projects(fname)
 
         def error(e):
             if isinstance(e, FileNotFoundError):
@@ -1638,7 +1625,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 raise e
 
         worker = workers.LoadProjectWorker(fname)
-        worker.finished.connect(process_finished)
         worker.error.connect(error)
 
         return worker

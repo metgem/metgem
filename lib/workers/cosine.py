@@ -48,6 +48,10 @@ class ComputeScoresWorker(BaseWorker):
             self.updated.emit(value)
             return not self.isStopped()
 
+        if self.isStopped():
+            self.canceled.emit()
+            return False
+
         try:
             scores_matrix = compute_distance_matrix(self._mzs, self._spectra,
                                                     self.options.mz_tolerance, self.options.min_matched_peaks,

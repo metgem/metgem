@@ -1,6 +1,8 @@
 from .main_window import MainWindow
 from .process_data_dialog import ProcessDataDialog
-from .edit_options_dialog import EditTSNEOptionsDialog, EditNetworkOptionsDialog
+from .edit_options_dialog import (EditTSNEOptionsDialog, EditNetworkOptionsDialog, HAS_UMAP)
+if HAS_UMAP:
+    from .edit_options_dialog import EditUMAPOptionsDialog
 from .current_parameters_dialog import CurrentParametersDialog
 from .download_databases_dialog import DownloadDatabasesDialog
 from .view_databases_dialog import ViewDatabasesDialog

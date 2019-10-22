@@ -4,15 +4,15 @@ from PyQt5.QtCore import Qt
 
     
 class ExportMetadataWorker(BaseWorker):
-    
+
     def __init__(self, filename, model, sep=None):
         super().__init__()
         self.filename = filename
         self.model = model
         self.sep = sep if sep is not None else ','
 
-        self.iterative_update = True
         self.max = self.model.rowCount()
+        self.iterative_update = True
         self.desc = 'Exporting Metadata...'
 
     def run(self):

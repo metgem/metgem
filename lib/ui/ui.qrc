@@ -1,5 +1,8 @@
 <RCC>
   <qresource prefix="icons">
+    <file>images/list-clear.svg</file>
+    <file>images/list-edit.svg</file>
+    <file>images/python.svg</file>
     <file>images/node-empty.svg</file>
     <file>images/chain-link.svg</file>
     <file>images/go-bottom.svg</file>

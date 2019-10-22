@@ -2,21 +2,16 @@ import itertools
 
 
 class AttrDict(dict):
-    """A frozen dictionary where item can be accessed as attributes."""
+    """A dictionary where item can be accessed as attributes."""
     
     def __getattr__(self, item):
         try:
             return self.__getitem__(item)
-        except KeyError:
-            raise AttributeError
+        except KeyError as e:
+            raise AttributeError(e)
     
     def __setattr__(self, item, value):
         return self.__setitem__(item, value)
-    
-    def __setitem__(self, item, value):
-        if item not in self:
-            raise AttributeError("'{}' object has no attribute '{}'".format(self.__class__.__name__, item))
-        super().__setitem__(item, value)
 
     def __getstate__(self):
         return dict(self)

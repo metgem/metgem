@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1106</width>
-    <height>763</height>
+    <width>1103</width>
+    <height>770</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -24,333 +24,15 @@
    <set>QMainWindow::AllowNestedDocks|QMainWindow::AllowTabbedDocks|QMainWindow::AnimatedDocks</set>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout_5">
-    <item>
-     <widget class="QSplitter" name="splitter">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <widget class="QFrame" name="verticalFrame">
-       <layout class="QVBoxLayout" name="verticalLayout">
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout">
-          <item>
-           <widget class="QLabel" name="label">
-            <property name="text">
-             <string>Network</string>
-            </property>
-            <property name="textFormat">
-             <enum>Qt::PlainText</enum>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QToolButton" name="btNetworkLock">
-            <property name="toolTip">
-             <string>Prevent the movement of nodes in this view</string>
-            </property>
-            <property name="statusTip">
-             <string>Prevent the movement of nodes in this view</string>
-            </property>
-            <property name="text">
-             <string>...</string>
-            </property>
-            <property name="icon">
-             <iconset resource="ui.qrc">
-              <normaloff>:/icons/images/lock.svg</normaloff>:/icons/images/lock.svg</iconset>
-            </property>
-            <property name="checkable">
-             <bool>true</bool>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QToolButton" name="btNetworkRuler">
-            <property name="toolTip">
-             <string>Change Network Scale</string>
-            </property>
-            <property name="statusTip">
-             <string>Change Network Scale</string>
-            </property>
-            <property name="text">
-             <string>...</string>
-            </property>
-            <property name="icon">
-             <iconset resource="ui.qrc">
-              <normaloff>:/icons/images/ruler.svg</normaloff>:/icons/images/ruler.svg</iconset>
-            </property>
-            <property name="popupMode">
-             <enum>QToolButton::InstantPopup</enum>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QToolButton" name="btNetworkOptions">
-            <property name="toolTip">
-             <string>Change Network Options</string>
-            </property>
-            <property name="statusTip">
-             <string>Change Network Options</string>
-            </property>
-            <property name="text">
-             <string>...</string>
-            </property>
-            <property name="icon">
-             <iconset resource="ui.qrc">
-              <normaloff>:/icons/images/preferences-system.svg</normaloff>:/icons/images/preferences-system.svg</iconset>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <widget class="NetworkView" name="gvNetwork"/>
-        </item>
-        <item>
-         <widget class="Slider" name="sliderNetworkScale">
-          <property name="minimumSize">
-           <size>
-            <width>200</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="toolTip">
-           <string>Change scale of network graph</string>
-          </property>
-          <property name="statusTip">
-           <string>Change scale of network graph</string>
-          </property>
-          <property name="minimum">
-           <number>1</number>
-          </property>
-          <property name="maximum">
-           <number>100</number>
-          </property>
-          <property name="singleStep">
-           <number>1</number>
-          </property>
-          <property name="value">
-           <number>11</number>
-          </property>
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="tickPosition">
-           <enum>QSlider::TicksBelow</enum>
-          </property>
-          <property name="tickInterval">
-           <number>5</number>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QFrame" name="verticalFrame_2">
-       <layout class="QVBoxLayout" name="verticalLayout_4">
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_2">
-          <item>
-           <widget class="QLabel" name="label_2">
-            <property name="text">
-             <string>t-SNE</string>
-            </property>
-            <property name="textFormat">
-             <enum>Qt::PlainText</enum>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QToolButton" name="btTSNELock">
-            <property name="toolTip">
-             <string>Prevent the movement of nodes in this view</string>
-            </property>
-            <property name="statusTip">
-             <string>Prevent the movement of nodes in this view</string>
-            </property>
-            <property name="text">
-             <string>...</string>
-            </property>
-            <property name="icon">
-             <iconset resource="ui.qrc">
-              <normaloff>:/icons/images/lock.svg</normaloff>:/icons/images/lock.svg</iconset>
-            </property>
-            <property name="checkable">
-             <bool>true</bool>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QToolButton" name="btTSNERuler">
-            <property name="toolTip">
-             <string>Change t-SNE Scale</string>
-            </property>
-            <property name="statusTip">
-             <string>Change t-SNE Scale</string>
-            </property>
-            <property name="text">
-             <string>...</string>
-            </property>
-            <property name="icon">
-             <iconset resource="ui.qrc">
-              <normaloff>:/icons/images/ruler.svg</normaloff>:/icons/images/ruler.svg</iconset>
-            </property>
-            <property name="popupMode">
-             <enum>QToolButton::InstantPopup</enum>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QToolButton" name="btTSNEOptions">
-            <property name="toolTip">
-             <string>Change t-SNE Options</string>
-            </property>
-            <property name="statusTip">
-             <string>Change t-SNE Options</string>
-            </property>
-            <property name="text">
-             <string>...</string>
-            </property>
-            <property name="icon">
-             <iconset resource="ui.qrc">
-              <normaloff>:/icons/images/preferences-system.svg</normaloff>:/icons/images/preferences-system.svg</iconset>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <widget class="NetworkView" name="gvTSNE"/>
-        </item>
-        <item>
-         <widget class="Slider" name="sliderTSNEScale">
-          <property name="minimumSize">
-           <size>
-            <width>200</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="toolTip">
-           <string>Change scale of t-SNE graph</string>
-          </property>
-          <property name="statusTip">
-           <string>Change scale of t-SNE graph</string>
-          </property>
-          <property name="minimum">
-           <number>1</number>
-          </property>
-          <property name="maximum">
-           <number>100</number>
-          </property>
-          <property name="singleStep">
-           <number>1</number>
-          </property>
-          <property name="value">
-           <number>11</number>
-          </property>
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="tickPosition">
-           <enum>QSlider::TicksBelow</enum>
-          </property>
-          <property name="tickInterval">
-           <number>5</number>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-     </widget>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="layoutSearch">
-      <item>
-       <spacer name="horizontalSpacer">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item>
-       <widget class="QLineEdit" name="leSearch">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>300</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>16777215</height>
-         </size>
-        </property>
-        <property name="baseSize">
-         <size>
-          <width>0</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="placeholderText">
-         <string>Search</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QToolButton" name="btSearch">
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset resource="ui.qrc">
-          <normaloff>:/icons/images/system-search.svg</normaloff>:/icons/images/system-search.svg</iconset>
-        </property>
-        <property name="popupMode">
-         <enum>QToolButton::InstantPopup</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-   </layout>
+   <layout class="QVBoxLayout" name="verticalLayout_5"/>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1106</width>
-     <height>20</height>
+     <width>1103</width>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -413,7 +95,6 @@
     </property>
     <addaction name="actionLinkViews"/>
     <addaction name="actionNeighbors"/>
-    <addaction name="actionLockCurrentView"/>
     <addaction name="separator"/>
     <addaction name="actionHideSelected"/>
     <addaction name="actionShowAll"/>
@@ -456,6 +137,8 @@
    <addaction name="actionProcessFile"/>
    <addaction name="actionImportMetadata"/>
    <addaction name="actionImportGroupMapping"/>
+   <addaction name="separator"/>
+   <addaction name="actionAddNetworkView"/>
    <addaction name="separator"/>
    <addaction name="actionCurrentParameters"/>
    <addaction name="actionPreferences"/>
@@ -545,173 +228,22 @@
     <bool>false</bool>
    </attribute>
   </widget>
-  <widget class="QDockWidget" name="dockNodes">
-   <property name="sizePolicy">
-    <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-     <horstretch>0</horstretch>
-     <verstretch>0</verstretch>
-    </sizepolicy>
-   </property>
-   <property name="windowIcon">
-    <iconset resource="ui.qrc">
-     <normaloff>:/icons/images/node.svg</normaloff>:/icons/images/node.svg</iconset>
-   </property>
-   <property name="windowTitle">
-    <string>Nodes</string>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>8</number>
-   </attribute>
-   <widget class="QWidget" name="dockWidgetContents">
-    <layout class="QHBoxLayout" name="horizontalLayout_5">
-     <item>
-      <layout class="QVBoxLayout" name="verticalLayout_6">
-       <item>
-        <widget class="QToolButton" name="btUseColumnForLabels">
-         <property name="toolTip">
-          <string>Use selected column as source for nodes' labels</string>
-         </property>
-         <property name="statusTip">
-          <string>Use selected column as source for nodes' labels</string>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-         <property name="icon">
-          <iconset resource="ui.qrc">
-           <normaloff>:/icons/images/label.svg</normaloff>:/icons/images/label.svg</iconset>
-         </property>
-         <property name="popupMode">
-          <enum>QToolButton::MenuButtonPopup</enum>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QToolButton" name="btUseColumnsForPieCharts">
-         <property name="toolTip">
-          <string>Use selected columns as source for nodes' pie charts</string>
-         </property>
-         <property name="statusTip">
-          <string>Use selected columns as source for nodes' pie charts</string>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-         <property name="icon">
-          <iconset resource="ui.qrc">
-           <normaloff>:/icons/images/pie.svg</normaloff>:/icons/images/pie.svg</iconset>
-         </property>
-         <property name="popupMode">
-          <enum>QToolButton::MenuButtonPopup</enum>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QToolButton" name="btUseColumnForNodesSizes">
-         <property name="toolTip">
-          <string>Use selected columns as source for nodes' sizes</string>
-         </property>
-         <property name="statusTip">
-          <string>Use selected columns as source for nodes' sizes</string>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-         <property name="icon">
-          <iconset resource="ui.qrc">
-           <normaloff>:/icons/images/node-size.svg</normaloff>:/icons/images/node-size.svg</iconset>
-         </property>
-         <property name="popupMode">
-          <enum>QToolButton::MenuButtonPopup</enum>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="verticalSpacer">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
-     </item>
-     <item>
-      <widget class="NodeTableView" name="tvNodes">
-       <property name="alternatingRowColors">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </widget>
-  </widget>
-  <widget class="QDockWidget" name="dockEdges">
-   <property name="sizePolicy">
-    <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-     <horstretch>0</horstretch>
-     <verstretch>0</verstretch>
-    </sizepolicy>
-   </property>
-   <property name="windowIcon">
-    <iconset resource="ui.qrc">
-     <normaloff>:/icons/images/edge.svg</normaloff>:/icons/images/edge.svg</iconset>
-   </property>
-   <property name="windowTitle">
-    <string>Edges</string>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>8</number>
-   </attribute>
-   <widget class="QWidget" name="dockWidgetContents_2">
-    <layout class="QHBoxLayout" name="horizontalLayout_6">
-     <item>
-      <widget class="EdgeTableView" name="tvEdges">
-       <property name="alternatingRowColors">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </widget>
-  </widget>
-  <widget class="QDockWidget" name="dockSpectra">
-   <property name="windowIcon">
-    <iconset resource="ui.qrc">
-     <normaloff>:/icons/images/spectrum.svg</normaloff>:/icons/images/spectrum.svg</iconset>
-   </property>
-   <property name="windowTitle">
-    <string>Spectra</string>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>8</number>
-   </attribute>
-   <widget class="QWidget" name="dockWidgetContents_4">
-    <layout class="QHBoxLayout" name="horizontalLayout_7">
-     <item>
-      <widget class="ExtendedSpectrumWidget" name="cvSpectrum" native="true"/>
-     </item>
-    </layout>
-   </widget>
-  </widget>
   <action name="actionProcessFile">
    <property name="icon">
     <iconset resource="ui.qrc">
      <normaloff>:/icons/images/import-mgf.svg</normaloff>:/icons/images/import-mgf.svg</iconset>
    </property>
    <property name="text">
-    <string>&amp;Process New MGF File...</string>
+    <string>&amp;Import spectra list...</string>
+   </property>
+   <property name="iconText">
+    <string>Import spectra list</string>
    </property>
    <property name="toolTip">
-    <string>Open and process a new MGF file</string>
+    <string>Import a spectra list and compute scores</string>
    </property>
    <property name="statusTip">
-    <string>Open and process a new MGF file</string>
+    <string>Import a spectra list and compute scores</string>
    </property>
   </action>
   <action name="actionQuit">
@@ -1178,10 +710,10 @@
     <string>&amp;Spectrum</string>
    </property>
    <property name="toolTip">
-    <string>View Spectrum</string>
+    <string>Show the spectrum associated to the selected node</string>
    </property>
    <property name="statusTip">
-    <string>View Spectrum</string>
+    <string>Show the spectrum associated to the selected node</string>
    </property>
    <property name="shortcut">
     <string>S</string>
@@ -1195,8 +727,11 @@
    <property name="text">
     <string>&amp;Compare Spectrum</string>
    </property>
+   <property name="toolTip">
+    <string>Compare the spectrum associated to the selected node to another one</string>
+   </property>
    <property name="statusTip">
-    <string>Compare Spectrum</string>
+    <string>Compare the spectrum associated to the selected node to another one</string>
    </property>
    <property name="shortcut">
     <string>C</string>
@@ -1346,78 +881,6 @@
     <string>P</string>
    </property>
   </action>
-  <action name="actionResetColorMapping">
-   <property name="icon">
-    <iconset resource="ui.qrc">
-     <normaloff>:/icons/images/node-empty.svg</normaloff>:/icons/images/node-empty.svg</iconset>
-   </property>
-   <property name="text">
-    <string>Reset color mapping</string>
-   </property>
-   <property name="toolTip">
-    <string>Remove pie charts</string>
-   </property>
-  </action>
-  <action name="actionUseColumnsForPieCharts">
-   <property name="icon">
-    <iconset resource="ui.qrc">
-     <normaloff>:/icons/images/pie.svg</normaloff>:/icons/images/pie.svg</iconset>
-   </property>
-   <property name="text">
-    <string>Use Columns for Pie Charts</string>
-   </property>
-   <property name="toolTip">
-    <string>Use selected columns as source for nodes' pie charts</string>
-   </property>
-  </action>
-  <action name="actionResetLabelMapping">
-   <property name="icon">
-    <iconset resource="ui.qrc">
-     <normaloff>:/icons/images/label.svg</normaloff>:/icons/images/label.svg</iconset>
-   </property>
-   <property name="text">
-    <string>Reset label mapping</string>
-   </property>
-   <property name="toolTip">
-    <string>Restore default nodes' labels</string>
-   </property>
-  </action>
-  <action name="actionUseColumnForLabels">
-   <property name="icon">
-    <iconset resource="ui.qrc">
-     <normaloff>:/icons/images/label.svg</normaloff>:/icons/images/label.svg</iconset>
-   </property>
-   <property name="text">
-    <string>Use Column for Labels</string>
-   </property>
-   <property name="toolTip">
-    <string>Use selected column as source for nodes' labels</string>
-   </property>
-  </action>
-  <action name="actionResetSizeMapping">
-   <property name="icon">
-    <iconset resource="ui.qrc">
-     <normaloff>:/icons/images/node-size.svg</normaloff>:/icons/images/node-size.svg</iconset>
-   </property>
-   <property name="text">
-    <string>Reset size mapping</string>
-   </property>
-   <property name="toolTip">
-    <string>Restore default nodes' sizes</string>
-   </property>
-  </action>
-  <action name="actionUseColumnForNodesSizes">
-   <property name="icon">
-    <iconset resource="ui.qrc">
-     <normaloff>:/icons/images/node-size.svg</normaloff>:/icons/images/node-size.svg</iconset>
-   </property>
-   <property name="text">
-    <string>Use Column for Nodes Sizes</string>
-   </property>
-   <property name="toolTip">
-    <string>Use selected column as source for nodes' sizes</string>
-   </property>
-  </action>
   <action name="actionHideIsolatedNodes">
    <property name="checkable">
     <bool>true</bool>
@@ -1447,27 +910,6 @@
     <string>List recently opened projects</string>
    </property>
   </action>
-  <action name="actionLockCurrentView">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="ui.qrc">
-     <normaloff>:/icons/images/lock.svg</normaloff>:/icons/images/lock.svg</iconset>
-   </property>
-   <property name="text">
-    <string>Unlock Current View</string>
-   </property>
-   <property name="toolTip">
-    <string>Prevent the movement of nodes in the currently selected view</string>
-   </property>
-   <property name="statusTip">
-    <string>Prevent the movement of nodes in the currently selected view</string>
-   </property>
-   <property name="shortcut">
-    <string>L</string>
-   </property>
-  </action>
   <action name="actionCopyAsImage">
    <property name="icon">
     <iconset resource="ui.qrc">
@@ -1486,35 +928,37 @@
     <string>Ctrl+Shift+C</string>
    </property>
   </action>
+  <action name="actionAddNetworkView">
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/list-add.svg</normaloff>:/icons/images/list-add.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Add Network View</string>
+   </property>
+   <property name="toolTip">
+    <string>Add Network View</string>
+   </property>
+   <property name="statusTip">
+    <string>Add Network View</string>
+   </property>
+  </action>
+  <action name="actionHighlightSelectedNodes">
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/highlight-yellow.svg</normaloff>:/icons/images/highlight-yellow.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Highlight Selected Nodes</string>
+   </property>
+   <property name="toolTip">
+    <string>Highlight in network views the selected nodes in the table</string>
+   </property>
+   <property name="statusTip">
+    <string>Highlight in network views the selected nodes in the table</string>
+   </property>
+  </action>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>NetworkView</class>
-   <extends>QGraphicsView</extends>
-   <header>PyQtNetworkView.h</header>
-  </customwidget>
-  <customwidget>
-   <class>ExtendedSpectrumWidget</class>
-   <extends>QWidget</extends>
-   <header>lib/ui/widgets.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>NodeTableView</class>
-   <extends>QTableView</extends>
-   <header>lib/ui/widgets.h</header>
-  </customwidget>
-  <customwidget>
-   <class>EdgeTableView</class>
-   <extends>QTableView</extends>
-   <header>lib/ui/widgets.h</header>
-  </customwidget>
-  <customwidget>
-   <class>Slider</class>
-   <extends>QSlider</extends>
-   <header>lib/ui/widgets.h</header>
-  </customwidget>
- </customwidgets>
  <resources>
   <include location="ui.qrc"/>
  </resources>

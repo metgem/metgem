@@ -114,7 +114,7 @@ class StandardsResultsDelegate(QStyledItemDelegate):
                 parent.setData(type_)
                 parent.setSelectable(False)
                 model.appendRow(parent)
-                if items:
+                if items and not isinstance(items, str):
                     for i, result in enumerate(items):
                         if not isinstance(result, str):
                             item = QStandardItem()
@@ -133,14 +133,14 @@ class StandardsResultsDelegate(QStyledItemDelegate):
         value = index.data(Qt.EditRole)
         standards = index.data(StandardsRole)
         if standards is not None and not isinstance(standards, str):
-            type_ = standards[value][0]
-            parent = editor.model().index(type_, 0)
+            parent = editor.model().index(0, 0)
             editor.setRootModelIndex(parent)
             editor.setCurrentIndex(value)
             editor.setRootModelIndex(QModelIndex())
 
     def setModelData(self, editor, model, index):
-        model.setData(index, editor.currentIndex(), Qt.EditRole)
+        if editor.currentIndex() > 0:
+            model.setData(index, editor.currentIndex(), Qt.EditRole)
 
     def on_view_details(self, index, editor):
         self.closeEditor.emit(editor)

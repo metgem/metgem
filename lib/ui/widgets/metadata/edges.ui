@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>EdgesWidget</class>
+ <widget class="QWidget" name="EdgesWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string/>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="QToolButton" name="btHighlightSelectedEdges">
+       <property name="toolTip">
+        <string>Highlight in network views the selected edges in the table</string>
+       </property>
+       <property name="statusTip">
+        <string>Highlight in network views the selected edges in the table</string>
+       </property>
+       <property name="text">
+        <string>...</string>
+       </property>
+       <property name="icon">
+        <iconset resource="../../ui.qrc">
+         <normaloff>:/icons/images/highlight-red.svg</normaloff>:/icons/images/highlight-red.svg</iconset>
+       </property>
+       <property name="popupMode">
+        <enum>QToolButton::MenuButtonPopup</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="verticalSpacer">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="EdgeTableView" name="tvEdges">
+     <property name="alternatingRowColors">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+  </layout>
+  <action name="actionHighlightSelectedEdges">
+   <property name="icon">
+    <iconset resource="../../ui.qrc">
+     <normaloff>:/icons/images/highlight-red.svg</normaloff>:/icons/images/highlight-red.svg</iconset>
+   </property>
+   <property name="text">
+    <string>HighlightSelectedEdges</string>
+   </property>
+   <property name="toolTip">
+    <string>Highlight in network views the selected edges in the table</string>
+   </property>
+   <property name="statusTip">
+    <string>Highlight in network views the selected edges in the table</string>
+   </property>
+  </action>
+  <action name="actionHighlightNodesFromSelectedEdges">
+   <property name="icon">
+    <iconset resource="../../ui.qrc">
+     <normaloff>:/icons/images/highlight-yellow.svg</normaloff>:/icons/images/highlight-yellow.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Highlight nodes from selected edges</string>
+   </property>
+   <property name="toolTip">
+    <string>Highlight in network views the nodes connected by selected edges in the table</string>
+   </property>
+   <property name="statusTip">
+    <string>Highlight in network views the nodes connected by selected edges in the table</string>
+   </property>
+  </action>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>EdgeTableView</class>
+   <extends>QTableView</extends>
+   <header>lib/ui/widgets.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="../../ui.qrc"/>
+ </resources>
+ <connections/>
+</ui>

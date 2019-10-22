@@ -8,7 +8,7 @@ from PyQt5.QtGui import QPalette, QColor
 from PyQt5.QtWidgets import QCompleter, QFileSystemModel, QDialog, QFileDialog, QTableWidgetItem
 
 from ..utils import SignalBlocker
-from ..workers import WorkerSet, ReadMetadataWorker, ReadMetadataOptions
+from ..workers import WorkerQueue, ReadMetadataWorker, ReadMetadataOptions
 from .progress_dialog import ProgressDialog
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'import_metadata_dialog.ui')
@@ -26,7 +26,7 @@ class ImportMetadataDialog(ImportMetadataDialogBase, ImportMetadataDialogUI):
 
         self.setupUi(self)
 
-        self._workers = WorkerSet(self, ProgressDialog(self))
+        self._workers = WorkerQueue(self, ProgressDialog(self))
 
         # Set completer for input files
         completer = QCompleter(self.editMetadataFile)
@@ -157,7 +157,8 @@ class ImportMetadataDialog(ImportMetadataDialogBase, ImportMetadataDialogUI):
                 worker.finished.connect(file_read)
                 worker.error.connect(lambda: self.twMetadata.setLoading(False))
                 self.twMetadata.setLoading(True)
-                self._workers.add(worker)
+                self._workers.append(worker)
+                self._workers.start()
 
     def prepare_options(self, preview=True):
         delimiter = self.cbCsvDelimiter.delimiter()

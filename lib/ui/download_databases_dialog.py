@@ -1,5 +1,5 @@
 from .widgets import AutoToolTipItemDelegate
-from ..workers import WorkerSet
+from ..workers import WorkerQueue
 from ..workers import (ListDatabasesWorker, DownloadDatabasesWorker,
                        GetGNPSDatabasesMtimeWorker, ConvertDatabasesWorker)
 from .progress_dialog import ProgressDialog
@@ -39,7 +39,7 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
         self.treeDatabases.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.treeDatabases.setItemDelegate(AutoToolTipItemDelegate())
 
-        self._workers = WorkerSet(self, ProgressDialog(self))
+        self._workers = WorkerQueue(self, ProgressDialog(self))
         self._mtimes = {}
 
         # Add download button
@@ -70,8 +70,15 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
         self.treeDatabases.clear()
         self.treeDatabases.setLoading(True)
 
-        worker = self.prepare_populate_list_worker()
-        self._workers.add(worker)
+        def create_get_mtimes_worker(_):
+            self.treeDatabases.setLoading(False)
+            self.btRefresh.setEnabled(True)
+            return self.prepare_get_mtimes_worker()
+
+        self._workers.append(self.prepare_populate_list_worker())
+        self._workers.append(create_get_mtimes_worker)
+
+        self._workers.start()
 
     def prepare_populate_list_worker(self):
         # Create worker to populate list and start it
@@ -91,16 +98,9 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
             item.setData(0, DownloadDatabasesDialog.OriginRole, dict_item['origin'])
             self.treeDatabases.addTopLevelItem(item)
 
-        def process_finished():
-            self.treeDatabases.setLoading(False)
-            self.btRefresh.setEnabled(True)
-            worker = self.prepare_get_mtimes_worker()
-            self._workers.add(worker)
-
         worker = ListDatabasesWorker()
         worker.itemReady.connect(update_list)
         worker.error.connect(self.on_error)
-        worker.finished.connect(process_finished)
 
         return worker
 
@@ -224,18 +224,7 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
                                 'Please select at least one database first.')
             return False
 
-        worker = self.prepare_download_databases_worker(ids)
-        if worker is not None:
-            self._workers.add(worker)
-
-    def prepare_download_databases_worker(self, ids):
-        def clean_up():
-            self.setEnabled(True)
-            self.update_badges()
-
-        def download_finished():
-            nonlocal worker, ids
-
+        def create_convert_databases_worker(worker: DownloadDatabasesWorker, ids):
             self.update_badges()
             downloaded, unreachable = worker.result()
 
@@ -255,14 +244,21 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
                             else:
                                 to_be_converted[origin] = {name: ids}
 
-                worker = self.prepare_convert_databases_worker(to_be_converted)
-                if worker is not None:
-                    self._workers.add(worker)
+                return self.prepare_convert_databases_worker(to_be_converted)
+
+        worker = self.prepare_download_databases_worker(ids)
+        self._workers.append(worker)
+        self._workers.append(lambda worker, ids=ids: create_convert_databases_worker(worker, ids))
+        self._workers.start()
+
+    def prepare_download_databases_worker(self, ids):
+        def clean_up():
+            self.setEnabled(True)
+            self.update_badges()
 
         worker = DownloadDatabasesWorker(ids, self.base_path)
         worker.error.connect(clean_up)
         worker.error.connect(self.on_error)
-        worker.finished.connect(download_finished)
         worker.canceled.connect(clean_up)
         return worker
 

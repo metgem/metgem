@@ -1,11 +1,14 @@
 from PyQt5.QtGui import QPainter, QMouseEvent, QPalette
-from PyQt5.QtWidgets import QTableView, QAbstractButton, QHeaderView
+from PyQt5.QtWidgets import QTableView, QAbstractButton, QHeaderView, QWidget, QMenu
 from PyQt5.QtCore import Qt, QObject, QEvent, QRect, QItemSelectionModel, pyqtSignal, QTimer, QModelIndex
+from PyQt5 import uic
 
 from lib.ui.widgets.delegates import StandardsResultsDelegate
 from .model import ProxyModel, ColorMarkRole
 from ..delegates import EnsureStringItemDelegate
 from ....utils import SignalBlocker
+
+import os
 
 
 class HeaderView(QHeaderView):
@@ -200,3 +203,53 @@ class EdgeTableView(MetadataTableView):
         if index == self.model().columnCount() - 1:
             with SignalBlocker(self.horizontalHeader()):
                 self.horizontalHeader().setSortIndicator(-1, Qt.AscendingOrder)
+
+
+class NodesWidget(QWidget):
+
+    def __init__(self):
+        super().__init__()
+        uic.loadUi(os.path.join(os.path.dirname(__file__), 'nodes.ui'), self)
+
+        menu = QMenu()
+        menu.addAction(self.actionUseColumnForLabels)
+        menu.addAction(self.actionResetLabelMapping)
+        self.btUseColumnForLabels.setMenu(menu)
+        self.btUseColumnForLabels.setDefaultAction(self.actionUseColumnForLabels)
+
+        menu = QMenu()
+        menu.addAction(self.actionUseColumnsForPieCharts)
+        menu.addAction(self.actionResetColorMapping)
+        self.btUseColumnsForPieCharts.setMenu(menu)
+        self.btUseColumnsForPieCharts.setDefaultAction(self.actionUseColumnsForPieCharts)
+
+        menu = QMenu()
+        menu.addAction(self.actionUseColumnForNodesSizes)
+        menu.addAction(self.actionResetSizeMapping)
+        self.btUseColumnForNodesSizes.setMenu(menu)
+        self.btUseColumnForNodesSizes.setDefaultAction(self.actionUseColumnForNodesSizes)
+
+        menu = QMenu()
+        menu.addAction(self.actionViewSpectrum)
+        menu.addAction(self.actionViewCompareSpectrum)
+        self.btShowSpectrum.setMenu(menu)
+        self.btShowSpectrum.setDefaultAction(self.actionViewSpectrum)
+
+        menu = QMenu()
+        menu.addAction(self.actionFindStandards)
+        menu.addAction(self.actionFindAnalogs)
+        self.btFindStandards.setMenu(menu)
+        self.btFindStandards.setDefaultAction(self.actionFindStandards)
+
+
+class EdgesWidget(QWidget):
+
+    def __init__(self):
+        super().__init__()
+        uic.loadUi(os.path.join(os.path.dirname(__file__), 'edges.ui'), self)
+
+        menu = QMenu()
+        menu.addAction(self.actionHighlightSelectedEdges)
+        menu.addAction(self.actionHighlightNodesFromSelectedEdges)
+        self.btHighlightSelectedEdges.setMenu(menu)
+        self.btHighlightSelectedEdges.setDefaultAction(self.actionHighlightSelectedEdges)

@@ -1,6 +1,8 @@
-from .set import WorkerSet
+from .queue import WorkerQueue
 from .generic import GenericWorker
-from .tsne import TSNEWorker, TSNEVisualizationOptions
+from .embedding import (TSNEWorker, TSNEVisualizationOptions,
+                        MDSWorker, MDSVisualizationOptions,
+                        UMAPWorker, UMAPVisualizationOptions, HAS_UMAP)
 from .network import NetworkWorker
 from .network_generation import NetworkVisualizationOptions, GenerateNetworkWorker
 from .cosine import ComputeScoresWorker, CosineComputationOptions
