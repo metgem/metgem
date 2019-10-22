@@ -439,15 +439,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.dock_edges.toggleView(True)
             self.dock_nodes.toggleView(True)
 
-            self.update_columns_mappings()
-
-            # Save filename and set window title
-            self.fname = filename
-            self.has_unsaved_changes = False
-
-            # Update list of recent projects
-            self.update_recent_projects(filename)
-
             workers = []
             for name, value in layouts.items():
                 try:
@@ -464,10 +455,18 @@ class MainWindow(MainWindowBase, MainWindowUI):
             if workers:
                 return workers
 
+        def save_filename(*args):
+            # Save filename and set window title
+            self.fname = filename
+            self.has_unsaved_changes = False
+
         worker = self.prepare_load_project_worker(filename)
         if worker is not None:
             self._workers.append(worker)
             self._workers.append(create_draw_workers)
+            self._workers.append(lambda _: self.update_columns_mappings())
+            self._workers.append(save_filename)
+            self._workers.append(lambda _: self.update_recent_projects(filename))  # Update list of recent projects
             self._workers.start()
 
     @debug
