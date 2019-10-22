@@ -213,6 +213,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.actionHideIsolatedNodes.triggered.connect(lambda x: [d.widget().show_isolated_nodes(x)
                                                                   for d in self.network_docks.values()])
         color_button.colorSelected.connect(self.on_set_selected_nodes_color)
+        color_button.colorReset.connect(self.on_reset_selected_nodes_color)
         size_combo.currentIndexChanged['QString'].connect(self.on_set_selected_nodes_size)
         size_action.triggered.connect(lambda: self.on_set_selected_nodes_size(size_combo.currentText()))
         self.actionNeighbors.triggered.connect(
@@ -681,6 +682,19 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def on_set_selected_nodes_color(self, color: QColor):
         for dock in self.network_docks.values():
             dock.widget().gvNetwork.scene().setSelectedNodesColor(color)
+
+        try:
+            self.network.graph.vs['__color'] = dock.widget().gvNetwork.scene().nodesColors()
+        except UnboundLocalError:
+            pass
+
+        self.has_unsaved_changes = True
+
+    @debug
+    def on_reset_selected_nodes_color(self):
+        for dock in self.network_docks.values():
+            scene = dock.widget().gvNetwork.scene()
+            scene.setSelectedNodesColor(scene.networkStyle().nodeBrush().color())
 
         try:
             self.network.graph.vs['__color'] = dock.widget().gvNetwork.scene().nodesColors()

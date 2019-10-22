@@ -1,9 +1,11 @@
-from PyQt5.QtCore import Qt, QSettings
+from PyQt5.QtCore import Qt, QSettings, pyqtSignal
 from PyQt5.QtGui import QIcon, QPainter, QBrush, QColor
-from PyQt5.QtWidgets import QToolButton, QWidgetAction, QColorDialog, QMenu, QAction, QAbstractButton
+from PyQt5.QtWidgets import QToolButton, QWidgetAction, QColorDialog, QMenu, QAction, QAbstractButton, QDialogButtonBox
 
 
 class ColorPicker(QToolButton):
+    colorReset = pyqtSignal()
+
     def __init__(self, action: QAction = None, color_group=None, default_color=Qt.blue, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -12,6 +14,12 @@ class ColorPicker(QToolButton):
 
         dialog_action = QWidgetAction(self)
         self.dialog = QColorDialog()
+
+        self.btReset = None
+        button_box = self.dialog.findChild(QDialogButtonBox, "")
+        if button_box is not None:
+            self.btReset = button_box.addButton(QDialogButtonBox.Reset)
+
         self.dialog.setWindowFlags(Qt.Widget)
         self.dialog.setOptions(self.dialog.options() | QColorDialog.DontUseNativeDialog)
         dialog_action.setDefaultWidget(self.dialog)
@@ -43,6 +51,8 @@ class ColorPicker(QToolButton):
 
         # Connect events
         self.colorSelected = self.dialog.colorSelected
+        if self.btReset is not None:
+            self.btReset.clicked.connect(self.colorReset.emit)
         self.currentColorChanged = self.dialog.currentColorChanged
         menu.aboutToShow.connect(self.dialog.show)
         self.dialog.rejected.connect(menu.hide)
@@ -80,7 +90,7 @@ class ColorPicker(QToolButton):
             painter = QPainter(pixmap)
             painter.setPen(Qt.NoPen)
             painter.setBrush(QBrush(self.dialog.currentColor()))
-            painter.drawEllipse(0, 0, size.width() / 4, size.height() / 4)
+            painter.drawEllipse(0, 0, int(size.width() / 4), int(size.height() / 4))
             painter.end()
             icon.addPixmap(pixmap)
         super().setIcon(icon)
