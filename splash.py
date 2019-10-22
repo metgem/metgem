@@ -40,8 +40,8 @@ class SplashScreen(QSplashScreen):
 
             QProgressBar::chunk {
                 background: QLinearGradient( x1: 0, y1: 0, x2: 1, y2: 0,
-                stop: 0 #729fcf,
-                stop: 1 #3465a4);
+                stop: 0 #ffadad,
+                stop: 1 #ff6666);
                 border-radius: 5px;
                 border: 1px solid black;
             }""")
