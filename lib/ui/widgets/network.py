@@ -59,7 +59,8 @@ class BaseFrame(QFrame):
     def apply_layout(self, layout, isolated_nodes=None, hide_isolated_nodes=False):
         self._hide_isolated_nodes = hide_isolated_nodes
         scene = self.gvNetwork.scene()
-        scene.setLayout(layout, isolated_nodes=isolated_nodes if hide_isolated_nodes else None)
+        if layout is not None:
+            scene.setLayout(layout, isolated_nodes=isolated_nodes if hide_isolated_nodes else None)
         self._layout = layout
         scene.lock(self.btLock.isChecked())
         
@@ -69,7 +70,8 @@ class BaseFrame(QFrame):
     def show_isolated_nodes(self, show=True):
         if show != self._hide_isolated_nodes:
             self._hide_isolated_nodes = show
-            self.draw(compute_layouts=False)
+            worker = self.create_draw_worker(compute_layouts=False)
+            worker.start()
 
     def hide_isolated_nodes(self):
         self.show_isolated_nodes(False)
@@ -81,7 +83,13 @@ class BaseFrame(QFrame):
         return g
 
     def get_layout_data(self):
-        return {'data': self._layout, 'isolated_nodes': self._isolated_nodes}
+        scene = self.gvNetwork.scene()
+        return {
+                'layout': self._layout,
+                'isolated_nodes': self._isolated_nodes,
+                'colors': {i: c.name() for i, c in enumerate(scene.nodesColors()) if c.isValid()},
+                'radii': np.array(scene.nodesRadii(), dtype=np.uint8)
+               }
 
     def create_worker(self):
         raise NotImplementedError
@@ -89,21 +97,14 @@ class BaseFrame(QFrame):
     def set_style(self, style):
         self.gvNetwork.scene().setNetworkStyle(style)
 
-    def create_draw_worker(self, compute_layouts=True):
+    def create_draw_worker(self, compute_layouts=True, colors=[], radii=[]):
         scene = self.gvNetwork.scene()
         if self.use_edges:
             scene.removeAllEdges()
 
         # Add nodes
         nodes = scene.nodes()
-        num_nodes = len(nodes)
-        if num_nodes == 0:
-            colors = self._network.graph.vs['__color'] \
-                if '__color' in self._network.graph.vs.attributes() else []
-
-            radii = self._network.graph.vs['__size'] \
-                if '__size' in self._network.graph.vs.attributes() else []
-
+        if not nodes and self._network.graph.vs:
             nodes = scene.addNodes(self._network.graph.vs['name'], colors=colors, radii=radii)
 
         if self.use_edges:
