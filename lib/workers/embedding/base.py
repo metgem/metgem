@@ -1,12 +1,9 @@
 import sys
-import io
 
 import numpy as np
 
-from sklearn.manifold import TSNE
-
 from ..base import BaseWorker
-from ...utils import AttrDict, BoundingBox
+from ...utils import BoundingBox
 from ...errors import UserRequestedStopError
 from ...config import RADIUS
 
@@ -30,8 +27,7 @@ class EmbeddingWorker(BaseWorker):
             sys.stdout = self._io_wrapper
 
         # Compute layout
-        # mask = (self._scores >= self.options.min_score).sum(axis=0) > self.options.min_scores_above_threshold
-        mask = np.array([])
+        mask = (self._scores >= self.options.min_score).sum(axis=0) > self.options.min_scores_above_threshold
         isolated_nodes = []
 
         if np.any(mask):
