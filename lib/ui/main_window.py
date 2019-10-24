@@ -448,8 +448,16 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 else:
                     widget = self.add_network_widget(widget_class)
                     if widget is not None:
-                        self.apply_layout(widget, value.get('data'), value.get('isolated_nodes'))
-                        worker = widget.create_draw_worker(compute_layouts=False)
+                        layout = value.get('layout')
+                        self.apply_layout(widget, layout, value.get('isolated_nodes'))
+                        if layout is not None:
+                            colors = value.get('colors', {})
+                            colors = [QColor(colors.get(str(i), '')) for i in range(layout.shape[0])]
+                        else:
+                            colors = []
+                        worker = widget.create_draw_worker(compute_layouts=False,
+                                                           colors=colors,
+                                                           radii=value.get('radii', []))
                         workers.append(worker)
 
             if workers:
@@ -682,10 +690,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
         for dock in self.network_docks.values():
             dock.widget().gvNetwork.scene().setSelectedNodesColor(color)
 
-        try:
-            self.network.graph.vs['__color'] = dock.widget().gvNetwork.scene().nodesColors()
-        except UnboundLocalError:
-            pass
+        # try:
+        #     self.network.graph.vs['__color'] = dock.widget().gvNetwork.scene().nodesColors()
+        # except UnboundLocalError:
+        #     pass
 
         self.has_unsaved_changes = True
 
@@ -695,10 +703,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
             scene = dock.widget().gvNetwork.scene()
             scene.setSelectedNodesColor(scene.networkStyle().nodeBrush().color())
 
-        try:
-            self.network.graph.vs['__color'] = dock.widget().gvNetwork.scene().nodesColors()
-        except UnboundLocalError:
-            pass
+        # try:
+        #     self.network.graph.vs['__color'] = dock.widget().gvNetwork.scene().nodesColors()
+        # except UnboundLocalError:
+        #     pass
 
         self.has_unsaved_changes = True
 
@@ -712,7 +720,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
         for dock in self.network_docks.values():
             dock.widget().gvNetwork.scene().setSelectedNodesRadius(size)
 
-        self.network.graph.vs['__size'] = dock.widget().scene().nodesRadii()
+        # try:
+            # self.network.graph.vs['__size'] = dock.widget().scene().nodesRadii()
+        # except UnboundLocalError:
+        #     pass
 
         self.has_unsaved_changes = True
 
@@ -1604,11 +1615,23 @@ class MainWindow(MainWindowBase, MainWindowUI):
             # Update list of recent projects
             self.update_recent_projects(fname)
 
+            # Clean-up saved color/size properties
+            # for name, dock in self._network_docks.items():
+            #     if '__{}_color'.format(name) in self._network.graph.vs.attributes():
+            #         del self._network.graph.vs['__{}_color'.format(name)]
+            #     if '__{}_size'.format(name) in self._network.graph.vs.attributes():
+            #         del self._network.graph.vs['__{}_size'.format(name)]
+
         def error(e):
             if isinstance(e, PermissionError):
                 QMessageBox.warning(self, None, str(e))
             else:
                 raise e
+
+        # # Save color/size properties
+        # for name, dock in self._network_docks.items():
+        #     self._network.graph.vs['__{}_color'.format(name)] = dock.widget().gvNetwork.scene().nodesColors()
+        #     self._network.graph.vs['__{}_size'.format(name)] = dock.widget().gvNetwork.scene().nodesRadii()
 
         worker = workers.SaveProjectWorker(fname, self.network.graph, self.network, self.network.options,
                                            layouts={d.widget().name: d.widget().get_layout_data() for d in

@@ -158,9 +158,9 @@ class GraphMLWriter:
 
         # Vertices attributes
         for attr in graph.vs.attributes():
-            if attr == '__color':
+            if attr.endswith('__color'):
                 type_ = 'string'
-            elif attr == '__size':
+            elif attr.endswith('__size'):
                 type_ = 'int'
             else:
                 type_ = self._get_type(graph.vs[0][attr])

@@ -198,13 +198,26 @@ class LoadProjectWorker(BaseWorker):
                     # Load layouts
                     layouts = {}
                     if version <= 3:
-                        layouts['network'] = {'data': fid['0/network_layout']}
+                        colors = graph.vs['__color'] if '__color' in graph.vs.attributes() else {}
+                        if isinstance(colors, list):
+                            colors = {str(i): c for i, c in enumerate(colors) if c is not None}
+                        radii = graph.vs['__size'] if '__size' in graph.vs.attributes() else {}
+
+                        layouts['network'] = {
+                                              'layout': fid['0/network_layout'],
+                                              # Prior to version 4, colors of nodes were stored as graph attributes
+                                              'colors': colors,
+                                              'radii': radii
+                                             }
 
                         if self.isStopped():
                             self.canceled.emit()
                             return
 
-                        layouts['tsne'] = {'data': fid['0/tsne_layout']}
+                        layouts['tsne'] = {'layout': fid['0/tsne_layout'],
+                                           'colors': colors,
+                                           'radii': radii
+                                           }
                         try:
                             layouts['tsne']['isolated_nodes'] = fid['0/tsne_isolated_nodes']
                         except KeyError:
@@ -221,7 +234,13 @@ class LoadProjectWorker(BaseWorker):
                             layout = {}
                             for k in fid.keys():
                                 if k.startswith(key):
-                                    layout[k[len(key)+1:]] = fid[k]
+                                    x = k[len(key)+1:]
+                                    if x.startswith('colors'):
+                                        layout[x] = {k: QColor(v) for k, v in fid[k].items()}
+                                    elif x.startswith('radii'):
+                                        layout[x] = fid[k].tolist()
+                                    else:
+                                        layout[x] = fid[k]
                             layouts[name] = layout
 
                     return network, layouts
