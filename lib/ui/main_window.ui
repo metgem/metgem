@@ -758,7 +758,7 @@
   <action name="actionSetNodesColor">
    <property name="icon">
     <iconset resource="ui.qrc">
-     <normaloff>:/icons/images/node-color.svg</normaloff>:/icons/images/node-color.svg</iconset>
+     <normaloff>:/icons/images/color.svg</normaloff>:/icons/images/color.svg</iconset>
    </property>
    <property name="text">
     <string>Set selected nodes &amp;color</string>

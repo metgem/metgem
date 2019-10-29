@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>897</width>
-    <height>327</height>
+    <height>400</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -21,6 +21,200 @@
     <normaloff>:/icons/images/main.svg</normaloff>:/icons/images/main.svg</iconset>
   </property>
   <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="9">
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>Available colors</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0" colspan="3">
+    <widget class="QListWidget" name="lstColumns">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="baseSize">
+      <size>
+       <width>256</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="showDropIndicator" stdset="0">
+      <bool>false</bool>
+     </property>
+     <property name="dragEnabled">
+      <bool>true</bool>
+     </property>
+     <property name="dragDropMode">
+      <enum>QAbstractItemView::DragDrop</enum>
+     </property>
+     <property name="defaultDropAction">
+      <enum>Qt::MoveAction</enum>
+     </property>
+     <property name="alternatingRowColors">
+      <bool>true</bool>
+     </property>
+     <property name="selectionMode">
+      <enum>QAbstractItemView::ExtendedSelection</enum>
+     </property>
+     <property name="uniformItemSizes">
+      <bool>true</bool>
+     </property>
+     <property name="sortingEnabled">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="4">
+    <layout class="QVBoxLayout" name="layoutSelectedColumns">
+     <item>
+      <spacer name="verticalSpacer_3">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QToolButton" name="btUseSelectedColumns">
+       <property name="toolTip">
+        <string>Use selected columns</string>
+       </property>
+       <property name="statusTip">
+        <string>Use selected columns</string>
+       </property>
+       <property name="text">
+        <string>&gt;</string>
+       </property>
+       <property name="icon">
+        <iconset resource="ui.qrc">
+         <normaloff>:/icons/images/go-next.svg</normaloff>:/icons/images/go-next.svg</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="btRemoveSelectedColumns">
+       <property name="toolTip">
+        <string>Remove selected columns</string>
+       </property>
+       <property name="statusTip">
+        <string>Remove selected columns</string>
+       </property>
+       <property name="text">
+        <string>&lt;</string>
+       </property>
+       <property name="icon">
+        <iconset resource="ui.qrc">
+         <normaloff>:/icons/images/go-previous.svg</normaloff>:/icons/images/go-previous.svg</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="verticalSpacer_4">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+   <item row="0" column="0" colspan="3">
+    <widget class="QLabel" name="lblColumns">
+     <property name="text">
+      <string>Available columns</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="5" colspan="2">
+    <widget class="QListWidget" name="lstUsedColumns">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="baseSize">
+      <size>
+       <width>256</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="showDropIndicator" stdset="0">
+      <bool>false</bool>
+     </property>
+     <property name="dragEnabled">
+      <bool>true</bool>
+     </property>
+     <property name="dragDropMode">
+      <enum>QAbstractItemView::DragDrop</enum>
+     </property>
+     <property name="defaultDropAction">
+      <enum>Qt::MoveAction</enum>
+     </property>
+     <property name="alternatingRowColors">
+      <bool>true</bool>
+     </property>
+     <property name="selectionMode">
+      <enum>QAbstractItemView::ExtendedSelection</enum>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>32</width>
+       <height>32</height>
+      </size>
+     </property>
+     <property name="uniformItemSizes">
+      <bool>true</bool>
+     </property>
+     <property name="sortingEnabled">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="11">
+    <widget class="QToolButton" name="btGenerateColors">
+     <property name="toolTip">
+      <string>Clear the color list and fill it with randomly generated colors</string>
+     </property>
+     <property name="statusTip">
+      <string>Clear the color list and fill it with randomly generated colors</string>
+     </property>
+     <property name="text">
+      <string>&amp;Generate colors</string>
+     </property>
+     <property name="icon">
+      <iconset resource="ui.qrc">
+       <normaloff>:/icons/images/magic.svg</normaloff>:/icons/images/magic.svg</iconset>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="10">
+    <widget class="QComboBox" name="cbColorMap">
+     <property name="sizeAdjustPolicy">
+      <enum>QComboBox::AdjustToMinimumContentsLengthWithIcon</enum>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>48</width>
+       <height>16</height>
+      </size>
+     </property>
+    </widget>
+   </item>
    <item row="2" column="11">
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
@@ -143,187 +337,6 @@
      </item>
     </layout>
    </item>
-   <item row="0" column="0" colspan="3">
-    <widget class="QLabel" name="label_4">
-     <property name="text">
-      <string>Available columns</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="5" colspan="2">
-    <widget class="QListWidget" name="lstUsedColumns">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="baseSize">
-      <size>
-       <width>256</width>
-       <height>0</height>
-      </size>
-     </property>
-     <property name="showDropIndicator" stdset="0">
-      <bool>false</bool>
-     </property>
-     <property name="dragEnabled">
-      <bool>true</bool>
-     </property>
-     <property name="dragDropMode">
-      <enum>QAbstractItemView::DragDrop</enum>
-     </property>
-     <property name="defaultDropAction">
-      <enum>Qt::MoveAction</enum>
-     </property>
-     <property name="alternatingRowColors">
-      <bool>true</bool>
-     </property>
-     <property name="selectionMode">
-      <enum>QAbstractItemView::ExtendedSelection</enum>
-     </property>
-     <property name="iconSize">
-      <size>
-       <width>32</width>
-       <height>32</height>
-      </size>
-     </property>
-     <property name="uniformItemSizes">
-      <bool>true</bool>
-     </property>
-     <property name="sortingEnabled">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="9">
-    <widget class="QLabel" name="label_2">
-     <property name="text">
-      <string>Available colors</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="5" colspan="2">
-    <widget class="QLabel" name="label">
-     <property name="text">
-      <string>Columns</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="0" colspan="3">
-    <widget class="QListWidget" name="lstColumns">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="baseSize">
-      <size>
-       <width>256</width>
-       <height>0</height>
-      </size>
-     </property>
-     <property name="showDropIndicator" stdset="0">
-      <bool>false</bool>
-     </property>
-     <property name="dragEnabled">
-      <bool>true</bool>
-     </property>
-     <property name="dragDropMode">
-      <enum>QAbstractItemView::DragDrop</enum>
-     </property>
-     <property name="defaultDropAction">
-      <enum>Qt::MoveAction</enum>
-     </property>
-     <property name="alternatingRowColors">
-      <bool>true</bool>
-     </property>
-     <property name="selectionMode">
-      <enum>QAbstractItemView::ExtendedSelection</enum>
-     </property>
-     <property name="uniformItemSizes">
-      <bool>true</bool>
-     </property>
-     <property name="sortingEnabled">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="4" colspan="8">
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="4">
-    <layout class="QVBoxLayout" name="verticalLayout_2">
-     <item>
-      <spacer name="verticalSpacer_3">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>20</width>
-         <height>40</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="QToolButton" name="btUseSelectedColumns">
-       <property name="toolTip">
-        <string>Use selected columns</string>
-       </property>
-       <property name="statusTip">
-        <string>Use selected columns</string>
-       </property>
-       <property name="text">
-        <string>&gt;</string>
-       </property>
-       <property name="icon">
-        <iconset resource="ui.qrc">
-         <normaloff>:/icons/images/go-next.svg</normaloff>:/icons/images/go-next.svg</iconset>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QToolButton" name="btRemoveSelectedColumns">
-       <property name="toolTip">
-        <string>Remove selected columns</string>
-       </property>
-       <property name="statusTip">
-        <string>Remove selected columns</string>
-       </property>
-       <property name="text">
-        <string>&lt;</string>
-       </property>
-       <property name="icon">
-        <iconset resource="ui.qrc">
-         <normaloff>:/icons/images/go-previous.svg</normaloff>:/icons/images/go-previous.svg</iconset>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <spacer name="verticalSpacer_4">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>20</width>
-         <height>40</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-    </layout>
-   </item>
    <item row="2" column="7">
     <layout class="QVBoxLayout" name="verticalLayout_3">
      <item>
@@ -388,19 +401,6 @@
      </item>
     </layout>
    </item>
-   <item row="0" column="10">
-    <widget class="QComboBox" name="cbColorMap">
-     <property name="sizeAdjustPolicy">
-      <enum>QComboBox::AdjustToMinimumContentsLengthWithIcon</enum>
-     </property>
-     <property name="iconSize">
-      <size>
-       <width>48</width>
-       <height>16</height>
-      </size>
-     </property>
-    </widget>
-   </item>
    <item row="2" column="9" colspan="2">
     <widget class="QListWidget" name="lstColors">
      <property name="sizePolicy">
@@ -441,22 +441,142 @@
      </property>
     </widget>
    </item>
-   <item row="0" column="11">
-    <widget class="QToolButton" name="btGenerateColors">
-     <property name="toolTip">
-      <string>Clear the color list and fill it with randomly generated colors</string>
+   <item row="5" column="4" colspan="8">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
      </property>
-     <property name="statusTip">
-      <string>Clear the color list and fill it with randomly generated colors</string>
-     </property>
-     <property name="text">
-      <string>&amp;Generate colors</string>
-     </property>
-     <property name="icon">
-      <iconset resource="ui.qrc">
-       <normaloff>:/icons/images/magic.svg</normaloff>:/icons/images/magic.svg</iconset>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
      </property>
     </widget>
+   </item>
+   <item row="0" column="5" colspan="2">
+    <layout class="QHBoxLayout" name="layoutBins">
+     <item>
+      <widget class="QLabel" name="lblUsedColumns">
+       <property name="text">
+        <string>Columns</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="btGenerateBins">
+       <property name="toolTip">
+        <string>Generate a user defined number of bins</string>
+       </property>
+       <property name="statusTip">
+        <string>Generate a user defined number of bins</string>
+       </property>
+       <property name="text">
+        <string>&amp;Generate bins</string>
+       </property>
+       <property name="icon">
+        <iconset resource="ui.qrc">
+         <normaloff>:/icons/images/magic.svg</normaloff>:/icons/images/magic.svg</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="Line" name="line">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="btMergeBins">
+       <property name="toolTip">
+        <string>Merge selected bins</string>
+       </property>
+       <property name="statusTip">
+        <string>Merge selected bins</string>
+       </property>
+       <property name="text">
+        <string>&amp;Merge bins</string>
+       </property>
+       <property name="icon">
+        <iconset resource="ui.qrc">
+         <normaloff>:/icons/images/merge.svg</normaloff>:/icons/images/merge.svg</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="btSplitBins">
+       <property name="toolTip">
+        <string>Split selected bins in two</string>
+       </property>
+       <property name="statusTip">
+        <string>Split selected bins in two</string>
+       </property>
+       <property name="text">
+        <string>&amp;Split bins</string>
+       </property>
+       <property name="icon">
+        <iconset resource="ui.qrc">
+         <normaloff>:/icons/images/split.svg</normaloff>:/icons/images/split.svg</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="Line" name="line_3">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="btEditBin">
+       <property name="toolTip">
+        <string>Edit selected bin</string>
+       </property>
+       <property name="statusTip">
+        <string>Edit selected bin</string>
+       </property>
+       <property name="text">
+        <string>&amp;Edit bin</string>
+       </property>
+       <property name="icon">
+        <iconset resource="ui.qrc">
+         <normaloff>:/icons/images/pencil.svg</normaloff>:/icons/images/pencil.svg</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="btAddBin">
+       <property name="toolTip">
+        <string>Add a new bin at the end of the list</string>
+       </property>
+       <property name="statusTip">
+        <string>Add a new bin at the end of the list</string>
+       </property>
+       <property name="text">
+        <string>+</string>
+       </property>
+       <property name="icon">
+        <iconset resource="ui.qrc">
+         <normaloff>:/icons/images/list-add.svg</normaloff>:/icons/images/list-add.svg</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="btRemoveBins">
+       <property name="toolTip">
+        <string>Remove selected bins from the list</string>
+       </property>
+       <property name="statusTip">
+        <string>Remove selected bins from the list</string>
+       </property>
+       <property name="text">
+        <string>-</string>
+       </property>
+       <property name="icon">
+        <iconset resource="ui.qrc">
+         <normaloff>:/icons/images/list-remove.svg</normaloff>:/icons/images/list-remove.svg</iconset>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
   </layout>
  </widget>
@@ -471,8 +591,8 @@
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>248</x>
-     <y>254</y>
+     <x>550</x>
+     <y>317</y>
     </hint>
     <hint type="destinationlabel">
      <x>157</x>
@@ -487,8 +607,8 @@
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>316</x>
-     <y>260</y>
+     <x>618</x>
+     <y>317</y>
     </hint>
     <hint type="destinationlabel">
      <x>286</x>

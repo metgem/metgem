@@ -219,7 +219,7 @@ class NodesWidget(QWidget):
 
         menu = QMenu()
         menu.addAction(self.actionUseColumnsForPieCharts)
-        menu.addAction(self.actionResetColorMapping)
+        menu.addAction(self.actionResetPieColorMapping)
         self.btUseColumnsForPieCharts.setMenu(menu)
         self.btUseColumnsForPieCharts.setDefaultAction(self.actionUseColumnsForPieCharts)
 
@@ -228,6 +228,12 @@ class NodesWidget(QWidget):
         menu.addAction(self.actionResetSizeMapping)
         self.btUseColumnForNodesSizes.setMenu(menu)
         self.btUseColumnForNodesSizes.setDefaultAction(self.actionUseColumnForNodesSizes)
+
+        menu = QMenu()
+        menu.addAction(self.actionUseColumnForNodesColors)
+        menu.addAction(self.actionResetColorMapping)
+        self.btUseColumnForNodesColors.setMenu(menu)
+        self.btUseColumnForNodesColors.setDefaultAction(self.actionUseColumnForNodesColors)
 
         menu = QMenu()
         menu.addAction(self.actionViewSpectrum)

@@ -1,6 +1,7 @@
+import bisect
 import csv
 import io
-from typing import List, Callable
+from typing import List, Callable, Dict, Union, Tuple
 
 from .. import config, ui, utils, workers, errors
 from ..utils.network import Network
@@ -40,6 +41,7 @@ MainWindowUI, MainWindowBase = uic.loadUiType(UI_FILE, from_imports='lib.ui', im
 COLUMN_MAPPING_PIE_CHARTS = 0
 COLUMN_MAPPING_LABELS = 1
 COLUMN_MAPPING_NODES_SIZES = 2
+COLUMN_MAPPING_NODES_COLORS = 3
 
 
 # noinspection PyCallByClass,PyArgumentList
@@ -147,10 +149,13 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.nodes_widget.actionResetLabelMapping.triggered.connect(lambda: self.set_nodes_label(None))
         self.nodes_widget.actionUseColumnsForPieCharts.triggered.connect(
             lambda: self.on_use_columns_for(COLUMN_MAPPING_PIE_CHARTS))
-        self.nodes_widget.actionResetColorMapping.triggered.connect(lambda: self.set_nodes_pie_chart_values(None))
+        self.nodes_widget.actionResetPieColorMapping.triggered.connect(lambda: self.set_nodes_pie_chart_values(None))
         self.nodes_widget.actionUseColumnForNodesSizes.triggered.connect(
             lambda: self.on_use_columns_for(COLUMN_MAPPING_NODES_SIZES))
         self.nodes_widget.actionResetSizeMapping.triggered.connect(lambda: self.set_nodes_sizes_values(None))
+        self.nodes_widget.actionUseColumnForNodesColors.triggered.connect(
+            lambda: self.on_use_columns_for(COLUMN_MAPPING_NODES_COLORS))
+        self.nodes_widget.actionResetColorMapping.triggered.connect(lambda: self.set_nodes_colors_values(None))
         self.nodes_widget.btHighlightSelectedNodes.clicked.connect(self.highlight_selected_nodes)
         self.nodes_widget.actionViewSpectrum.triggered.connect(
             lambda: self.on_show_spectrum_from_table_triggered('show'))
@@ -1020,7 +1025,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 self.set_nodes_label(id_)
                 self.has_unsaved_changes = True
         elif type_ == COLUMN_MAPPING_PIE_CHARTS:
-            dialog = ui.ColorMappingDialog(self.tvNodes.model(), selected_columns_indexes)
+            dialog = ui.PieColorMappingDialog(self.tvNodes.model(), selected_columns_indexes)
             if dialog.exec_() == QDialog.Accepted:
                 columns, colors = dialog.getValues()
                 self.set_nodes_pie_chart_values(columns, colors)
@@ -1035,7 +1040,24 @@ class MainWindow(MainWindowBase, MainWindowUI):
                     id_, func = dialog.getValues()
                     if id_ > 0:
                         self.set_nodes_sizes_values(id_, func)
-                self.has_unsaved_changes = True
+                    self.has_unsaved_changes = True
+        elif type_ == COLUMN_MAPPING_NODES_COLORS:
+            if len_ > 1:
+                QMessageBox.information(self, None, "Please select only one column.")
+            else:
+                id_ = selected_columns_indexes[0].column() if len_ > 0 else -1
+                column_title = self.tvNodes.model().headerData(id_, Qt.Horizontal)
+                try:
+                    data = self._network.infos[column_title]
+                except IndexError:
+                    pass
+                else:
+                    dialog = ui.ColorMappingDialog(self.tvNodes.model(), id_, data)
+                    if dialog.exec_() == QDialog.Accepted:
+                        id_, mapping = dialog.getValues()
+                        if id_ > 0:
+                            self.set_nodes_colors_values(id_, mapping)
+                        self.has_unsaved_changes = True
 
     @debug
     def on_show_spectrum(self, *args):
@@ -1364,7 +1386,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.has_unsaved_changes = True
 
     @debug
-    def set_nodes_pie_chart_values(self, column_ids, colors: List[QColor] = ()):
+    def set_nodes_pie_chart_values(self, column_ids, colors: List[QColor] = []):
         model = self.tvNodes.model().sourceModel()
         if column_ids is not None:
             if len(colors) < len(column_ids):
@@ -1425,6 +1447,67 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
             try:
                 del self.network.columns_mappings['size']
+            except KeyError:
+                pass
+
+        self.has_unsaved_changes = True
+
+    @debug
+    def set_nodes_colors_values(self, column_id, mapping: Union[Dict[str, QColor], Tuple[List[float], List[QColor]]] = {}):
+        model = self.tvNodes.model().sourceModel()
+        for column in range(model.columnCount()):
+            font = model.headerData(column, Qt.Horizontal, role=Qt.FontRole)
+            if font is not None and font.italic():
+                model.setHeaderData(column, Qt.Horizontal, None, role=Qt.FontRole)
+
+        if column_id is not None:
+            font = model.headerData(column_id, Qt.Horizontal, role=Qt.FontRole)
+            font = font if font is not None else QFont()
+            font.setItalic(True)
+            model.setHeaderData(column_id, Qt.Horizontal, font, role=Qt.FontRole)
+
+            column_title = model.headerData(column_id, Qt.Horizontal)
+            try:
+                data = self._network.infos[column_title]
+            except IndexError:
+                pass
+            else:
+                if isinstance(mapping, dict):
+                    color_list = [mapping.get(key, QColor()) for key in data]
+                elif isinstance(mapping, tuple):
+                    try:
+                        bins, colors = mapping
+                    except TypeError:
+                        return
+
+                    def r(ranges, colors, val):
+                        if val == ranges[-1]:
+                            return colors[-1]
+
+                        b = bisect.bisect_left(ranges, val)
+                        try:
+                            return colors[b-1]
+                        except IndexError:
+                            return QColor()
+
+                    color_list = []
+                    for value in data:
+                        color_list.append(r(bins, colors, value))
+                else:
+                    return
+
+                for dock in self.network_docks.values():
+                    dock.widget().gvNetwork.scene().setNodesColors(color_list)
+
+                self.network.columns_mappings['colors'] = (column_id, mapping)
+        else:
+            for dock in self.network_docks.values():
+                scene = dock.widget().gvNetwork.scene()
+                color = scene.networkStyle().nodeBrush().color()
+                scene.setNodesColors([color for _ in scene.nodes()])
+
+            try:
+                del self.network.columns_mappings['colors']
             except KeyError:
                 pass
 
@@ -1525,6 +1608,14 @@ class MainWindow(MainWindowBase, MainWindowUI):
             if id_ is not None and func is not None:
                 self.set_nodes_sizes_values(id_, func)
 
+        try:
+            id_, colors = columns_mappings.get('colors', (None, None))
+        except TypeError:
+            pass
+        else:
+            if id_ is not None and colors is not None:
+                self.set_nodes_colors_values(id_, colors)
+
     @debug
     def prepare_compute_scores_worker(self, spectra, use_multiprocessing):
         def error(e):
@@ -1588,6 +1679,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.has_unsaved_changes = True
             self.set_nodes_pie_chart_values(None)
             self.set_nodes_sizes_values(None)
+            self.set_nodes_colors_values(None)
             self.set_nodes_label(None)
             model.endResetModel()
 

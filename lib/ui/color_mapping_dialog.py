@@ -1,4 +1,5 @@
 from ..ui.widgets.metadata import ColorMarkRole
+from ..utils import pairwise
 
 import os
 import random
@@ -7,10 +8,12 @@ from typing import List, Union
 from PyQt5 import uic
 from PyQt5.QtCore import Qt, QSettings, QSize, QAbstractTableModel, QModelIndex, QObject, QEvent
 from PyQt5.QtGui import QColor, QStandardItemModel, QIcon, QDropEvent, QKeyEvent, QBrush, QImage, QPixmap
-from PyQt5.QtWidgets import QDialog, QColorDialog, QListWidgetItem, QFileDialog, QMessageBox
+from PyQt5.QtWidgets import (QDialog, QColorDialog, QListWidgetItem, QFileDialog, QMessageBox, QInputDialog,
+                             QAbstractItemView, QDialogButtonBox, QFormLayout, QDoubleSpinBox, QAbstractSpinBox, QLabel)
 
 import matplotlib.cm as mplcm
 import numpy as np
+import pandas as pd
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'color_mapping_dialog.ui')
 
@@ -19,17 +22,10 @@ ColorMappingDialogUI, ColorMappingDialogBase = uic.loadUiType(UI_FILE,
                                                               import_from='lib.ui')
 
 ColumnRole = Qt.UserRole + 1
+ValueRole = Qt.UserRole + 2
 
 MOVE_COLUMNS_SELECT = 0
 MOVE_COLUMNS_UNSELECT = 1
-
-# COLORMAPS = ['auto', 'viridis', 'cividis', 'plasma', 'inferno', 'magma',
-#              'Pastel1', 'Pastel2', 'Paired', 'Accent',
-#              'Dark2', 'Set1', 'Set2', 'Set3',
-#              'tab10', 'tab20', 'tab20b', 'tab20c',
-#              'jet', 'rainbow', 'terrain', 'CMRmap', 'gnuplot', 'gnuplot2', 'hsv', 'gist_rainbow',
-#              'spring', 'summer', 'autumn', 'winter', 'cool', 'Wistia', 'hot', 'copper',
-#              'Greys', 'Purples', 'Blues', 'Greens', 'Oranges', 'Reds']
 
 
 # https://martin.ankerl.com/2009/12/09/how-to-create-random-colors-programmatically/
@@ -96,6 +92,36 @@ def cmap2pixmap(cmap, steps=50):
     return QPixmap.fromImage(im)
 
 
+class RangeInputDialog(QDialog):
+    def __init__(self, parent=None, low=None, high=None):
+        super().__init__(parent)
+
+        self.sbLowValue = QDoubleSpinBox(self)
+        self.sbLowValue.setMinimum(0)
+        self.sbLowValue.setStepType(QAbstractSpinBox.AdaptiveDecimalStepType)
+        if low is not None:
+            self.sbLowValue.setValue(low)
+
+        self.sbHighValue = QDoubleSpinBox(self)
+        self.sbHighValue.setMinimum(0)
+        self.sbLowValue.setStepType(QAbstractSpinBox.AdaptiveDecimalStepType)
+        if high is not None:
+            self.sbHighValue.setValue(high)
+
+        buttonBox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel, self)
+
+        layout = QFormLayout(self)
+        layout.addRow("Low value", self.sbLowValue)
+        layout.addRow("High value", self.sbHighValue)
+        layout.addWidget(buttonBox)
+
+        buttonBox.accepted.connect(self.accept)
+        buttonBox.rejected.connect(self.reject)
+
+    def getRange(self):
+        return self.sbLowValue.value(), self.sbHighValue.value()
+
+
 class WidgetItem(QListWidgetItem):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -120,6 +146,31 @@ class ColorMixin:
         else:
             self.setData(Qt.BackgroundRole, None)
             self.setData(Qt.ForegroundRole, None)
+
+
+class GroupListWidgetItem(ColorMixin, WidgetItem):
+    def __init__(self, data, *args, **kwargs):
+        super().__init__(data, *args, **kwargs)
+        self.setData(ValueRole, data)
+
+
+class RangeListWidgetItem(ColorMixin, WidgetItem):
+    def __init__(self, low, high, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.setData(ValueRole, (low, high))
+
+    def setData(self, role, value):
+        super().setData(role, value)
+        if role == ValueRole:
+            self.setText('[{0:.2f} - {1:.2f}]'.format(*value))
+
+    def __lt__(self, other):
+        sval = self.data(ValueRole)
+        oval = other.data(ValueRole)
+        if sval is not None and oval is not None:
+            return sval < oval
+        return super().__lt__(other)
 
 
 class ColumnListWidgetItem(ColorMixin, WidgetItem):
@@ -147,37 +198,13 @@ class ColorListWidgetItem(ColorMixin, WidgetItem):
         super().setBackground(background)
 
 
-class ColorMappingDialog(ColorMappingDialogUI, ColorMappingDialogBase):
+class BaseColorMappingDialog(ColorMappingDialogUI, ColorMappingDialogBase):
 
-    def __init__(self, model: QAbstractTableModel, selected_indexes: List[QModelIndex], *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-        self._model = model
 
         self.setupUi(self)
         self.setWindowFlags(Qt.Tool | Qt.CustomizeWindowHint | Qt.WindowCloseButtonHint)
-
-        for i in range(model.columnCount()):
-            index = model.index(0, i)
-            text = model.headerData(i, Qt.Horizontal, Qt.DisplayRole)
-            color = model.headerData(i, Qt.Horizontal, ColorMarkRole)
-            item = ColumnListWidgetItem(text, column=index.column())
-            if color is not None:
-                item.setBackground(color)
-
-            if index not in selected_indexes:
-                self.lstColumns.addItem(item)
-            else:
-                self.lstUsedColumns.addItem(item)
-
-        self.lstColumns.viewport().installEventFilter(self)
-        self.lstUsedColumns.viewport().installEventFilter(self)
-        self.lstUsedColumns.installEventFilter(self)
-
-        colors = QSettings().value('NetworkView/pie_colors',
-                                   [c.name() for c in generate_colors(8)],
-                                   type=str)
-        self.set_colors(colors)
 
         current_cmap = QSettings().value('ColorMap', 'auto')
         cmaps = ['auto'] + sorted([k for k in mplcm.cmap_d.keys() if not k.endswith('_r')], key=lambda s: s.casefold())
@@ -187,6 +214,10 @@ class ColorMappingDialog(ColorMappingDialogUI, ColorMappingDialogBase):
             if cmap == current_cmap:
                 self.cbColorMap.setCurrentIndex(i)
 
+        self.lstColumns.viewport().installEventFilter(self)
+        self.lstUsedColumns.viewport().installEventFilter(self)
+        self.lstUsedColumns.installEventFilter(self)
+
         self.lstUsedColumns.itemDoubleClicked.connect(self.get_color)
         self.lstColors.itemDoubleClicked.connect(self.get_color)
         self.btEditColor.clicked.connect(lambda: self.get_color(self.lstColors.currentItem()))
@@ -194,32 +225,10 @@ class ColorMappingDialog(ColorMappingDialogUI, ColorMappingDialogBase):
         self.btRemoveColors.clicked.connect(self.remove_selected_colors)
         self.btGenerateColors.clicked.connect(lambda: self.generate_new_colors(self.cbColorMap.currentText()))
         self.btAutoAssignColors.clicked.connect(self.auto_assign_colors)
-        self.btUseSelectedColumns.clicked.connect(lambda: self.move_selected_columns(MOVE_COLUMNS_SELECT))
-        self.btRemoveSelectedColumns.clicked.connect(lambda: self.move_selected_columns(MOVE_COLUMNS_UNSELECT))
         self.cbColorMap.currentIndexChanged[str].connect(self.generate_new_colors)
         self.btRemoveSelectedColumnsColors.clicked.connect(self.remove_selected_columns_colors)
         self.btLoadColorList.clicked.connect(self.load_color_list)
         self.btSaveColorList.clicked.connect(self.save_color_list)
-
-    def done(self, r):
-        if r == QDialog.Accepted:
-            colors = [self.lstColors.item(row).data(Qt.BackgroundRole).color().name() for row in range(self.lstColors.count())]
-            QSettings().setValue('NetworkView/pie_colors', colors)
-        super().done(r)
-
-    def getValues(self):
-        columns = []
-        colors = []
-        for row in range(self.lstUsedColumns.count()):
-            item = self.lstUsedColumns.item(row)
-            column = item.data(ColumnRole)
-            bg = item.data(Qt.BackgroundRole)
-            columns.append(column)
-            if bg is not None and bg.color().isValid():
-                colors.append(bg.color())
-            else:
-                colors.append(QColor(Qt.transparent))
-        return columns, colors
 
     def get_color(self, item: ColorListWidgetItem=None):
         current_color = item.data(Qt.BackgroundRole).color() \
@@ -269,23 +278,6 @@ class ColorMappingDialog(ColorMappingDialogUI, ColorMappingDialogBase):
 
             if color_item:
                 column_item.setBackground(color_item.data(Qt.BackgroundRole).color())
-
-    def move_selected_columns(self, direction=MOVE_COLUMNS_SELECT):
-        if direction == MOVE_COLUMNS_SELECT:
-            source = self.lstColumns
-            dest = self.lstUsedColumns
-        else:
-            source = self.lstUsedColumns
-            dest = self.lstColumns
-
-        for item in source.selectedItems():
-            source.takeItem(source.row(item))
-            new_item = ColumnListWidgetItem(item.data(Qt.DisplayRole), column=item.data(ColumnRole))
-            bg = item.data(Qt.BackgroundRole)
-            if bg is not None and bg.color().isValid():
-                new_item.setBackground(bg.color())
-            dest.addItem(new_item)
-            new_item.setSelected(True)
 
     def remove_selected_columns_colors(self):
         for item in self.lstUsedColumns.selectedItems():
@@ -367,3 +359,261 @@ class ColorMappingDialog(ColorMappingDialogUI, ColorMappingDialogBase):
 
         return super().eventFilter(obj, event)
 
+
+class PieColorMappingDialog(BaseColorMappingDialog):
+
+    def __init__(self, model: QAbstractTableModel = None, selected_indexes: List[QModelIndex] = None):
+        super().__init__()
+
+        for i in range(self.layoutBins.count()):
+            w = self.layoutBins.itemAt(i).widget()
+            if w is not None and not isinstance(w, QLabel):
+                w.hide()
+
+        if model is not None and selected_indexes is not None:
+            for i in range(model.columnCount()):
+                index = model.index(0, i)
+                text = model.headerData(i, Qt.Horizontal, Qt.DisplayRole)
+                color = model.headerData(i, Qt.Horizontal, ColorMarkRole)
+                item = ColumnListWidgetItem(text, column=index.column())
+                if color is not None:
+                    item.setBackground(color)
+
+                if index not in selected_indexes:
+                    self.lstColumns.addItem(item)
+                else:
+                    self.lstUsedColumns.addItem(item)
+
+        colors = QSettings().value('NetworkView/pie_colors',
+                                   [c.name() for c in generate_colors(8)],
+                                   type=str)
+        self.set_colors(colors)
+
+        self.btUseSelectedColumns.clicked.connect(lambda: self.move_selected_columns(MOVE_COLUMNS_SELECT))
+        self.btRemoveSelectedColumns.clicked.connect(lambda: self.move_selected_columns(MOVE_COLUMNS_UNSELECT))
+
+    def move_selected_columns(self, direction=MOVE_COLUMNS_SELECT):
+        if direction == MOVE_COLUMNS_SELECT:
+            source = self.lstColumns
+            dest = self.lstUsedColumns
+        else:
+            source = self.lstUsedColumns
+            dest = self.lstColumns
+
+        for item in source.selectedItems():
+            source.takeItem(source.row(item))
+            new_item = ColumnListWidgetItem(item.data(Qt.DisplayRole), column=item.data(ColumnRole))
+            bg = item.data(Qt.BackgroundRole)
+            if bg is not None and bg.color().isValid():
+                new_item.setBackground(bg.color())
+            dest.addItem(new_item)
+            new_item.setSelected(True)
+
+    def done(self, r):
+        if r == QDialog.Accepted:
+            colors = [self.lstColors.item(row).data(Qt.BackgroundRole).color().name()
+                      for row in range(self.lstColors.count())]
+            QSettings().setValue('NetworkView/pie_colors', colors)
+        super().done(r)
+
+    def getValues(self):
+        columns = []
+        colors = []
+        for row in range(self.lstUsedColumns.count()):
+            item = self.lstUsedColumns.item(row)
+            column = item.data(ColumnRole)
+            bg = item.data(Qt.BackgroundRole)
+            columns.append(column)
+            if bg is not None and bg.color().isValid():
+                colors.append(bg.color())
+            else:
+                colors.append(QColor(Qt.transparent))
+        return columns, colors
+
+
+class ColorMappingDialog(BaseColorMappingDialog):
+
+    def __init__(self, model: QAbstractTableModel = None, column_id: int = None, data: List = None):
+        super().__init__()
+
+        self._model = model
+        self._column_id = column_id
+
+        if model is not None and column_id is not None:
+            for i in range(model.columnCount()):
+                index = model.index(0, i)
+                text = model.headerData(i, Qt.Horizontal, Qt.DisplayRole)
+                color = model.headerData(i, Qt.Horizontal, ColorMarkRole)
+                item = ColumnListWidgetItem(text, column=index.column())
+                if color is not None:
+                    item.setBackground(color)
+
+                if index.column() != column_id:
+                    self.lstColumns.addItem(item)
+
+        self.lstUsedColumns.setSelectionMode(QAbstractItemView.ContiguousSelection)
+        self.lstColumns.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.populate_bins()
+
+        colors = QSettings().value('NetworkView/node_colors',
+                                   [c.name() for c in generate_colors(8)],
+                                   type=str)
+        self.set_colors(colors)
+
+        self.btUseSelectedColumns.clicked.connect(self.on_use_selected_column)
+        self.btRemoveSelectedColumns.clicked.connect(self.on_unuse_selected_column)
+
+    @property
+    def data(self):
+        return pd.Series([self._model.data(self._model.index(i, self._column_id))
+                          for i in range(self._model.rowCount())])
+
+    def populate_bins(self):
+        try:
+            self.btGenerateBins.clicked.disconnect()
+            self.btMergeBins.clicked.disconnect()
+            self.btSplitBins.clicked.disconnect()
+            self.btEditBin.clicked.disconnect()
+            self.btAddBin.clicked.disconnect()
+            self.btRemoveBins.clicked.disconnect()
+        except TypeError:
+            pass
+
+        data = self.data
+
+        if data is not None:
+            if data.dtype == np.object:
+                self.lblUsedColumns.setText('Groups')
+                groups = data.dropna().unique()
+                for group in groups:
+                    item = GroupListWidgetItem(str(group))
+                    self.lstUsedColumns.addItem(item)
+            else:
+                self.lblUsedColumns.setText('Bins')
+                self.generate_new_bins(8)
+
+                self.btGenerateBins.clicked.connect(self.on_generate_new_bins)
+                self.btMergeBins.clicked.connect(self.on_merge_bins)
+                self.btSplitBins.clicked.connect(self.on_split_bins)
+                self.btEditBin.clicked.connect(self.on_edit_bin)
+                self.btAddBin.clicked.connect(self.on_add_bin)
+                self.btRemoveBins.clicked.connect(self.on_remove_bins)
+
+    def on_unuse_selected_column(self):
+        self.lstUsedColumns.clear()
+
+        if self._column_id is not None:
+            index = self._model.index(0, self._column_id)
+            text = self._model.headerData(self._column_id, Qt.Horizontal, Qt.DisplayRole)
+            color = self._model.headerData(self._column_id, Qt.Horizontal, ColorMarkRole)
+            item = ColumnListWidgetItem(text, column=index.column())
+            if color is not None:
+                item.setBackground(color)
+
+            self.lstColumns.addItem(item)
+
+    def on_use_selected_column(self):
+        self.on_unuse_selected_column()
+
+        selected_items = self.lstColumns.selectedItems()
+        if len(selected_items) != 1:
+            return
+
+        self.lstUsedColumns.clear()
+        item = selected_items[0]
+        self.lstColumns.takeItem(self.lstColumns.row(item))
+        self._column_id = item.data(ColumnRole)
+
+        self.populate_bins()
+
+    def on_remove_bins(self):
+        for item in self.lstUsedColumns.selectedItems():
+            self.lstUsedColumns.takeItem(self.lstUsedColumns.row(item))
+
+    def on_add_bin(self):
+        dlg = RangeInputDialog(self)
+        if dlg.exec():
+            item = RangeListWidgetItem(*dlg.getRange())
+            self.lstUsedColumns.addItem(item)
+
+    def on_edit_bin(self):
+        for item in self.lstUsedColumns.selectedItems():
+            low, high = item.data(ValueRole)
+            dlg = RangeInputDialog(self, low=low, high=high)
+            if dlg.exec():
+                item.setData(ValueRole, dlg.getRange())
+            break
+
+    def on_split_bins(self):
+        for item in self.lstUsedColumns.selectedItems():
+            low, high = item.data(ValueRole)
+            self.lstUsedColumns.takeItem(self.lstUsedColumns.row(item))
+            diff = (low + high) / 2
+            item = RangeListWidgetItem(low, low + diff)
+            self.lstUsedColumns.addItem(item)
+            item = RangeListWidgetItem(low + diff, high)
+            self.lstUsedColumns.addItem(item)
+
+    def on_merge_bins(self):
+        bins = []
+        for item in self.lstUsedColumns.selectedItems():
+            bins.extend(item.data(ValueRole))
+            self.lstUsedColumns.takeItem(self.lstUsedColumns.row(item))
+
+        if bins:
+            item = RangeListWidgetItem(min(bins), max(bins))
+            self.lstUsedColumns.addItem(item)
+
+    def on_generate_new_bins(self):
+        bins, ok = QInputDialog.getInt(self, None, "Enter a number of bins:", value=8, min=1)
+
+        if ok:
+            self.generate_new_bins(bins)
+
+    def generate_new_bins(self, bins=8):
+        self.lstUsedColumns.clear()
+        for low, high in pairwise(np.histogram_bin_edges(self.data, bins=bins)):
+            item = RangeListWidgetItem(low, high)
+            self.lstUsedColumns.addItem(item)
+
+    def done(self, r):
+        if r == QDialog.Accepted:
+            colors = [self.lstColors.item(row).data(Qt.BackgroundRole).color().name()
+                      for row in range(self.lstColors.count())]
+            QSettings().setValue('NetworkView/node_colors', colors)
+        super().done(r)
+
+    def getValues(self):
+        item = self.lstUsedColumns.item(0)
+        if isinstance(item, GroupListWidgetItem):
+            mapping = {}
+            for row in range(self.lstUsedColumns.count()):
+                item = self.lstUsedColumns.item(row)
+                group = str(item.data(ValueRole))
+                bg = item.data(Qt.BackgroundRole)
+
+                if bg is not None and bg.color().isValid():
+                    mapping[group] = bg.color()
+                else:
+                    mapping[group] = QColor(Qt.transparent)
+            return self._column_id, mapping
+        else:
+            bins = []
+            colors = []
+            for row in range(self.lstUsedColumns.count()):
+                item = self.lstUsedColumns.item(row)
+                low, high = item.data(ValueRole)
+                bg = item.data(Qt.BackgroundRole)
+
+                bins.append(low)
+                if bg is not None and bg.color().isValid():
+                    colors.append(bg.color())
+                else:
+                    colors.append(QColor(Qt.transparent))
+
+            try:
+                bins.append(high)
+            except UnboundLocalError:
+                pass
+
+            return self._column_id, (bins, colors)

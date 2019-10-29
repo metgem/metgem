@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>300</height>
+    <height>227</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -70,6 +70,26 @@
        <property name="icon">
         <iconset resource="../../ui.qrc">
          <normaloff>:/icons/images/node-size.svg</normaloff>:/icons/images/node-size.svg</iconset>
+       </property>
+       <property name="popupMode">
+        <enum>QToolButton::MenuButtonPopup</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="btUseColumnForNodesColors">
+       <property name="toolTip">
+        <string>Use selected columns as source for nodes' colors</string>
+       </property>
+       <property name="statusTip">
+        <string>Use selected columns as source for nodes' colors</string>
+       </property>
+       <property name="text">
+        <string>...</string>
+       </property>
+       <property name="icon">
+        <iconset resource="../../ui.qrc">
+         <normaloff>:/icons/images/node-color.svg</normaloff>:/icons/images/node-color.svg</iconset>
        </property>
        <property name="popupMode">
         <enum>QToolButton::MenuButtonPopup</enum>
@@ -223,7 +243,7 @@
     <string>Search for known spectra in library similar to the selected nodes' spectra with different precursor ion</string>
    </property>
   </action>
-  <action name="actionResetColorMapping">
+  <action name="actionResetPieColorMapping">
    <property name="icon">
     <iconset resource="../../ui.qrc">
      <normaloff>:/icons/images/node-empty.svg</normaloff>:/icons/images/node-empty.svg</iconset>
@@ -293,6 +313,30 @@
    </property>
    <property name="toolTip">
     <string>Use selected column as source for nodes' sizes</string>
+   </property>
+  </action>
+  <action name="actionResetColorMapping">
+   <property name="icon">
+    <iconset resource="../../ui.qrc">
+     <normaloff>:/icons/images/node-color.svg</normaloff>:/icons/images/node-color.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Reset color mapping</string>
+   </property>
+   <property name="toolTip">
+    <string>Restore default nodes' colors</string>
+   </property>
+  </action>
+  <action name="actionUseColumnForNodesColors">
+   <property name="icon">
+    <iconset resource="../../ui.qrc">
+     <normaloff>:/icons/images/node-color.svg</normaloff>:/icons/images/node-color.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Use Column for Nodes Colors</string>
+   </property>
+   <property name="toolTip">
+    <string>Use selected column as source for nodes' colors</string>
    </property>
   </action>
  </widget>

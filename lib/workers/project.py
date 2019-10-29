@@ -308,7 +308,23 @@ class SaveProjectWorker(BaseWorker):
                 if colors is not None:
                     colors = [color.name() for color in colors]
                     columns_mappings['pies'] = (ids, colors)
-                d['0/columns_mappings.json'] = columns_mappings
+
+            try:
+                id_, mapping = columns_mappings.get('colors', (None, None))
+            except TypeError:
+                pass
+            else:
+                if mapping is not None:
+                    if isinstance(mapping, tuple):
+                        try:
+                            bins, colors = mapping
+                        except TypeError:
+                            pass
+                        else:
+                            colors = [color.name() for color in colors]
+                            columns_mappings['colors'] = (id_, (bins, colors))
+
+            d['0/columns_mappings.json'] = columns_mappings
 
         if self.network.lazyloaded and os.path.exists(self.original_fname):
             self.network.spectra.close()
