@@ -254,7 +254,7 @@ class LoadProjectWorker(BaseWorker):
 class SaveProjectWorker(BaseWorker):
     """Save current project to a file for future access"""
 
-    def __init__(self, filename, graph, network, options, layouts, original_fname=None):
+    def __init__(self, filename, graph, network, infos, options, layouts, original_fname=None):
         super().__init__()
 
         if not filename.endswith(FILE_EXTENSION):
@@ -266,6 +266,7 @@ class SaveProjectWorker(BaseWorker):
         self.tmp_filename = os.path.join(path, f".tmp-{fname}")
         self.graph = graph
         self.network = network
+        self.infos = infos if infos is not None else np.array([])
         self.layouts = layouts
         self.options = options
         self.layouts = layouts
@@ -280,9 +281,9 @@ class SaveProjectWorker(BaseWorker):
         # Create dict for saving
         d = {'0/scores': getattr(self.network, 'scores', np.array([])),
              '0/interactions': getattr(self.network, 'interactions', np.array([])),
-             '0/infos': getattr(self.network, 'infos', np.array([])),
+             '0/infos': self.infos,
              '0/graph.graphml': gxl,
-             '0/options.json': self.network.options,
+             '0/options.json': self.options,
              '0/layouts.json': list(self.layouts.keys())}
 
         for name, layout in self.layouts.items():

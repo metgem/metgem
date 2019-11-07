@@ -241,6 +241,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         self.tvNodes.viewDetailsClicked.connect(self.on_view_details_clicked)
         self.tvNodes.model().dataChanged.connect(self.on_nodes_table_data_changed)
+        self.tvNodes.horizontalHeader().sectionMoved.connect(self.on_nodes_table_column_moved)
 
         # Add a menu to show/hide toolbars
         popup_menu = self.createPopupMenu()
@@ -1070,6 +1071,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.has_unsaved_changes = True
 
     @debug
+    def on_nodes_table_column_moved(self, *args):
+        self.has_unsaved_changes = True
+
+    @debug
     def on_query_databases(self, type_='standards'):
         selected_idx = self.nodes_selection()
         if not selected_idx:
@@ -1720,12 +1725,15 @@ class MainWindow(MainWindowBase, MainWindowUI):
             else:
                 raise e
 
-        # # Save color/size properties
-        # for name, dock in self._network_docks.items():
-        #     self._network.graph.vs['__{}_color'.format(name)] = dock.widget().gvNetwork.scene().nodesColors()
-        #     self._network.graph.vs['__{}_size'.format(name)] = dock.widget().gvNetwork.scene().nodesRadii()
+        model = self.tvNodes.model().sourceModel()
+        header = self.tvNodes.horizontalHeader()
+        df = self._network.infos
+        columns = [model.headerData(header.visualIndex(i), Qt.Horizontal) for i in range(model.columnCount())]
+        columns = [c for c in columns if c in df.columns]
+        df = df.reindex(columns=columns)
 
-        worker = workers.SaveProjectWorker(fname, self.network.graph, self.network, self.network.options,
+        worker = workers.SaveProjectWorker(fname, self.network.graph, self.network,
+                                           df, self.network.options,
                                            layouts={d.widget().name: d.widget().get_layout_data() for d in
                                                     self.network_docks.values()},
                                            original_fname=self.fname)
