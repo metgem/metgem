@@ -16,6 +16,7 @@ import subprocess
 import requests
 
 import numpy as np
+import pandas as pd
 import igraph as ig
 import sqlalchemy
 
@@ -163,6 +164,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
             lambda: self.on_show_spectrum_from_table_triggered('compare'))
         self.nodes_widget.actionFindStandards.triggered.connect(lambda: self.on_query_databases('standards'))
         self.nodes_widget.actionFindAnalogs.triggered.connect(lambda: self.on_query_databases('analogs'))
+        self.nodes_widget.btEditGroupMapping.clicked.connect(self.on_edit_group_mapping)
+        self.nodes_widget.btDeleteColumns.clicked.connect(self.on_delete_nodes_columns)
 
         self.edges_widget.actionHighlightSelectedEdges.triggered.connect(self.highlight_selected_edges)
         self.edges_widget.actionHighlightNodesFromSelectedEdges.triggered.connect(
@@ -1061,6 +1064,67 @@ class MainWindow(MainWindowBase, MainWindowUI):
                         self.has_unsaved_changes = True
 
     @debug
+    def on_edit_group_mapping(self, *args):
+        dialog = ui.EditGroupMappingsDialog(self.tvNodes.model())
+        if dialog.exec_() == QDialog.Accepted:
+            alias, mappings = dialog.getValues()
+            print(alias)
+            df = self._network.infos
+            df_resolver = {k: df[v] for k, v in alias.items() if v in df.columns}
+
+            def pd_sum(*args):
+                for i, s in enumerate(args):
+                    sum_ = s if i == 0 else sum_ + s
+                return sum_
+
+            def pd_mean(*args):
+                return pd_sum(*args) / 2
+
+            safe_dict = {'mean': pd_mean, 'pi': np.pi, 'e': np.e, 'euler_gamma': np.euler_gamma, 'sum': pd_sum}
+
+            self.tvNodes.model().sourceModel().beginResetModel()
+            errors = {}
+            for name, mapping in mappings.items():
+                try:
+                    df.eval('{} = {}'.format(name, mapping), resolvers=[df_resolver, safe_dict], inplace=True) #, engine='numexpr')
+                except (pd.core.computation.ops.UndefinedVariableError, TypeError) as e:
+                    errors[name] = e
+            self.tvNodes.model().sourceModel().endResetModel()
+            if errors:
+                str_errors = '\n'.join([f'"{name}" -> {error}' for (name, error) in errors.items()])
+                QMessageBox.warning(self, None, f'The following error(s) occurred:\n\n{str_errors}')
+
+        self.has_unsaved_changes = True
+
+    @debug
+    def on_delete_nodes_columns(self, *args):
+        if self.tvNodes.model().columnCount() <= 1:
+            return
+
+        selected_columns_indexes = self.tvNodes.selectionModel().selectedColumns(0)
+        len_ = len(selected_columns_indexes)
+
+        if len_ == 0:
+            return
+        else:
+            message = f"Are you sure you want to delete {'this column' if len_ == 1 else 'these columns'}?"
+            reply = QMessageBox.question(self, QCoreApplication.applicationName(),
+                                         message, QMessageBox.Yes | QMessageBox.No)
+            if reply == QMessageBox.No:
+                return
+
+            model = self.tvNodes.model().sourceModel()
+            num_columns = model.columnCount()
+            model.beginResetModel()
+            df = self._network.infos
+            column_names = [model.headerData(index.column(), Qt.Horizontal) for index in selected_columns_indexes]
+            df.drop(column_names, axis=1, inplace=True, errors='ignore')
+            model.endResetModel()
+
+            if model.columnCount() < num_columns:
+                self.has_unsaved_changes = True
+
+    @debug
     def on_show_spectrum(self, *args):
         indexes = self.tvNodes.selectedIndexes()
         if not indexes:
@@ -1071,8 +1135,13 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.has_unsaved_changes = True
 
     @debug
-    def on_nodes_table_column_moved(self, *args):
+    def on_nodes_table_column_moved(self, logical_index:int, old_visual_index: int, new_visual_index: int):
         self.has_unsaved_changes = True
+
+        # Cancel movement for columns not in the nodes' dataframe
+        if self.tvNodes.model().sourceModel().headerData(logical_index, Qt.Horizontal) not in self._network.infos.columns:
+            with utils.SignalBlocker(self.tvNodes.horizontalHeader()):
+                self.tvNodes.horizontalHeader().moveSection(new_visual_index, old_visual_index)
 
     @debug
     def on_query_databases(self, type_='standards'):
@@ -1679,8 +1748,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
             nonlocal worker
             model = self.tvNodes.model().sourceModel()
             model.beginResetModel()
-            self.network.infos = worker.result()  # TODO: Append metadata instead of overriding
-            self.network.mappings = {}
+            df = self._network.infos
+            if df is not None:
+                self._network.infos = df.combine_first(worker.result())
+            else:
+                self._network.infos = worker.result()
             self.has_unsaved_changes = True
             self.set_nodes_pie_chart_values(None)
             self.set_nodes_sizes_values(None)
@@ -1711,13 +1783,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
             # Update list of recent projects
             self.update_recent_projects(fname)
-
-            # Clean-up saved color/size properties
-            # for name, dock in self._network_docks.items():
-            #     if '__{}_color'.format(name) in self._network.graph.vs.attributes():
-            #         del self._network.graph.vs['__{}_color'.format(name)]
-            #     if '__{}_size'.format(name) in self._network.graph.vs.attributes():
-            #         del self._network.graph.vs['__{}_size'.format(name)]
 
         def error(e):
             if isinstance(e, PermissionError):

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>227</height>
+    <width>411</width>
+    <height>296</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -157,6 +157,47 @@
        </property>
        <property name="popupMode">
         <enum>QToolButton::MenuButtonPopup</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="Line" name="line_2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btEditGroupMapping">
+       <property name="toolTip">
+        <string>Edit Group Mapping</string>
+       </property>
+       <property name="statusTip">
+        <string>Edit Group Mapping</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="../../ui.qrc">
+         <normaloff>:/icons/images/calculator.svg</normaloff>:/icons/images/calculator.svg</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btDeleteColumns">
+       <property name="toolTip">
+        <string>Remove selected columns</string>
+       </property>
+       <property name="statusTip">
+        <string>Remove selected columns</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="../../ui.qrc">
+         <normaloff>:/icons/images/list-remove.svg</normaloff>:/icons/images/list-remove.svg</iconset>
        </property>
       </widget>
      </item>
