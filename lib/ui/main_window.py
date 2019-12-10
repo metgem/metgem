@@ -958,7 +958,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             return
 
         try:
-            node_idx = model.mapToSource(selected_indexes[0]).row()
+            node_idx = selected_indexes[0].row()
         except IndexError:
             pass
         else:
