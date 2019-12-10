@@ -12,6 +12,7 @@ import numpy as np
 class BaseCanvas(FigureCanvas):
     dataRequested = pyqtSignal()
     dataLoaded = pyqtSignal()
+    dataCleared = pyqtSignal()
 
     X_SPACING = 10
     X_MARGIN = 50

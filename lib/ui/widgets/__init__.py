@@ -5,6 +5,7 @@ from .options_widgets import (TSNEOptionsWidget, NetworkOptionsWidget, MDSOption
                               UMAPOptionsWidget,
                               CosineOptionsWidget, QueryDatabasesOptionsWidget)
 from .spectrum import SpectrumCanvas, SpectrumNavigationToolbar, SpectrumWidget, ExtendedSpectrumWidget
+from .spectra_comparison import SpectraComparisonWidget
 from .delegates import AutoToolTipItemDelegate, LibraryQualityDelegate, EnsureStringItemDelegate
 from .loading_views import (LoadingListView, LoadingListWidget,
                             LoadingTableView, LoadingTableWidget,

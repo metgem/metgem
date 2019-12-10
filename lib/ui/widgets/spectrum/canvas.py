@@ -93,6 +93,7 @@ class SpectrumCanvas(BaseCanvas):
                 self.toolbar.setVisible(False)
             self._spectrum1_plot = None
             self._spectrum2_plot = None
+            self.dataCleared.emit()
 
         self.draw()
 
@@ -151,6 +152,14 @@ class SpectrumCanvas(BaseCanvas):
         self._spectrum2_idx = idx
         if self._spectrum2_plot is not None:
             self._spectrum2_plot.set_label(self.format_label(self._spectrum2_idx, self._spectrum2_parent))
+
+    @property
+    def spectrum1_plot(self):
+        return self._spectrum1_plot
+
+    @property
+    def spectrum2_plot(self):
+        return self._spectrum2_plot
 
     @pyqtProperty(str)
     def title(self):

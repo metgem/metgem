@@ -320,7 +320,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.dock_spectra = CDockWidget("Spectra")
         self.dock_spectra.setObjectName("2spectra")
         self.dock_spectra.setIcon(QIcon(":/icons/images/spectrum.svg"))
-        self.spectra_widget = ui.widgets.spectrum.ExtendedSpectrumWidget()
+        self.spectra_widget = ui.widgets.SpectraComparisonWidget(self)
         self.dock_spectra.setWidget(self.spectra_widget)
         self.dock_manager.addDockWidget(CenterDockWidgetArea, self.dock_spectra, dock_area)
         self.dock_manager.addToggleViewActionToMenu(self.dock_spectra.toggleViewAction())
