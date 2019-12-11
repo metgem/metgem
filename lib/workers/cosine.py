@@ -26,6 +26,10 @@ class CosineComputationOptions(AttrDict):
                          min_matched_peaks_search=6,
                          matched_peaks_window=50,
                          is_ms1_data=False,
+                         use_filtering=True,
+                         use_min_intensity_filter=False,
+                         use_parent_filter=True,
+                         use_window_rank_filter=True,
                          **kwargs)
 
 

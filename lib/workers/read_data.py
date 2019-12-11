@@ -22,10 +22,14 @@ class ReadDataWorker(BaseWorker):
         mzs = []
         spectra = []
 
-        min_intensity = self.options.min_intensity
-        parent_filter_tolerance = self.options.parent_filter_tolerance
-        matched_peaks_window = self.options.matched_peaks_window
-        min_matched_peaks_search = self.options.min_matched_peaks_search
+        use_filtering = self.options.use_filtering
+        use_min_intensity_filter = self.options.use_min_intensity_filter
+        use_parent_filter = self.options.use_parent_filter
+        use_window_rank_filter = self.options.use_window_rank_filter
+        min_intensity = self.options.min_intensity if use_min_intensity_filter else 0
+        parent_filter_tolerance = self.options.parent_filter_tolerance if use_parent_filter else 0
+        matched_peaks_window = self.options.matched_peaks_window if use_window_rank_filter else 0
+        min_matched_peaks_search = self.options.min_matched_peaks_search if use_window_rank_filter else 0
         is_ms1_data = self.options.is_ms1_data
 
         if self.ext == '.mgf':
@@ -61,10 +65,8 @@ class ReadDataWorker(BaseWorker):
 
             spectra.append(data)
 
-        spectra = filter_data_multi(mzs, spectra, min_intensity, parent_filter_tolerance,
-                                    matched_peaks_window, min_matched_peaks_search)
+        if use_filtering:
+            spectra = filter_data_multi(mzs, spectra, min_intensity, parent_filter_tolerance,
+                                        matched_peaks_window, min_matched_peaks_search)
 
-        if is_ms1_data:
-            return [], spectra
-        else:
-            return mzs, spectra
+        return mzs, spectra

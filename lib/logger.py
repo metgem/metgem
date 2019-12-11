@@ -24,8 +24,8 @@ def get_logger():
         file_handler.setLevel(logging.DEBUG)
         stream_handler.setLevel(logging.DEBUG)
     else:
-        logger.setLevel(logging.WARN)
-        file_handler.setLevel(logging.WARN)
+        logger.setLevel(logging.WARNING)
+        file_handler.setLevel(logging.WARNING)
 
     return logger
 

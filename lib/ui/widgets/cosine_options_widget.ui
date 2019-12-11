@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>365</width>
-    <height>220</height>
+    <width>376</width>
+    <height>219</height>
    </rect>
   </property>
   <property name="title">
@@ -69,17 +69,23 @@
     </widget>
    </item>
    <item row="6" column="0" colspan="3">
-    <widget class="QGroupBox" name="groupBox">
+    <widget class="QGroupBox" name="gbFiltering">
      <property name="title">
       <string>Filtering</string>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_3">
         <item>
-         <widget class="QLabel" name="label_5">
+         <widget class="QCheckBox" name="chkUseParentFiltering">
           <property name="text">
            <string>Keep peaks outside of the ±</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
           </property>
          </widget>
         </item>
@@ -103,7 +109,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QLabel" name="label_9">
+         <widget class="QLabel" name="lblParentFiltering">
           <property name="text">
            <string>window</string>
           </property>
@@ -127,16 +133,19 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
-         <widget class="QLabel" name="label_4">
+         <widget class="QCheckBox" name="chkUseMinIntensityFiltering">
           <property name="text">
            <string>Keep peaks above</string>
+          </property>
+          <property name="checked">
+           <bool>false</bool>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QSpinBox" name="spinMinIntensity">
           <property name="enabled">
-           <bool>true</bool>
+           <bool>false</bool>
           </property>
           <property name="suffix">
            <string>%</string>
@@ -147,7 +156,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QLabel" name="label_2">
+         <widget class="QLabel" name="lblMinIntensityFiltering">
           <property name="text">
            <string>of maximum</string>
           </property>
@@ -171,9 +180,12 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
         <item>
-         <widget class="QLabel" name="label">
+         <widget class="QCheckBox" name="chkUseWindowRankFiltering">
           <property name="text">
            <string>Keep each peak in top</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
           </property>
          </widget>
         </item>
@@ -191,7 +203,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QLabel" name="label_7">
+         <widget class="QLabel" name="lblWindowRankFiltering1">
           <property name="text">
            <string>in the ±</string>
           </property>
@@ -217,7 +229,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QLabel" name="label_8">
+         <widget class="QLabel" name="lblWindowRankFiltering2">
           <property name="text">
            <string>window</string>
           </property>
@@ -257,7 +269,7 @@
    <item row="0" column="0">
     <widget class="QCheckBox" name="chkMS1Data">
      <property name="text">
-      <string>&amp;MS1 Data</string>
+      <string>Treat as &amp;MS1 Data</string>
      </property>
     </widget>
    </item>

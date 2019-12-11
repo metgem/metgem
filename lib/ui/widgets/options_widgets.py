@@ -44,6 +44,10 @@ class CosineOptionsWidget(QGroupBox):
     def __init__(self):
         super().__init__()
         uic.loadUi(os.path.join(os.path.dirname(__file__), 'cosine_options_widget.ui'), self)
+        self.chkUseParentFiltering.stateChanged.connect(self.spinParentFilterTolerance.setEnabled)
+        self.chkUseMinIntensityFiltering.stateChanged.connect(self.spinMinIntensity.setEnabled)
+        self.chkUseWindowRankFiltering.stateChanged.connect(self.spinMinMatchedPeaksSearch.setEnabled)
+        self.chkUseWindowRankFiltering.stateChanged.connect(self.spinMatchedPeaksWindow.setEnabled)
 
     def getValues(self):
         options = CosineComputationOptions()
@@ -54,6 +58,10 @@ class CosineOptionsWidget(QGroupBox):
         options.min_matched_peaks_search = self.spinMinMatchedPeaksSearch.value()
         options.matched_peaks_window = self.spinMatchedPeaksWindow.value()
         options.is_ms1_data = self.chkMS1Data.isChecked()
+        options.use_filtering = self.gbFiltering.isChecked()
+        options.use_min_intensity_filter = self.chkUseMinIntensityFiltering.isChecked()
+        options.use_parent_filter = self.chkUseParentFiltering.isChecked()
+        options.use_window_rank_filter = self.chkUseWindowRankFiltering.isChecked()
         
         return options
 
@@ -65,6 +73,10 @@ class CosineOptionsWidget(QGroupBox):
         self.spinMinMatchedPeaksSearch.setValue(options.min_matched_peaks_search)
         self.spinMatchedPeaksWindow.setValue(options.matched_peaks_window)
         self.chkMS1Data.setChecked(options.is_ms1_data)
+        self.gbFiltering.setChecked(options.use_filtering)
+        self.chkUseMinIntensityFiltering.setChecked(options.use_min_intensity_filter)
+        self.chkUseParentFiltering.setChecked(options.use_parent_filter)
+        self.chkUseWindowRankFiltering.setChecked(options.use_window_rank_filter)
 
 
 class TSNEOptionsWidget(QGroupBox):
