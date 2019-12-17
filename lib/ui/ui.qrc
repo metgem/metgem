@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="icons">
+    <file>images/key.svg</file>
     <file>images/calculator.svg</file>
     <file>images/split.svg</file>
     <file>images/merge.svg</file>

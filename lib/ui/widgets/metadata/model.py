@@ -66,7 +66,7 @@ class NodesModel(QAbstractTableModel):
         self.mappings = {}
 
     def rowCount(self, parent=QModelIndex()):
-        return self.infos.shape[0] if self.infos is not None else len(self.mzs)
+        return len(self.mzs)
 
     def columnCount(self, parent=QModelIndex()):
         count = len(self.mappings) + 2
@@ -79,7 +79,7 @@ class NodesModel(QAbstractTableModel):
         infos = getattr(network, 'infos', None)
         mappings = getattr(network, 'mappings', {})
         if infos is not None:
-            self.infos = infos.values
+            self.infos = infos
             self.headers = np.array(infos.columns.tolist() + list(mappings.keys()))
         else:
             self.infos = None
@@ -148,12 +148,16 @@ class NodesModel(QAbstractTableModel):
                     return 'N/A'
             else:
                 try:
-                    data = self.infos[row, column - 2]
-                    if isinstance(data, np.generic):
-                        data = data.item()
+                    data = self.infos.loc[row, self.infos.columns[column - 2]]
                 except IndexError:
-                    mappped_columns = self.mappings[column - 2]
-                    data = sum(self.infos[row, c] for c in mappped_columns)
+                    try:
+                        mappped_columns = self.mappings[column - 2]
+                        data = sum(self.infos.loc[row, self.infos.columns[c]] for c in mappped_columns)
+                    except KeyError:
+                        return None
+                except KeyError:
+                    return None
+
                 if isinstance(data, np.generic):
                     data = data.item()
                 return str(data) if role in (FilterRole, LabelRole) else data

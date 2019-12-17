@@ -59,8 +59,8 @@ class ProcessDataDialog(ProcessDataDialogBase, ProcessDataDialogUI):
                 model.setNameFilters(['*.mgf', '*.msp'])
             model.setRootPath(QDir.currentPath())
             completer.setModel(model)
-            edit.setText(QDir.currentPath())
             edit.setCompleter(completer)
+            edit.setText(QDir.currentPath())
 
         # Add cosine options widget
         self.cosine_widget = CosineOptionsWidget()

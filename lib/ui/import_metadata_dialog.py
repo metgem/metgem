@@ -4,7 +4,7 @@ import csv
 
 from PyQt5 import uic
 from PyQt5.QtCore import Qt, QDir, QItemSelectionModel, QItemSelection
-from PyQt5.QtGui import QPalette, QColor
+from PyQt5.QtGui import QPalette, QColor, QIcon
 from PyQt5.QtWidgets import QCompleter, QFileSystemModel, QDialog, QFileDialog, QTableWidgetItem
 
 from ..utils import SignalBlocker
@@ -13,10 +13,7 @@ from .progress_dialog import ProgressDialog
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'import_metadata_dialog.ui')
 
-try:
-    ImportMetadataDialogUI, ImportMetadataDialogBase = uic.loadUiType(UI_FILE, from_imports='lib.ui', import_from='lib.ui')
-except:
-    ImportMetadataDialogUI, ImportMetadataDialogBase = uic.loadUiType(UI_FILE)
+ImportMetadataDialogUI, ImportMetadataDialogBase = uic.loadUiType(UI_FILE, from_imports='lib.ui', import_from='lib.ui')
 
 
 class ImportMetadataDialog(ImportMetadataDialogBase, ImportMetadataDialogUI):
@@ -27,6 +24,7 @@ class ImportMetadataDialog(ImportMetadataDialogBase, ImportMetadataDialogUI):
         self.setupUi(self)
 
         self._workers = WorkerQueue(self, ProgressDialog(self))
+        self._column_index = -1
 
         # Set completer for input files
         completer = QCompleter(self.editMetadataFile)
@@ -59,6 +57,7 @@ class ImportMetadataDialog(ImportMetadataDialogBase, ImportMetadataDialogUI):
         self.btSelectAll.clicked.connect(self.twMetadata.selectAll)
         self.btSelectNone.clicked.connect(self.twMetadata.clearSelection)
         self.btSelectInvert.clicked.connect(self.invert_selection)
+        self.cbIndexColumn.currentIndexChanged.connect(self.on_column_index_changed)
 
         if delimiter is not None:
             with SignalBlocker(self.cbCsvDelimiter):
@@ -120,35 +119,50 @@ class ImportMetadataDialog(ImportMetadataDialogBase, ImportMetadataDialogUI):
         finally:
             self.populate_table()
 
+    def on_column_index_changed(self, index: int):
+        self._column_index = index - 1
+        for column in range(self.twMetadata.horizontalHeader().model().columnCount()):
+            if column == index - 1:
+                self.twMetadata.horizontalHeaderItem(column).setData(Qt.DecorationRole,
+                                                                     QIcon(":/icons/images/key.svg"))
+            else:
+                self.twMetadata.horizontalHeaderItem(column).setData(Qt.DecorationRole, None)
+
     def populate_table(self):
         def file_read():
             nonlocal worker
-            data = worker.result()
+            df = worker.result()
             self.twMetadata.clear()
             self.twMetadata.setRowCount(0)
+            self.cbIndexColumn.clear()
 
-            if data is None:
-                self.twMetadata.setLoading(False)
-                return
-
-            if data.shape[0] == 0 or data.shape[1] == 0:
+            if df is None or df.shape[0] == 0 or df.shape[1] == 0:
                 self.twMetadata.setLoading(False)
                 return
 
             try:
-                self.twMetadata.setRowCount(data.shape[0])
-                self.twMetadata.setColumnCount(data.shape[1])
-                self.twMetadata.setHorizontalHeaderLabels(data.columns)
-                for row in range(data.shape[0]):
-                    for column in range(data.shape[1]):
-                        item = QTableWidgetItem(str(data.loc[row][column]))
+                self.twMetadata.setRowCount(df.shape[0])
+                self.twMetadata.setColumnCount(df.shape[1])
+                self.twMetadata.setHorizontalHeaderLabels(df.columns)
+                for row in range(df.shape[0]):
+                    for column in range(df.shape[1]):
+                        item = QTableWidgetItem(str(df.loc[row][column]))
                         self.twMetadata.setItem(row, column, item)
+                self.cbIndexColumn.addItem("")
+                self.cbIndexColumn.addItems(df.columns)
             except KeyError:
                 self.twMetadata.clear()
                 self.twMetadata.setRowCount(0)
                 self.twMetadata.setColumnCount(0)
+                self.cbIndexColumn.clear()
             finally:
                 self.twMetadata.setLoading(False)
+
+                # Try to find the index column
+                for i, dtype in enumerate(df.dtypes):
+                    if dtype.kind == 'i':
+                        self.cbIndexColumn.setCurrentIndex(i+1)
+                        break
 
         options = self.prepare_options(preview=True)
         if options is not None:
@@ -175,6 +189,7 @@ class ImportMetadataDialog(ImportMetadataDialogBase, ImportMetadataDialogUI):
             else:
                 selected_cols = self.selected_columns()
                 options.usecols = selected_cols if len(selected_cols) > 0 else None
+                options.index_col = self._column_index if self._column_index >= 0 else None
             return options
 
     def getValues(self):

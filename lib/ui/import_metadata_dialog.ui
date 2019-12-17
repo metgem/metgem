@@ -63,64 +63,34 @@
       <string>Options</string>
      </property>
      <layout class="QGridLayout" name="gridLayout">
-      <item row="0" column="2">
-       <widget class="QLineEdit" name="editCsvDelimiter">
-        <property name="enabled">
-         <bool>false</bool>
+      <item row="0" column="6" colspan="2">
+       <spacer name="horizontalSpacer_3">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
         </property>
-        <property name="maximumSize">
+        <property name="sizeHint" stdset="0">
          <size>
-          <width>37</width>
-          <height>16777215</height>
+          <width>40</width>
+          <height>20</height>
          </size>
         </property>
-        <property name="maxLength">
-         <number>1</number>
-        </property>
-       </widget>
+       </spacer>
       </item>
-      <item row="1" column="0" colspan="2">
+      <item row="2" column="4" colspan="2">
        <widget class="QCheckBox" name="chkUseFirstLineAsHeader">
         <property name="text">
          <string>Use first line as column header</string>
         </property>
        </widget>
       </item>
-      <item row="0" column="1">
-       <widget class="CsvDelimiterCombo" name="cbCsvDelimiter"/>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>Start import row</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QSpinBox" name="spinSkipRows">
-        <property name="minimum">
-         <number>1</number>
-        </property>
-        <property name="maximum">
-         <number>2147483647</number>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0" colspan="2">
+      <item row="2" column="0" colspan="2">
        <widget class="QCheckBox" name="chkComment">
         <property name="text">
          <string>Ignore lines starting with</string>
         </property>
        </widget>
       </item>
-      <item row="0" column="0">
-       <widget class="QLabel" name="label_2">
-        <property name="text">
-         <string>Separator</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="2">
+      <item row="2" column="2">
        <widget class="QLineEdit" name="editComment">
         <property name="enabled">
          <bool>false</bool>
@@ -142,18 +112,78 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="2">
-       <spacer name="horizontalSpacer_3">
+      <item row="0" column="1">
+       <widget class="CsvDelimiterCombo" name="cbCsvDelimiter"/>
+      </item>
+      <item row="0" column="5">
+       <widget class="QSpinBox" name="spinSkipRows">
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>2147483647</number>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QLineEdit" name="editCsvDelimiter">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>37</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="maxLength">
+         <number>1</number>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>Separator</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="4">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Start import row</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="6">
+       <spacer name="horizontalSpacer_6">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
-          <width>583</width>
+          <width>40</width>
           <height>20</height>
          </size>
         </property>
        </spacer>
+      </item>
+      <item row="0" column="3" rowspan="5">
+       <widget class="Line" name="line">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>Index column</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1" colspan="2">
+       <widget class="QComboBox" name="cbIndexColumn"/>
       </item>
      </layout>
     </widget>
@@ -280,13 +310,13 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>LoadingTableWidget</class>
-   <extends>QTableWidget</extends>
+   <class>CsvDelimiterCombo</class>
+   <extends>QComboBox</extends>
    <header>lib/ui/widgets.h</header>
   </customwidget>
   <customwidget>
-   <class>CsvDelimiterCombo</class>
-   <extends>QComboBox</extends>
+   <class>LoadingTableWidget</class>
+   <extends>QTableWidget</extends>
    <header>lib/ui/widgets.h</header>
   </customwidget>
  </customwidgets>

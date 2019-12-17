@@ -14,6 +14,7 @@ class ReadMetadataOptions(AttrDict):
                          dtype=None,
                          header='infer',
                          usecols=None,
+                         index_col=None,
                          comment=None)
 
     
@@ -34,6 +35,9 @@ class ReadMetadataWorker(BaseWorker):
     def run(self):  # TODO: Allow updates (read metadata file in a loop)
         try:
             ext = os.path.splitext(self.filename)[1]
+            if self.options.index_col is not None and self.options.usecols is not None:
+                if self.options.index_col not in self.options.usecols:
+                    self.options.usecols.append(self.options.index_col)
             kwargs = dict(**self.options, prefix='Column ', engine='c', float_precision='high')
             data = None
             if ext in (".xls", ".xlsx"):
@@ -44,9 +48,13 @@ class ReadMetadataWorker(BaseWorker):
                 with open(self.filename, encoding='utf-8', errors='ignore') as f:
                     data = pd.read_csv(f, **kwargs)   # Workaround for Pandas's bug #15086
 
-            # Drop columns full of na values
             if data is not None:
+                # Drop columns full of na values
                 data = data.dropna(how='all', axis=1)
+
+                # Make sure that index is 0-based
+                if self.options.index_col is not None:
+                    data.index -= 1
 
             if data is not None and data.size > 0:
                 return data
