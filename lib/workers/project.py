@@ -324,6 +324,8 @@ class SaveProjectWorker(BaseWorker):
                         else:
                             colors = [color.name() for color in colors]
                             columns_mappings['colors'] = (id_, (bins, colors))
+                    elif isinstance(mapping, dict):
+                        columns_mappings['colors'] = (id_, {k: v.name() for k, v in mapping.items()})
 
             d['0/columns_mappings.json'] = columns_mappings
 
