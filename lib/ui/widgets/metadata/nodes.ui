@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>411</width>
-    <height>296</height>
+    <height>326</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -181,6 +181,23 @@
        <property name="icon">
         <iconset resource="../../ui.qrc">
          <normaloff>:/icons/images/calculator.svg</normaloff>:/icons/images/calculator.svg</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btClusterize">
+       <property name="toolTip">
+        <string>Find clusters in data and put each node in a cluster</string>
+       </property>
+       <property name="statusTip">
+        <string>Find clusters in data and put each node in a cluster</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="../../ui.qrc">
+         <normaloff>:/icons/images/cluster.svg</normaloff>:/icons/images/cluster.svg</iconset>
        </property>
       </widget>
      </item>

@@ -16,3 +16,4 @@ from .databases import (ListDatabasesWorker, DownloadDatabasesWorker,
                         GetGNPSDatabasesMtimeWorker, ConvertDatabasesWorker,
                         QueryDatabasesWorker, QueryDatabasesOptions,
                         StandardsResult)
+from .clusterize import (ClusterizeOptions, ClusterizeWorker, HAS_HDBSCAN)

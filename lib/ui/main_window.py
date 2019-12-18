@@ -165,6 +165,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.nodes_widget.actionFindStandards.triggered.connect(lambda: self.on_query_databases('standards'))
         self.nodes_widget.actionFindAnalogs.triggered.connect(lambda: self.on_query_databases('analogs'))
         self.nodes_widget.btEditGroupMapping.clicked.connect(self.on_edit_group_mapping)
+        self.nodes_widget.btClusterize.clicked.connect(self.on_clusterize)
         self.nodes_widget.btDeleteColumns.clicked.connect(self.on_delete_nodes_columns)
 
         self.edges_widget.actionHighlightSelectedEdges.triggered.connect(self.highlight_selected_edges)
@@ -1095,6 +1096,35 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 QMessageBox.warning(self, None, f'The following error(s) occurred:\n\n{str_errors}')
 
         self.has_unsaved_changes = True
+
+    @debug
+    def on_clusterize(self, *args):
+        if not workers.HAS_HDBSCAN:
+            QMessageBox.information(self, None,
+                                    ('hdbscan is required for this action '
+                                     '(https://hdbscan.readthedocs.io).'))
+        elif getattr(self.network, 'scores') is None:
+            QMessageBox.warning(self, None, 'Please import spectra first.')
+            return
+
+        dialog = ui.ClusterizeDialog()
+        if dialog.exec_() == QDialog.Accepted:
+            def update_dataframe(worker: workers.ClusterizeWorker):
+                self.tvNodes.model().sourceModel().beginResetModel()
+                self.network.infos[options.column_name] = data = worker.result()
+                self.tvNodes.model().sourceModel().endResetModel()
+
+                column_index = self.network.infos.columns.get_loc(options.column_name)
+                self.tvNodes.setColumnBlinking(column_index + 2, True)
+                QMessageBox.information(self, None, f"Found {len(set(data)) - 1} clusters.")
+
+            options = dialog.getValues()
+            worker = workers.ClusterizeWorker(self.network.scores, options)
+            if worker is not None:
+                self._workers.append(worker)
+                self._workers.append(update_dataframe)
+                self._workers.start()
+
 
     @debug
     def on_delete_nodes_columns(self, *args):
