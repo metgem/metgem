@@ -855,7 +855,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         except ImportError:
             QMessageBox.information(self, None,
                                     ('py2tocytoscape is required for this action '
-                                     'https://pypi.python.org/pypi/py2cytoscape).'))
+                                     '(https://pypi.python.org/pypi/py2cytoscape).'))
             self._logger.error('py2cytoscape not found.')
         except requests.exceptions.HTTPError as e:
             QMessageBox.warning(self, None, 'The following error occurred during export to Cytoscape: {str(e)}')
