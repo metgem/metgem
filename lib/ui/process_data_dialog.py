@@ -82,14 +82,10 @@ class ProcessDataDialog(ProcessDataDialogBase, ProcessDataDialogUI):
                 self.btAddView.setDefaultAction(action)
                 set_default = False
 
-        # Add advanced option button
-        self.btMore = self.buttonBox.addButton("&More >>", QDialogButtonBox.DestructiveRole)
-
         # Connect events
         self.btBrowseProcessFile.clicked.connect(lambda: self.browse('process'))
         self.btBrowseMetadataFile.clicked.connect(lambda: self.browse('metadata'))
         self.editMetadataFile.textChanged.connect(self.on_metadata_file_changed)
-        self.btMore.clicked.connect(self.toggle_advanced_options)
         self.btOptions.clicked.connect(self.on_show_options_dialog)
         self.cbCsvDelimiter.delimiterChanged.connect(self.on_delimiter_changed)
         self.btRemoveViews.clicked.connect(self.on_remove_views)
@@ -197,23 +193,6 @@ class ProcessDataDialog(ProcessDataDialogBase, ProcessDataDialogUI):
                 self.editProcessFile.setPalette(self._error_palette)
         else:
             super().done(r)
-
-    def showEvent(self, event):
-        self.gbAddViews.hide()
-        self.adjustSize()
-        super().showEvent(event)
-
-    def toggle_advanced_options(self):
-        """Toggle the Network and t-SNE parameters widgets"""
-
-        if self.gbAddViews.isVisible():
-            self.gbAddViews.hide()
-            self.btMore.setText("&More >>")
-        else:
-            self.gbAddViews.show()
-            self.btMore.setText("<< &Less")
-
-        self.adjustSize()
 
     def browse(self, type_='process'):
         """Open a dialog to choose either .mgf or metadata.txt file"""
