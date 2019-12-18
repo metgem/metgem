@@ -2,6 +2,7 @@ from ...workers.network_generation import NetworkVisualizationOptions
 from ...workers.embedding.tsne import TSNEVisualizationOptions
 from ...workers.embedding.umap import UMAPVisualizationOptions
 from ...workers.embedding.mds import MDSVisualizationOptions
+from ...workers.embedding.isomap import IsomapVisualizationOptions
 from ...workers.cosine import CosineComputationOptions
 from ...workers.databases.query import QueryDatabasesOptions
 
@@ -176,6 +177,29 @@ class MDSOptionsWidget(QGroupBox):
         self.spinMinScoresAboveThreshold.setValue(options.min_scores_above_threshold)
         self.spinNumIterations.setValue(options.max_iter)
         self.chkRandomState.setChecked(options.random)
+
+
+class IsomapOptionsWidget(QGroupBox):
+    """Create a widget containing Isomap visualization options"""
+
+    def __init__(self):
+        super().__init__()
+        uic.loadUi(os.path.join(os.path.dirname(__file__), 'isomap_options_widget.ui'), self)
+
+    def getValues(self):
+        options = IsomapVisualizationOptions()
+        options.min_score = self.spinMinScore.value()
+        options.min_scores_above_threshold = self.spinMinScoresAboveThreshold.value()
+        options.max_iter = self.spinNumIterations.value()
+        options.n_neighbors = self.spinNumNeighbors.value()
+
+        return options
+
+    def setValues(self, options):
+        self.spinMinScore.setValue(options.min_score)
+        self.spinMinScoresAboveThreshold.setValue(options.min_scores_above_threshold)
+        self.spinNumIterations.setValue(options.max_iter)
+        self.spinNumNeighbors.setValue(options.n_neighbors)
 
 
 class QueryDatabasesOptionsWidget(QGroupBox):

@@ -1,5 +1,5 @@
 from .widgets import (TSNEOptionsWidget, NetworkOptionsWidget, MDSOptionsWidget,
-                      UMAPOptionsWidget)
+                      UMAPOptionsWidget, IsomapOptionsWidget)
 from ..workers import HAS_UMAP
 
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QDialogButtonBox
@@ -57,6 +57,12 @@ class EditMDSOptionsDialog(EditOptionsDialogBase):
 
 if HAS_UMAP:
     class EditUMAPOptionsDialog(EditOptionsDialogBase):
-        """Dialog to modify the t-SNE options"""
+        """Dialog to modify the UMAP options"""
 
         options_class = UMAPOptionsWidget
+
+
+class EditIsomapOptionsDialog(EditOptionsDialogBase):
+    """Dialog to modify the Isomap options"""
+
+    options_class = IsomapOptionsWidget

@@ -11,7 +11,7 @@ import os
 from ... import workers
 from ... import config
 from ..edit_options_dialog import (EditNetworkOptionsDialog, EditTSNEOptionsDialog,
-                                   EditMDSOptionsDialog)
+                                   EditMDSOptionsDialog, EditIsomapOptionsDialog)
 if workers.HAS_UMAP:
     from ..edit_options_dialog import EditUMAPOptionsDialog
 
@@ -235,5 +235,17 @@ if workers.HAS_UMAP:
 
         def create_worker(self):
             return workers.UMAPWorker(self._network.scores, self._network.options.umap)
+
+
+class IsomapFrame(TSNEFrame):
+    name = 'isomap'
+    title = 'Isomap'
+    unlockable = False
+    dialog_class = EditIsomapOptionsDialog
+    use_edges = False
+
+    def create_worker(self):
+        return workers.IsomapWorker(self._network.scores, self._network.options.isomap)
+
 
 AVAILABLE_NETWORK_WIDGETS = {obj.name: obj for obj in BaseFrame.get_subclasses()}

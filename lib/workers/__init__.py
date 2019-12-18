@@ -2,6 +2,7 @@ from .queue import WorkerQueue
 from .generic import GenericWorker
 from .embedding import (TSNEWorker, TSNEVisualizationOptions,
                         MDSWorker, MDSVisualizationOptions,
+                        IsomapWorker, IsomapVisualizationOptions,
                         UMAPWorker, UMAPVisualizationOptions, HAS_UMAP)
 from .network import NetworkWorker
 from .network_generation import NetworkVisualizationOptions, GenerateNetworkWorker
