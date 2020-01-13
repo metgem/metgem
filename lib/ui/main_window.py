@@ -1107,7 +1107,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             QMessageBox.warning(self, None, 'Please import spectra first.')
             return
 
-        dialog = ui.ClusterizeDialog()
+        dialog = ui.ClusterizeDialog({k: v.widget().title for k,v in self.network_docks.items()})
         if dialog.exec_() == QDialog.Accepted:
             def update_dataframe(worker: workers.ClusterizeWorker):
                 self.tvNodes.model().sourceModel().beginResetModel()
@@ -1118,8 +1118,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 self.tvNodes.setColumnBlinking(column_index + 2, True)
                 QMessageBox.information(self, None, f"Found {len(set(data)) - 1} clusters.")
 
-            options = dialog.getValues()
-            worker = workers.ClusterizeWorker(self.network.scores, options)
+            name, options = dialog.getValues()
+            view = self.network_docks[name].widget()
+            worker = workers.ClusterizeWorker(view, options)
             if worker is not None:
                 self._workers.append(worker)
                 self._workers.append(update_dataframe)

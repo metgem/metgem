@@ -23,9 +23,9 @@ class ClusterizeOptions(AttrDict):
 
 class ClusterizeWorker(BaseWorker):
 
-    def __init__(self, scores, options):
+    def __init__(self, view, options):
         super().__init__()
-        self._scores = scores
+        self._view = view
         self.options = options
         self.max = 0
         self.iterative_update = True
@@ -37,14 +37,26 @@ class ClusterizeWorker(BaseWorker):
             return False
 
         options = self.options
-        clusterer = hdbscan.HDBSCAN(metric='precomputed',
-                                    min_cluster_size=options.min_cluster_size,
+        clusterer = hdbscan.HDBSCAN(min_cluster_size=options.min_cluster_size,
                                     min_samples=options.min_samples,
                                     cluster_selection_epsilon=options.cluster_selection_epsilon,
                                     cluster_selection_method=options.cluster_selection_method)
-        clusterer.fit(1 - self._scores.astype(np.float64))
-        result = [f"Cluster {group + 1}" if group != -1 else "Noise"
-                  for group in clusterer.labels_]
+        layout_data = self._view.get_layout_data()
+        isolated_nodes = layout_data['isolated_nodes']
+        layout = layout_data['layout']
+        mask = np.ones_like(layout, dtype=bool)
+        mask[isolated_nodes] = False
+        x = layout[mask].reshape(-1, 2)
+        clusterer.fit(x.astype(np.float64))
+
+        i = 0
+        result = []
+        for n in self._view.gvNetwork.scene().nodes():
+            if n.index() in isolated_nodes:
+                result.append("Noise")
+            else:
+                result.append(f"Cluster {clusterer.labels_[i] + 1}" if clusterer.labels_[i] > 0 else "Noise")
+                i += 1
 
         if not self.isStopped():
             return result

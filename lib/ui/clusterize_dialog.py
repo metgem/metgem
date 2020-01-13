@@ -4,11 +4,12 @@ from PyQt5 import uic
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QDialog
 
-from ..workers import ClusterizeOptions, ClusterizeWorker
+from ..workers import ClusterizeOptions
+
 
 class ClusterizeDialog(QDialog):
 
-    def __init__(self):
+    def __init__(self, views):
         super().__init__()
         uic.loadUi(os.path.join(os.path.dirname(__file__), 'clusterize_dialog.ui'), self)
 
@@ -16,6 +17,9 @@ class ClusterizeDialog(QDialog):
 
         for desc, name in (('Excess of Mass', 'eom'), ('Leaf', 'leaf')):
             self.cbMethod.addItem(desc, name)
+
+        for key, title in views.items():
+            self.cbView.addItem(title, key)
 
         self.chkMinSamples.stateChanged.connect(self.spinMinSamples.setEnabled)
 
@@ -27,4 +31,4 @@ class ClusterizeDialog(QDialog):
         options.cluster_selection_epsilon = self.spinEpsilon.value()
         options.cluster_selection_method = self.cbMethod.currentData()
 
-        return options
+        return self.cbView.currentData(), options
