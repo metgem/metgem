@@ -65,4 +65,4 @@ class NetworkWorker(BaseWorker):
             total_count += vcount
             self.updated.emit(total_count)
 
-        return layout, np.where(np.asarray(self.graph.degree()) <= 2)[0]
+        return layout, np.where(np.asarray(self.graph.degree()) < 1)[0]
