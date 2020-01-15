@@ -1069,7 +1069,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
         dialog = ui.EditGroupMappingsDialog(self.tvNodes.model())
         if dialog.exec_() == QDialog.Accepted:
             alias, mappings = dialog.getValues()
-            print(alias)
             df = self._network.infos
             df_resolver = {k: df[v] for k, v in alias.items() if v in df.columns}
 
@@ -1088,7 +1087,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             for name, mapping in mappings.items():
                 try:
                     df.eval('{} = {}'.format(name, mapping), resolvers=[df_resolver, safe_dict], inplace=True) #, engine='numexpr')
-                except (pd.core.computation.ops.UndefinedVariableError, TypeError) as e:
+                except (pd.core.computation.ops.UndefinedVariableError, TypeError, AttributeError) as e:
                     errors[name] = e
             self.tvNodes.model().sourceModel().endResetModel()
             if errors:
