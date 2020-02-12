@@ -72,11 +72,15 @@ class ImportUserDatabaseDialog(ImportUserDatabaseDialogBase, ImportUserDatabaseD
                                "NIST Text Format of Individual Spectra (*.msp)",
                                "All files (*.*)"])
 
-        if dialog.exec_() == QDialog.Accepted:
-            filename = dialog.selectedFiles()[0]
-            self.editInputFile.setText(filename)
-            self.editDatabaseName.setText(os.path.splitext(os.path.basename(filename))[0])
-            self.editInputFile.setPalette(self.style().standardPalette())
+        def set_filename(result):
+            if result == QDialog.Accepted:
+                filename = dialog.selectedFiles()[0]
+                self.editInputFile.setText(filename)
+                self.editDatabaseName.setText(os.path.splitext(os.path.basename(filename))[0])
+                self.editInputFile.setPalette(self.style().standardPalette())
+
+        dialog.finished.connect(set_filename)
+        dialog.open()
 
     def import_database(self):
         input_file = self.editInputFile.text()

@@ -118,14 +118,19 @@ class ProcessDataDialog(ProcessDataDialogBase, ProcessDataDialogUI):
 
             options = self._options.get(widget_class.name, {})
             dialog = widget_class.dialog_class(self, options=options)
-            if dialog.exec_() == QDialog.Accepted:
-                options = dialog.getValues()
-                self._options[widget_class.name] = options
-                item = QListWidgetItem(widget_class.title)
-                item.setSizeHint(QSize(0, 50))
-                item.setTextAlignment(Qt.AlignCenter)
-                item.setData(ProcessDataDialog.NameRole, widget_class.name)
-                self.lstViews.addItem(item)
+
+            def add_view(result):
+                if result == QDialog.Accepted:
+                    options = dialog.getValues()
+                    self._options[widget_class.name] = options
+                    item = QListWidgetItem(widget_class.title)
+                    item.setSizeHint(QSize(0, 50))
+                    item.setTextAlignment(Qt.AlignCenter)
+                    item.setData(ProcessDataDialog.NameRole, widget_class.name)
+                    self.lstViews.addItem(item)
+
+            dialog.finished.connect(add_view)
+            dialog.open()
 
     def on_remove_views(self):
         for item in self.lstViews.selectedItems():
@@ -148,9 +153,14 @@ class ProcessDataDialog(ProcessDataDialogBase, ProcessDataDialogUI):
             if widget_class is not None:
                 options = self._options.get(name, {})
                 dialog = widget_class.dialog_class(self, options=options)
-                if dialog.exec_() == QDialog.Accepted:
-                    options = dialog.getValues()
-                    self._options[widget_class.name] = options
+
+                def set_options(result):
+                    if result == QDialog.Accepted:
+                        options = dialog.getValues()
+                        self._options[widget_class.name] = options
+
+                dialog.finished.connect(set_options)
+                dialog.open()
 
     def on_clear_view(self):
         if QMessageBox.question(self, None, "Clear the list?") == QMessageBox.Yes:
@@ -162,11 +172,16 @@ class ProcessDataDialog(ProcessDataDialogBase, ProcessDataDialogUI):
     def on_show_options_dialog(self):
         delimiter = self.cbCsvDelimiter.delimiter()
         dialog = ImportMetadataDialog(self, filename=self.editMetadataFile.text(), delimiter=delimiter)
-        if dialog.exec_() == QDialog.Accepted:
-            filename, options = dialog.getValues()
-            self.editMetadataFile.setText(filename)
-            self.cbCsvDelimiter.setDelimiter(options.sep)
-            self._metadata_options = options
+
+        def set_options(result):
+            if result == QDialog.Accepted:
+                filename, options = dialog.getValues()
+                self.editMetadataFile.setText(filename)
+                self.cbCsvDelimiter.setDelimiter(options.sep)
+                self._metadata_options = options
+
+        dialog.finished.connect(set_options)
+        dialog.open()
 
     def on_metadata_file_changed(self, text):
         # Check that selected metadata file is a valid csv file and try to get delimiter
@@ -208,14 +223,18 @@ class ProcessDataDialog(ProcessDataDialogBase, ProcessDataDialogUI):
         elif type_ == 'metadata':
             dialog.setNameFilters(["Metadata File (*.csv; *.tsv; *.txt)", "All files (*.*)"])
 
-        if dialog.exec_() == QDialog.Accepted:
-            filename = dialog.selectedFiles()[0]
-            if type_ == 'process':
-                self.editProcessFile.setText(filename)
-                self.editProcessFile.setPalette(self.style().standardPalette())
-            else:
-                self.editMetadataFile.setText(filename)
-                self.editMetadataFile.setPalette(self.style().standardPalette())
+        def set_filename(result):
+            if result == QDialog.Accepted:
+                filename = dialog.selectedFiles()[0]
+                if type_ == 'process':
+                    self.editProcessFile.setText(filename)
+                    self.editProcessFile.setPalette(self.style().standardPalette())
+                else:
+                    self.editMetadataFile.setText(filename)
+                    self.editMetadataFile.setPalette(self.style().standardPalette())
+
+        dialog.finished.connect(set_filename)
+        dialog.open()
 
     def getValues(self):
         """Returns files to process and options"""

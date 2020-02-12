@@ -81,12 +81,16 @@ class ImportMetadataDialog(ImportMetadataDialogBase, ImportMetadataDialogUI):
         dialog.setFileMode(QFileDialog.ExistingFile)
         dialog.setNameFilters(["Metadata File (*.csv; *.tsv; *.txt; *.xls; *.xlsx)", "All files (*.*)"])
 
-        if dialog.exec_() == QDialog.Accepted:
-            filename = dialog.selectedFiles()[0]
-            with SignalBlocker(self.editMetadataFile):
-                self.editMetadataFile.setText(filename)
-            self.editMetadataFile.setPalette(self.style().standardPalette())
-            self.on_metadata_file_changed(filename)
+        def set_filename(result):
+            if result == QDialog.Accepted:
+                filename = dialog.selectedFiles()[0]
+                with SignalBlocker(self.editMetadataFile):
+                    self.editMetadataFile.setText(filename)
+                self.editMetadataFile.setPalette(self.style().standardPalette())
+                self.on_metadata_file_changed(filename)
+
+        dialog.finished.connect(set_filename)
+        dialog.open()
 
     def selection(self):
         model = self.twMetadata.model()
@@ -122,11 +126,14 @@ class ImportMetadataDialog(ImportMetadataDialogBase, ImportMetadataDialogUI):
     def on_column_index_changed(self, index: int):
         self._column_index = index - 1
         for column in range(self.twMetadata.horizontalHeader().model().columnCount()):
+            item = self.twMetadata.horizontalHeaderItem(column)
+            if item is None:
+                return
             if column == index - 1:
-                self.twMetadata.horizontalHeaderItem(column).setData(Qt.DecorationRole,
-                                                                     QIcon(":/icons/images/key.svg"))
+                item.setData(Qt.DecorationRole,
+                             QIcon(":/icons/images/key.svg"))
             else:
-                self.twMetadata.horizontalHeaderItem(column).setData(Qt.DecorationRole, None)
+                item.setData(Qt.DecorationRole, None)
 
     def populate_table(self):
         def file_read():

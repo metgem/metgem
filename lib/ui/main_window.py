@@ -768,9 +768,14 @@ class MainWindow(MainWindowBase, MainWindowUI):
         dialog.setFileMode(QFileDialog.ExistingFile)
         dialog.setNameFilters([f"{QCoreApplication.applicationName()} Files (*{config.FILE_EXTENSION})",
                                "All files (*.*)"])
-        if dialog.exec_() == QDialog.Accepted:
-            filename = dialog.selectedFiles()[0]
-            self.load_project(filename)
+
+        def open_file(result):
+            if result == QDialog.Accepted:
+                filename = dialog.selectedFiles()[0]
+                self.load_project(filename)
+
+        dialog.finished.connect(open_file)
+        dialog.open()
 
     @debug
     def on_save_project_triggered(self, *args):
@@ -785,9 +790,21 @@ class MainWindow(MainWindowBase, MainWindowUI):
         dialog.setAcceptMode(QFileDialog.AcceptSave)
         dialog.setNameFilters([f"{QCoreApplication.applicationName()} Files (*{config.FILE_EXTENSION})",
                                "All files (*.*)"])
-        if dialog.exec_() == QDialog.Accepted:
-            filename = dialog.selectedFiles()[0]
-            self.save_project(filename)
+
+        def save_file(result):
+            if result == QDialog.Accepted:
+                filename = dialog.selectedFiles()[0]
+                self.save_project(filename)
+
+        dialog.finished.connect(save_file)
+        dialog.open()
+
+    @debug
+    def on_start_tour_triggered(self, *args):
+        action = self.sender()
+        if action is not None:
+            tour = ui.Tour(self)
+            tour.start_tour(action.data())
 
     @debug
     def on_set_pie_charts_visibility_toggled(self, visibility):
@@ -1031,21 +1048,29 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 self.has_unsaved_changes = True
         elif type_ == COLUMN_MAPPING_PIE_CHARTS:
             dialog = ui.PieColorMappingDialog(self.tvNodes.model(), selected_columns_indexes)
-            if dialog.exec_() == QDialog.Accepted:
-                columns, colors = dialog.getValues()
-                self.set_nodes_pie_chart_values(columns, colors)
-                self.has_unsaved_changes = True
+
+            def set_mapping(result):
+                if result == QDialog.Accepted:
+                    columns, colors = dialog.getValues()
+                    self.set_nodes_pie_chart_values(columns, colors)
+                    self.has_unsaved_changes = True
+            dialog.finished.connect(set_mapping)
+            dialog.open()
         elif type_ == COLUMN_MAPPING_NODES_SIZES:
             if len_ > 1:
                 QMessageBox.information(self, None, "Please select only one column.")
             else:
                 id_ = selected_columns_indexes[0].column() if len_ > 0 else -1
                 dialog = ui.SizeMappingDialog(self.tvNodes.model(), id_)
-                if dialog.exec_() == QDialog.Accepted:
-                    id_, func = dialog.getValues()
-                    if id_ > 0:
-                        self.set_nodes_sizes_values(id_, func)
-                    self.has_unsaved_changes = True
+
+                def set_mapping(result):
+                    if result == QDialog.Accepted:
+                        id_, func = dialog.getValues()
+                        if id_ > 0:
+                            self.set_nodes_sizes_values(id_, func)
+                        self.has_unsaved_changes = True
+                dialog.finished.connect(set_mapping)
+                dialog.open()
         elif type_ == COLUMN_MAPPING_NODES_COLORS:
             if len_ > 1:
                 QMessageBox.information(self, None, "Please select only one column.")
@@ -1058,43 +1083,53 @@ class MainWindow(MainWindowBase, MainWindowUI):
                     pass
                 else:
                     dialog = ui.ColorMappingDialog(self.tvNodes.model(), id_, data)
-                    if dialog.exec_() == QDialog.Accepted:
-                        id_, mapping = dialog.getValues()
-                        if id_ > 0:
-                            self.set_nodes_colors_values(id_, mapping)
-                        self.has_unsaved_changes = True
+
+                    def set_mapping(result):
+                        if result == QDialog.Accepted:
+                            id_, mapping = dialog.getValues()
+                            if id_ > 0:
+                                self.set_nodes_colors_values(id_, mapping)
+                            self.has_unsaved_changes = True
+
+                    dialog.finished.connect(set_mapping)
+                    dialog.open()
 
     @debug
     def on_edit_group_mapping(self, *args):
         dialog = ui.EditGroupMappingsDialog(self.tvNodes.model())
-        if dialog.exec_() == QDialog.Accepted:
-            alias, mappings = dialog.getValues()
-            df = self._network.infos
-            df_resolver = {k: df[v] for k, v in alias.items() if v in df.columns}
 
-            def pd_sum(*args):
-                for i, s in enumerate(args):
-                    sum_ = s if i == 0 else sum_ + s
-                return sum_
+        def eval_fomulae(result):
+            if result == QDialog.Accepted:
+                alias, mappings = dialog.getValues()
+                df = self._network.infos
+                df_resolver = {k: df[v] for k, v in alias.items() if v in df.columns}
 
-            def pd_mean(*args):
-                return pd_sum(*args) / 2
+                def pd_sum(*args):
+                    for i, s in enumerate(args):
+                        sum_ = s if i == 0 else sum_ + s
+                    return sum_
 
-            safe_dict = {'mean': pd_mean, 'pi': np.pi, 'e': np.e, 'euler_gamma': np.euler_gamma, 'sum': pd_sum}
+                def pd_mean(*args):
+                    return pd_sum(*args) / 2
 
-            self.tvNodes.model().sourceModel().beginResetModel()
-            errors = {}
-            for name, mapping in mappings.items():
-                try:
-                    df.eval('{} = {}'.format(name, mapping), resolvers=[df_resolver, safe_dict], inplace=True) #, engine='numexpr')
-                except (pd.core.computation.ops.UndefinedVariableError, TypeError, AttributeError) as e:
-                    errors[name] = e
-            self.tvNodes.model().sourceModel().endResetModel()
-            if errors:
-                str_errors = '\n'.join([f'"{name}" -> {error}' for (name, error) in errors.items()])
-                QMessageBox.warning(self, None, f'The following error(s) occurred:\n\n{str_errors}')
+                safe_dict = {'mean': pd_mean, 'pi': np.pi, 'e': np.e, 'euler_gamma': np.euler_gamma, 'sum': pd_sum}
 
-        self.has_unsaved_changes = True
+                self.tvNodes.model().sourceModel().beginResetModel()
+                errors = {}
+                for name, mapping in mappings.items():
+                    try:
+                        df.eval('{} = {}'.format(name, mapping), resolvers=[df_resolver, safe_dict], inplace=True) #, engine='numexpr')
+                    except (pd.core.computation.ops.UndefinedVariableError, TypeError, AttributeError) as e:
+                        errors[name] = e
+                self.tvNodes.model().sourceModel().endResetModel()
+                if errors:
+                    str_errors = '\n'.join([f'"{name}" -> {error}' for (name, error) in errors.items()])
+                    QMessageBox.warning(self, None, f'The following error(s) occurred:\n\n{str_errors}')
+
+                self.has_unsaved_changes = True
+
+        dialog.finished.connect(eval_fomulae)
+        dialog.open()
 
     @debug
     def on_clusterize(self, *args):
@@ -1107,23 +1142,28 @@ class MainWindow(MainWindowBase, MainWindowUI):
             return
 
         dialog = ui.ClusterizeDialog({k: v.widget().title for k,v in self.network_docks.items()})
-        if dialog.exec_() == QDialog.Accepted:
-            def update_dataframe(worker: workers.ClusterizeWorker):
-                self.tvNodes.model().sourceModel().beginResetModel()
-                self.network.infos[options.column_name] = data = worker.result()
-                self.tvNodes.model().sourceModel().endResetModel()
 
-                column_index = self.network.infos.columns.get_loc(options.column_name)
-                self.tvNodes.setColumnBlinking(column_index + 2, True)
-                QMessageBox.information(self, None, f"Found {len(set(data)) - 1} clusters.")
+        def do_clustering(result):
+            if result == QDialog.Accepted:
+                def update_dataframe(worker: workers.ClusterizeWorker):
+                    self.tvNodes.model().sourceModel().beginResetModel()
+                    self.network.infos[options.column_name] = data = worker.result()
+                    self.tvNodes.model().sourceModel().endResetModel()
 
-            name, options = dialog.getValues()
-            view = self.network_docks[name].widget()
-            worker = workers.ClusterizeWorker(view, options)
-            if worker is not None:
-                self._workers.append(worker)
-                self._workers.append(update_dataframe)
-                self._workers.start()
+                    column_index = self.network.infos.columns.get_loc(options.column_name)
+                    self.tvNodes.setColumnBlinking(column_index + 2, True)
+                    QMessageBox.information(self, None, f"Found {len(set(data)) - 1} clusters.")
+
+                name, options = dialog.getValues()
+                view = self.network_docks[name].widget()
+                worker = workers.ClusterizeWorker(view, options)
+                if worker is not None:
+                    self._workers.append(worker)
+                    self._workers.append(update_dataframe)
+                    self._workers.start()
+
+        dialog.finished.connect(do_clustering)
+        dialog.open()
 
 
     @debug
@@ -1183,12 +1223,17 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         try:
             dialog = ui.QueryDatabasesDialog(self, options=options)
-            if dialog.exec_() == QDialog.Accepted:
-                options = dialog.getValues()
-                worker = self.prepare_query_database_worker(selected_idx, options)
-                if worker is not None:
-                    self._workers.append(worker)
-                    self._workers.start()
+
+            def do_query(result):
+                if result == QDialog.Accepted:
+                    options = dialog.getValues()
+                    worker = self.prepare_query_database_worker(selected_idx, options)
+                    if worker is not None:
+                        self._workers.append(worker)
+                        self._workers.start()
+
+            dialog.finished.connect(do_query)
+            dialog.open()
         except FileNotFoundError:
             QMessageBox.warning(self, None, "No database found. Please download at least one database.")
 
@@ -1196,13 +1241,18 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def on_current_parameters_triggered(self, *args):
         if hasattr(self._network.options, 'cosine'):
             dialog = ui.CurrentParametersDialog(self, options=self.network.options)
-            dialog.exec_()
+            dialog.open()
 
     @debug
     def on_preferences_triggered(self, *args):
         dialog = ui.SettingsDialog(self)
-        if dialog.exec_() == QDialog.Accepted:
-            self.style = dialog.getValues()
+
+        def set_preferences(result):
+            if result == QDialog.Accepted:
+                self.style = dialog.getValues()
+
+        dialog.finished.connect(set_preferences)
+        dialog.open()
 
     @debug
     def on_open_user_folder_triggered(self, *args):
@@ -1229,82 +1279,97 @@ class MainWindow(MainWindowBase, MainWindowUI):
             return
 
         dialog = ui.ProcessDataDialog(self, options=self.network.options)
-        if dialog.exec_() == QDialog.Accepted:
-            def create_compute_scores_worker(worker: workers.ReadDataWorker):
-                self.tvNodes.model().setSelection([])
-                self.tvNodes.model().sourceModel().beginResetModel()
-                self.network.mzs, self.network.spectra = worker.result()
-                self.tvNodes.model().sourceModel().endResetModel()
-                mzs = self.network.mzs
-                if not mzs:
-                    mzs = np.zeros((len(self.network.spectra),), dtype=int)
-                return self.prepare_compute_scores_worker(mzs, self.network.spectra)
 
-            def store_scores(worker: workers.ComputeScoresWorker):
-                self.tvEdges.model().setSelection([])
-                scores = worker.result()
-                if not isinstance(scores, np.ndarray):
-                    return
-                self.tvEdges.model().sourceModel().beginResetModel()
-                self._network.scores = scores
-                self._network.interactions = None
-                self.tvEdges.model().sourceModel().endResetModel()
+        def do_process(result):
+            if result == QDialog.Accepted:
+                def create_compute_scores_worker(worker: workers.ReadDataWorker):
+                    self.tvNodes.model().setSelection([])
+                    self.tvNodes.model().sourceModel().beginResetModel()
+                    self.network.mzs, self.network.spectra = worker.result()
+                    self.tvNodes.model().sourceModel().endResetModel()
+                    mzs = self.network.mzs
+                    if not mzs:
+                        mzs = np.zeros((len(self.network.spectra),), dtype=int)
+                    return self.prepare_compute_scores_worker(mzs, self.network.spectra)
 
-                self.dock_edges.toggleView(True)
-                self.dock_nodes.toggleView(True)
+                def store_scores(worker: workers.ComputeScoresWorker):
+                    self.tvEdges.model().setSelection([])
+                    scores = worker.result()
+                    if not isinstance(scores, np.ndarray):
+                        return
+                    self.tvEdges.model().sourceModel().beginResetModel()
+                    self._network.scores = scores
+                    self._network.interactions = None
+                    self.tvEdges.model().sourceModel().endResetModel()
 
-            def add_graph_vertices(*args):
-                nodes_idx = np.arange(self._network.scores.shape[0])
-                self._network.graph.add_vertices(nodes_idx.tolist())
+                    self.dock_edges.toggleView(True)
+                    self.dock_nodes.toggleView(True)
 
-            self.reset_project()
+                def add_graph_vertices(*args):
+                    nodes_idx = np.arange(self._network.scores.shape[0])
+                    self._network.graph.add_vertices(nodes_idx.tolist())
 
-            process_file, use_metadata, metadata_file, metadata_options, options, views = dialog.getValues()
+                self.reset_project()
 
-            self._network.options = options
-            self._workers.append(self.prepare_read_data_worker(process_file))
-            self._workers.append(create_compute_scores_worker)
-            self._workers.append(store_scores)
-            self._workers.append(add_graph_vertices)
-            if use_metadata:
-                self._workers.append(self.prepare_read_metadata_worker(metadata_file, metadata_options))
-            if 'network' in views:
-                self._workers.append(lambda _: self.prepare_generate_network_worker())
+                process_file, use_metadata, metadata_file, metadata_options, options, views = dialog.getValues()
 
-            for name in views:
-                try:
-                    widget_class = ui.widgets.AVAILABLE_NETWORK_WIDGETS[name]
-                except KeyError:
-                    pass
-                else:
-                    if widget_class is not None:
-                        widget = self.add_network_widget(widget_class)
-                        if widget is not None:
-                            self._workers.append(lambda _, w=widget: w.create_draw_worker())
+                self._network.options = options
+                self._workers.append(self.prepare_read_data_worker(process_file))
+                self._workers.append(create_compute_scores_worker)
+                self._workers.append(store_scores)
+                self._workers.append(add_graph_vertices)
+                if use_metadata:
+                    self._workers.append(self.prepare_read_metadata_worker(metadata_file, metadata_options))
+                if 'network' in views:
+                    self._workers.append(lambda _: self.prepare_generate_network_worker())
 
-            self._workers.start()
+                for name in views:
+                    try:
+                        widget_class = ui.widgets.AVAILABLE_NETWORK_WIDGETS[name]
+                    except KeyError:
+                        pass
+                    else:
+                        if widget_class is not None:
+                            widget = self.add_network_widget(widget_class)
+                            if widget is not None:
+                                self._workers.append(lambda _, w=widget: w.create_draw_worker())
+
+                self._workers.start()
+
+        dialog.finished.connect(do_process)
+        dialog.open()
 
     @debug
     def on_import_metadata_triggered(self, *args):
         dialog = ui.ImportMetadataDialog(self)
-        if dialog.exec_() == QDialog.Accepted:
-            metadata_filename, options = dialog.getValues()
-            worker = self.prepare_read_metadata_worker(metadata_filename, options)
-            if worker is not None:
-                self._workers.append(worker)
-                self._workers.start()
+
+        def do_import(result):
+            if result == QDialog.Accepted:
+                metadata_filename, options = dialog.getValues()
+                worker = self.prepare_read_metadata_worker(metadata_filename, options)
+                if worker is not None:
+                    self._workers.append(worker)
+                    self._workers.start()
+
+        dialog.finished.connect(do_import)
+        dialog.open()
 
     @debug
     def on_import_group_mapping_triggered(self, *args):
         dialog = QFileDialog(self)
         dialog.setFileMode(QFileDialog.ExistingFile)
         dialog.setNameFilters(["Text Files (*.txt; *.csv; *.tsv)", "All files (*.*)"])
-        if dialog.exec_() == QDialog.Accepted:
-            filename = dialog.selectedFiles()[0]
-            worker = self.prepare_read_group_mapping_worker(filename)
-            if worker is not None:
-                self._workers.append(worker)
-                self._workers.start()
+
+        def do_import(result):
+            if result == QDialog.Accepted:
+                filename = dialog.selectedFiles()[0]
+                worker = self.prepare_read_group_mapping_worker(filename)
+                if worker is not None:
+                    self._workers.append(worker)
+                    self._workers.start()
+
+        dialog.finished.connect(do_import)
+        dialog.open()
 
     @debug
     def on_add_view_triggered(self, *args):
@@ -1314,55 +1379,65 @@ class MainWindow(MainWindowBase, MainWindowUI):
             if widget_class is not None:
                 options = self.network.options.get(widget_class.name, {})
                 dialog = widget_class.dialog_class(self, options=options)
-                if dialog.exec_() == QDialog.Accepted:
-                    options = dialog.getValues()
-                    widget = self.add_network_widget(widget_class)
-                    self.network.options[widget.name] = options
 
-                    if widget is not None:
-                        if widget.name == 'network':
-                            self._workers.append(lambda _: self.prepare_generate_network_worker())
-                        self._workers.append(widget.create_draw_worker)
-                        self._workers.start()
+                def add_view(result):
+                    if result == QDialog.Accepted:
+                        options = dialog.getValues()
+                        widget = self.add_network_widget(widget_class)
+                        self.network.options[widget.name] = options
+
+                        if widget is not None:
+                            if widget.name == 'network':
+                                self._workers.append(lambda _: self.prepare_generate_network_worker())
+                            self._workers.append(widget.create_draw_worker)
+                            self._workers.start()
+
+                dialog.finished.connect(add_view)
+                dialog.open()
 
     @debug
     def on_edit_options_triggered(self, widget):
         if hasattr(self.network, 'scores'):
             options = self.network.options.get(widget.name, {})
             dialog = widget.dialog_class(self, options=options)
-            if dialog.exec_() == QDialog.Accepted:
-                new_options = dialog.getValues()
-                if new_options != options:
-                    self.network.options[widget.name] = new_options
 
-                    self.has_unsaved_changes = True
+            def do_edit(result):
+                if result == QDialog.Accepted:
+                    new_options = dialog.getValues()
+                    if new_options != options:
+                        self.network.options[widget.name] = new_options
 
-                    widget.reset_layout()
-                    if widget.name == 'network':
-                        self._network.interactions = None
-                        self._workers.append(lambda _: self.prepare_generate_network_worker(keep_vertices=True))
-                    self._workers.append(widget.create_draw_worker)
-                    self._workers.start()
-                    self.update_search_menu()
+                        self.has_unsaved_changes = True
+
+                        widget.reset_layout()
+                        if widget.name == 'network':
+                            self._network.interactions = None
+                            self._workers.append(lambda _: self.prepare_generate_network_worker(keep_vertices=True))
+                        self._workers.append(widget.create_draw_worker)
+                        self._workers.start()
+                        self.update_search_menu()
+
+            dialog.finished.connect(do_edit)
+            dialog.open()
         else:
             QMessageBox.information(self, None, "No network found, please open a file first.")
 
     @debug
     def on_download_databases_triggered(self, *args):
         dialog = ui.DownloadDatabasesDialog(self, base_path=config.DATABASES_PATH)
-        dialog.exec_()
+        dialog.open()
 
     @debug
     def on_import_user_database_triggered(self, *args):
         dialog = ui.ImportUserDatabaseDialog(self, base_path=config.DATABASES_PATH)
-        dialog.exec_()
+        dialog.open()
 
     @debug
     def on_view_databases_triggered(self, *args):
         path = config.SQL_PATH
         if os.path.exists(path) and os.path.isfile(path) and os.path.getsize(path) > 0:
             dialog = ui.ViewDatabasesDialog(self, base_path=config.DATABASES_PATH)
-            dialog.exec_()
+            dialog.open()
         else:
             QMessageBox.information(self, None, "No databases found, please download one or more database first.")
 
@@ -1374,11 +1449,16 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 spectrum = human_readable_data(self.network.spectra[row])
                 dialog = ui.ViewStandardsResultsDialog(self, spectrum=spectrum,
                                                        selection=selection, base_path=config.DATABASES_PATH)
-                if dialog.exec_() == QDialog.Accepted:
-                    current = dialog.getValues()
-                    if current is not None:
-                        self.network.db_results[row]['current'] = current
-                        self.has_unsaved_changes = True
+
+                def view_details(result):
+                    if result == QDialog.Accepted:
+                        current = dialog.getValues()
+                        if current is not None:
+                            self.network.db_results[row]['current'] = current
+                            self.has_unsaved_changes = True
+
+                dialog.finished.connect(view_details)
+                dialog.open()
             else:
                 QMessageBox.information(self, None, "No databases found, please download one or more database first.")
 
