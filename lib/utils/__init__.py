@@ -1,6 +1,8 @@
 import itertools
 
-from .emf_export import HAS_EMF_EXPORT, EMFPaintEngine, EMFPaintDevice
+from .emf_export import HAS_EMF_EXPORT
+if HAS_EMF_EXPORT:
+    from .emf_export import EMFPaintDevice, EMFPaintEngine
 
 
 class AttrDict(dict):
