@@ -3,7 +3,8 @@ from .generic import GenericWorker
 from .embedding import (TSNEWorker, TSNEVisualizationOptions,
                         MDSWorker, MDSVisualizationOptions,
                         IsomapWorker, IsomapVisualizationOptions,
-                        UMAPWorker, UMAPVisualizationOptions, HAS_UMAP)
+                        UMAPWorker, UMAPVisualizationOptions, HAS_UMAP,
+                        PHATEWorker, PHATEVisualizationOptions, HAS_PHATE)
 from .network import NetworkWorker
 from .network_generation import NetworkVisualizationOptions, GenerateNetworkWorker
 from .cosine import ComputeScoresWorker, CosineComputationOptions

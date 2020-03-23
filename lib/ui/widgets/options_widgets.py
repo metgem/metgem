@@ -3,6 +3,7 @@ from ...workers.embedding.tsne import TSNEVisualizationOptions
 from ...workers.embedding.umap import UMAPVisualizationOptions
 from ...workers.embedding.mds import MDSVisualizationOptions
 from ...workers.embedding.isomap import IsomapVisualizationOptions
+from ...workers.embedding.phate import PHATEVisualizationOptions
 from ...workers.cosine import CosineComputationOptions
 from ...workers.databases.query import QueryDatabasesOptions
 
@@ -200,6 +201,35 @@ class IsomapOptionsWidget(QGroupBox):
         self.spinMinScoresAboveThreshold.setValue(options.min_scores_above_threshold)
         self.spinNumIterations.setValue(options.max_iter)
         self.spinNumNeighbors.setValue(options.n_neighbors)
+
+
+class PHATEOptionsWidget(QGroupBox):
+    """Create a widget containing PHATE visualization options"""
+
+    def __init__(self):
+        super().__init__()
+        uic.loadUi(os.path.join(os.path.dirname(__file__), 'phate_options_widget.ui'), self)
+
+    def getValues(self):
+        """Return PHATE options"""
+
+        options = PHATEVisualizationOptions()
+        options.min_score = self.spinMinScore.value()
+        options.min_scores_above_threshold = self.spinMinScoresAboveThreshold.value()
+        options.knn = self.spinKnn.value()
+        options.decay = self.spinDecay.value()
+        options.gamma = self.spinGamma.value()
+        options.random = self.chkRandomState.isChecked()
+
+        return options
+
+    def setValues(self, options):
+        self.spinMinScore.setValue(options.min_score)
+        self.spinMinScoresAboveThreshold.setValue(options.min_scores_above_threshold)
+        self.spinKnn.setValue(options.knn)
+        self.spinDecay.setValue(options.decay)
+        self.spinGamma.setValue(options.gamma)
+        self.chkRandomState.setChecked(options.random)
 
 
 class QueryDatabasesOptionsWidget(QGroupBox):

@@ -1,6 +1,6 @@
 from .widgets import (TSNEOptionsWidget, NetworkOptionsWidget, MDSOptionsWidget,
-                      UMAPOptionsWidget, IsomapOptionsWidget)
-from ..workers import HAS_UMAP
+                      UMAPOptionsWidget, IsomapOptionsWidget, PHATEOptionsWidget)
+from ..workers import HAS_UMAP, HAS_PHATE
 
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QDialogButtonBox
 from PyQt5.QtCore import Qt
@@ -66,3 +66,10 @@ class EditIsomapOptionsDialog(EditOptionsDialogBase):
     """Dialog to modify the Isomap options"""
 
     options_class = IsomapOptionsWidget
+
+
+if HAS_PHATE:
+    class EditPHATEOptionsDialog(EditOptionsDialogBase):
+        """Dialog to modify the PHATE options"""
+
+        options_class = PHATEOptionsWidget
