@@ -2,7 +2,7 @@ from .metadata import (NodesModel, EdgesModel, ProxyModel, CsvDelimiterCombo,
                        NodeTableView, EdgeTableView, LabelRole,
                        NodesWidget, EdgesWidget)
 from .options_widgets import (TSNEOptionsWidget, NetworkOptionsWidget, MDSOptionsWidget,
-                              UMAPOptionsWidget, IsomapOptionsWidget,
+                              UMAPOptionsWidget, IsomapOptionsWidget, PHATEOptionsWidget,
                               CosineOptionsWidget, QueryDatabasesOptionsWidget)
 from .spectrum import SpectrumCanvas, SpectrumNavigationToolbar, SpectrumWidget, ExtendedSpectrumWidget
 from .spectra_comparison import SpectraComparisonWidget

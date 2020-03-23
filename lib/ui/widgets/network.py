@@ -14,6 +14,8 @@ from ..edit_options_dialog import (EditNetworkOptionsDialog, EditTSNEOptionsDial
                                    EditMDSOptionsDialog, EditIsomapOptionsDialog)
 if workers.HAS_UMAP:
     from ..edit_options_dialog import EditUMAPOptionsDialog
+if workers.HAS_PHATE:
+    from ..edit_options_dialog import EditPHATEOptionsDialog
 
 
 class BaseFrame(QFrame):
@@ -246,6 +248,18 @@ class IsomapFrame(TSNEFrame):
 
     def create_worker(self):
         return workers.IsomapWorker(self._network.scores, self._network.options.isomap)
+
+
+if workers.HAS_PHATE:
+    class PHATEFrame(TSNEFrame):
+        name = 'phate'
+        title = 'PHATE'
+        unlockable = False
+        dialog_class = EditPHATEOptionsDialog
+        use_edges = False
+
+        def create_worker(self):
+            return workers.PHATEWorker(self._network.scores, self._network.options.phate)
 
 
 AVAILABLE_NETWORK_WIDGETS = {obj.name: obj for obj in BaseFrame.get_subclasses()}

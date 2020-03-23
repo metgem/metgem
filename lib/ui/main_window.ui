@@ -60,6 +60,8 @@
     <property name="title">
      <string>&amp;Help</string>
     </property>
+    <addaction name="actionTours"/>
+    <addaction name="separator"/>
     <addaction name="actionAbout"/>
     <addaction name="actionAboutQt"/>
    </widget>
@@ -956,6 +958,11 @@
    </property>
    <property name="statusTip">
     <string>Highlight in network views the selected nodes in the table</string>
+   </property>
+  </action>
+  <action name="actionTours">
+   <property name="text">
+    <string>Tours</string>
    </property>
   </action>
  </widget>
