@@ -1,5 +1,7 @@
 import itertools
 
+from .emf_export import HAS_EMF_EXPORT, EMFPaintEngine, EMFPaintDevice
+
 
 class AttrDict(dict):
     """A dictionary where item can be accessed as attributes."""
