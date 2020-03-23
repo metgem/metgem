@@ -50,7 +50,7 @@ class SpectrumNavigationToolbar(NavigationToolbar):
     def sizeHint(self):
         return QToolBar.sizeHint(self)
 
-    def _init_toolbar(self):
+    def _init_toolbar(self, *args, **kwargs):
         self.custom_basedir = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'images')
 
         self.toolitems = [t for t in self.toolitems if
@@ -74,7 +74,7 @@ class SpectrumNavigationToolbar(NavigationToolbar):
         if self.toolitems[-1][0] is None:
             self.toolitems = self.toolitems[:-1]
 
-        super()._init_toolbar()
+        super()._init_toolbar(*args, **kwargs)
 
         for action in self.actions():
             if isinstance(action, QWidgetAction) and action.defaultWidget() == self.locLabel:
@@ -161,8 +161,8 @@ class SpectrumNavigationToolbar(NavigationToolbar):
         y = self.canvas.figure.bbox.height / dpi_ratio - bbox.ymax - lheight
         self.locLabel.move(x*dpi_ratio, y*dpi_ratio)
 
-    def _icon(self, name):
-        icon = super()._icon(name)
+    def _icon(self, name, *args, **kwargs):
+        icon = super()._icon(name, *args, **kwargs)
         if icon.isNull():
             name = name.replace('.png', '_large.png')
             pm = QPixmap(os.path.join(self.custom_basedir, name))
