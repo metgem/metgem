@@ -23,7 +23,7 @@ import sqlalchemy
 from PyQt5.QtWidgets import (QDialog, QFileDialog, QMessageBox, QWidget, QMenu, QActionGroup, QMainWindow,
                              QAction, qApp, QTableView, QComboBox, QToolBar,
                              QApplication, QGraphicsView, QLineEdit)
-from PyQt5.QtCore import QSettings, Qt, QCoreApplication
+from PyQt5.QtCore import QSettings, Qt, QCoreApplication, QRectF
 from PyQt5.QtGui import QPainter, QImage, QColor, QKeyEvent, QIcon, QFontMetrics, QFont, QKeySequence
 
 from PyQt5 import uic
