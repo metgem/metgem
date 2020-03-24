@@ -877,7 +877,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self._logger.error('py2cytoscape not found.')
         except requests.exceptions.HTTPError as e:
             QMessageBox.warning(self, None, 'The following error occurred during export to Cytoscape: {str(e)}')
-            e.strerror
             self._logger.error(f'py2cytoscape HTTPError: {str(e)}')
 
     @debug
