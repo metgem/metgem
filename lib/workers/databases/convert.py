@@ -1,3 +1,5 @@
+from sqlalchemy.exc import OperationalError
+
 from ..base import BaseWorker
 from ...database import DataBaseBuilder
 
@@ -29,7 +31,12 @@ class ConvertDatabasesWorker(BaseWorker):
                         if os.path.exists(path):
                             filenames.append(path)
 
-                    db.add_bank(filenames, bank_name=origin + ' - ' + name)
+                    try:
+                        db.add_bank(filenames, bank_name=origin + ' - ' + name)
+                    except OperationalError as e:
+                        self.error.emit(e)
+                        return False
+
                     self.updated.emit(i)
                     converted[origin].add(name)
 

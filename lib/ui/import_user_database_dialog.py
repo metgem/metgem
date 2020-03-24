@@ -102,6 +102,8 @@ class ImportUserDatabaseDialog(ImportUserDatabaseDialogBase, ImportUserDatabaseD
         def error(e):
             if isinstance(e, NotImplementedError):
                 QMessageBox.warning(self, None, "File format is not supported.")
+            else:
+                QMessageBox.warning(self, None, str(e))
 
         def finished():
             QMessageBox.information(self, None,
