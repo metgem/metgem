@@ -68,8 +68,9 @@ class DataBaseBuilder:
             self.session = create_session(fname, echo=self.echo)
             for k, v in self.bases.items():
                 records = self.session.query(v).all()
-                self._uniques[k] = {x.name: x.id for x in records}
-                self._indexes[k] = records[-1].id + 1
+                if records:
+                    self._uniques[k] = {x.name: x.id for x in records}
+                    self._indexes[k] = records[-1].id + 1
             first_spec = self.session.query(Spectrum).first()
             last_spec = self.session.query(Spectrum).order_by(Spectrum.id.desc()).first()
             if first_spec is not None and last_spec is not None:
