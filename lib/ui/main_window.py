@@ -1378,7 +1378,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def on_import_group_mapping_triggered(self, *args):
         dialog = QFileDialog(self)
         dialog.setFileMode(QFileDialog.ExistingFile)
-        dialog.setNameFilters(["Text Files (*.txt; *.csv; *.tsv)", "All files (*.*)"])
+        dialog.setNameFilters(["Text Files (*.txt *.csv *.tsv)", "All files (*.*)"])
 
         def do_import(result):
             if result == QDialog.Accepted:

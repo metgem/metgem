@@ -67,7 +67,7 @@ class ImportUserDatabaseDialog(ImportUserDatabaseDialogBase, ImportUserDatabaseD
 
         dialog = QFileDialog(self)
         dialog.setFileMode(QFileDialog.ExistingFile)
-        dialog.setNameFilters(["All supported formats (*.mgf;*.msp)",
+        dialog.setNameFilters(["All supported formats (*.mgf *.msp)",
                                "Mascot Generic Format (*.mgf)",
                                "NIST Text Format of Individual Spectra (*.msp)",
                                "All files (*.*)"])
