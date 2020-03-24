@@ -235,6 +235,11 @@ class NodesWidget(QWidget):
         self.btUseColumnForNodesColors.setMenu(menu)
         self.btUseColumnForNodesColors.setDefaultAction(self.actionUseColumnForNodesColors)
 
+        self.btHighlightSelectedNodes.setDefaultAction(self.actionHighlightSelectedNodes)
+        self.btEditGroupMapping.setDefaultAction(self.actionEditGroupMapping)
+        self.btClusterize.setDefaultAction(self.actionClusterize)
+        self.btDeleteColumns.setDefaultAction(self.actionDeleteColumns)
+
         menu = QMenu()
         menu.addAction(self.actionViewSpectrum)
         menu.addAction(self.actionViewCompareSpectrum)
@@ -254,8 +259,5 @@ class EdgesWidget(QWidget):
         super().__init__()
         uic.loadUi(os.path.join(os.path.dirname(__file__), 'edges.ui'), self)
 
-        menu = QMenu()
-        menu.addAction(self.actionHighlightSelectedEdges)
-        menu.addAction(self.actionHighlightNodesFromSelectedEdges)
-        self.btHighlightSelectedEdges.setMenu(menu)
         self.btHighlightSelectedEdges.setDefaultAction(self.actionHighlightSelectedEdges)
+        self.btHighlightNodesFromSelectedEdges.setDefaultAction(self.actionHighlightNodesFromSelectedEdges)

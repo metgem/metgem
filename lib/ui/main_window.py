@@ -24,7 +24,7 @@ from PyQt5.QtWidgets import (QDialog, QFileDialog, QMessageBox, QWidget, QMenu, 
                              QAction, qApp, QTableView, QComboBox, QToolBar,
                              QApplication, QGraphicsView, QLineEdit)
 from PyQt5.QtCore import QSettings, Qt, QCoreApplication, QRectF
-from PyQt5.QtGui import QPainter, QImage, QColor, QKeyEvent, QIcon, QFontMetrics, QFont, QKeySequence
+from PyQt5.QtGui import QPainter, QImage, QColor, QKeyEvent, QIcon, QFontMetrics, QFont, QKeySequence, QCursor
 
 from PyQt5 import uic
 
@@ -145,6 +145,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.tbNetwork.removeAction(self.actionSetNodesSize)
 
         # Connect events
+        self.nodes_widget.tvNodes.customContextMenuRequested.connect(self.on_nodes_table_contextmenu)
+        self.tvEdges.customContextMenuRequested.connect(self.on_edges_table_contextmenu)
         self.nodes_widget.actionUseColumnForLabels.triggered.connect(
             lambda: self.on_use_columns_for(COLUMN_MAPPING_LABELS))
         self.nodes_widget.actionResetLabelMapping.triggered.connect(lambda: self.set_nodes_label(None))
@@ -157,16 +159,16 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.nodes_widget.actionUseColumnForNodesColors.triggered.connect(
             lambda: self.on_use_columns_for(COLUMN_MAPPING_NODES_COLORS))
         self.nodes_widget.actionResetColorMapping.triggered.connect(lambda: self.set_nodes_colors_values(None))
-        self.nodes_widget.btHighlightSelectedNodes.clicked.connect(self.highlight_selected_nodes)
+        self.nodes_widget.actionHighlightSelectedNodes.triggered.connect(self.highlight_selected_nodes)
         self.nodes_widget.actionViewSpectrum.triggered.connect(
             lambda: self.on_show_spectrum_from_table_triggered('show'))
         self.nodes_widget.actionViewCompareSpectrum.triggered.connect(
             lambda: self.on_show_spectrum_from_table_triggered('compare'))
         self.nodes_widget.actionFindStandards.triggered.connect(lambda: self.on_query_databases('standards'))
         self.nodes_widget.actionFindAnalogs.triggered.connect(lambda: self.on_query_databases('analogs'))
-        self.nodes_widget.btEditGroupMapping.clicked.connect(self.on_edit_group_mapping)
-        self.nodes_widget.btClusterize.clicked.connect(self.on_clusterize)
-        self.nodes_widget.btDeleteColumns.clicked.connect(self.on_delete_nodes_columns)
+        self.nodes_widget.actionEditGroupMapping.triggered.connect(self.on_edit_group_mapping)
+        self.nodes_widget.actionClusterize.triggered.connect(self.on_clusterize)
+        self.nodes_widget.actionDeleteColumns.triggered.connect(self.on_delete_nodes_columns)
 
         self.edges_widget.actionHighlightSelectedEdges.triggered.connect(self.highlight_selected_edges)
         self.edges_widget.actionHighlightNodesFromSelectedEdges.triggered.connect(
@@ -1112,6 +1114,29 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
                     dialog.finished.connect(set_mapping)
                     dialog.open()
+
+    @debug
+    def on_nodes_table_contextmenu(self, event):
+        column_index = self.nodes_widget.tvNodes.columnAt(event.x())
+        row_index = self.nodes_widget.tvNodes.rowAt(event.y())
+        if column_index != -1 and row_index != -1:
+            menu = QMenu(self)
+            menu.addAction(self.nodes_widget.actionHighlightSelectedNodes)
+            menu.addAction(self.nodes_widget.actionViewSpectrum)
+            menu.addAction(self.nodes_widget.actionViewCompareSpectrum)
+            menu.addAction(self.nodes_widget.actionFindStandards)
+            menu.addAction(self.nodes_widget.actionFindAnalogs)
+            menu.popup(QCursor.pos())
+
+    @debug
+    def on_edges_table_contextmenu(self, event):
+        column_index = self.tvEdges.columnAt(event.x())
+        row_index = self.tvEdges.rowAt(event.y())
+        if column_index != -1 and row_index != -1:
+            menu = QMenu(self)
+            menu.addAction(self.edges_widget.actionHighlightSelectedEdges)
+            menu.addAction(self.edges_widget.actionHighlightNodesFromSelectedEdges)
+            menu.popup(QCursor.pos())
 
     @debug
     def on_edit_group_mapping(self, *args):

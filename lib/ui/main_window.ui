@@ -32,7 +32,7 @@
      <x>0</x>
      <y>0</y>
      <width>1103</width>
-     <height>21</height>
+     <height>30</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -943,21 +943,6 @@
    </property>
    <property name="statusTip">
     <string>Add Network View</string>
-   </property>
-  </action>
-  <action name="actionHighlightSelectedNodes">
-   <property name="icon">
-    <iconset resource="ui.qrc">
-     <normaloff>:/icons/images/highlight-yellow.svg</normaloff>:/icons/images/highlight-yellow.svg</iconset>
-   </property>
-   <property name="text">
-    <string>Highlight Selected Nodes</string>
-   </property>
-   <property name="toolTip">
-    <string>Highlight in network views the selected nodes in the table</string>
-   </property>
-   <property name="statusTip">
-    <string>Highlight in network views the selected nodes in the table</string>
    </property>
   </action>
   <action name="actionTours">

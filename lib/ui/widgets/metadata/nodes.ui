@@ -104,7 +104,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="btHighlightSelectedNodes">
+      <widget class="QToolButton" name="btHighlightSelectedNodes">
        <property name="toolTip">
         <string>Highlight in network views the selected nodes in the table</string>
        </property>
@@ -168,7 +168,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="btEditGroupMapping">
+      <widget class="QToolButton" name="btEditGroupMapping">
        <property name="toolTip">
         <string>Edit Group Mapping</string>
        </property>
@@ -185,7 +185,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="btClusterize">
+      <widget class="QToolButton" name="btClusterize">
        <property name="toolTip">
         <string>Find clusters in data and put each node in a cluster</string>
        </property>
@@ -202,7 +202,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="btDeleteColumns">
+      <widget class="QToolButton" name="btDeleteColumns">
        <property name="toolTip">
         <string>Remove selected columns</string>
        </property>
@@ -312,6 +312,9 @@
    <property name="toolTip">
     <string>Remove pie charts</string>
    </property>
+   <property name="statusTip">
+    <string>Remove pie charts</string>
+   </property>
   </action>
   <action name="actionUseColumnsForPieCharts">
    <property name="icon">
@@ -322,6 +325,9 @@
     <string>Use Columns for Pie Charts</string>
    </property>
    <property name="toolTip">
+    <string>Use selected columns as source for nodes' pie charts</string>
+   </property>
+   <property name="statusTip">
     <string>Use selected columns as source for nodes' pie charts</string>
    </property>
   </action>
@@ -336,6 +342,9 @@
    <property name="toolTip">
     <string>Restore default nodes' labels</string>
    </property>
+   <property name="statusTip">
+    <string>Restore default nodes' labels</string>
+   </property>
   </action>
   <action name="actionUseColumnForLabels">
    <property name="icon">
@@ -346,6 +355,9 @@
     <string>Use Column for Labels</string>
    </property>
    <property name="toolTip">
+    <string>Use selected column as source for nodes' labels</string>
+   </property>
+   <property name="statusTip">
     <string>Use selected column as source for nodes' labels</string>
    </property>
   </action>
@@ -360,6 +372,9 @@
    <property name="toolTip">
     <string>Restore default nodes' sizes</string>
    </property>
+   <property name="statusTip">
+    <string>Restore default nodes' sizes</string>
+   </property>
   </action>
   <action name="actionUseColumnForNodesSizes">
    <property name="icon">
@@ -370,6 +385,9 @@
     <string>Use Column for Nodes Sizes</string>
    </property>
    <property name="toolTip">
+    <string>Use selected column as source for nodes' sizes</string>
+   </property>
+   <property name="statusTip">
     <string>Use selected column as source for nodes' sizes</string>
    </property>
   </action>
@@ -384,6 +402,9 @@
    <property name="toolTip">
     <string>Restore default nodes' colors</string>
    </property>
+   <property name="statusTip">
+    <string>Restore default nodes' colors</string>
+   </property>
   </action>
   <action name="actionUseColumnForNodesColors">
    <property name="icon">
@@ -395,6 +416,69 @@
    </property>
    <property name="toolTip">
     <string>Use selected column as source for nodes' colors</string>
+   </property>
+   <property name="statusTip">
+    <string>Use selected column as source for nodes' colors</string>
+   </property>
+  </action>
+  <action name="actionHighlightSelectedNodes">
+   <property name="icon">
+    <iconset resource="../../ui.qrc">
+     <normaloff>:/icons/images/highlight-yellow.svg</normaloff>:/icons/images/highlight-yellow.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Highlight Selected Nodes</string>
+   </property>
+   <property name="toolTip">
+    <string>Highlight in network views the selected nodes in the table</string>
+   </property>
+   <property name="statusTip">
+    <string>Highlight in network views the selected nodes in the table</string>
+   </property>
+  </action>
+  <action name="actionEditGroupMapping">
+   <property name="icon">
+    <iconset resource="../../ui.qrc">
+     <normaloff>:/icons/images/calculator.svg</normaloff>:/icons/images/calculator.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Edit Group Mapping</string>
+   </property>
+   <property name="toolTip">
+    <string>Edit Group Mapping</string>
+   </property>
+   <property name="statusTip">
+    <string>Edit Group Mapping</string>
+   </property>
+  </action>
+  <action name="actionClusterize">
+   <property name="icon">
+    <iconset resource="../../ui.qrc">
+     <normaloff>:/icons/images/cluster.svg</normaloff>:/icons/images/cluster.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Clusterize</string>
+   </property>
+   <property name="toolTip">
+    <string>Find clusters in data and put each node in a cluster</string>
+   </property>
+   <property name="statusTip">
+    <string>Find clusters in data and put each node in a cluster</string>
+   </property>
+  </action>
+  <action name="actionDeleteColumns">
+   <property name="icon">
+    <iconset resource="../../ui.qrc">
+     <normaloff>:/icons/images/list-remove.svg</normaloff>:/icons/images/list-remove.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Delete Columns</string>
+   </property>
+   <property name="toolTip">
+    <string>Remove selected columns</string>
+   </property>
+   <property name="statusTip">
+    <string>Remove selected columns</string>
    </property>
   </action>
  </widget>
