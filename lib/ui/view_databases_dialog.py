@@ -193,6 +193,7 @@ class ViewDatabasesDialog(ViewDatabasesDialogUI, ViewDatabasesDialogBase):
         bank = self.cbBanks.currentData(role=BanksModel.BankIdRole)
         self.tvSpectra.model().set_bank(bank)
         self.select_row(0)
+        self.update_label()
 
     def on_goto_first(self):
         self.select_row(0)
@@ -222,6 +223,7 @@ class ViewDatabasesDialog(ViewDatabasesDialogUI, ViewDatabasesDialogBase):
 
     def showEvent(self, event):
         self.select_row(0)
+        self.update_label()
         super().showEvent(event)
 
     def keyPressEvent(self, event):
