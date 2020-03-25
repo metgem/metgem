@@ -1,4 +1,7 @@
 import itertools
+from typing import Union
+
+from PyQt5.QtWidgets import QApplication, QMainWindow
 
 from .emf_export import HAS_EMF_EXPORT
 if HAS_EMF_EXPORT:
@@ -77,3 +80,13 @@ class SignalBlocker:
     def __exit__(self, *args):
         for widget in self.widgets:
             widget.blockSignals(False)
+
+
+def find_main_window() -> Union[QMainWindow, None]:
+    """Global function to find the (open) QMainWindow in application"""
+
+    app = QApplication.instance()
+    for widget in app.topLevelWidgets():
+        if isinstance(widget, QMainWindow):
+            return widget
+    return None

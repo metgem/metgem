@@ -106,7 +106,7 @@ class SpectraModel(QAbstractTableModel):
 
 class ViewStandardsResultsDialog(ViewStandardsResultsDialogUI, ViewStandardsResultsDialogBase):
 
-    def __init__(self, *args, spectrum: np.ndarray=None, base_path=None, selection: dict = None, **kwargs):
+    def __init__(self, *args, mz_parent=None, spectrum: np.ndarray = None, base_path=None, selection: dict = None, **kwargs):
         super().__init__(*args, **kwargs)
 
         self._selected_index = QModelIndex()
@@ -115,7 +115,7 @@ class ViewStandardsResultsDialog(ViewStandardsResultsDialogUI, ViewStandardsResu
         self.setWindowFlags(Qt.Tool | Qt.CustomizeWindowHint | Qt.WindowCloseButtonHint)
 
         if spectrum is not None:
-            self.widgetSpectrumDetails.widgetSpectrum.set_spectrum2(spectrum)
+            self.widgetSpectrumDetails.widgetSpectrum.set_spectrum2(spectrum, parent=mz_parent)
 
         self.current = selection['current'] if 'current' in selection else 0
 

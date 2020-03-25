@@ -1491,7 +1491,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             path = config.SQL_PATH
             if os.path.exists(path) and os.path.isfile(path) and os.path.getsize(path) > 0:
                 spectrum = human_readable_data(self.network.spectra[row])
-                dialog = ui.ViewStandardsResultsDialog(self, spectrum=spectrum,
+                dialog = ui.ViewStandardsResultsDialog(self, mz_parent=self.network.mzs[row], spectrum=spectrum,
                                                        selection=selection, base_path=config.DATABASES_PATH)
 
                 def view_details(result):

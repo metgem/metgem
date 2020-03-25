@@ -1,4 +1,4 @@
-from ..spectrum import SpectrumWidget
+from ..spectrum import SpectrumWidget, SpectraComparisonWidget
 from ....database import Spectrum
 from ..delegates import StarRating
 
@@ -65,7 +65,7 @@ class SpectrumDataWidgetMapper(QDataWidgetMapper):
             property_name = b'text'
         elif section == Spectrum.peaks:
             property_name = b'spectrum1'
-            if isinstance(widget, SpectrumWidget):
+            if isinstance(widget, (SpectrumWidget, SpectraComparisonWidget)):
                 widget = widget.canvas
         elif section == Spectrum.pepmass:
             property_name = b'spectrum1_parent'
@@ -92,6 +92,9 @@ class SpectrumDetailsWidget(QWidget):
         uic.loadUi(os.path.join(os.path.dirname(__file__), UI_FILE), self)
 
         self._mapper = None
+        self.widgetFragmentsList.spectra_widget = self.widgetSpectrum
+        self.widgetSpectrum.dataLoaded.connect(self.widgetFragmentsList.populate_fragments_list)
+        self.widgetSpectrum.dataCleared.connect(self.widgetFragmentsList.clear_fragments_list)
 
     def model(self):
         return self._mapper.model()
@@ -114,8 +117,8 @@ class SpectrumDetailsWidget(QWidget):
         self._mapper.addMapping(self.lblOrganism, Spectrum.organism_id)
         self._mapper.addMapping(self.lblDataCollector, Spectrum.datacollector_id)
         self._mapper.addMapping(self.lblSubmitUser, Spectrum.submituser_id)
-        self._mapper.addMapping(self.widgetSpectrum, Spectrum.peaks)
         self._mapper.addMapping(self.widgetSpectrum, Spectrum.pepmass)
+        self._mapper.addMapping(self.widgetSpectrum, Spectrum.peaks)
         self._mapper.addMapping(self.widgetStructure, Spectrum.inchi)
         self._mapper.addMapping(self.widgetStructure, Spectrum.smiles)
 

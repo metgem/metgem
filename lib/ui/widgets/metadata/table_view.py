@@ -3,9 +3,8 @@ from PyQt5.QtWidgets import QTableView, QAbstractButton, QHeaderView, QWidget, Q
 from PyQt5.QtCore import Qt, QObject, QEvent, QRect, QItemSelectionModel, pyqtSignal, QTimer, QModelIndex
 from PyQt5 import uic
 
-from lib.ui.widgets.delegates import StandardsResultsDelegate
 from .model import ProxyModel, ColorMarkRole
-from ..delegates import EnsureStringItemDelegate
+from ..delegates import EnsureStringItemDelegate, StandardsResultsDelegate
 from ....utils import SignalBlocker
 
 import os

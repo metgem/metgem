@@ -111,9 +111,12 @@ class SpectrumCanvas(BaseCanvas):
 
     @spectrum1_parent.setter
     def spectrum1_parent(self, mz):
-        self._spectrum1_parent = mz
-        if self._spectrum1_plot is not None:
-            self._spectrum1_plot.set_label(self.format_label(self._spectrum1_idx, self._spectrum1_parent))
+        try:
+            self._spectrum1_parent = float(mz)
+            if self._spectrum1_plot is not None:
+                self._spectrum1_plot.set_label(self.format_label(self._spectrum1_idx, self._spectrum1_parent))
+        except TypeError:
+            pass
 
     @pyqtProperty(int)
     def spectrum1_index(self):

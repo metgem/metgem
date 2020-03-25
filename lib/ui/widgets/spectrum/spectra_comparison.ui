@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Spectra</class>
+ <widget class="QWidget" name="Spectra">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <item>
+    <widget class="QSplitter" name="splitter">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <widget class="SpectrumWidget" name="widgetSpectra" native="true"/>
+     <widget class="FragmentsListWidget" name="widgetFragmentsList" native="true">
+      <layout class="QVBoxLayout" name="verticalLayout_2"/>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>SpectrumWidget</class>
+   <extends>QWidget</extends>
+   <header>lib/ui/widgets.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>FragmentsListWidget</class>
+   <extends>QWidget</extends>
+   <header>lib/ui/widgets/spectrum.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

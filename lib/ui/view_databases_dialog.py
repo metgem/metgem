@@ -164,6 +164,7 @@ class ViewDatabasesDialog(ViewDatabasesDialogUI, ViewDatabasesDialogBase):
         self.tvSpectra.setColumnHidden(model.column_index(Spectrum.peaks), True)
 
         self.widgetSpectrumDetails.setModel(model)
+        self.widgetSpectrumDetails.widgetFragmentsList.hide()
 
         # Connect events
         self.btRefresh.clicked.connect(self.on_refresh)

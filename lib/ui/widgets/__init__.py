@@ -4,8 +4,8 @@ from .metadata import (NodesModel, EdgesModel, ProxyModel, CsvDelimiterCombo,
 from .options_widgets import (TSNEOptionsWidget, NetworkOptionsWidget, MDSOptionsWidget,
                               UMAPOptionsWidget, IsomapOptionsWidget, PHATEOptionsWidget,
                               CosineOptionsWidget, QueryDatabasesOptionsWidget)
-from .spectrum import SpectrumCanvas, SpectrumNavigationToolbar, SpectrumWidget, ExtendedSpectrumWidget
-from .spectra_comparison import SpectraComparisonWidget
+from .spectrum import (SpectrumCanvas, SpectrumNavigationToolbar, SpectrumWidget, ExtendedSpectrumWidget,
+                       SpectraComparisonWidget)
 from .delegates import AutoToolTipItemDelegate, LibraryQualityDelegate, EnsureStringItemDelegate
 from .loading_views import (LoadingListView, LoadingListWidget,
                             LoadingTableView, LoadingTableWidget,
@@ -16,6 +16,7 @@ from .structure import StructureSvgWidget
 from .toolbar_menu import ToolBarMenu
 from .color_picker import ColorPicker
 from .network import NetworkFrame, TSNEFrame, AVAILABLE_NETWORK_WIDGETS
+
 try:
     from .jupyter import JupyterWidget
 except ImportError:
