@@ -46,7 +46,7 @@ class SpectrumCanvas(BaseCanvas):
     def format_label(self, idx, parent):
         if idx is not None:
             if parent is not None:
-                return f"{idx+1} ($m/z$ {parent})"
+                return f"{idx+1} ($m/z$ {parent:.4f})"
             else:
                 return f"{idx+1}"
         else:
