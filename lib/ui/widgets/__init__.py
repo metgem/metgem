@@ -4,7 +4,7 @@ from .metadata import (NodesModel, EdgesModel, ProxyModel, CsvDelimiterCombo,
 from .options_widgets import (TSNEOptionsWidget, NetworkOptionsWidget, MDSOptionsWidget,
                               UMAPOptionsWidget, IsomapOptionsWidget, PHATEOptionsWidget,
                               CosineOptionsWidget, QueryDatabasesOptionsWidget)
-from .spectrum import (SpectrumCanvas, SpectrumNavigationToolbar, SpectrumWidget, ExtendedSpectrumWidget,
+from .spectrum import (SpectrumCanvas, SpectrumNavigationToolbar, SpectrumWidget,
                        SpectraComparisonWidget)
 from .delegates import AutoToolTipItemDelegate, LibraryQualityDelegate, EnsureStringItemDelegate
 from .loading_views import (LoadingListView, LoadingListWidget,
