@@ -1,3 +1,5 @@
+from enum import Enum
+
 from PyQt5.QtCore import pyqtProperty, QVariant
 
 from matplotlib.ticker import FuncFormatter, AutoMinorLocator
@@ -8,7 +10,14 @@ from .base import BaseCanvas
 from libmetgem import MZ, INTENSITY
 
 
+class SpectrumPosition(Enum):
+    first = 0
+    second = 1
+
+
 class SpectrumCanvas(BaseCanvas):
+    first_spectrum_label = None
+    second_spectrum_label = None
 
     def __init__(self, parent=None, spectrum1_data=None, spectrum2_data=None, title=None):
         self._spectrum1_data = None
@@ -43,14 +52,17 @@ class SpectrumCanvas(BaseCanvas):
         # Place X minor ticks
         self.axes.xaxis.set_minor_locator(AutoMinorLocator())
 
-    def format_label(self, idx, parent):
+    def format_label(self, spectrum_pos: SpectrumPosition = SpectrumPosition.first):
+        idx = self._spectrum1_idx if spectrum_pos == SpectrumPosition.first else self._spectrum2_idx
+        parent = self._spectrum1_parent if spectrum_pos == SpectrumPosition.first else self._spectrum2_parent
+
         if idx is not None:
             if parent is not None:
                 return f"{idx+1} ($m/z$ {parent:.4f})"
             else:
                 return f"{idx+1}"
         else:
-            return
+            return self.first_spectrum_label if spectrum_pos == SpectrumPosition.first else self.second_spectrum_label
 
     def _set_data(self, type_, data):
         self.axes.clear()
@@ -70,10 +82,10 @@ class SpectrumCanvas(BaseCanvas):
             if self.toolbar is not None:
                 self.toolbar.setVisible(True)
 
-            label = self.format_label(self._spectrum1_idx, self._spectrum1_parent)
+            label = self.format_label(SpectrumPosition.first)
             self._spectrum1_plot = self.plot_spectrum(self._spectrum1_data, colors='r', label=label)
             if self._spectrum2_data is not None:
-                label = self.format_label(self._spectrum2_idx, self._spectrum2_parent)
+                label = self.format_label(SpectrumPosition.second)
                 self._spectrum2_plot = self.plot_spectrum(self._spectrum2_data, yinverted=True,
                                                           colors='b', label=label)
                 self.axes.set_xmax(max(self._spectrum1_data.max(), self._spectrum2_data.max()) + 50)
@@ -86,7 +98,14 @@ class SpectrumCanvas(BaseCanvas):
                        if handle is not None and handle.get_label() is not None
                        and not handle.get_label().startswith('_')]
             if len(handles) > 0:
-                self.axes.legend(handles=handles)
+                self.axes.legend(handles=handles,
+                                 bbox_to_anchor=(0, -0.4),
+                                 loc='upper left',
+                                 ncol=2,
+                                 borderaxespad=0,
+                                 frameon=False,
+                                 fontsize='small'
+                                 )
             self.dataLoaded.emit()
         else:
             if self.toolbar is not None:
@@ -96,6 +115,11 @@ class SpectrumCanvas(BaseCanvas):
             self.dataCleared.emit()
 
         self.draw()
+
+
+    def draw(self):
+        super().draw()
+        self.figure.subplots_adjust(bottom=0.4)
 
     @pyqtProperty(QVariant)
     def spectrum1(self):
@@ -114,7 +138,7 @@ class SpectrumCanvas(BaseCanvas):
         try:
             self._spectrum1_parent = float(mz)
             if self._spectrum1_plot is not None:
-                self._spectrum1_plot.set_label(self.format_label(self._spectrum1_idx, self._spectrum1_parent))
+                self._spectrum1_plot.set_label(self.format_label(SpectrumPosition.first))
         except TypeError:
             pass
 
@@ -126,7 +150,7 @@ class SpectrumCanvas(BaseCanvas):
     def spectrum1_index(self, idx):
         self._spectrum1_idx = idx
         if self._spectrum1_plot is not None:
-            self._spectrum1_plot.set_label(self.format_label(self._spectrum1_idx, self._spectrum1_parent))
+            self._spectrum1_plot.set_label(self.format_label(SpectrumPosition.first))
 
     @pyqtProperty(QVariant)
     def spectrum2(self):
@@ -144,7 +168,7 @@ class SpectrumCanvas(BaseCanvas):
     def spectrum2_parent(self, mz):
         self._spectrum2_parent = mz
         if self._spectrum2_plot is not None:
-            self._spectrum2_plot.set_label(self.format_label(self._spectrum2_idx, self._spectrum2_parent))
+            self._spectrum2_plot.set_label(self.format_label(SpectrumPosition.second))
 
     @pyqtProperty(int)
     def spectrum2_index(self):
@@ -154,7 +178,7 @@ class SpectrumCanvas(BaseCanvas):
     def spectrum2_index(self, idx):
         self._spectrum2_idx = idx
         if self._spectrum2_plot is not None:
-            self._spectrum2_plot.set_label(self.format_label(self._spectrum2_idx, self._spectrum2_parent))
+            self._spectrum2_plot.set_label(self.format_label(SpectrumPosition.second))
 
     @property
     def spectrum1_plot(self):

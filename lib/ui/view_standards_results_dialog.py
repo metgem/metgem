@@ -164,6 +164,8 @@ class ViewStandardsResultsDialog(ViewStandardsResultsDialogUI, ViewStandardsResu
         self.tvSpectra.setModel(tree_model)
         self.tvSpectra.expandAll()
         self.widgetSpectrumDetails.setModel(model)
+        self.widgetSpectrumDetails.widgetSpectrum.canvas.first_spectrum_label = "Database"
+        self.widgetSpectrumDetails.widgetSpectrum.canvas.second_spectrum_label = "Experimental"
 
         # Connect events
         self.tvSpectra.selectionModel().currentChanged.connect(self.on_selection_changed)
