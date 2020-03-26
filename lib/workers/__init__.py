@@ -19,3 +19,4 @@ from .databases import (ListDatabasesWorker, DownloadDatabasesWorker,
                         QueryDatabasesWorker, QueryDatabasesOptions,
                         StandardsResult)
 from .clusterize import (ClusterizeOptions, ClusterizeWorker, HAS_HDBSCAN)
+from .check_updates import CheckUpdatesWorker

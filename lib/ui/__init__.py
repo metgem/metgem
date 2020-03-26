@@ -20,3 +20,4 @@ from .color_mapping_dialog import PieColorMappingDialog, ColorMappingDialog
 from .size_mapping_dialog import SizeMappingDialog
 from .edit_group_mapping import EditGroupMappingsDialog
 from .clusterize_dialog import ClusterizeDialog
+from .updates_dialog import UpdatesDialog

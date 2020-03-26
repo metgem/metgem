@@ -185,6 +185,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             widget.btOptions.clicked.connect(lambda: self.on_edit_options_triggered(widget))
 
         self.actionQuit.triggered.connect(self.close)
+        self.actionCheckUpdates.triggered.connect(lambda: self.check_for_updates(could_ignore=False))
         self.actionAbout.triggered.connect(lambda: ui.AboutDialog().exec_())
         self.actionAboutQt.triggered.connect(lambda: QMessageBox.aboutQt(self))
         self.actionProcessFile.triggered.connect(self.on_process_file_triggered)
@@ -272,6 +273,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
         # Build research bar
         self._last_table = self.tvNodes
         self.update_search_menu()
+
+        # Check for updates
+        self.check_for_updates()
 
     # noinspection PyAttributeOutsideInit
     @debug
@@ -1778,6 +1782,27 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.style = style
 
         settings.endGroup()
+
+    @debug
+    def check_for_updates(self, could_ignore=True):
+        def notify_update():
+            nonlocal worker
+            result = worker.result()
+
+            if result:
+                version, release_notes, url = result
+                if could_ignore:
+                    version_to_ignore = QSettings().value('Updates/ignore')
+                    if version == version_to_ignore:
+                        return
+
+                dialog = ui.UpdatesDialog(version, release_notes, url)
+                dialog.exec_()
+
+        worker = workers.CheckUpdatesWorker()
+        worker.finished.connect(notify_update)
+        self._workers.append(worker)
+        self._workers.start()
 
     @debug
     def reset_layout(self, *args):

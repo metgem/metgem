@@ -62,6 +62,7 @@
     </property>
     <addaction name="actionTours"/>
     <addaction name="separator"/>
+    <addaction name="actionCheckUpdates"/>
     <addaction name="actionAbout"/>
     <addaction name="actionAboutQt"/>
    </widget>
@@ -948,6 +949,11 @@
   <action name="actionTours">
    <property name="text">
     <string>Tours</string>
+   </property>
+  </action>
+  <action name="actionCheckUpdates">
+   <property name="text">
+    <string>&amp;Check for updates</string>
    </property>
   </action>
  </widget>
