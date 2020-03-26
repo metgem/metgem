@@ -104,8 +104,7 @@ class SpectrumCanvas(BaseCanvas):
                                  ncol=2,
                                  borderaxespad=0,
                                  frameon=False,
-                                 fontsize='small'
-                                 )
+                                 fontsize='small')
             self.dataLoaded.emit()
         else:
             if self.toolbar is not None:
@@ -115,7 +114,6 @@ class SpectrumCanvas(BaseCanvas):
             self.dataCleared.emit()
 
         self.draw()
-
 
     def draw(self):
         super().draw()
