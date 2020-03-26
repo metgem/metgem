@@ -39,8 +39,12 @@ class CheckUpdatesWorker(BaseWorker):
 
             release_notes = json.get("body")
             url = json.get("html_url")
+            assets = json.get("assets")
 
             if not self.isStopped():
-                return new_version, release_notes, url
+                if assets:
+                    return new_version, release_notes, url
+                else:
+                    return False
             else:
                 self.canceled.emit()
