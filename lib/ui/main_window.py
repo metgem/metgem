@@ -1768,7 +1768,14 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         settings.beginGroup('NetworkView')
         setting = settings.value('style', None)
-        self.style = style_from_css(setting)
+        style = style_from_css(setting)
+        if style is not None:
+            font_size = settings.value('style_font_size', None, type=int)
+            if font_size is not None:
+                font = style.nodeFont()
+                font.setPointSize(font_size)
+                style.setNodeFont(font)
+        self.style = style
 
         settings.endGroup()
 

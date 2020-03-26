@@ -1,4 +1,4 @@
-from ..config import STYLES_PATH
+from ..config import STYLES_PATH, APP_PATH
 
 import os
 import random
@@ -55,10 +55,11 @@ class SettingsDialog(SettingsDialogUI, SettingsDialogBase):
         edges[5].setSelected(True)
 
         styles = [None] + glob.glob(os.path.join(STYLES_PATH, '*.css'))
-        if STYLES_PATH != os.path.realpath('styles'):
-            styles += glob.glob(os.path.join(os.path.realpath('styles'), '*.css'))
+        app_style_path = os.path.realpath(os.path.join(APP_PATH, 'styles'))
+        if STYLES_PATH != app_style_path:
+            styles += glob.glob(os.path.join(app_style_path, '*.css'))
 
-        current_style = QSettings().value('NetworkView/style', None)
+        current_style = settings.value('NetworkView/style', None)
         current_item = None
         for css in styles:
             style = style_from_css(css)
@@ -77,8 +78,20 @@ class SettingsDialog(SettingsDialogUI, SettingsDialogBase):
         else:
             self.lstStyles.setCurrentRow(0)
 
+        font_size = settings.value('NetworkView/style_font_size', 0, type=int)
+        if font_size > 0:
+            self.chkOverrideFontSize.setChecked(True)
+            self.spinFontSize.setEnabled(True)
+            self.spinFontSize.setValue(font_size)
+        else:
+            self.chkOverrideFontSize.setChecked(False)
+            self.spinFontSize.setEnabled(False)
+
+        self.chkOverrideFontSize.stateChanged.connect(self.spinFontSize.setEnabled)
+        self.spinFontSize.valueChanged.connect(self.on_change_font_size)
+
         # Edges tab
-        value = settings.value('Metadata/neutral_tolerance')
+        value = settings.value('Metadata/neutral_tolerance', type=int)
         if value is not None:
             self.spinNeutralTolerance.setValue(value)
 
@@ -87,13 +100,28 @@ class SettingsDialog(SettingsDialogUI, SettingsDialogBase):
         self.gvStylePreview.zoomToFit()
         super().showEvent(event)
 
+    def on_change_font_size(self, font_size):
+        style = self.gvStylePreview.scene().networkStyle()
+        if self.chkOverrideFontSize.isChecked():
+            font = style.nodeFont()
+            font.setPointSize(font_size)
+            style.setNodeFont(font)
+        self.gvStylePreview.scene().setNetworkStyle(style)
+
     def done(self, r):
         if r == QDialog.Accepted:
             settings = QSettings()
             settings.setValue('Metadata/neutral_tolerance', self.spinNeutralTolerance.value())
             settings.setValue('NetworkView/style', self.lstStyles.currentItem().data(CssRole))
+            settings.setValue('NetworkView/style_font_size',
+                              self.spinFontSize.value() if self.chkOverrideFontSize.isChecked() else None)
         super().done(r)
 
     def getValues(self):
-        return self.gvStylePreview.scene().networkStyle()
+        style = self.gvStylePreview.scene().networkStyle()
+        if self.chkOverrideFontSize.isChecked():
+            font = style.nodeFont()
+            font.setPointSize(self.spinFontSize.value())
+            style.setNodeFont(font)
+        return style
 
