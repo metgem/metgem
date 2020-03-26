@@ -54,6 +54,8 @@ datas = [('../splash.png', '.'),
          ('../lib/ui/widgets/spectrum/images/*', 'lib/ui/widgets/spectrum/images'),
          ('../lib/ui/widgets/*.ui', 'lib/ui/widgets'),
          ('../lib/ui/widgets/databases/*.ui', 'lib/ui/widgets/databases'),
+         ('../lib/ui/widgets/spectrum/*.ui', 'lib/ui/widgets/spectrum'),
+         ('../lib/ui/widgets/metadata/*.ui', 'lib/ui/widgets/metadata'),
          ('../lib/ui/widgets/metadata/*.csv', 'lib/ui/widgets/metadata'),
          ('../plugins/*.py', 'plugins')]
 
