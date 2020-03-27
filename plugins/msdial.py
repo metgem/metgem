@@ -1,10 +1,10 @@
 """MetGem plugin to download databases from MS-DIAL website"""
 
-__version__ = '1.0'
+__version__ = '1.1'
 __description__ = "MetGem plugin to download databases from MS-DIAL website"
 __author__ = "Nicolas Elie"
 __email__ = "nicolas.elie@cnrs.fr"
-__copyright__ = "Copyright 2019, CNRS/ICSN"
+__copyright__ = "Copyright 2019-2020, CNRS/ICSN"
 __license__ = "GPLv3"
 
 
@@ -15,7 +15,7 @@ class MSDial(DbSource):
 
     def get_items(self, tree):
         for base in tree.xpath("//h3[@class='title-bg']"):
-            if base.text.startswith("Curated spectra download"):
+            if base.text.startswith("MSDIAL metabolomics MSP"):
                 for br in base.getnext().findall('br'):
                     a = br.getnext()
                     tail = br.tail
