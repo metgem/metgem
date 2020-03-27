@@ -70,7 +70,7 @@ class ImportUserDatabaseDialog(ImportUserDatabaseDialogBase, ImportUserDatabaseD
         dialog.setNameFilters(["All supported formats (*.mgf *.msp)",
                                "Mascot Generic Format (*.mgf)",
                                "NIST Text Format of Individual Spectra (*.msp)",
-                               "All files (*.*)"])
+                               "All files (*)"])
 
         def set_filename(result):
             if result == QDialog.Accepted:

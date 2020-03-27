@@ -773,7 +773,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         dialog = QFileDialog(self)
         dialog.setFileMode(QFileDialog.ExistingFile)
         dialog.setNameFilters([f"{QCoreApplication.applicationName()} Files (*{config.FILE_EXTENSION})",
-                               "All files (*.*)"])
+                               "All files (*)"])
 
         def open_file(result):
             if result == QDialog.Accepted:
@@ -795,7 +795,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         dialog = QFileDialog(self)
         dialog.setAcceptMode(QFileDialog.AcceptSave)
         dialog.setNameFilters([f"{QCoreApplication.applicationName()} Files (*{config.FILE_EXTENSION})",
-                               "All files (*.*)"])
+                               "All files (*)"])
 
         def save_file(result):
             if result == QDialog.Accepted:
@@ -1406,7 +1406,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def on_import_group_mapping_triggered(self, *args):
         dialog = QFileDialog(self)
         dialog.setFileMode(QFileDialog.ExistingFile)
-        dialog.setNameFilters(["Text Files (*.txt *.csv *.tsv)", "All files (*.*)"])
+        dialog.setNameFilters(["Text Files (*.txt *.csv *.tsv)", "All files (*)"])
 
         def do_import(result):
             if result == QDialog.Accepted:

@@ -79,7 +79,7 @@ class ImportMetadataDialog(ImportMetadataDialogBase, ImportMetadataDialogUI):
     def browse(self):
         dialog = QFileDialog(self)
         dialog.setFileMode(QFileDialog.ExistingFile)
-        dialog.setNameFilters(["Metadata File (*.csv *.tsv *.txt *.xls *.xlsx)", "All files (*.*)"])
+        dialog.setNameFilters(["Metadata File (*.csv *.tsv *.txt *.xls *.xlsx)", "All files (*)"])
 
         def set_filename(result):
             if result == QDialog.Accepted:

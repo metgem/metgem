@@ -219,9 +219,9 @@ class ProcessDataDialog(ProcessDataDialogBase, ProcessDataDialogUI):
             dialog.setNameFilters(["All supported formats (*.mgf *.msp)",
                                    "Mascot Generic Format (*.mgf)",
                                    "NIST Text Format of Individual Spectra (*.msp)",
-                                   "All files (*.*)"])
+                                   "All files (*)"])
         elif type_ == 'metadata':
-            dialog.setNameFilters(["Metadata File (*.csv *.tsv *.txt)", "All files (*.*)"])
+            dialog.setNameFilters(["Metadata File (*.csv *.tsv *.txt)", "All files (*)"])
 
         def set_filename(result):
             if result == QDialog.Accepted:

@@ -108,7 +108,7 @@ class EditGroupMappingsDialog(EditGroupMappingsDialogUI, EditGroupMappingsDialog
         self.tblMappings.setRowCount(self.tblMappings.rowCount() + 1)
 
     def on_load_mappings(self):
-        filter_ = ["Group mappings files (*.yaml)", "All files (*.*)"]
+        filter_ = ["Group mappings files (*.yaml)", "All files (*)"]
         filename, filter_ = QFileDialog.getOpenFileName(self, "Load group mappings",
                                                         filter=";;".join(filter_))
         if filename:
