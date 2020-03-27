@@ -1,15 +1,13 @@
-import os
-
-from ..config import PLUGINS_PATH, APP_PATH
-
-from pluginbase import PluginBase
-from PyQt5.QtCore import QCoreApplication
-from lxml import html
-
-from typing import Iterator, List, Tuple
-
 import builtins
 import inspect
+import os
+from typing import Iterator, List, Tuple
+
+from PyQt5.QtCore import QCoreApplication
+from lxml import html
+from pluginbase import PluginBase
+
+from ..config import PLUGINS_PATH, APP_PATH
 
 
 class DbSource:

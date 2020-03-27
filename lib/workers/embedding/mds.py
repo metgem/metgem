@@ -3,8 +3,8 @@ import io
 from sklearn.manifold import MDS
 
 from .base import EmbeddingWorker
-from ...utils import AttrDict
 from ...errors import UserRequestedStopError
+from ...utils import AttrDict
 
 
 class MDSVisualizationOptions(AttrDict):

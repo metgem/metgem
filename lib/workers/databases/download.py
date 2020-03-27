@@ -1,12 +1,11 @@
-import os
 import ftplib
+import os
 from datetime import datetime
+from urllib.parse import urljoin
 
 import requests
-from urllib.parse import urljoin
-from lxml import html, etree
-
 from PyQt5.QtCore import pyqtSignal
+from lxml import html, etree
 
 from ..base import BaseWorker
 from ...plugins import get_db_sources

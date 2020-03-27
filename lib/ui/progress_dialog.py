@@ -1,7 +1,7 @@
 import os
 
-from PyQt5.QtCore import Qt
 from PyQt5 import uic
+from PyQt5.QtCore import Qt
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'progress_dialog.ui')
 

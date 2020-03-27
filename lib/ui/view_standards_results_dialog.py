@@ -1,15 +1,14 @@
-from ..database import SpectraLibrary, Spectrum, Base
-from .widgets.delegates.quality import LibraryQualityDelegate
-
 import os
+
 import numpy as np
+from PyQt5 import uic
+from PyQt5.QtCore import Qt, QAbstractTableModel, QModelIndex, QItemSelection, QItemSelectionModel
+from PyQt5.QtGui import QStandardItemModel, QIcon, QStandardItem
+from PyQt5.QtWidgets import QAbstractItemView
 from sqlalchemy.orm import joinedload
 
-from PyQt5.QtGui import QStandardItemModel, QIcon, QStandardItem
-from PyQt5.QtWidgets import QAbstractItemView, QDialog
-
-from PyQt5.QtCore import Qt, QAbstractTableModel, QModelIndex, QItemSelection, QItemSelectionModel
-from PyQt5 import uic
+from .widgets.delegates.quality import LibraryQualityDelegate
+from ..database import SpectraLibrary, Spectrum, Base
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'view_standards_results_dialog.ui')
 

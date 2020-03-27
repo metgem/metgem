@@ -1,19 +1,18 @@
-from ..ui.widgets.metadata import ColorMarkRole
-from ..utils import pairwise
-
 import os
 import random
 from typing import List, Union
 
+import matplotlib.cm as mplcm
+import numpy as np
+import pandas as pd
 from PyQt5 import uic
 from PyQt5.QtCore import Qt, QSettings, QSize, QAbstractTableModel, QModelIndex, QObject, QEvent
 from PyQt5.QtGui import QColor, QStandardItemModel, QIcon, QDropEvent, QKeyEvent, QBrush, QImage, QPixmap
 from PyQt5.QtWidgets import (QDialog, QColorDialog, QListWidgetItem, QFileDialog, QMessageBox, QInputDialog,
                              QAbstractItemView, QDialogButtonBox, QFormLayout, QDoubleSpinBox, QAbstractSpinBox, QLabel)
 
-import matplotlib.cm as mplcm
-import numpy as np
-import pandas as pd
+from ..ui.widgets.metadata import ColorMarkRole
+from ..utils import pairwise
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'color_mapping_dialog.ui')
 

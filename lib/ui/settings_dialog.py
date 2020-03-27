@@ -1,16 +1,14 @@
-from ..config import STYLES_PATH, APP_PATH
-
+import glob
 import os
 import random
-import glob
 
 from PyQt5 import uic
 from PyQt5.QtCore import Qt, QSettings, QPointF
 from PyQt5.QtGui import QShowEvent
 from PyQt5.QtWidgets import QDialog, QListWidgetItem
-
 from PyQtNetworkView import style_from_css, NetworkScene
 
+from ..config import STYLES_PATH, APP_PATH
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'settings_dialog.ui')
 

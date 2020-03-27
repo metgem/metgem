@@ -1,40 +1,33 @@
 import bisect
 import csv
 import io
+import json
+import os
+import subprocess
+import sys
+import zipfile
 from typing import List, Callable, Dict, Union, Tuple
 
-from .. import config, ui, utils, workers, errors
-from ..utils.network import Network
-from ..logger import get_logger, debug
-
-import os
-import sys
-import json
-import zipfile
-import subprocess
-
-import requests
-
+import igraph as ig
 import numpy as np
 import pandas as pd
-import igraph as ig
+import requests
 import sqlalchemy
-
+from PyQt5 import uic
+from PyQt5.QtCore import QSettings, Qt, QCoreApplication, QRectF
+from PyQt5.QtGui import QPainter, QImage, QColor, QKeyEvent, QIcon, QFontMetrics, QFont, QKeySequence, QCursor
 from PyQt5.QtWidgets import (QDialog, QFileDialog, QMessageBox, QWidget, QMenu, QActionGroup, QMainWindow,
                              QAction, qApp, QTableView, QComboBox, QToolBar,
                              QApplication, QGraphicsView, QLineEdit)
-from PyQt5.QtCore import QSettings, Qt, QCoreApplication, QRectF
-from PyQt5.QtGui import QPainter, QImage, QColor, QKeyEvent, QIcon, QFontMetrics, QFont, QKeySequence, QCursor
-
-from PyQt5 import uic
-
-from PyQtNetworkView import style_from_css, style_to_cytoscape, disable_opengl
-
 from PyQtAds.QtAds import (CDockManager, CDockWidget,
                            BottomDockWidgetArea, CenterDockWidgetArea,
                            TopDockWidgetArea, LeftDockWidgetArea)
-
+from PyQtNetworkView import style_from_css, style_to_cytoscape, disable_opengl
 from libmetgem import human_readable_data
+
+from .. import config, ui, utils, workers, errors
+from ..logger import get_logger, debug
+from ..utils.network import Network
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'main_window.ui')
 MainWindowUI, MainWindowBase = uic.loadUiType(UI_FILE, from_imports='lib.ui', import_from='lib.ui')

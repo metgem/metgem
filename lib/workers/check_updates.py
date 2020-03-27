@@ -1,5 +1,6 @@
-import requests
 import re
+
+import requests
 from PyQt5.QtCore import QCoreApplication
 
 from .base import BaseWorker

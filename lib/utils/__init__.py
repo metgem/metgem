@@ -4,6 +4,7 @@ from typing import Union
 from PyQt5.QtWidgets import QApplication, QMainWindow
 
 from .emf_export import HAS_EMF_EXPORT
+
 if HAS_EMF_EXPORT:
     from .emf_export import EMFPaintDevice, EMFPaintEngine
 

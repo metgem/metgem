@@ -1,17 +1,17 @@
-import numpy as np
-from PyQt5.QtGui import QPen
-from PyQt5.QtWidgets import QFrame, QMenu, QWidgetAction, QWidget, QGraphicsLineItem
-from PyQt5.QtCore import pyqtSignal, Qt, QObject
-from PyQt5 import uic
-
-from PyQtNetworkView import NetworkScene
-
 import os
 
-from ... import workers
-from ... import config
+import numpy as np
+from PyQt5 import uic
+from PyQt5.QtCore import pyqtSignal, Qt, QObject
+from PyQt5.QtGui import QPen
+from PyQt5.QtWidgets import QFrame, QMenu, QWidgetAction, QWidget, QGraphicsLineItem
+from PyQtNetworkView import NetworkScene
+
 from ..edit_options_dialog import (EditNetworkOptionsDialog, EditTSNEOptionsDialog,
                                    EditMDSOptionsDialog, EditIsomapOptionsDialog)
+from ... import config
+from ... import workers
+
 if workers.HAS_UMAP:
     from ..edit_options_dialog import EditUMAPOptionsDialog
 if workers.HAS_PHATE:

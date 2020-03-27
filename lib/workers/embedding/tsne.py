@@ -1,13 +1,10 @@
-import sys
 import io
-
-import numpy as np
 
 from sklearn.manifold import TSNE
 
 from .base import EmbeddingWorker
-from ...utils import AttrDict
 from ...errors import UserRequestedStopError
+from ...utils import AttrDict
 
 
 class TSNEVisualizationOptions(AttrDict):

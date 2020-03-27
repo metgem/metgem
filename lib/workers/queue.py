@@ -1,8 +1,8 @@
+from collections import deque
+
 from PyQt5.QtCore import QThread
 
 from .generic import GenericWorker
-
-from collections import deque
 
 
 def isiterable(obj):

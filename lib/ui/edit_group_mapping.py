@@ -1,12 +1,10 @@
 import os
-from typing import Tuple, List
 from keyword import iskeyword
+from typing import Tuple, List
 
 import yaml
-
 from PyQt5 import uic
 from PyQt5.QtCore import Qt
-
 from PyQt5.QtGui import QValidator
 from PyQt5.QtWidgets import QTableWidgetItem, QFileDialog, QMessageBox, QStyledItemDelegate
 

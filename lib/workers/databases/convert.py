@@ -1,9 +1,9 @@
+import os
+
 from sqlalchemy.exc import OperationalError
 
 from ..base import BaseWorker
 from ...database import DataBaseBuilder
-
-import os
 
 
 class ConvertDatabasesWorker(BaseWorker):

@@ -1,8 +1,8 @@
-from .base import BaseWorker
-
 from PyQt5.QtCore import Qt
 
-    
+from .base import BaseWorker
+
+
 class ExportMetadataWorker(BaseWorker):
 
     def __init__(self, filename, model, sep=None):

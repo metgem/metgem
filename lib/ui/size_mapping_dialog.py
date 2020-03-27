@@ -1,16 +1,15 @@
-import numpy as np
 import os
 import weakref
+from typing import Any, Optional, Union
 
+import numpy as np
 from PyQt5 import uic
-from PyQt5.QtCore import Qt, QRectF, QLineF, QPointF, QAbstractTableModel, pyqtSignal, QVariant, QPoint, QObject, QSize, \
-    QItemSelectionModel, QModelIndex
+from PyQt5.QtCore import Qt, QRectF, QLineF, QPointF, QAbstractTableModel, pyqtSignal, QVariant, QObject, QSize, \
+    QModelIndex
 from PyQt5.QtGui import QPainter, QPen, QPainterPath, QShowEvent, QBrush, QColor
 from PyQt5.QtWidgets import (QGraphicsScene, QGraphicsEllipseItem, QGraphicsItem,
                              QGraphicsPathItem, QGraphicsSceneMouseEvent, QStyleOptionGraphicsItem,
                              QWidget, QStyle, QListWidgetItem, QMessageBox)
-
-from typing import Any, Optional, Union
 from scipy.interpolate import interp1d
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'size_mapping_dialog.ui')

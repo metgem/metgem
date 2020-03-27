@@ -1,19 +1,18 @@
-from .widgets import AutoToolTipItemDelegate
-from ..workers import WorkerQueue
-from ..workers import (ListDatabasesWorker, DownloadDatabasesWorker,
-                       GetGNPSDatabasesMtimeWorker, ConvertDatabasesWorker)
-from .progress_dialog import ProgressDialog
-
+import ftplib
 import os
 from datetime import datetime
 
-from requests.exceptions import ConnectionError, RequestException
-import ftplib
-
-from PyQt5.QtWidgets import QTreeWidgetItem, QDialogButtonBox, QMessageBox
-from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import Qt, QSize
 from PyQt5 import uic
+from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QTreeWidgetItem, QDialogButtonBox, QMessageBox
+from requests.exceptions import ConnectionError, RequestException
+
+from .progress_dialog import ProgressDialog
+from .widgets import AutoToolTipItemDelegate
+from ..workers import (ListDatabasesWorker, DownloadDatabasesWorker,
+                       GetGNPSDatabasesMtimeWorker, ConvertDatabasesWorker)
+from ..workers import WorkerQueue
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'download_databases_dialog.ui')
 

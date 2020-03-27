@@ -1,8 +1,7 @@
+import igraph as ig
+import numpy as np
 from PyQt5.QtGui import QColor
 from lxml import etree
-
-import numpy as np
-import igraph as ig
 
 GRAPHML_NAMESPACE_URI = "http://graphml.graphdrawing.org/xmlns"
 

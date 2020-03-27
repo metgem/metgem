@@ -1,16 +1,16 @@
+import csv
+import os
+import sys
+
+from PyQt5 import uic
+from PyQt5.QtCore import Qt, QDir, QSize
+from PyQt5.QtGui import QPalette, QColor
+from PyQt5.QtWidgets import QFileDialog, QDialog, QCompleter, QFileSystemModel, QMenu, \
+    QListWidgetItem, QMessageBox
+
 from .widgets import CosineOptionsWidget, AVAILABLE_NETWORK_WIDGETS
 from ..ui.import_metadata_dialog import ImportMetadataDialog
 from ..workers.read_metadata import ReadMetadataOptions
-
-import os
-import sys
-import csv
-
-from PyQt5.QtWidgets import QFileDialog, QDialog, QDialogButtonBox, QCompleter, QFileSystemModel, QMenu, \
-    QListWidgetItem, QMessageBox
-from PyQt5.QtGui import QPalette, QColor
-from PyQt5.QtCore import Qt, QDir, QSize
-from PyQt5 import uic
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'process_data_dialog.ui')
 

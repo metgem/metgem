@@ -1,15 +1,16 @@
-import zipfile
-import json
 import io
+import json
+import zipfile
 
 import numpy as np
+import pyarrow as pa
+import pyarrow.parquet as pq
 from numpy.compat import is_pathlib_path, basestring
 from numpy.lib import format
 from numpy.lib.npyio import NpzFile
-import pyarrow as pa
-import pyarrow.parquet as pq
 
 from .config import FILE_EXTENSION
+
 
 # Copy of numpy's _savez function to allow different file extension
 # https://github.com/numpy/numpy/blob/master/numpy/lib/npyio.py#L669

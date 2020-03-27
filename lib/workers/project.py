@@ -1,21 +1,21 @@
-import numpy as np
-import zipfile
 import os
+import zipfile
 
+import numpy as np
 from PyQt5.QtGui import QColor
 
 from .base import BaseWorker
+from ..config import FILE_EXTENSION
+from ..errors import UnsupportedVersionError
+from ..graphml import GraphMLParser, GraphMLWriter
 from ..save import MnzFile, savez
+from ..ui.size_mapping_dialog import SizeMappingFunc, MODE_LINEAR
 from ..utils import AttrDict
 from ..utils.network import Network
 from ..workers import (NetworkVisualizationOptions, TSNEVisualizationOptions,
                        MDSVisualizationOptions,
                        CosineComputationOptions, UMAPVisualizationOptions)
-from ..graphml import GraphMLParser, GraphMLWriter
-from ..errors import UnsupportedVersionError
 from ..workers.databases import StandardsResult
-from ..ui.size_mapping_dialog import SizeMappingFunc, MODE_LINEAR
-from ..config import FILE_EXTENSION
 
 CURRENT_FORMAT_VERSION = 4
 

@@ -1,9 +1,8 @@
+import numpy as np
 from sqlalchemy import (Column, ForeignKey, Integer, Float, String, Boolean, Binary, TypeDecorator)
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
 from sqlalchemy.ext.hybrid import hybrid_property
-
-import numpy as np
+from sqlalchemy.orm import relationship
 
 Base = declarative_base()
 

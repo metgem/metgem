@@ -3,9 +3,9 @@ import sys
 import numpy as np
 
 from ..base import BaseWorker
-from ...utils import BoundingBox
-from ...errors import UserRequestedStopError
 from ...config import RADIUS
+from ...errors import UserRequestedStopError
+from ...utils import BoundingBox
 
 
 class EmbeddingWorker(BaseWorker):

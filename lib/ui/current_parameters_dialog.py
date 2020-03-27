@@ -1,9 +1,9 @@
-from PyQt5.QtWidgets import QDialog, QGridLayout, QDialogButtonBox, QSpinBox, QAbstractSpinBox, QAbstractButton, \
-    QGroupBox, QWidget, QLayout
 from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QDialog, QGridLayout, QDialogButtonBox, QSpinBox, QAbstractSpinBox, QAbstractButton, \
+    QGroupBox
 
-from .widgets import TSNEOptionsWidget, NetworkOptionsWidget, CosineOptionsWidget
-         
+from .widgets import CosineOptionsWidget
+
 
 class CurrentParametersDialog(QDialog):
     def __init__(self, *args, options=None, **kwargs):

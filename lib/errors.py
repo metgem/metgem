@@ -1,7 +1,7 @@
+import logging
 import os
 import sys
 import traceback
-import logging
 
 from PyQt5.QtCore import QCoreApplication
 from PyQt5.QtWidgets import QMessageBox, qApp

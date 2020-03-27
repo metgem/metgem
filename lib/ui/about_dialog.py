@@ -1,12 +1,11 @@
-from PyQt5.QtWidgets import QTextBrowser
-
-from ..config import LICENSE_TEXT
-
-import os
 import base64
+import os
 
 from PyQt5 import uic
 from PyQt5.QtCore import QCoreApplication
+from PyQt5.QtWidgets import QTextBrowser
+
+from ..config import LICENSE_TEXT
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'about_dialog.ui')
 AboutDialogUI, AboutDialogDialogBase = uic.loadUiType(UI_FILE, from_imports='lib.ui', import_from='lib.ui')

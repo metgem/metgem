@@ -1,15 +1,14 @@
 import os
 
 import numpy as np
-from sqlalchemy.exc import OperationalError
-
+from libmetgem import INTENSITY
 from libmetgem.mgf import read as read_mgf
 from libmetgem.msp import read as read_msp
-from libmetgem import INTENSITY
+from sqlalchemy.exc import OperationalError
 
-from ..utils import grouper
-from .session import create_session
 from .models import Spectrum, Organism, Submitter, DataCollector, Instrument, Bank, Investigator
+from .session import create_session
+from ..utils import grouper
 
 
 def clean_string(string):

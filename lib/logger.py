@@ -1,12 +1,11 @@
-from .config import LOG_PATH, get_debug_flag
-
-import os
-
-from functools import wraps
 import logging
+import os
+from functools import wraps
 from logging.handlers import RotatingFileHandler
 
 import numpy as np
+
+from .config import LOG_PATH, get_debug_flag
 
 
 def get_logger():

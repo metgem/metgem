@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-import biplist
 import os.path
 import shutil
 import tempfile
+
+import biplist
 
 appname = "MetGem"
 

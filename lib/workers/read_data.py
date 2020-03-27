@@ -1,10 +1,10 @@
-from .base import BaseWorker
+import os
 
+from libmetgem.filter import filter_data_multi
 from libmetgem.mgf import read as read_mgf
 from libmetgem.msp import read as read_msp
-from libmetgem.filter import filter_data_multi
 
-import os
+from .base import BaseWorker
 
 
 class ReadDataWorker(BaseWorker):

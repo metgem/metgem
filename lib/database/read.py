@@ -1,7 +1,7 @@
-from .session import create_session
-
 import errno
 import os
+
+from .session import create_session
 
 
 class SpectraLibrary:

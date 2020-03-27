@@ -1,8 +1,9 @@
-from .base import BaseWorker
-from ..ui.widgets.metadata.model import DbResultsRole
+import json
 
 import yaml
-import json
+
+from .base import BaseWorker
+from ..ui.widgets.metadata.model import DbResultsRole
 
 
 class CustomDumper(yaml.Dumper):

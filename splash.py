@@ -1,7 +1,7 @@
 import os
 
-from PyQt5.QtGui import QPixmap, QPainter
 from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QPixmap, QPainter
 from PyQt5.QtWidgets import QSplashScreen, QProgressBar, QLabel, qApp
 
 from version import FULLVERSION
@@ -75,71 +75,54 @@ splash = SplashScreen()
 splash.show()
 
 splash.showMessage("Loading numpy library...")
-import numpy
 splash.setValue(5)
 
 splash.showMessage("Loading pandas library...")
-import pandas
 splash.setValue(10)
 
 splash.showMessage("Loading pyarrow library...")
-import pyarrow
 splash.setValue(15)
 
 splash.showMessage("Loading igraph library...")
-import igraph
 splash.setValue(20)
 
 splash.showMessage("Loading scipy library...")
-import scipy
 splash.setValue(25)
 
 splash.showMessage("Loading lxml library...")
-import lxml
 splash.setValue(30)
 
 splash.showMessage("Loading sklearn library...")
-import sklearn
 splash.setValue(40)
 
 splash.showMessage("Loading matplotlib library...")
-import matplotlib
 splash.setValue(50)
 
 splash.showMessage("Loading Configuration module...")
-import lib.config
 splash.setValue(55)
 
 splash.showMessage("Loading Errors modules...")
-import lib.errors
 splash.setValue(60)
 
 splash.showMessage("Loading Logger module...")
-import lib.logger
 splash.setValue(65)
 
 splash.showMessage("Loading GraphML parser module...")
-import lib.graphml
 splash.setValue(70)
 
 splash.showMessage("Loading Databases module...")
-import lib.database
 splash.setValue(75)
 
 splash.showMessage("Loading User interface module...")
-import lib.ui
 splash.setValue(80)
 
 splash.showMessage("Loading Workers module...")
-import lib.workers
 splash.setValue(85)
 
 splash.showMessage("Loading Project module...")
-import lib.save
 splash.setValue(90)
 
 splash.showMessage("Loading plugins...")
-import lib.plugins
 splash.setValue(100)
 
 splash.showMessage("")

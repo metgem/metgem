@@ -1,5 +1,5 @@
-from PyInstaller.utils.hooks import collect_data_files
 import openbabel
+from PyInstaller.utils.hooks import collect_data_files
 
 datas = [(openbabel._openbabel.__file__, 'openbabel')]
 d = collect_data_files('openbabel')

@@ -1,16 +1,16 @@
-from ...workers.network_generation import NetworkVisualizationOptions
-from ...workers.embedding.tsne import TSNEVisualizationOptions
-from ...workers.embedding.umap import UMAPVisualizationOptions
-from ...workers.embedding.mds import MDSVisualizationOptions
-from ...workers.embedding.isomap import IsomapVisualizationOptions
-from ...workers.embedding.phate import PHATEVisualizationOptions
+import os
+
+from PyQt5 import uic
+from PyQt5.QtWidgets import QGroupBox
+
 from ...workers.cosine import CosineComputationOptions
 from ...workers.databases.query import QueryDatabasesOptions
-
-from PyQt5.QtWidgets import QGroupBox
-from PyQt5 import uic
-
-import os
+from ...workers.embedding.isomap import IsomapVisualizationOptions
+from ...workers.embedding.mds import MDSVisualizationOptions
+from ...workers.embedding.phate import PHATEVisualizationOptions
+from ...workers.embedding.tsne import TSNEVisualizationOptions
+from ...workers.embedding.umap import UMAPVisualizationOptions
+from ...workers.network_generation import NetworkVisualizationOptions
 
 
 class NetworkOptionsWidget(QGroupBox):

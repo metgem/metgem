@@ -1,10 +1,10 @@
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QDialog, QVBoxLayout, QDialogButtonBox
+
 from .widgets import (TSNEOptionsWidget, NetworkOptionsWidget, MDSOptionsWidget,
                       UMAPOptionsWidget, IsomapOptionsWidget, PHATEOptionsWidget)
 from ..workers import HAS_UMAP, HAS_PHATE
 
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QDialogButtonBox
-from PyQt5.QtCore import Qt
-         
 
 class EditOptionsDialogBase(QDialog):
     options_class = None

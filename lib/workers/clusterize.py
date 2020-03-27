@@ -1,7 +1,7 @@
+import numpy as np
+
 from .base import BaseWorker
 from ..utils import AttrDict
-
-import numpy as np
 
 try:
     import hdbscan

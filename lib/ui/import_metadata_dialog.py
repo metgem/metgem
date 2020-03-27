@@ -1,15 +1,15 @@
+import csv
 import os
 import sys
-import csv
 
 from PyQt5 import uic
 from PyQt5.QtCore import Qt, QDir, QItemSelectionModel, QItemSelection
 from PyQt5.QtGui import QPalette, QColor, QIcon
 from PyQt5.QtWidgets import QCompleter, QFileSystemModel, QDialog, QFileDialog, QTableWidgetItem
 
+from .progress_dialog import ProgressDialog
 from ..utils import SignalBlocker
 from ..workers import WorkerQueue, ReadMetadataWorker, ReadMetadataOptions
-from .progress_dialog import ProgressDialog
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'import_metadata_dialog.ui')
 

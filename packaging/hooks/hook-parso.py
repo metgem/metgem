@@ -1,6 +1,7 @@
-from PyInstaller.utils.hooks import collect_data_files
 import os.path
 import sys
+
+from PyInstaller.utils.hooks import collect_data_files
 
 datas = []
 

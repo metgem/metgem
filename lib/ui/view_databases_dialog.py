@@ -1,9 +1,8 @@
 import os
 
-from PyQt5.QtWidgets import QAbstractItemView
-
-from PyQt5.QtCore import (Qt, QAbstractListModel, QModelIndex, QAbstractTableModel)
 from PyQt5 import uic
+from PyQt5.QtCore import (Qt, QAbstractListModel, QModelIndex, QAbstractTableModel)
+from PyQt5.QtWidgets import QAbstractItemView
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'view_databases_dialog.ui')
 
