@@ -120,7 +120,6 @@ class ImportMetadataDialog(ImportMetadataDialogBase, ImportMetadataDialogUI):
             with SignalBlocker(self.cbCsvDelimiter, self.chkUseFirstLineAsHeader):
                 self.cbCsvDelimiter.setDelimiter(delimiter)
                 self.chkUseFirstLineAsHeader.setChecked(has_header)
-        finally:
             self.populate_table()
 
     def on_column_index_changed(self, index: int):
