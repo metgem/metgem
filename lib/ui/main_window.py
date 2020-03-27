@@ -138,6 +138,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.tbNetwork.removeAction(self.actionSetNodesSize)
 
         # Connect events
+        self._docks_closed_signals_grouper = utils.SignalGrouper()  # Group signals emitted when dock widgets are closed
+        self._docks_closed_signals_grouper.groupped.connect(self.on_network_widget_closed)
+
         self.nodes_widget.tvNodes.customContextMenuRequested.connect(self.on_nodes_table_contextmenu)
         self.tvEdges.customContextMenuRequested.connect(self.on_edges_table_contextmenu)
         self.nodes_widget.actionUseColumnForLabels.triggered.connect(
@@ -1574,12 +1577,37 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.dock_manager.addDockWidget(LeftDockWidgetArea, dock, self.dock_placeholder.dockAreaWidget())
             dock.toggleView(False)
             self.dock_placeholder.toggleView(False)
+            dock.closed.connect(self._docks_closed_signals_grouper.accumulate)
             dock.toggleView(True)
             self.dock_manager.addToggleViewActionToMenu(dock.toggleViewAction())
             self.network_docks[widget_class.name] = dock
             self._default_state = self.dock_manager.saveState()
 
             return widget
+
+    @debug
+    def on_network_widget_closed(self, docks):
+        if not docks:
+            return
+
+        num_docks = len(docks)
+        if num_docks == 1:
+            message = f"Delete {next(iter(docks)).widget().name} view?"
+        else:
+            message = f"Delete these {num_docks} views?\n"
+            message += ", ".join([dock.widget().name for dock in docks])
+        msgbox = QMessageBox(QMessageBox.Question,
+                             QCoreApplication.applicationName(),
+                             message,
+                             QMessageBox.Yes)
+
+        msgbox.addButton(f"No, just hide {'it' if num_docks==1 else 'them'}", QMessageBox.NoRole)
+
+        if msgbox.exec_() == QMessageBox.Yes:
+            for dock in docks:
+                self.dock_manager.viewMenu().removeAction(dock.toggleViewAction())
+                self.dock_manager.removeDockWidget(dock)
+                self.network_docks.pop(dock.widget().name)
 
     @debug
     def set_nodes_label(self, column_id):

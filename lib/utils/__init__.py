@@ -1,6 +1,7 @@
 import itertools
 from typing import Union
 
+from PyQt5.QtCore import QObject, pyqtSignal, QTimer
 from PyQt5.QtWidgets import QApplication, QMainWindow
 
 from .emf_export import HAS_EMF_EXPORT
@@ -81,6 +82,30 @@ class SignalBlocker:
     def __exit__(self, *args):
         for widget in self.widgets:
             widget.blockSignals(False)
+
+
+class SignalGrouper(QObject):
+    """Accumulate signals and emit a signal with all the senders after a timeout"""
+
+    groupped = pyqtSignal(set)
+
+    def __init__(self, timeout=100):
+        super().__init__()
+        self.senders = set()
+        self.timer = None
+        self.timeout = timeout
+
+    def accumulate(self, *args):
+        if not self.senders:
+            def emit_signal():
+                self.groupped.emit(self.senders)
+                self.timer = None
+                self.senders = set()
+
+            self.timer = QTimer()
+            self.timer.singleShot(self.timeout, emit_signal)
+
+        self.senders.add(self.sender())
 
 
 def find_main_window() -> Union[QMainWindow, None]:
