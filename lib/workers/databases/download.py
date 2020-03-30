@@ -27,7 +27,8 @@ class ListDatabasesWorker(BaseWorker):
         # Find available databases on GNPS libraries page
         try:
             r = requests.get(GNPS_LIB_URL)
-        except requests.exceptions.ConnectionError as e:
+            r.raise_for_status()
+        except (requests.ConnectionError, requests.HTTPError) as e:
             self.error.emit(e)
             return False
         else:
@@ -60,7 +61,8 @@ class ListDatabasesWorker(BaseWorker):
                 url = plugin.page
                 if url is not None:
                     r = requests.get(url)
-            except (requests.exceptions.ConnectionError, requests.exceptions.MissingSchema) as e:
+                    r.raise_for_status()
+            except (requests.ConnectionError, requests.HTTPError, requests.exceptions.MissingSchema) as e:
                 self.error.emit(e)
                 return False
             else:
@@ -267,6 +269,8 @@ class DownloadDatabasesWorker(BaseWorker):
                         try:
                             with open(path, 'wb') as f:
                                 with requests.get(urljoin(items_base_url, id_), stream=True) as r:
+                                    r.raise_for_status()
+
                                     for chunk in r.iter_content(chunk_size=1024):
                                         if chunk:  # filter out keep-alive new chunks
                                             f.write(chunk)
@@ -276,7 +280,7 @@ class DownloadDatabasesWorker(BaseWorker):
                                             self.canceled.emit()
 
                                 downloaded[origin].add(name)
-                        except requests.ConnectionError as e:
+                        except (requests.ConnectionError, requests.HTTPError) as e:
                             try:
                                 e.name = name
                             except UnboundLocalError:

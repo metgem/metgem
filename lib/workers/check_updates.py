@@ -23,6 +23,10 @@ class CheckUpdatesWorker(BaseWorker):
             return False
 
         r = requests.get(URL)
+        try:
+            r.raise_for_status()
+        except requests.HTTPError:
+            return False
 
         if self.isStopped():
             self.canceled.emit()
