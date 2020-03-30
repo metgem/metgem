@@ -11,7 +11,8 @@ __license__ = "GPLv3"
 class MSDial(DbSource):
 
     name = "MS-DIAL"
-    page = "http://prime.psc.riken.jp/Metabolomics_Software/MS-DIAL"
+    page = "http://prime.psc.riken.jp/compms/msdial/main.html"
+    items_base_url = "http://prime.psc.riken.jp/compms/msdial/"
 
     def get_items(self, tree):
         for base in tree.xpath("//h3[@class='title-bg']"):
