@@ -1429,6 +1429,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                         options = dialog.getValues()
                         widget = self.add_network_widget(widget_class)
                         self.network.options[widget.name] = options
+                        self.has_unsaved_changes = True
 
                         if widget is not None:
                             if widget.name == 'network':
@@ -1608,6 +1609,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 self.dock_manager.viewMenu().removeAction(dock.toggleViewAction())
                 self.dock_manager.removeDockWidget(dock)
                 self.network_docks.pop(dock.widget().name)
+            self.has_unsaved_changes = True
 
     @debug
     def set_nodes_label(self, column_id):
