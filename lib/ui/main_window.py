@@ -2003,8 +2003,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
         header = self.tvNodes.horizontalHeader()
         df = self._network.infos
         columns = [model.headerData(header.visualIndex(i), Qt.Horizontal) for i in range(model.columnCount())]
-        columns = [c for c in columns if c in df.columns]
-        df = df.reindex(columns=columns)
+        if df is not None:
+            columns = [c for c in columns if c in df.columns]
+            df = df.reindex(columns=columns)
 
         worker = workers.SaveProjectWorker(fname, self.network.graph, self.network,
                                            df, self.network.options,
