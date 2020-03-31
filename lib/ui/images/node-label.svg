@@ -13,7 +13,7 @@
    viewBox="-11 -0.5 330.96288 330.96288"
    version="1.2"
    id="svg8626"
-   sodipodi:docname="node-empty.svg"
+   sodipodi:docname="node-label.svg"
    inkscape:version="0.92.4 5da689c313, 2019-01-14">
   <metadata
      id="metadata8630">
@@ -50,7 +50,7 @@
      inkscape:window-x="0"
      inkscape:window-y="0"
      inkscape:window-maximized="1"
-     inkscape:current-layer="g844"
+     inkscape:current-layer="g8624"
      units="pt" />
   <title
      id="title2">SVG Generator Example Drawing</title>
@@ -124,6 +124,19 @@
            cx="394.79858"
            cy="117.99487"
            r="34.02161" />
+      </g>
+      <g
+         transform="matrix(1.6386771,0,0,1,-125.60664,-27.580239)"
+         id="g852"
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1;stroke-linecap:square;stroke-linejoin:bevel">
+        <rect
+           style="opacity:1;vector-effect:none;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.19042552;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:normal"
+           id="rect833"
+           width="53.436714"
+           height="10.342591"
+           x="227.30145"
+           y="-160.15935"
+           ry="0.24972254" />
       </g>
     </g>
   </g>

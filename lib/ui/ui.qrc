@@ -27,7 +27,9 @@
     <file>images/import-database.svg</file>
     <file>images/new-library-user.svg</file>
     <file>images/node-size.svg</file>
+    <file>images/node-pie.svg</file>
     <file>images/node-color.svg</file>
+    <file>images/node-label.svg</file>
     <file>images/mapping.svg</file>
     <file>images/import-mapping.svg</file>
     <file>images/library-more.svg</file>
@@ -36,8 +38,6 @@
     <file>images/spectrum-inverted.svg</file>
     <file>images/highlight-red.svg</file>
     <file>images/highlight-yellow.svg</file>
-    <file>images/label.svg</file>
-    <file>images/pie.svg</file>
     <file>images/new-document.svg</file>
     <file>images/import-metadata.svg</file>
     <file>images/go-jump.svg</file>

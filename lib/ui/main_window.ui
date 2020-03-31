@@ -869,7 +869,7 @@
    </property>
    <property name="icon">
     <iconset resource="ui.qrc">
-     <normaloff>:/icons/images/pie.svg</normaloff>:/icons/images/pie.svg</iconset>
+     <normaloff>:/icons/images/node-pie.svg</normaloff>:/icons/images/node-pie.svg</iconset>
    </property>
    <property name="text">
     <string>Show &amp;pie charts</string>
