@@ -36,7 +36,7 @@ class ColorPicker(QToolButton):
         for i, color in enumerate(custom_colors):
             self.dialog.setCustomColor(i, color)
         current_color = QColor(default_color) if color_group is None\
-            else settings.value(f"{color_group}/Current", QColor(default_color))
+            else settings.value(f"{color_group}/Current", QColor(default_color), type=QColor)
         if current_color.isValid():
             self.dialog.setCurrentColor(current_color)
             self.on_color_selected(current_color)
