@@ -1185,7 +1185,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
             QMessageBox.warning(self, None, 'Please import spectra first.')
             return
 
-        dialog = ui.ClusterizeDialog({k: v.widget().title for k,v in self.network_docks.items()})
+        docks = self.network_docks.items()
+        if not docks:
+            QMessageBox.warning(self, None, 'Plase add a view first.')
+            return
+        dialog = ui.ClusterizeDialog({k: v.widget().title for k,v in docks})
 
         def do_clustering(result):
             if result == QDialog.Accepted:
