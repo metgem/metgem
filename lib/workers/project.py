@@ -307,7 +307,7 @@ class SaveProjectWorker(BaseWorker):
                 pass
             else:
                 if colors is not None:
-                    colors = [color.name() for color in colors]
+                    colors = [color.name() if isinstance(color, QColor) else color for color in colors]
                     columns_mappings['pies'] = (ids, colors)
 
             try:
@@ -322,7 +322,7 @@ class SaveProjectWorker(BaseWorker):
                         except TypeError:
                             pass
                         else:
-                            colors = [color.name() for color in colors]
+                            colors = [color.name() if isinstance(color, QColor) else color for color in colors]
                             columns_mappings['colors'] = (id_, (bins, colors))
                     elif isinstance(mapping, dict):
                         columns_mappings['colors'] = (id_, {k: v.name() for k, v in mapping.items()})
