@@ -363,6 +363,7 @@ class SaveProjectWorker(BaseWorker):
                     self.network.spectra = SpectraList(self.filename)
                 else:
                     self.network.spectra.load(self.filename)
+                self.network.lazyloaded = True
             except OSError as e:
                 self.error.emit(e)
             else:
