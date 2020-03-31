@@ -433,10 +433,10 @@ class PieColorMappingDialog(BaseColorMappingDialog):
 class ColorMappingDialog(BaseColorMappingDialog):
 
     def __init__(self, model: QAbstractTableModel = None, column_id: int = None, data: List = None):
-        super().__init__()
-
         self._model = model
         self._column_id = column_id
+
+        super().__init__()
 
         if model is not None and column_id is not None:
             for i in range(model.columnCount()):
@@ -461,6 +461,7 @@ class ColorMappingDialog(BaseColorMappingDialog):
 
         self.btUseSelectedColumns.clicked.connect(self.on_use_selected_column)
         self.btRemoveSelectedColumns.clicked.connect(self.on_unuse_selected_column)
+
 
     @property
     def data(self):
