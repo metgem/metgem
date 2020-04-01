@@ -56,9 +56,9 @@ class ExportDbResultsWorker(BaseWorker):
                                 except IndexError:
                                     pass
 
-                                data['standards'].append({'score': round(r.score, 4),
-                                                          'bank': r.bank,
-                                                          'description': desc})
+                                data[type_].append({'score': round(r.score, 4),
+                                                    'bank': r.bank,
+                                                    'description': desc})
 
                         if self.fmt == 'json':
                             json.dump({i+1: data}, f, indent=4)
