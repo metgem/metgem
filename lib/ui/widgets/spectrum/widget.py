@@ -56,3 +56,8 @@ class SpectrumWidget(QWidget):
 
     def __getattr__(self, item):
         return getattr(self.canvas, item)
+
+
+class ExtendedSpectrumWidget(SpectrumWidget):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, extended_mode=True, orientation=Qt.Horizontal, **kwargs)

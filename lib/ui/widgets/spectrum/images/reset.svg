@@ -13,10 +13,10 @@
    version="1.1"
    viewBox="0 0 72 72"
    width="72pt"
-   id="svg2"
-   inkscape:version="0.91 r13725"
-   sodipodi:docname="close.svg"
-   inkscape:export-filename="C:\Users\elie\Desktop\Base de donnees souches\ui\widgets\images\close_large.png"
+   id="svg13"
+   sodipodi:docname="reset.svg"
+   inkscape:version="0.92.4 5da689c313, 2019-01-14"
+   inkscape:export-filename="/home/nicolas/Developpements/ICSN/metgem/lib/ui/widgets/spectrum/images/reset_large.png"
    inkscape:export-xdpi="48"
    inkscape:export-ydpi="48">
   <metadata
@@ -41,21 +41,21 @@
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
      inkscape:window-width="1920"
-     inkscape:window-height="1018"
+     inkscape:window-height="1015"
      id="namedview15"
      showgrid="false"
-     inkscape:zoom="2.6222222"
-     inkscape:cx="-172.75424"
-     inkscape:cy="45"
-     inkscape:window-x="-8"
-     inkscape:window-y="-8"
+     inkscape:zoom="4.9166667"
+     inkscape:cx="-15.438301"
+     inkscape:cy="36.048998"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
      inkscape:window-maximized="1"
      inkscape:current-layer="text_1" />
   <defs
      id="defs4">
     <style
        type="text/css"
-       id="style6">
+       id="style2">
 *{stroke-linecap:butt;stroke-linejoin:round;}
   </style>
   </defs>
@@ -66,30 +66,16 @@
       <path
          d="M 0 72  L 72 72  L 72 0  L 0 0  z "
          style="fill:none;opacity:0;"
-         id="path10" />
+         id="path6" />
     </g>
     <g
-       id="text_1"
-       transform="translate(-38.135593,-0.30508475)"
-       style="stroke-linecap:butt;stroke-linejoin:round">
-      <rect
-         style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:15;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
-         id="rect4163"
-         width="7.6271186"
-         height="66.508469"
-         x="74.279793"
-         y="-60.004444"
-         ry="2.7711861"
-         transform="matrix(0.70710678,0.70710678,-0.70710678,0.70710678,0,0)" />
-      <rect
-         style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:15;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
-         id="rect4163-0"
-         width="7.6271186"
-         height="66.508469"
-         x="-30.563768"
-         y="-111.34759"
-         ry="2.7711861"
-         transform="matrix(-0.70710678,0.70710678,-0.70710678,-0.70710678,0,0)" />
+       id="text_1">
+      <path
+         d="m 56.546733,10.024175 -20.55049,20.55049 -20.542976,-20.542977 -6.866891,6.866891 20.542977,20.542977 -20.55049,20.55049 6.866891,6.866891 20.550489,-20.55049 20.55049,20.55049 6.866891,-6.866891 -20.55049,-20.55049 20.55049,-20.55049"
+         id="path9"
+         inkscape:connector-curvature="0"
+         style="stroke-linecap:butt;stroke-linejoin:round"
+         sodipodi:nodetypes="cccccccccccc" />
     </g>
   </g>
 </svg>

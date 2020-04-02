@@ -67,7 +67,7 @@ class FragmentsListWidget(QWidget):
                              (self.twNeutralLosses, SpectraMatchState.neutral_loss)):
                 filter_ = np.where(matches['type'] == t)[0]
                 table.setRowCount(filter_.shape[0])
-                table.setHorizontalHeaderLabels(["Spectrum 1 (top)", "Spectrum 2 (bottom)", "Partial Score"])
+                table.setHorizontalHeaderLabels(["Top Spectrum", "Bottom Spectrum", "Partial Score"])
                 if filter_.size > 0:
                     table.horizontalHeader().show()
                 if table == self.twNeutralLosses:

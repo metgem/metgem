@@ -19,7 +19,7 @@
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
-     <widget class="SpectrumWidget" name="widgetSpectra" native="true"/>
+     <widget class="ExtendedSpectrumWidget" name="widgetSpectra" native="true"/>
      <widget class="FragmentsListWidget" name="widgetFragmentsList" native="true">
       <layout class="QVBoxLayout" name="verticalLayout_2"/>
      </widget>
@@ -29,9 +29,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>SpectrumWidget</class>
+   <class>ExtendedSpectrumWidget</class>
    <extends>QWidget</extends>
-   <header>lib/ui/widgets.h</header>
+   <header>lib/ui/widgets/spectrum.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
