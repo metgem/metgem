@@ -168,7 +168,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QToolButton" name="btEditGroupMapping">
+      <widget class="QToolButton" name="btAddColumnsByFormulae">
        <property name="toolTip">
         <string>Edit Group Mapping</string>
        </property>
@@ -436,19 +436,19 @@
     <string>Highlight in network views the selected nodes in the table</string>
    </property>
   </action>
-  <action name="actionEditGroupMapping">
+  <action name="actionAddColumnsByFormulae">
    <property name="icon">
     <iconset resource="../../ui.qrc">
      <normaloff>:/icons/images/calculator.svg</normaloff>:/icons/images/calculator.svg</iconset>
    </property>
    <property name="text">
-    <string>Edit Group Mapping</string>
+    <string>Add new columns by formulae</string>
    </property>
    <property name="toolTip">
-    <string>Edit Group Mapping</string>
+    <string>Add new columns by combining existing ones using arithmetic formula</string>
    </property>
    <property name="statusTip">
-    <string>Edit Group Mapping</string>
+    <string>Add new columns by combining existing ones using arithmetic formula</string>
    </property>
   </action>
   <action name="actionClusterize">

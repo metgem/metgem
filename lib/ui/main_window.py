@@ -162,7 +162,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             lambda: self.on_show_spectrum_from_table_triggered('compare'))
         self.nodes_widget.actionFindStandards.triggered.connect(lambda: self.on_query_databases('standards'))
         self.nodes_widget.actionFindAnalogs.triggered.connect(lambda: self.on_query_databases('analogs'))
-        self.nodes_widget.actionEditGroupMapping.triggered.connect(self.on_edit_group_mapping)
+        self.nodes_widget.actionAddColumnsByFormulae.triggered.connect(self.on_add_columns_by_formulae)
         self.nodes_widget.actionClusterize.triggered.connect(self.on_clusterize)
         self.nodes_widget.actionDeleteColumns.triggered.connect(self.on_delete_nodes_columns)
 
@@ -1139,7 +1139,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             menu.popup(QCursor.pos())
 
     @debug
-    def on_edit_group_mapping(self, *args):
+    def on_add_columns_by_formulae(self, *args):
         dialog = ui.AddColumnsByFormulaeDialog(self.tvNodes.model())
 
         def eval_fomulae(result):

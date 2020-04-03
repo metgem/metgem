@@ -235,7 +235,7 @@ class NodesWidget(QWidget):
         self.btUseColumnForNodesColors.setDefaultAction(self.actionUseColumnForNodesColors)
 
         self.btHighlightSelectedNodes.setDefaultAction(self.actionHighlightSelectedNodes)
-        self.btEditGroupMapping.setDefaultAction(self.actionEditGroupMapping)
+        self.btAddColumnsByFormulae.setDefaultAction(self.actionAddColumnsByFormulae)
         self.btClusterize.setDefaultAction(self.actionClusterize)
         self.btDeleteColumns.setDefaultAction(self.actionDeleteColumns)
 
