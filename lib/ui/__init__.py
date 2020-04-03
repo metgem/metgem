@@ -18,6 +18,6 @@ from .import_user_database_dialog import ImportUserDatabaseDialog
 from .about_dialog import AboutDialog
 from .color_mapping_dialog import PieColorMappingDialog, ColorMappingDialog
 from .size_mapping_dialog import SizeMappingDialog
-from .edit_group_mapping import EditGroupMappingsDialog
+from .add_columns_by_formulae import AddColumnsByFormulaeDialog
 from .clusterize_dialog import ClusterizeDialog
 from .updates_dialog import UpdatesDialog

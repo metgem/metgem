@@ -1,19 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>EditGroupMappingDialog</class>
- <widget class="QDialog" name="EditGroupMappingDialog">
+ <class>AddColumnByFormulaeDialog</class>
+ <widget class="QDialog" name="AddColumnByFormulaeDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>468</width>
+    <width>464</width>
     <height>300</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Edit Group Mapping</string>
+   <string>Add Column By Formulae</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
+   <item row="3" column="0">
+    <widget class="QTableWidget" name="tblAlias">
+     <property name="alternatingRowColors">
+      <bool>true</bool>
+     </property>
+     <attribute name="verticalHeaderVisible">
+      <bool>false</bool>
+     </attribute>
+    </widget>
+   </item>
    <item row="2" column="0">
     <widget class="QLabel" name="label">
      <property name="text">
@@ -23,16 +33,6 @@
    </item>
    <item row="3" column="1">
     <widget class="QTableWidget" name="tblMappings">
-     <property name="alternatingRowColors">
-      <bool>true</bool>
-     </property>
-     <attribute name="verticalHeaderVisible">
-      <bool>false</bool>
-     </attribute>
-    </widget>
-   </item>
-   <item row="3" column="0">
-    <widget class="QTableWidget" name="tblAlias">
      <property name="alternatingRowColors">
       <bool>true</bool>
      </property>
@@ -92,16 +92,6 @@
      </item>
     </layout>
    </item>
-   <item row="8" column="1">
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-     </property>
-    </widget>
-   </item>
    <item row="2" column="1">
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
@@ -111,13 +101,17 @@
        </property>
       </widget>
      </item>
+    </layout>
+   </item>
+   <item row="2" column="2" rowspan="2">
+    <layout class="QVBoxLayout" name="verticalLayout">
      <item>
       <widget class="QToolButton" name="btAddMapping">
        <property name="toolTip">
-        <string>Add a new bin at the end of the list</string>
+        <string>Add a new mapping at the end of the list</string>
        </property>
        <property name="statusTip">
-        <string>Add a new bin at the end of the list</string>
+        <string>Add a new mapping at the end of the list</string>
        </property>
        <property name="text">
         <string>+</string>
@@ -131,10 +125,10 @@
      <item>
       <widget class="QToolButton" name="btRemoveMappings">
        <property name="toolTip">
-        <string>Remove selected bins from the list</string>
+        <string>Remove selected mappings from the list</string>
        </property>
        <property name="statusTip">
-        <string>Remove selected bins from the list</string>
+        <string>Remove selected mappings from the list</string>
        </property>
        <property name="text">
         <string>-</string>
@@ -145,7 +139,97 @@
        </property>
       </widget>
      </item>
+     <item>
+      <widget class="Line" name="line">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="btAddFunction">
+       <property name="toolTip">
+        <string>Add Function</string>
+       </property>
+       <property name="statusTip">
+        <string>Add Function</string>
+       </property>
+       <property name="text">
+        <string>...</string>
+       </property>
+       <property name="icon">
+        <iconset resource="ui.qrc">
+         <normaloff>:/icons/images/sigma.svg</normaloff>:/icons/images/sigma.svg</iconset>
+       </property>
+       <property name="popupMode">
+        <enum>QToolButton::MenuButtonPopup</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="btAddConstant">
+       <property name="toolTip">
+        <string>Add Constant</string>
+       </property>
+       <property name="statusTip">
+        <string>Add Constant</string>
+       </property>
+       <property name="text">
+        <string>...</string>
+       </property>
+       <property name="icon">
+        <iconset resource="ui.qrc">
+         <normaloff>:/icons/images/pi.svg</normaloff>:/icons/images/pi.svg</iconset>
+       </property>
+       <property name="popupMode">
+        <enum>QToolButton::MenuButtonPopup</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="btAddOperator">
+       <property name="toolTip">
+        <string>Add Operator</string>
+       </property>
+       <property name="statusTip">
+        <string>Add Operator</string>
+       </property>
+       <property name="text">
+        <string>...</string>
+       </property>
+       <property name="icon">
+        <iconset resource="ui.qrc">
+         <normaloff>:/icons/images/operator.svg</normaloff>:/icons/images/operator.svg</iconset>
+       </property>
+       <property name="popupMode">
+        <enum>QToolButton::MenuButtonPopup</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="verticalSpacer">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
     </layout>
+   </item>
+   <item row="8" column="1" colspan="2">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>
@@ -156,7 +240,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>EditGroupMappingDialog</receiver>
+   <receiver>AddColumnByFormulaeDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -172,7 +256,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>EditGroupMappingDialog</receiver>
+   <receiver>AddColumnByFormulaeDialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

@@ -1140,7 +1140,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
     @debug
     def on_edit_group_mapping(self, *args):
-        dialog = ui.EditGroupMappingsDialog(self.tvNodes.model())
+        dialog = ui.AddColumnsByFormulaeDialog(self.tvNodes.model())
 
         def eval_fomulae(result):
             if result == QDialog.Accepted:
@@ -1148,22 +1148,33 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 df = self._network.infos
                 df_resolver = {k: df[v] for k, v in alias.items() if v in df.columns}
 
-                def pd_sum(*args):
-                    for i, s in enumerate(args):
-                        sum_ = s if i == 0 else sum_ + s
-                    return sum_
-
-                def pd_mean(*args):
-                    return pd_sum(*args) / 2
-
-                safe_dict = {'mean': pd_mean, 'pi': np.pi, 'e': np.e, 'euler_gamma': np.euler_gamma, 'sum': pd_sum}
+                safe_dict = {
+                            'sum': lambda *args: pd.DataFrame(args).sum(),
+                            'mean': lambda *args: pd.DataFrame(args).mean(),
+                            'median': lambda *args: pd.DataFrame(args).median(),
+                            'prod': lambda *args: pd.DataFrame(args).prod(),
+                            'std': lambda *args: pd.DataFrame(args).std(),
+                            'var': lambda *args: pd.DataFrame(args).var(),
+                            'quantile': lambda q, *args: pd.DataFrame(args).quantile(q),
+                            'min': lambda *args: pd.DataFrame(args).min(),
+                            'max': lambda *args: pd.DataFrame(args).max(),
+                            'pi': np.pi, 'e': np.e,
+                             }
 
                 self.tvNodes.model().sourceModel().beginResetModel()
                 errors = {}
                 for name, mapping in mappings.items():
                     try:
-                        df.eval('{} = {}'.format(name, mapping), resolvers=[df_resolver, safe_dict], inplace=True) #, engine='numexpr')
-                    except (pd.core.computation.ops.UndefinedVariableError, TypeError, AttributeError) as e:
+                        df.eval('{} = {}'.format(name, mapping), resolvers=[df_resolver, safe_dict], inplace=True,
+                                engine='numexpr')
+                    except (TypeError, NotImplementedError):
+                        try:
+                            # Fallback to Python engine
+                            df.eval('{} = {}'.format(name, mapping), resolvers=[df_resolver, safe_dict], inplace=True,
+                                    engine='python')
+                        except (pd.core.computation.ops.UndefinedVariableError, AttributeError, SyntaxError) as e:
+                            errors[name] = e
+                    except (pd.core.computation.ops.UndefinedVariableError, AttributeError, SyntaxError) as e:
                         errors[name] = e
                 self.tvNodes.model().sourceModel().endResetModel()
                 if errors:

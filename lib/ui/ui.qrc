@@ -1,5 +1,8 @@
 <RCC>
   <qresource prefix="icons">
+    <file>images/operator.svg</file>
+    <file>images/pi.svg</file>
+    <file>images/sigma.svg</file>
     <file>images/molecule.svg</file>
     <file>images/cluster.svg</file>
     <file>images/key.svg</file>
