@@ -1246,8 +1246,16 @@ class MainWindow(MainWindowBase, MainWindowUI):
             num_columns = model.columnCount()
             model.beginResetModel()
             df = self._network.infos
-            column_names = [model.headerData(index.column(), Qt.Horizontal) for index in selected_columns_indexes]
-            df.drop(column_names, axis=1, inplace=True, errors='ignore')
+            column_names = set([model.headerData(index.column(), Qt.Horizontal) for index in selected_columns_indexes])
+
+            # Remove columns that are not group mappings
+            df_cols = column_names - self.network.mappings.keys()
+            df.drop(df_cols, axis=1, inplace=True, errors='ignore')
+
+            # Remove group mappings columns if any
+            for col in column_names - df_cols:
+                self.network.mappings.pop(col)
+
             model.endResetModel()
 
             if model.columnCount() < num_columns:
@@ -2118,7 +2126,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             nonlocal worker
             result = worker.result()
             self.tvNodes.model().sourceModel().beginResetModel()
-            self.network.mappings = result
+            self.network.mappings.update(result)
             self.has_unsaved_changes = True
             self.tvNodes.model().sourceModel().endResetModel()
 
