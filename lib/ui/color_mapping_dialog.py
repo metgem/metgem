@@ -153,6 +153,12 @@ class GroupListWidgetItem(ColorMixin, WidgetItem):
         self.setData(ValueRole, data)
 
 
+class BoolListWidgetItem(ColorMixin, WidgetItem):
+    def __init__(self, data, *args, **kwargs):
+        super().__init__(str(data), *args, **kwargs)
+        self.setData(ValueRole, data)
+
+
 class RangeListWidgetItem(ColorMixin, WidgetItem):
     def __init__(self, low, high, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -462,7 +468,6 @@ class ColorMappingDialog(BaseColorMappingDialog):
         self.btUseSelectedColumns.clicked.connect(self.on_use_selected_column)
         self.btRemoveSelectedColumns.clicked.connect(self.on_unuse_selected_column)
 
-
     @property
     def data(self):
         return pd.Series([self._model.data(self._model.index(i, self._column_id))
@@ -482,7 +487,11 @@ class ColorMappingDialog(BaseColorMappingDialog):
         data = self.data
 
         if data is not None:
-            if data.dtype == np.object:
+            if data.dtype == np.bool:
+                self.lblUsedColumns.setText('Groups')
+                self.lstUsedColumns.addItem(BoolListWidgetItem(True))
+                self.lstUsedColumns.addItem(BoolListWidgetItem(False))
+            elif data.dtype == np.object:
                 self.lblUsedColumns.setText('Groups')
                 groups = data.dropna().unique()
                 for group in groups:
@@ -585,7 +594,19 @@ class ColorMappingDialog(BaseColorMappingDialog):
 
     def getValues(self):
         item = self.lstUsedColumns.item(0)
-        if isinstance(item, GroupListWidgetItem):
+        if isinstance(item, BoolListWidgetItem):
+            mapping = {}
+            for row in range(self.lstUsedColumns.count()):
+                item = self.lstUsedColumns.item(row)
+                group = item.data(ValueRole)
+                bg = item.data(Qt.BackgroundRole)
+
+                if bg is not None and bg.color().isValid():
+                    mapping[group] = bg.color()
+                else:
+                    mapping[group] = QColor(Qt.transparent)
+            return self._column_id, mapping
+        elif isinstance(item, GroupListWidgetItem):
             mapping = {}
             for row in range(self.lstUsedColumns.count()):
                 item = self.lstUsedColumns.item(row)
