@@ -6,7 +6,8 @@ import yaml
 from PyQt5 import uic
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QValidator
-from PyQt5.QtWidgets import QTableWidgetItem, QFileDialog, QMessageBox, QStyledItemDelegate, QMenu, QTableWidget
+from PyQt5.QtWidgets import QTableWidgetItem, QFileDialog, QMessageBox, QStyledItemDelegate, QMenu, QTableWidget, \
+    QTableView
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'add_columns_by_formulae.ui')
 
@@ -82,6 +83,11 @@ class AddColumnsByFormulaeDialog(AddColumnsByFormulaeDialogUI, AddColumnsByFormu
 
         self.tblMappings.setColumnCount(2)
         self.tblMappings.setHorizontalHeaderLabels(['Name', 'Formula'])
+
+        # Allow re-ordering of rows in mappings table
+        self.tblMappings.verticalHeader().setSectionsMovable(True)
+        self.tblMappings.verticalHeader().setDragEnabled(True)
+        self.tblMappings.verticalHeader().setDragDropMode(QTableView.InternalMove)
 
         validator = AliasValidator()
         for i in range(model.columnCount()):
@@ -236,7 +242,7 @@ class AddColumnsByFormulaeDialog(AddColumnsByFormulaeDialogUI, AddColumnsByFormu
 
             try:
                 with open(filename, 'w') as f:
-                    yaml.dump(ml, f)
+                    yaml.dump(ml, f, sort_keys=False)
             except IOError:
                 QMessageBox.warning(self, None, "Save failed (I/O Error).")
 
