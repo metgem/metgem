@@ -16,3 +16,5 @@ pluginbase>=1.0
 pyyaml>=3.13
 rdkit
 numexpr>=2.7.0
+xlrd
+odfpy

@@ -63,7 +63,7 @@ class GenerateNetworkWorker(BaseWorker):
 
         # Set width for all edges based on their weight
         widths = np.array(interactions['Cosine'])
-        if widths:
+        if widths.size > 0:
             min_ = max(0, widths.min() - 0.1)
             if min_ != widths.max():
                 widths = (RADIUS - 1) * (widths - min_) / (widths.max() - min_) + 1

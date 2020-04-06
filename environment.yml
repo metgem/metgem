@@ -23,5 +23,7 @@ dependencies:
     - pyyaml>=3.13
     - rdkit
     - numexpr>=2.7.0
+    - xlrd
+    - odfpy
     - pip:
         - py2cytoscape>=0.7.0
