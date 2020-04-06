@@ -250,7 +250,7 @@ class EdgesModel(QAbstractTableModel):
 
     def columnCount(self, parent=QModelIndex()):
         data = self.interactions
-        if data is not None:
+        if data:
             return len(data[0]) + 1
         else:
             return 0
