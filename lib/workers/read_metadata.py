@@ -35,31 +35,51 @@ class ReadMetadataWorker(BaseWorker):
 
     def run(self):  # TODO: Allow updates (read metadata file in a loop)
         try:
-            ext = os.path.splitext(self.filename)[1]
+            # Make sure that the column used as index will be imported
             if self.options.index_col is not None and self.options.usecols is not None:
                 if self.options.index_col not in self.options.usecols:
                     self.options.usecols.append(self.options.index_col)
-            kwargs = dict(**self.options, prefix='Column ', engine='c', float_precision='high')
+
             data = None
-            if ext in (".xls", ".xlsx"):
+            type_ = None
+            ext = os.path.splitext(self.filename)[1]
+            if ext in (".xls", ".xlsx", ".xlsm", ".xlsb", ".ods"):
+                type_ = "spreadsheet"
+                kwargs = dict(**self.options,
+                              engine="odf" if ext == ".ods" else None,
+                              )
                 kwargs['header'] = kwargs['header'] if type(kwargs['header']) is not str else 0
-                with open(self.filename, encoding='utf-8', errors='ignore') as f:
+                with open(self.filename, 'rb') as f:
                     data = pd.read_excel(f, **kwargs)  # Workaround for Pandas's bug #15086
             elif ext in (".csv", ".txt", ".tsv"):
+                type_ = "text"
+                kwargs = dict(**self.options, prefix='Column ', engine='c', float_precision='high')
                 with open(self.filename, encoding='utf-8', errors='ignore') as f:
                     data = pd.read_csv(f, **kwargs)   # Workaround for Pandas's bug #15086
 
             if data is not None:
-                # Drop columns full of na values
-                data = data.dropna(how='all', axis=1)
+                if type_ == "spreadsheet":
+                    # Drop rows and columns full of na values
+                    data = data.dropna(how='all')  #.reset_index(drop=True)
+
+                    # Make sure that columns full of integer are loaded as integer and not float
+                    col_should_be_int = data.select_dtypes(include=['float']).applymap(float.is_integer).all()
+                    float_to_int_cols = col_should_be_int[col_should_be_int].index
+                    data.loc[:, float_to_int_cols] = data.loc[:, float_to_int_cols].astype(int)
+                else:
+                    # Drop columns full of na values, csb reader already removed empty rows
+                    data = data.dropna(how='all', axis=1)
 
                 # Make sure that index is 0-based
                 if self.options.index_col is not None:
                     data.index -= 1
+                else:
+                    data = data.reset_index(drop=True)
 
             if data is not None and data.size > 0:
                 return data
-        except(FileNotFoundError, IOError, pd.errors.ParserError, pd.errors.EmptyDataError, ValueError) as e:
+        except(FileNotFoundError, IOError, pd.errors.ParserError,
+               pd.errors.EmptyDataError, ValueError, ImportError) as e:
             self.error.emit(e)
             return
 

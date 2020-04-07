@@ -1,4 +1,3 @@
-import csv
 import os
 import sys
 
@@ -60,7 +59,6 @@ class ProcessDataDialog(ProcessDataDialogBase, ProcessDataDialogUI):
             model.setRootPath(QDir.currentPath())
             completer.setModel(model)
             edit.setCompleter(completer)
-            edit.setText(QDir.currentPath())
 
         # Add cosine options widget
         self.cosine_widget = CosineOptionsWidget()
@@ -85,9 +83,7 @@ class ProcessDataDialog(ProcessDataDialogBase, ProcessDataDialogUI):
         # Connect events
         self.btBrowseProcessFile.clicked.connect(lambda: self.browse('process'))
         self.btBrowseMetadataFile.clicked.connect(lambda: self.browse('metadata'))
-        self.editMetadataFile.textChanged.connect(self.on_metadata_file_changed)
-        self.btOptions.clicked.connect(self.on_show_options_dialog)
-        self.cbCsvDelimiter.delimiterChanged.connect(self.on_delimiter_changed)
+        self.btOptions.clicked.connect(lambda: self.on_show_options_dialog())
         self.btRemoveViews.clicked.connect(self.on_remove_views)
         self.btEditView.clicked.connect(self.on_edit_view)
         self.btClear.clicked.connect(self.on_clear_view)
@@ -166,48 +162,41 @@ class ProcessDataDialog(ProcessDataDialogBase, ProcessDataDialogUI):
         if QMessageBox.question(self, None, "Clear the list?") == QMessageBox.Yes:
             self.lstViews.clear()
 
-    def on_delimiter_changed(self, delimiter):
-        self._metadata_options.sep = delimiter
+    def on_show_options_dialog(self, filename=None):
+        if filename is None:
+            filename = self.editMetadataFile.text()
 
-    def on_show_options_dialog(self):
-        delimiter = self.cbCsvDelimiter.delimiter()
-        dialog = ImportMetadataDialog(self, filename=self.editMetadataFile.text(), delimiter=delimiter)
+        filename = filename if os.path.exists(filename) else None
+        dialog = ImportMetadataDialog(self, filename=filename)
 
         def set_options(result):
             if result == QDialog.Accepted:
                 filename, options = dialog.getValues()
                 self.editMetadataFile.setText(filename)
-                self.cbCsvDelimiter.setDelimiter(options.sep)
+                self.editMetadataFile.setPalette(self.style().standardPalette())
                 self._metadata_options = options
 
         dialog.finished.connect(set_options)
         dialog.open()
 
-    def on_metadata_file_changed(self, text):
-        # Check that selected metadata file is a valid csv file and try to get delimiter
-        try:
-            with open(text, 'r') as f:
-                line = f.readline()
-            sniffer = csv.Sniffer()
-            delimiter = sniffer.sniff(line).delimiter
-        except (OSError, FileNotFoundError, csv.Error, UnicodeDecodeError):
-            return
-        else:
-            self.cbCsvDelimiter.setDelimiter(delimiter)
-
     def done(self, r):
         if r == QDialog.Accepted:
             process_file = self.editProcessFile.text()
             metadata_file = self.editMetadataFile.text()
-            if len(process_file) > 0 and os.path.exists(process_file) and os.path.splitext(process_file)[1].lower() in ('.mgf', '.msp'):
-                if not self.gbMetadata.isChecked() or (os.path.exists(metadata_file) and os.path.isfile(metadata_file)):
-                    super().done(r)
-                else:
-                    self.editMetadataFile.setPalette(self._error_palette)
-            else:
+
+            process_ok = len(process_file) > 0 and os.path.exists(process_file) and os.path.splitext(process_file)[1].lower() in ('.mgf', '.msp')
+            metadata_ok = not self.gbMetadata.isChecked() or (os.path.exists(metadata_file) and os.path.isfile(metadata_file))
+
+            if not process_ok:
                 self.editProcessFile.setPalette(self._error_palette)
-        else:
-            super().done(r)
+
+            if not metadata_ok:
+                self.editMetadataFile.setPalette(self._error_palette)
+
+            if not process_ok or not metadata_ok:
+                return
+
+        super().done(r)
 
     def browse(self, type_='process'):
         """Open a dialog to choose either .mgf or metadata.txt file"""
@@ -221,19 +210,21 @@ class ProcessDataDialog(ProcessDataDialogBase, ProcessDataDialogUI):
                                    "NIST Text Format of Individual Spectra (*.msp)",
                                    "All files (*)"])
         elif type_ == 'metadata':
-            dialog.setNameFilters(["Metadata File (*.csv *.tsv *.txt)", "All files (*)"])
+            dialog.setNameFilters(["Metadata File (*.csv *.tsv *.txt *.xls *.xlsx *.xlsm *.xlsb *.ods)",
+                                   "Microsoft Excel spreadsheets (*.xls *.xlsx, *.xlsm *.xlsb)",
+                                   "OpenDocument spreadsheets (*.ods)",
+                                   "All files (*)"])
 
-        def set_filename(result):
+        def on_dialog_finished(result):
             if result == QDialog.Accepted:
                 filename = dialog.selectedFiles()[0]
                 if type_ == 'process':
                     self.editProcessFile.setText(filename)
                     self.editProcessFile.setPalette(self.style().standardPalette())
                 else:
-                    self.editMetadataFile.setText(filename)
-                    self.editMetadataFile.setPalette(self.style().standardPalette())
+                    self.on_show_options_dialog(filename)
 
-        dialog.finished.connect(set_filename)
+        dialog.finished.connect(on_dialog_finished)
         dialog.open()
 
     def getValues(self):

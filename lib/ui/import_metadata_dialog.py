@@ -5,7 +5,7 @@ import sys
 from PyQt5 import uic
 from PyQt5.QtCore import Qt, QDir, QItemSelectionModel, QItemSelection
 from PyQt5.QtGui import QPalette, QColor, QIcon
-from PyQt5.QtWidgets import QCompleter, QFileSystemModel, QDialog, QFileDialog, QTableWidgetItem
+from PyQt5.QtWidgets import QCompleter, QFileSystemModel, QDialog, QFileDialog, QTableWidgetItem, QMessageBox
 
 from .progress_dialog import ProgressDialog
 from ..utils import SignalBlocker
@@ -59,10 +59,6 @@ class ImportMetadataDialog(ImportMetadataDialogBase, ImportMetadataDialogUI):
         self.btSelectInvert.clicked.connect(self.invert_selection)
         self.cbIndexColumn.currentIndexChanged.connect(self.on_column_index_changed)
 
-        if delimiter is not None:
-            with SignalBlocker(self.cbCsvDelimiter):
-                self.cbCsvDelimiter.setDelimiter(delimiter)
-
         if filename is not None:
             self.editMetadataFile.setText(filename)
 
@@ -79,7 +75,10 @@ class ImportMetadataDialog(ImportMetadataDialogBase, ImportMetadataDialogUI):
     def browse(self):
         dialog = QFileDialog(self)
         dialog.setFileMode(QFileDialog.ExistingFile)
-        dialog.setNameFilters(["Metadata File (*.csv *.tsv *.txt *.xls *.xlsx)", "All files (*)"])
+        dialog.setNameFilters(["Metadata File (*.csv *.tsv *.txt *.xls *.xlsx *.xlsm *.xlsb *.ods)",
+                               "Microsoft Excel spreadsheets (*.xls *.xlsx, *.xlsm *.xlsb)",
+                               "OpenDocument spreadsheets (*.ods)",
+                               "All files (*)"])
 
         def set_filename(result):
             if result == QDialog.Accepted:
@@ -114,27 +113,39 @@ class ImportMetadataDialog(ImportMetadataDialogBase, ImportMetadataDialogUI):
             sniffer = csv.Sniffer()
             delimiter = sniffer.sniff(line).delimiter
             has_header = sniffer.has_header(line)
-        except (OSError, FileNotFoundError, csv.Error, UnicodeDecodeError):
-            return
+        except (OSError, FileNotFoundError, csv.Error, UnicodeDecodeError):  # not a csv file (excel or odf)
+            self.cbCsvDelimiter.setEnabled(False)
+            self.editCsvDelimiter.setEnabled(False)
+            with SignalBlocker(self.chkUseFirstLineAsHeader):
+                self.chkUseFirstLineAsHeader.setChecked(True)
         else:
+            self.cbCsvDelimiter.setEnabled(True)
+            self.editCsvDelimiter.setEnabled(True)
             with SignalBlocker(self.cbCsvDelimiter, self.chkUseFirstLineAsHeader):
                 self.cbCsvDelimiter.setDelimiter(delimiter)
                 self.chkUseFirstLineAsHeader.setChecked(has_header)
+        finally:
             self.populate_table()
 
     def on_column_index_changed(self, index: int):
-        self._column_index = index - 1
+        index = self.cbIndexColumn.itemData(index)
+        index = index if index is not None else -1
+        self._column_index = index
         for column in range(self.twMetadata.horizontalHeader().model().columnCount()):
             item = self.twMetadata.horizontalHeaderItem(column)
             if item is None:
                 return
-            if column == index - 1:
+            if column == index:
                 item.setData(Qt.DecorationRole,
                              QIcon(":/icons/images/key.svg"))
             else:
                 item.setData(Qt.DecorationRole, None)
 
     def populate_table(self):
+        filename = self.editMetadataFile.text()
+        if not os.path.exists(filename):
+            return
+
         def file_read():
             nonlocal worker
             df = worker.result()
@@ -149,13 +160,14 @@ class ImportMetadataDialog(ImportMetadataDialogBase, ImportMetadataDialogUI):
             try:
                 self.twMetadata.setRowCount(df.shape[0])
                 self.twMetadata.setColumnCount(df.shape[1])
-                self.twMetadata.setHorizontalHeaderLabels(df.columns)
-                for row in range(df.shape[0]):
-                    for column in range(df.shape[1]):
-                        item = QTableWidgetItem(str(df.loc[row][column]))
-                        self.twMetadata.setItem(row, column, item)
+                self.twMetadata.setHorizontalHeaderLabels(df.columns.astype(str))
+                for column, (_, item) in enumerate(df.items()):
+                    for row, data in enumerate(item.values):
+                        witem = QTableWidgetItem(str(data))
+                        self.twMetadata.setItem(row, column, witem)
                 self.cbIndexColumn.addItem("")
-                self.cbIndexColumn.addItems(df.columns)
+                for col in df.select_dtypes(include=['int']).columns.astype(str):
+                    self.cbIndexColumn.addItem(col, userData=df.columns.get_loc(col))
             except KeyError:
                 self.twMetadata.clear()
                 self.twMetadata.setRowCount(0)
@@ -164,18 +176,24 @@ class ImportMetadataDialog(ImportMetadataDialogBase, ImportMetadataDialogUI):
             finally:
                 self.twMetadata.setLoading(False)
 
-                # Try to find the index column
+                # Try to find the index column (choose the first one with int data type)
                 for i, dtype in enumerate(df.dtypes):
                     if dtype.kind == 'i':
                         self.cbIndexColumn.setCurrentIndex(i+1)
                         break
 
+        def error(e):
+            self.twMetadata.setLoading(False)
+
+            if isinstance(e, ImportError):
+                QMessageBox.information(self, None, str(e))
+
         options = self.prepare_options(preview=True)
         if options is not None:
-            worker = ReadMetadataWorker(self.editMetadataFile.text(), options, track_progress=False)
+            worker = ReadMetadataWorker(filename, options, track_progress=False)
             if worker is not None:
                 worker.finished.connect(file_read)
-                worker.error.connect(lambda: self.twMetadata.setLoading(False))
+                worker.error.connect(error)
                 self.twMetadata.setLoading(True)
                 self._workers.append(worker)
                 self._workers.start()
