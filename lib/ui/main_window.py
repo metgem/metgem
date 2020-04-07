@@ -1249,12 +1249,16 @@ class MainWindow(MainWindowBase, MainWindowUI):
             column_names = set([model.headerData(index.column(), Qt.Horizontal) for index in selected_columns_indexes])
 
             # Remove columns that are not group mappings
-            df_cols = column_names - self.network.mappings.keys()
-            df.drop(df_cols, axis=1, inplace=True, errors='ignore')
+            if hasattr(self._network.options, 'mappings'):
+                df_cols = column_names - self.network.mappings.keys()
 
-            # Remove group mappings columns if any
-            for col in column_names - df_cols:
-                self.network.mappings.pop(col)
+                # Remove group mappings columns if any
+                for col in column_names - df_cols:
+                    self.network.mappings.pop(col)
+            else:
+                df_cols = column_names
+
+            df.drop(df_cols, axis=1, inplace=True, errors='ignore')
 
             model.endResetModel()
 
