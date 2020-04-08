@@ -2,6 +2,7 @@ import os
 import zipfile
 
 import numpy as np
+import pandas as pd
 from PyQt5.QtGui import QColor
 
 from .base import BaseWorker
@@ -92,8 +93,8 @@ class LoadProjectWorker(BaseWorker):
                         self.canceled.emit()
                         return
 
-                    # Load infos
-                    network.infos = fid['0/infos']
+                    # Load infos making sure it is a pandas DataFrame object (and not numpy array)
+                    network.infos = pd.DataFrame(fid['0/infos'])
 
                     if self.isStopped():
                         self.canceled.emit()
