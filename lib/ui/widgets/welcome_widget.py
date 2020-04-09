@@ -69,6 +69,7 @@ class WelcomeWidget(QWidget):
         uic.loadUi(os.path.join(os.path.dirname(__file__), 'welcome_widget.ui'), self)
 
         self.lstRecentProjects.clear()
+        self.lstNews.clear()
 
         if HAS_FEEDPARSER:
             def on_enable_news_state_changed(state: bool):
