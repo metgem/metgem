@@ -14,11 +14,11 @@ import pandas as pd
 import requests
 import sqlalchemy
 from PyQt5 import uic
-from PyQt5.QtCore import QSettings, Qt, QCoreApplication, QRectF
+from PyQt5.QtCore import QSettings, Qt, QCoreApplication, QRectF, QSize
 from PyQt5.QtGui import QPainter, QImage, QColor, QKeyEvent, QIcon, QFontMetrics, QFont, QKeySequence, QCursor
 from PyQt5.QtWidgets import (QDialog, QFileDialog, QMessageBox, QWidget, QMenu, QActionGroup, QMainWindow,
                              QAction, qApp, QTableView, QComboBox, QToolBar,
-                             QApplication, QGraphicsView, QLineEdit)
+                             QApplication, QGraphicsView, QLineEdit, QListWidget)
 from PyQtAds.QtAds import (CDockManager, CDockWidget,
                            BottomDockWidgetArea, CenterDockWidgetArea,
                            TopDockWidgetArea, LeftDockWidgetArea)
@@ -26,6 +26,7 @@ from PyQtNetworkView import style_from_css, style_to_cytoscape, disable_opengl
 from libmetgem import human_readable_data
 
 from .. import config, ui, utils, workers, errors
+from ..ui import widgets
 from ..logger import get_logger, debug
 from ..utils.network import Network
 
@@ -71,6 +72,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         # Add Dockable Windows
         self.add_docks()
+
+        # add welcome screen
+        self._welcome_screen = widgets.WelcomeWidget(self.dock_manager)
 
         # Add model to table views
         self.tvNodes.setModel(ui.widgets.NodesModel(self))
@@ -138,6 +142,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.tbNetwork.removeAction(self.actionSetNodesSize)
 
         # Connect events
+        self._welcome_screen.importDataClicked.connect(self.on_process_file_triggered)
+        self._welcome_screen.openProjectClicked.connect(self.on_open_project_triggered)
+
         self._docks_closed_signals_grouper = utils.SignalGrouper()  # Group signals emitted when dock widgets are closed
         self._docks_closed_signals_grouper.groupped.connect(self.on_network_widget_closed)
 
@@ -261,9 +268,13 @@ class MainWindow(MainWindowBase, MainWindowUI):
             action.setVisible(False)
             action.triggered.connect(self.on_open_recent_project_triggered)
             menu.addAction(action)
+            self._welcome_screen.addRecentProject("")
+        self._welcome_screen.recentProjectsItemClicked.connect(self.on_open_recent_project_triggered)
+
         menu.addSeparator()
         action = QAction("&Clear menu", self)
         action.triggered.connect(lambda: self.update_recent_projects(clear=True))
+        self._welcome_screen.clearRecentProjectsClicked.connect(action.trigger)
         menu.addAction(action)
 
         # Build research bar
@@ -508,6 +519,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
         for dock in self.network_docks.values():
             self.dock_manager.removeDockWidget(dock)
 
+        self.dock_nodes.toggleView(False)
+        self.dock_edges.toggleView(False)
+        self.dock_spectra.toggleView(False)
+
         self.tvNodes.model().sourceModel().beginResetModel()
         self.tvEdges.model().sourceModel().beginResetModel()
         self.init_project()
@@ -565,13 +580,22 @@ class MainWindow(MainWindowBase, MainWindowUI):
             if act.isSeparator():
                 break
 
+            item = self._welcome_screen.recentProjectItem(i)
+
             try:
                 fname = self.recent_projects[i]
+
                 act.setText(f"{i + 1} | {fname}")
                 act.setData(fname)
                 act.setVisible(True)
+
+                item.setText(fname)
+                item.setData(Qt.UserRole, fname)
+                item.setToolTip(fname)
+                item.setHidden(False)
             except IndexError:
                 act.setVisible(False)
+                item.setHidden(True)
 
     def keyPressEvent(self, event: QKeyEvent):
         widget = QApplication.focusWidget()
@@ -642,6 +666,16 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.load_settings()
             self._default_state = self.dock_manager.saveState()
             self._first_show = False
+
+        self._welcome_screen.move(self.rect().center() - self._welcome_screen.rect().center())
+        self._welcome_screen.lower()
+        self.dock_placeholder.toggleView(True)  # TODO: Work around for welcome screen not being clickable at start-up
+        self._welcome_screen.show()
+        self.dock_placeholder.toggleView(False)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self._welcome_screen.move(self.rect().center() - self._welcome_screen.rect().center())
 
     def closeEvent(self, event):
         if not config.get_debug_flag():
@@ -756,9 +790,12 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
     @debug
     def on_open_recent_project_triggered(self, *args):
-        action = self.sender()
-        if action is not None:
-            self.load_project(action.data())
+        sender = self.sender()
+        if sender is not None:
+            if isinstance(sender, QAction):
+                self.load_project(sender.data())
+            elif isinstance(sender, QListWidget):
+                self.load_project(args[0].data(Qt.UserRole))
 
     @debug
     def on_open_project_triggered(self, *args):
@@ -1620,7 +1657,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         num_docks = len(docks)
         if num_docks == 1:
-            message = f"Delete {next(iter(docks)).widget().name} view?"
+            message = f"Delete {next(iter(docks)).widget().title} view?"
         else:
             message = f"Delete these {num_docks} views?\n"
             message += ", ".join([dock.widget().name for dock in docks])
@@ -1802,8 +1839,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         settings.beginGroup('MainWindow')
         settings.setValue('Geometry', self.saveGeometry())
         settings.setValue('State', self.saveState())
-        if self.recent_projects:
-            settings.setValue('RecentProjects', self.recent_projects)
+        settings.setValue('RecentProjects', self.recent_projects)
         settings.endGroup()
 
     @debug

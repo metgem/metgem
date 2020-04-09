@@ -1,5 +1,9 @@
 <RCC>
   <qresource prefix="icons">
+    <file>images/git.svg</file>
+    <file>images/academic.svg</file>
+    <file>images/browser.svg</file>
+    <file>images/help.svg</file>
     <file>images/operator.svg</file>
     <file>images/pi.svg</file>
     <file>images/sigma.svg</file>

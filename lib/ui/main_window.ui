@@ -238,7 +238,7 @@
     <string>&amp;Import spectra list...</string>
    </property>
    <property name="iconText">
-    <string>Import spectra list</string>
+    <string>Import data</string>
    </property>
    <property name="toolTip">
     <string>Import a spectra list and compute scores</string>
@@ -289,10 +289,10 @@
     <string>&amp;Open Project...</string>
    </property>
    <property name="toolTip">
-    <string>Open project</string>
+    <string>Load a previously saved project file</string>
    </property>
    <property name="statusTip">
-    <string>Open project</string>
+    <string>Load a previously saved project file</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>

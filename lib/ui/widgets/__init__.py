@@ -18,6 +18,7 @@ from .spectrum import (SpectrumCanvas, SpectrumNavigationToolbar, SpectrumWidget
                        SpectraComparisonWidget)
 from .structure import StructureSvgWidget
 from .toolbar_menu import ToolBarMenu
+from .welcome_widget import WelcomeWidget
 
 try:
     from .jupyter import JupyterWidget
