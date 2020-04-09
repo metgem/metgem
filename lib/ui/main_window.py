@@ -70,6 +70,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
             disable_opengl(True)
         self.setupUi(self)
 
+        self.setAcceptDrops(True)
+
         # Add Dockable Windows
         self.add_docks()
 
@@ -696,6 +698,24 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.save_settings()
         else:
             event.ignore()
+
+    def dragEnterEvent(self, event):
+        if event.mimeData().hasFormat("text/uri-list"):
+            event.acceptProposedAction()
+
+    def dropEvent(self, event):
+        mime_data = event.mimeData()
+        if mime_data.hasUrls():
+            for url in mime_data.urls():
+                path = url.toLocalFile()
+                if os.path.splitext(path)[1] == config.FILE_EXTENSION:
+                    reply = self.confirm_save_changes()
+                    if reply == QMessageBox.Cancel:
+                        return
+
+                    self.load_project(path)
+                    event.acceptProposedAction()
+                    break
 
     # noinspection PyUnusedLocal
     @debug
