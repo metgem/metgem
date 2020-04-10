@@ -1,5 +1,0 @@
-name: docs
-channels:
-    - conda-forge
-dependencies: 
-    - sphinx>=3.0
