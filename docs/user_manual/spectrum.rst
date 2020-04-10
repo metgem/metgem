@@ -1,10 +1,10 @@
-.. |home| image:: images/icons/home.svg
-.. |back| image:: images/icons/back.svg
-.. |forward| image:: images/icons/forward.svg
-.. |move| image:: images/icons/move.svg
-.. |zoom| image:: images/icons/zoom.svg
-.. |save| image:: images/icons/save.svg
-.. |reset| image:: images/icons/reset.svg
+.. |home| image:: /images/icons/home.svg
+.. |back| image:: /images/icons/back.svg
+.. |forward| image:: /images/icons/forward.svg
+.. |move| image:: /images/icons/move.svg
+.. |zoom| image:: /images/icons/zoom.svg
+.. |save| image:: /images/icons/save.svg
+.. |reset| image:: /images/icons/reset.svg
 
 .. _spectrum_view:
 
@@ -13,7 +13,7 @@ Spectrum View
 
 The spectrum view is used to visualize nodes' spectra.
 
-.. image:: images/spectrum-view.png
+.. image:: /images/spectrum-view.png
   :alt: Spectrum View Window
   
   
@@ -44,7 +44,7 @@ When a line in this table is selected, the corresponding peaks in the spectra ar
 Toolbar
 *******
 
-.. image:: images/toolbar-spectrum.png
+.. image:: /images/toolbar-spectrum.png
   :alt: Spectrum View Toolbar
 
 Spectrum View come with a navigation toolbar on top of the window, which can be used to navigate through the spectrum. Here is a description of each of the buttons:

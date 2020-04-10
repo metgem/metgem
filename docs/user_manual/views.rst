@@ -1,21 +1,21 @@
-.. |add-view| image:: images/icons/list-add.svg
-.. |link| image:: images/icons/chain-link.svg
-.. |settings| image:: images/icons/preferences-system.svg
-.. |scale| image:: images/icons/ruler.svg
-.. |lock| image:: images/icons/lock.svg
-.. |zoom-in| image:: images/icons/zoom-in.svg
-.. |zoom-out| image:: images/icons/zoom-out.svg
-.. |zoom-fit| image:: images/icons/zoom-fit.svg
-.. |zoom-target| image:: images/icons/zoom-target.svg
-.. |select-neighbors| image:: images/icons/select-neighbors.svg
-.. |eye| image:: images/icons/eye.svg
-.. |eye-closed| image:: images/icons/eye-closed.svg
-.. |hide-isolated-nodes| image:: images/icons/hide-isolated-nodes.svg
-.. |color| image:: images/icons/color.svg
-.. |node-size| image:: images/icons/node-size.svg
-.. |node-pie| image:: images/icons/node-pie.svg
+.. |add-view| image:: /images/icons/list-add.svg
+.. |link| image:: /images/icons/chain-link.svg
+.. |settings| image:: /images/icons/preferences-system.svg
+.. |scale| image:: /images/icons/ruler.svg
+.. |lock| image:: /images/icons/lock.svg
+.. |zoom-in| image:: /images/icons/zoom-in.svg
+.. |zoom-out| image:: /images/icons/zoom-out.svg
+.. |zoom-fit| image:: /images/icons/zoom-fit.svg
+.. |zoom-target| image:: /images/icons/zoom-target.svg
+.. |select-neighbors| image:: /images/icons/select-neighbors.svg
+.. |eye| image:: /images/icons/eye.svg
+.. |eye-closed| image:: /images/icons/eye-closed.svg
+.. |hide-isolated-nodes| image:: /images/icons/hide-isolated-nodes.svg
+.. |color| image:: /images/icons/color.svg
+.. |node-size| image:: /images/icons/node-size.svg
+.. |node-pie| image:: /images/icons/node-pie.svg
 
-.. |scale-slider| image:: images/view-scale-slider.png
+.. |scale-slider| image:: /images/view-scale-slider.png
   :alt: Scale Slider
   :height: 16
   
@@ -24,7 +24,7 @@
 Network views
 =============
 
-.. image:: images/view.png
+.. image:: /images/view.png
   :alt: Example of a View
 
 Data can be visualised using different views. |appname| offers two types of visualisations:
@@ -56,7 +56,7 @@ Data can be visualised using different views. |appname| offers two types of visu
 Toolbar
 *******
     
-.. image:: images/toolbar-network-view.png
+.. image:: /images/toolbar-network-view.png
   :alt: Network View Toolbar
   
 - |settings| It is possible to change parameters for each visualisation. The visualisation will automatically be re-computed and updated to match the new paramaters.
@@ -69,7 +69,7 @@ Adding Views
 
 You can add view during the :ref:`import data <import_data>` process or later by using the |add-view| :guilabel:`Add View` menu in the :ref:`file_toolbar`.
 
-.. image:: images/add-view-menu.png
+.. image:: /images/add-view-menu.png
   :alt: Add View Menu
   
 
@@ -81,7 +81,7 @@ Interaction
 Navigation
 ~~~~~~~~~~
 
-.. image:: images/toolbar-view.png
+.. image:: /images/toolbar-view.png
   :alt: View Toolbar
   
 The :ref:`view_toolbar` can be used to zoom |zoom-in| in or |zoom-out| out the :ref:`active view <navigate_between_views>`. You can also use the |mousescroll| mouse wheel to zoom in or out.
@@ -98,7 +98,7 @@ If at least one node is :ref:`selected <views_selection>`, the |zoom-target| :gu
 Minimap
 -------
 
-.. image:: images/view-minimap.png
+.. image:: /images/view-minimap.png
   :alt: Minimap
 
 The minimap, located on bottom-right edge of each visualisation, gives you a overview of the global representation. It can be used to navigate trough the whole visualisation in two different ways when the :

@@ -1,30 +1,30 @@
-.. |sep| image:: images/toolbar-separator.png
+.. |sep| image:: /images/toolbar-separator.png
 
-.. |tb-nodes-mapping| image:: images/toolbar-metadata-nodes-mapping.png
+.. |tb-nodes-mapping| image:: /images/toolbar-metadata-nodes-mapping.png
   :alt: Mapping Section of Nodes Table Toolbar
   
-.. |tb-nodes-nodes| image:: images/toolbar-metadata-nodes-nodes.png
+.. |tb-nodes-nodes| image:: /images/toolbar-metadata-nodes-nodes.png
   :alt: Nodes Section of Nodes Table Toolbar
   
-.. |tb-nodes-tools| image:: images/toolbar-metadata-nodes-tools.png
+.. |tb-nodes-tools| image:: /images/toolbar-metadata-nodes-tools.png
   :alt: Tools Section of Nodes Table Toolbar
   
-.. |reset-ordering| image:: images/metadata-table-reset-ordering.png
+.. |reset-ordering| image:: /images/metadata-table-reset-ordering.png
   :alt: Upper Left Corner of Metadata Table
   
-.. |node-label| image:: images/icons/node-label.svg
-.. |node-pie| image:: images/icons/node-pie.svg
-.. |node-size| image:: images/icons/node-size.svg
-.. |node-color| image:: images/icons/node-color.svg
+.. |node-label| image:: /images/icons/node-label.svg
+.. |node-pie| image:: /images/icons/node-pie.svg
+.. |node-size| image:: /images/icons/node-size.svg
+.. |node-color| image:: /images/icons/node-color.svg
   
-.. |highlight-yellow| image:: images/icons/highlight-yellow.svg
-.. |highlight-red| image:: images/icons/highlight-red.svg
-.. |spectrum| image:: images/icons/spectrum.svg
-.. |query| image:: images/icons/library-query.svg
+.. |highlight-yellow| image:: /images/icons/highlight-yellow.svg
+.. |highlight-red| image:: /images/icons/highlight-red.svg
+.. |spectrum| image:: /images/icons/spectrum.svg
+.. |query| image:: /images/icons/library-query.svg
 
-.. |formula| image:: images/icons/calculator.svg
-.. |cluster| image:: images/icons/cluster.svg
-.. |remove| image:: images/icons/list-remove.svg
+.. |formula| image:: /images/icons/calculator.svg
+.. |cluster| image:: /images/icons/cluster.svg
+.. |remove| image:: /images/icons/list-remove.svg
 
 
 .. _metadata_tables:
@@ -36,7 +36,7 @@ Nodes and edges tables will contains metadata. When nodes or edges are selected 
 
 These tables can be hidden/shown using the :menuselection:`View --> Toolbars` menu. They can also be moved to a different position in the main window or even detached from the latter by simply dragging it to the new position or double-clicking on it's title bar.
 
-.. image:: images/view-data-menu.png
+.. image:: /images/view-data-menu.png
   :alt: Data menu
   
 .. note:: Columns can be selected via the |mouseright| right mouse button while the |mouseleft| left mouse button is used to change ordering.
@@ -129,7 +129,7 @@ Edges Toolbar
 
 The toolbar on top the edges table offers a few functions.
 
-.. image:: images/toolbar-metadata-edges.png
+.. image:: /images/toolbar-metadata-edges.png
   :alt: Edge Table Toolbar
   
 - |highlight-yellow| Highlight in the :ref:`views <network_views>` the edges selected in the table.

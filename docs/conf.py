@@ -34,7 +34,7 @@ release = '1.3.0'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.imgconverter',
+    'sphinxcontrib.rsvgconverter',
     'metgem'
 ]
 autosectionlabel_prefix_document = True
@@ -100,24 +100,24 @@ rst_epilog = """
 .. _Cytoscape: https://cytoscape.org
 .. _HDBScan: https://hdbscan.readthedocs.io
 
-.. |mousescroll| image:: images/mouse-scroll.svg
-.. |mouseleft| image:: images/mouse-left.svg
-.. |mouseright| image:: images/mouse-right.svg
-.. |import-data| image:: images/icons/import-data.svg
+.. |mousescroll| image:: /images/mouse-scroll.svg
+.. |mouseleft| image:: /images/mouse-left.svg
+.. |mouseright| image:: /images/mouse-right.svg
+.. |import-data| image:: /images/icons/import-data.svg
     :alt: Import Data
-.. |import-database| image:: images/icons/import-database.svg
+.. |import-database| image:: /images/icons/import-database.svg
     :alt: Import Database
-.. |import-mapping| image:: images/icons/import-mapping.svg
+.. |import-mapping| image:: /images/icons/import-mapping.svg
     :alt: Import Mapping
-.. |import-metadata| image:: images/icons/import-metadata.svg
+.. |import-metadata| image:: /images/icons/import-metadata.svg
     :alt: Import Metadata
-.. |browse| image:: images/browse.png
+.. |browse| image:: /images/browse.png
     :alt: Browse
-.. |options| image:: images/options.png
+.. |options| image:: /images/options.png
     :alt: Options
-.. |ok| image:: images/ok.png
+.. |ok| image:: /images/ok.png
     :alt: OK
-.. |refresh| image:: images/icons/refresh.svg
+.. |refresh| image:: /images/icons/refresh.svg
     :alt: Refresh
 """
 

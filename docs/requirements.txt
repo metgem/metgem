@@ -1,1 +1,2 @@
-sphinx>=3.0 
+sphinx>=3.0
+sphinxcontrib-svg2pdfconverter

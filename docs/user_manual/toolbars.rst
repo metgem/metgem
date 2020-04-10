@@ -5,7 +5,7 @@ Toolbars
  
 Each toolbar can be hidden/shown using the :menuselection:`View --> Toolbars` menu. It can also be moved to a different position in the main window or even detached from the latter by simply dragging it to the new position with it's left handle.
 
-.. image:: images/view-toolbars-menu.png
+.. image:: /images/view-toolbars-menu.png
   :alt: Toolbars menu 
 
   
@@ -14,7 +14,7 @@ Each toolbar can be hidden/shown using the :menuselection:`View --> Toolbars` me
 File Toolbar
 ************
 
-.. image:: images/toolbar-file.png
+.. image:: /images/toolbar-file.png
   :alt: File Toolbar
   
 Usage:
@@ -29,7 +29,7 @@ Usage:
 View Toolbar
 ************
 
-.. image:: images/toolbar-view.png
+.. image:: /images/toolbar-view.png
   :alt: View Toolbar
   
 Usage:
@@ -43,7 +43,7 @@ See :ref:`views_navigation`
 Network Toolbar
 ***************
 
-.. image:: images/toolbar-network.png
+.. image:: /images/toolbar-network.png
   :alt: Network Toolbar
   
 Usage:
@@ -60,7 +60,7 @@ Usage:
 Export Toolbar
 **************
 
-.. image:: images/toolbar-export.png
+.. image:: /images/toolbar-export.png
   :alt: Export Toolbar
   
 Usage:
@@ -73,7 +73,7 @@ Usage:
 Databases Toolbar
 *****************
 
-.. image:: images/toolbar-databases.png
+.. image:: /images/toolbar-databases.png
   :alt: Databases Toolbar
 
 Usage:
@@ -85,7 +85,7 @@ Usage:
 Search Toolbar
 **************
 
-.. image:: images/toolbar-search.png
+.. image:: /images/toolbar-search.png
   :alt: Search Toolbar
 
 Usage:

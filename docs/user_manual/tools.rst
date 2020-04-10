@@ -8,7 +8,7 @@ Tools
 Formulae
 ********
 
-.. image:: images/add-columns-by-formulae.png
+.. image:: /images/add-columns-by-formulae.png
 
 This tools is designed to allow you to combine multiple
 

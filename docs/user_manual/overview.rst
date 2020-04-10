@@ -1,7 +1,7 @@
 Global Overview
 ===============
 
-.. image:: images/overview.svg
+.. image:: /images/overview.svg
   :alt: Global overview of Main Window
   
 |appname|'s interface is divided in four main parts:
