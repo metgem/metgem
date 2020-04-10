@@ -74,7 +74,10 @@ class WelcomeWidget(QWidget):
         if HAS_FEEDPARSER:
             def on_enable_news_state_changed(state: bool):
                 QSettings().setValue('NewsEnabled', state)
-                self.update_news()
+                if state:
+                    self.update_news()
+                else:
+                    self.lstNews.clear()
 
             self.chkEnableNews.stateChanged.connect(on_enable_news_state_changed)
             news_enabled = QSettings().value('NewsEnabled', False, type=bool)

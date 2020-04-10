@@ -45,8 +45,8 @@
 {
 	text-decoration: underline;
 	color: palette(base);
-	background-color: palette(shadow);
-	selection-background-color: palette(shadow);
+	background-color: palette(text);
+	selection-background-color: palette(text);
 }</string>
        </property>
        <property name="frameShadow">
@@ -306,6 +306,12 @@
        </property>
        <property name="sizeType">
         <enum>QSizePolicy::Expanding</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
        </property>
       </spacer>
      </item>
@@ -688,8 +694,8 @@
         <string notr="true">QListWidget
 {
 	color: palette(base);
-	background-color: palette(shadow);
-	selection-background-color: palette(shadow);
+	background-color: palette(text);
+	selection-background-color: palette(text);
 }</string>
        </property>
        <property name="frameShape">
