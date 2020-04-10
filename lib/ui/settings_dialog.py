@@ -93,6 +93,10 @@ class SettingsDialog(SettingsDialogUI, SettingsDialogBase):
         if value is not None:
             self.spinNeutralTolerance.setValue(value)
 
+        value = settings.value('Metadata/float_precision', 4, type=int)
+        if value is not None:
+            self.spinFloatPrecision.setValue(value)
+
     def showEvent(self, event: QShowEvent):
         self.tabWidget.setCurrentIndex(0)
         self.gvStylePreview.zoomToFit()
@@ -110,6 +114,7 @@ class SettingsDialog(SettingsDialogUI, SettingsDialogBase):
         if r == QDialog.Accepted:
             settings = QSettings()
             settings.setValue('Metadata/neutral_tolerance', self.spinNeutralTolerance.value())
+            settings.setValue('Metadata/float_precision', self.spinFloatPrecision.value())
             settings.setValue('NetworkView/style', self.lstStyles.currentItem().data(CssRole))
             settings.setValue('NetworkView/style_font_size',
                               self.spinFontSize.value() if self.chkOverrideFontSize.isChecked() else None)

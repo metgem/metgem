@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="icons">
+    <file>images/metadata.svg</file>
     <file>images/git.svg</file>
     <file>images/academic.svg</file>
     <file>images/browser.svg</file>

@@ -1120,7 +1120,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
                         if self.spectra_widget.spectrum2_index is not None else None
                     set_spectrum = self.spectra_widget.set_spectrum1
                 if score is not None:
-                    self.spectra_widget.set_title(f'Score: {score:.4f}')
+                    float_precision = QSettings().value('Metadata/float_precision', 4, type=int)
+                    self.spectra_widget.set_title(f'Score: {score:.{float_precision}f}')
                 set_spectrum(data, node_idx, mz_parent)
 
                 # Show spectrum tab

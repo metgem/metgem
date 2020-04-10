@@ -2,7 +2,7 @@ import itertools
 import os
 import numpy as np
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QSettings
 from PyQt5.QtWidgets import QWidget, QTableWidgetItem
 from PyQt5 import uic
 
@@ -63,6 +63,7 @@ class FragmentsListWidget(QWidget):
             if matches.size == 0:
                 return
 
+            float_precision = QSettings().value('Metadata/float_precision', 4, type=int)
             for table, t in ((self.twFragments, SpectraMatchState.fragment),
                              (self.twNeutralLosses, SpectraMatchState.neutral_loss)):
                 filter_ = np.where(matches['type'] == t)[0]
@@ -79,10 +80,10 @@ class FragmentsListWidget(QWidget):
 
                 for row, (ix1, ix2, score, _) in enumerate(matches[filter_]):
                     for mz, data, ix, column in ((mz1, data1, ix1, 0), (mz2, data2, ix2, 1)):
-                        item = QTableWidgetItem(str(data[ix, MZ]))
+                        item = QTableWidgetItem(f'{data[ix, MZ]:.{float_precision}f}')
                         item.setData(FragmentsListWidget.IndexRole, ix)
                         table.setItem(row, column, item)
 
-                    item = QTableWidgetItem(f'{score:.4f}')
+                    item = QTableWidgetItem(f'{score:.{float_precision}f}')
                     item.setData(FragmentsListWidget.IndexRole, ix)
                     table.setItem(row, 2, item)

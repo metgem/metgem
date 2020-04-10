@@ -1,6 +1,6 @@
 from enum import Enum
 
-from PyQt5.QtCore import pyqtProperty, QVariant
+from PyQt5.QtCore import pyqtProperty, QVariant, QSettings
 
 from matplotlib.ticker import FuncFormatter, AutoMinorLocator
 
@@ -58,7 +58,8 @@ class SpectrumCanvas(BaseCanvas):
 
         if idx is not None:
             if parent is not None:
-                return f"{idx+1} ($m/z$ {parent:.4f})"
+                float_precision = QSettings().value('Metadata/float_precision', 4, type=int)
+                return f"{idx+1} ($m/z$ {parent:.{float_precision}f})"
             else:
                 return f"{idx+1}"
         else:

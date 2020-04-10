@@ -111,7 +111,7 @@ class NodesModel(QAbstractTableModel):
         if role in (Qt.DisplayRole, Qt.EditRole, FilterRole, LabelRole, StandardsRole, AnalogsRole, DbResultsRole):
             if column == 0:
                 try:
-                    return self.mzs[row]
+                    return round(self.mzs[row], QSettings().value('Metadata/float_precision', 4, type=int))
                 except IndexError:
                     return
             elif column == 1:
@@ -160,6 +160,8 @@ class NodesModel(QAbstractTableModel):
 
                 if isinstance(data, np.generic):
                     data = data.item()
+                if isinstance(data, float):
+                    data = round(data, QSettings().value('Metadata/float_precision', 4, type=int))
                 return str(data) if role in (FilterRole, LabelRole) else data
 
     def setData(self, index: QModelIndex, value, role=Qt.EditRole):
