@@ -8,6 +8,7 @@ from PyQt5.QtGui import QShowEvent
 from PyQt5.QtWidgets import QDialog, QListWidgetItem
 from PyQtNetworkView import style_from_css, NetworkScene
 
+from .. import utils
 from ..config import STYLES_PATH, APP_PATH
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'settings_dialog.ui')
@@ -68,8 +69,7 @@ class SettingsDialog(SettingsDialogUI, SettingsDialogBase):
                 current_item = item
             self.lstStyles.addItem(item)
 
-        self.lstStyles.currentItemChanged.connect(
-            lambda item: self.gvStylePreview.scene().setNetworkStyle(item.data(StyleRole)))
+        self.lstStyles.currentItemChanged.connect(self.on_change_theme)
 
         if current_item is not None:
             self.lstStyles.setCurrentItem(current_item)
@@ -88,8 +88,8 @@ class SettingsDialog(SettingsDialogUI, SettingsDialogBase):
         self.chkOverrideFontSize.stateChanged.connect(self.spinFontSize.setEnabled)
         self.spinFontSize.valueChanged.connect(self.on_change_font_size)
 
-        # Edges tab
-        value = settings.value('Metadata/neutral_tolerance', type=int)
+        # Metadata tab
+        value = settings.value('Metadata/neutral_tolerance', 50, type=int)
         if value is not None:
             self.spinNeutralTolerance.setValue(value)
 
@@ -101,6 +101,14 @@ class SettingsDialog(SettingsDialogUI, SettingsDialogBase):
         self.tabWidget.setCurrentIndex(0)
         self.gvStylePreview.zoomToFit()
         super().showEvent(event)
+
+    def on_change_theme(self, item):
+        self.gvStylePreview.scene().setNetworkStyle(item.data(StyleRole))
+        with utils.SignalBlocker(self.spinFontSize):
+            style = item.data(StyleRole)
+            if style is not None:
+                font = style.nodeFont()
+                self.spinFontSize.setValue(font.pointSize())
 
     def on_change_font_size(self, font_size):
         style = self.gvStylePreview.scene().networkStyle()
