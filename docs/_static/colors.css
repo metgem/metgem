@@ -1,0 +1,173 @@
+/* Colors and text decoration.
+ For example, :black:`text in black` or :blink:`text blinking` in rST. */
+
+.black {
+    color: black;
+}
+
+.gray {
+    color: gray;
+}
+
+.grey {
+    color: gray;
+}
+
+.silver {
+    color: silver;
+}
+
+.white {
+    color: white;
+}
+
+.maroon {
+    color: maroon;
+}
+
+.red {
+    color: red;
+}
+
+.magenta {
+    color: magenta;
+}
+
+.fuchsia {
+    color: fuchsia;
+}
+
+.pink {
+    color: pink;
+}
+
+.orange {
+    color: orange;
+}
+
+.yellow {
+    color: yellow;
+}
+
+.lime {
+    color: lime;
+}
+
+.green {
+    color: green;
+}
+
+.olive {
+    color: olive;
+}
+
+.teal {
+    color: teal;
+}
+
+.cyan {
+    color: cyan;
+}
+
+.aqua {
+    color: aqua;
+}
+
+.blue {
+    color: blue;
+}
+
+.navy {
+    color: navy;
+}
+
+.purple {
+    color: purple;
+}
+
+
+/* Border colors */
+ 
+.b-black {
+    border:1px solid black;
+}
+
+.b-gray {
+    border:1px solid gray;
+}
+
+.b-grey {
+    border:1px solid gray;
+}
+
+.b-silver {
+    border:1px solid silver;
+}
+
+.b-white {
+    border:1px solid white;
+}
+
+.b-maroon {
+    border:1px solid maroon;
+}
+
+.b-red {
+    border:1px solid red;
+}
+
+.b-magenta {
+    border:1px solid magenta;
+}
+
+.b-fuchsia {
+    border:1px solid fuchsia;
+}
+
+.b-pink {
+    border:1px solid pink;
+}
+
+.b-orange {
+    border:1px solid orange;
+}
+
+.b-yellow {
+    border:1px solid yellow;
+}
+
+.b-lime {
+    border:1px solid lime;
+}
+
+.b-green {
+    border:1px solid green;
+}
+
+.b-olive {
+    border:1px solid olive;
+}
+
+.b-teal {
+    border:1px solid teal;
+}
+
+.b-cyan {
+    border:1px solid cyan;
+}
+
+.b-aqua {
+    border:1px solid aqua;
+}
+
+.b-blue {
+    border:1px solid blue;
+}
+
+.b-navy {
+    border:1px solid navy;
+}
+
+.b-purple {
+    border:1px solid purple;
+}

@@ -1,0 +1,8 @@
+Settings
+========
+
+Theme
+*****
+
+Edges
+*****

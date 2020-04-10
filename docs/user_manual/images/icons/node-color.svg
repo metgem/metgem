@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="18px" height="18px" viewBox="0 0 18 18" version="1.1">
+<defs>
+<filter id="alpha" filterUnits="objectBoundingBox" x="0%" y="0%" width="100%" height="100%">
+  <feColorMatrix type="matrix" in="SourceGraphic" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0"/>
+</filter>
+<image id="image15" width="18" height="18" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAYAAABWzo5XAAAABmJLR0QA/wD/AP+gvaeTAAAAH0lEQVQ4jWNkYGCIZKACYKKGIaMGjRo0atCoQYPJIAApEgB9uwpyrgAAAABJRU5ErkJggg=="/>
+<mask id="mask0">
+  <g filter="url(#alpha)">
+<use xlink:href="#image15"/>
+  </g>
+</mask>
+<radialGradient id="radial0" gradientUnits="userSpaceOnUse" cx="24.174213" cy="38.763416" fx="24.174213" fy="38.763416" r="22.22967" gradientTransform="matrix(0.276005,0,0,0.0792863,2.327788,10.615664)">
+<stop offset="0" style="stop-color:rgb(0%,0%,0%);stop-opacity:1;"/>
+<stop offset="1" style="stop-color:rgb(0%,0%,0%);stop-opacity:0;"/>
+</radialGradient>
+<clipPath id="clip1">
+  <rect x="0" y="0" width="18" height="18"/>
+</clipPath>
+<g id="surface14" clip-path="url(#clip1)">
+<path style=" stroke:none;fill-rule:nonzero;fill:url(#radial0);" d="M 15.132812 13.6875 C 15.132812 14.664062 12.386719 15.449219 9 15.449219 C 5.613281 15.449219 2.863281 14.664062 2.863281 13.6875 C 2.863281 12.714844 5.613281 11.925781 9 11.925781 C 12.386719 11.925781 15.132812 12.714844 15.132812 13.6875 Z M 15.132812 13.6875 "/>
+</g>
+</defs>
+<g id="surface1">
+<use xlink:href="#surface14" mask="url(#mask0)"/>
+<path style="fill-rule:evenodd;fill:rgb(100%,40.000001%,40.000001%);fill-opacity:1;stroke-width:0.999834;stroke-linecap:round;stroke-linejoin:bevel;stroke:rgb(0%,0%,0%);stroke-opacity:1;stroke-miterlimit:4;" d="M 428.800882 117.996815 C 428.800882 136.780497 413.603803 152.023558 394.797129 152.023558 C 376.013447 152.023558 360.770386 136.780497 360.770386 117.996815 C 360.770386 99.213132 376.013447 83.970071 394.797129 83.970071 C 413.603803 83.970071 428.800882 99.213132 428.800882 117.996815 Z M 428.800882 117.996815 " transform="matrix(0.169903,0,0,0.169903,-58.225702,-11.633965)"/>
+</g>
+</svg>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="15px" height="18px" viewBox="0 0 15 18" version="1.1">
+<defs>
+<linearGradient id="linear0" gradientUnits="userSpaceOnUse" x1="55" y1="156" x2="115" y2="196" gradientTransform="matrix(0.096774,0,0,0.094737,-3.870968,-2.463158)">
+<stop offset="0" style="stop-color:rgb(100%,100%,0%);stop-opacity:1;"/>
+<stop offset="1" style="stop-color:rgb(78.431374%,78.431374%,0%);stop-opacity:1;"/>
+</linearGradient>
+<radialGradient id="radial0" gradientUnits="userSpaceOnUse" cx="50" cy="205.649994" fx="50" fy="205.649994" r="32.768002" gradientTransform="matrix(0.191961,-0.0144559,0.00594533,0.075693,-9.853064,1.735768)">
+<stop offset="0" style="stop-color:rgb(0%,0%,0%);stop-opacity:1;"/>
+<stop offset="1" style="stop-color:rgb(9.803922%,9.803922%,9.803922%);stop-opacity:1;"/>
+</radialGradient>
+<linearGradient id="linear1" gradientUnits="userSpaceOnUse" x1="60" y1="96" x2="165" y2="96" gradientTransform="matrix(0.096774,0,0,0.094737,-3.870968,-2.463158)">
+<stop offset="0" style="stop-color:rgb(100%,100%,100%);stop-opacity:0.098039;"/>
+<stop offset="1" style="stop-color:rgb(100%,100%,100%);stop-opacity:0.19608;"/>
+</linearGradient>
+</defs>
+<g id="surface1">
+<path style=" stroke:none;fill-rule:nonzero;fill:url(#linear0);" d="M 11.613281 0 L 15 3.316406 L 7.257812 16.105469 C 6.773438 16.007812 1.550781 12.503906 1.453125 12.316406 Z M 11.613281 0 "/>
+<path style=" stroke:none;fill-rule:nonzero;fill:url(#radial0);" d="M 1.453125 12.316406 L 7.257812 16.105469 C 7.257812 16.105469 5.324219 15.632812 3.386719 17.054688 C 2.742188 17.523438 0.554688 17.257812 0.964844 16.582031 C 2.421875 14.210938 1.453125 12.316406 1.453125 12.316406 Z M 1.453125 12.316406 "/>
+<path style=" stroke:none;fill-rule:nonzero;fill:rgb(78.431374%,78.431374%,0%);fill-opacity:1;" d="M 0.964844 16.582031 L 3.386719 17.054688 L 2.421875 18 L 0 18 Z M 0.964844 16.582031 "/>
+<path style=" stroke:none;fill-rule:nonzero;fill:url(#linear1);" d="M 11.613281 0.476562 L 12.097656 0.945312 C 12.097656 0.945312 3.386719 11.84375 2.902344 12.789062 C 2.902344 12.789062 1.9375 12.789062 1.9375 12.316406 Z M 11.613281 0.476562 "/>
+</g>
+</svg>
