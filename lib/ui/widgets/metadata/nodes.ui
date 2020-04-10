@@ -259,7 +259,7 @@
   <action name="actionViewCompareSpectrum">
    <property name="icon">
     <iconset resource="../../ui.qrc">
-     <normaloff>:/icons/images/spectrum.svg</normaloff>:/icons/images/spectrum.svg</iconset>
+     <normaloff>:/icons/images/spectrum-inverted.svg</normaloff>:/icons/images/spectrum-inverted.svg</iconset>
    </property>
    <property name="text">
     <string>Compare Spectrum</string>
