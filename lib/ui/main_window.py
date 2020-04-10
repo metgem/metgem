@@ -2075,7 +2075,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             model.beginResetModel()
             df = self._network.infos
             if df is not None:
-                self._network.infos = df.combine_first(worker.result())
+                df.update(worker.result())
             else:
                 self._network.infos = worker.result()
             self.has_unsaved_changes = True
