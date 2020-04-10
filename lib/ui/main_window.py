@@ -195,7 +195,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
             widget.btOptions.clicked.connect(lambda: self.on_edit_options_triggered(widget))
 
         self.actionQuit.triggered.connect(self.close)
-        self.actionCheckUpdates.triggered.connect(lambda: self.check_for_updates(could_ignore=False))
+        self.actionCheckUpdates.triggered.connect(
+            lambda: self.check_for_updates(could_ignore=False, notify_if_no_update=True))
         self.actionAbout.triggered.connect(lambda: ui.AboutDialog().exec_())
         self.actionAboutQt.triggered.connect(lambda: QMessageBox.aboutQt(self))
         self.actionProcessFile.triggered.connect(self.on_process_file_triggered)
@@ -1919,7 +1920,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         settings.endGroup()
 
     @debug
-    def check_for_updates(self, could_ignore=True):
+    def check_for_updates(self, could_ignore=True, notify_if_no_update=False):
         def notify_update():
             nonlocal worker
             result = worker.result()
@@ -1933,6 +1934,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
                 dialog = ui.UpdatesDialog(version, release_notes, url)
                 dialog.exec_()
+            elif notify_if_no_update:
+                QMessageBox.information(self, None,
+                                        f"Your version of {QCoreApplication.applicationName()} is already up-to-date.")
 
         worker = workers.CheckUpdatesWorker()
         worker.finished.connect(notify_update)
