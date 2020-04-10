@@ -25,5 +25,6 @@ dependencies:
     - numexpr>=2.7.0
     - xlrd
     - odfpy
+    - feedparser
     - pip:
         - py2cytoscape>=0.7.0
