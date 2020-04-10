@@ -14,11 +14,11 @@ import pandas as pd
 import requests
 import sqlalchemy
 from PyQt5 import uic
-from PyQt5.QtCore import QSettings, Qt, QCoreApplication, QRectF, QSize
+from PyQt5.QtCore import QSettings, Qt, QCoreApplication, QRectF
 from PyQt5.QtGui import QPainter, QImage, QColor, QKeyEvent, QIcon, QFontMetrics, QFont, QKeySequence, QCursor
 from PyQt5.QtWidgets import (QDialog, QFileDialog, QMessageBox, QWidget, QMenu, QActionGroup, QMainWindow,
                              QAction, qApp, QTableView, QComboBox, QToolBar,
-                             QApplication, QGraphicsView, QLineEdit, QListWidget)
+                             QApplication, QGraphicsView, QLineEdit, QListWidget, QLabel)
 from PyQtAds.QtAds import (CDockManager, CDockWidget,
                            BottomDockWidgetArea, CenterDockWidgetArea,
                            TopDockWidgetArea, LeftDockWidgetArea)
@@ -71,6 +71,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.setupUi(self)
 
         self.setAcceptDrops(True)
+
+        self._status_nodes_widget = QLabel("")
+        self.statusBar().addPermanentWidget(self._status_nodes_widget)
+        self._status_edges_widget = QLabel("")
+        self.statusBar().addPermanentWidget(self._status_edges_widget)
 
         # Add Dockable Windows
         self.add_docks()
@@ -413,6 +418,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         self._network = network
 
+        self.update_status_widgets()
+
     @property
     def style(self):
         return self._style
@@ -598,6 +605,25 @@ class MainWindow(MainWindowBase, MainWindowUI):
             except IndexError:
                 act.setVisible(False)
                 item.setHidden(True)
+
+    def update_status_widgets(self, *args):
+        mzs = getattr(self.network, 'mzs', None)
+        if mzs is not None:
+            num_nodes = len(mzs)
+            self._status_nodes_widget.setText(
+                f'<img src=":/icons/images/node.svg" height="20" style="vertical-align: top;" /> <i>{num_nodes}</i>')
+            self._status_nodes_widget.setToolTip(f"{num_nodes} Nodes" if num_nodes > 0 else "No Node")
+
+            interactions = getattr(self.network, 'interactions', None)
+            num_edges = len(interactions) if interactions is not None else 0
+            self._status_edges_widget.setText(
+                f'<img src=":/icons/images/edge.svg" height="20" style="vertical-align: top;" /> <i>{num_edges}</i>')
+            self._status_edges_widget.setToolTip(f"{num_edges} Edges" if num_edges > 0 else "No Edge")
+        else:
+            self._status_nodes_widget.setText("")
+            self._status_nodes_widget.setToolTip("")
+            self._status_edges_widget.setText("")
+            self._status_edges_widget.setToolTip("")
 
     def keyPressEvent(self, event: QKeyEvent):
         widget = QApplication.focusWidget()
@@ -1461,6 +1487,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
                             widget = self.add_network_widget(widget_class)
                             if widget is not None:
                                 self._workers.append(lambda _, w=widget: w.create_draw_worker())
+
+                self._workers.append(self.update_status_widgets)
 
                 self._workers.start()
 
