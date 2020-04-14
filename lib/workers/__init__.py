@@ -1,10 +1,12 @@
 from .check_updates import CheckUpdatesWorker
+from .check_plugins_updates import CheckPluginsVersionsWorker
 from .clusterize import (ClusterizeOptions, ClusterizeWorker, HAS_HDBSCAN)
 from .cosine import ComputeScoresWorker, CosineComputationOptions
 from .databases import (ListDatabasesWorker, DownloadDatabasesWorker,
                         GetGNPSDatabasesMtimeWorker, ConvertDatabasesWorker,
                         QueryDatabasesWorker, QueryDatabasesOptions,
                         StandardsResult)
+from .download_plugins import DownloadPluginsWorker
 from .embedding import (TSNEWorker, TSNEVisualizationOptions,
                         MDSWorker, MDSVisualizationOptions,
                         IsomapWorker, IsomapVisualizationOptions,

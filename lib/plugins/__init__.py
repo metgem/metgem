@@ -43,6 +43,10 @@ class DbSource:
         raise NotImplementedError
 
 
+def get_loaded_plugins():
+    return __loaded_plugins
+
+
 def get_db_sources():
     return __db_sources
 
@@ -61,10 +65,14 @@ def load_plugin(source, plugin_name):
     plugin = source.load_plugin(plugin_name)
     del builtins.DbSource
 
+    name = plugin.__name__.split('.')[-1]
+    __loaded_plugins[name] = plugin
+
     return plugin
 
 
 __db_sources = []
+__loaded_plugins = {}
 
 base = PluginBase(package='lib.plugins')
 source = base.make_plugin_source(searchpath=[PLUGINS_PATH,

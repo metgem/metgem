@@ -61,6 +61,8 @@
      <string>&amp;Help</string>
     </property>
     <addaction name="actionCheckUpdates"/>
+    <addaction name="actionInstallPlugins"/>
+    <addaction name="separator"/>
     <addaction name="actionAbout"/>
     <addaction name="actionAboutQt"/>
    </widget>
@@ -952,6 +954,11 @@
   <action name="actionCheckUpdates">
    <property name="text">
     <string>&amp;Check for updates</string>
+   </property>
+  </action>
+  <action name="actionInstallPlugins">
+   <property name="text">
+    <string>Install/Update &amp;plugins</string>
    </property>
   </action>
  </widget>

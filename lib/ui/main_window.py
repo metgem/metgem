@@ -197,6 +197,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.actionQuit.triggered.connect(self.close)
         self.actionCheckUpdates.triggered.connect(
             lambda: self.check_for_updates(could_ignore=False, notify_if_no_update=True))
+        self.actionInstallPlugins.triggered.connect(self.on_install_plugins_triggered)
         self.actionAbout.triggered.connect(lambda: ui.AboutDialog().exec_())
         self.actionAboutQt.triggered.connect(lambda: QMessageBox.aboutQt(self))
         self.actionProcessFile.triggered.connect(self.on_process_file_triggered)
@@ -1427,6 +1428,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
         else:
             self.setWindowFlags(Qt.Widget)
             self.showNormal()
+
+    @debug
+    def on_install_plugins_triggered(self, *args):
+       dialog = ui.InstallPluginsDialog(self)
+       dialog.open()
 
     @debug
     def on_process_file_triggered(self, *args):
