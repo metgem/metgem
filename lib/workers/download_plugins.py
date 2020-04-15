@@ -13,16 +13,21 @@ class DownloadPluginsWorker(BaseWorker):
         super().__init__()
         self.path = path
         self.plugins = plugins
+        self.max = len(plugins)
 
     def run(self):
         downloaded = set()
         unreachable = set()
 
-        for plugin in self.plugins:
+        for i, plugin in enumerate(self.plugins):
+            url = plugin.get('url')
+            if not url:
+                continue
+
             try:
                 with BytesIO() as bytes_io:
                     # Download zip file of plugin
-                    with requests.get(plugin['url'], stream=True) as r:
+                    with requests.get(url, stream=True) as r:
                         r.raise_for_status()
 
                         for chunk in r.iter_content(chunk_size=1024):
@@ -45,5 +50,7 @@ class DownloadPluginsWorker(BaseWorker):
                     downloaded.add(plugin['name'])
             except (requests.ConnectionError, requests.HTTPError) as e:
                 unreachable.add(plugin['name'])
+            finally:
+                self.updated.emit(i)
 
             return downloaded, unreachable

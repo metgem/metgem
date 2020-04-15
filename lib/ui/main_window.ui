@@ -61,7 +61,6 @@
      <string>&amp;Help</string>
     </property>
     <addaction name="actionCheckUpdates"/>
-    <addaction name="actionInstallPlugins"/>
     <addaction name="separator"/>
     <addaction name="actionAbout"/>
     <addaction name="actionAboutQt"/>
@@ -84,7 +83,7 @@
    </widget>
    <widget class="QMenu" name="menuSettings">
     <property name="title">
-     <string>Settings</string>
+     <string>&amp;Settings</string>
     </property>
     <addaction name="actionPreferences"/>
     <addaction name="actionCurrentParameters"/>
@@ -114,11 +113,19 @@
     <addaction name="separator"/>
     <addaction name="actionViewDatabases"/>
    </widget>
+   <widget class="QMenu" name="menu_Plugins">
+    <property name="title">
+     <string>&amp;Plugins</string>
+    </property>
+    <addaction name="actionShowPluginManager"/>
+    <addaction name="actionOpenPluginsFolder"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
    <addaction name="menu_Network"/>
    <addaction name="menu_Databases"/>
    <addaction name="menuSettings"/>
+   <addaction name="menu_Plugins"/>
    <addaction name="menuAbout"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -956,9 +963,25 @@
     <string>&amp;Check for updates</string>
    </property>
   </action>
-  <action name="actionInstallPlugins">
+  <action name="actionShowPluginManager">
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/plugin.svg</normaloff>:/icons/images/plugin.svg</iconset>
+   </property>
    <property name="text">
-    <string>Install/Update &amp;plugins</string>
+    <string>Plugins &amp;manager</string>
+   </property>
+  </action>
+  <action name="actionOpenPluginsFolder">
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/plugins-home.svg</normaloff>:/icons/images/plugins-home.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Open plugins folder</string>
+   </property>
+   <property name="statusTip">
+    <string>Open plugins folder</string>
    </property>
   </action>
  </widget>

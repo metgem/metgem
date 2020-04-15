@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>InstallPlugins</class>
- <widget class="QDialog" name="InstallPlugins">
+ <class>PluginsManager</class>
+ <widget class="QDialog" name="PluginsManager">
   <property name="windowModality">
    <enum>Qt::ApplicationModal</enum>
   </property>
@@ -14,7 +14,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Install Plugins</string>
+   <string>PluginsManager</string>
   </property>
   <property name="modal">
    <bool>true</bool>
@@ -264,7 +264,7 @@
       <enum>Qt::Horizontal</enum>
      </property>
      <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Close</set>
+      <set>QDialogButtonBox::Close</set>
      </property>
     </widget>
    </item>
@@ -277,7 +277,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>InstallPlugins</receiver>
+   <receiver>PluginsManager</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -293,7 +293,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>InstallPlugins</receiver>
+   <receiver>PluginsManager</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

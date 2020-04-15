@@ -63,6 +63,7 @@ def register_db_source(obj):
 def load_plugin(source, plugin_name):
     builtins.DbSource = DbSource
     plugin = source.load_plugin(plugin_name)
+    # noinspection PyUnresolvedReferences
     del builtins.DbSource
 
     name = plugin.__name__.split('.')[-1]
@@ -73,15 +74,27 @@ def load_plugin(source, plugin_name):
 
 __db_sources = []
 __loaded_plugins = {}
+source = None
 
-base = PluginBase(package='lib.plugins')
-source = base.make_plugin_source(searchpath=[PLUGINS_PATH,
-                                             os.path.join(APP_PATH, 'plugins')],
-                                 identifier=QCoreApplication.applicationName())
 
-for plugin_name in source.list_plugins():
-    plugin = load_plugin(source, plugin_name)
+def reload_plugins():
+    global __db_sources, __loaded_plugins, source
+    __db_sources = []
+    __loaded_plugins = {}
 
-    for name, obj in inspect.getmembers(plugin, inspect.isclass):
-        if issubclass(obj, DbSource):
-            register_db_source(obj())
+    base = PluginBase(package='lib.plugins')
+    if source is not None:
+        source = None
+    source = base.make_plugin_source(searchpath=[PLUGINS_PATH,
+                                                 os.path.join(APP_PATH, 'plugins')],
+                                     identifier=QCoreApplication.applicationName())
+
+    for plugin_name in source.list_plugins():
+        plugin = load_plugin(source, plugin_name)
+
+        for name, obj in inspect.getmembers(plugin, inspect.isclass):
+            if issubclass(obj, DbSource):
+                register_db_source(obj())
+
+
+reload_plugins()

@@ -3,11 +3,12 @@ import os
 import typing
 from PyQt5 import uic
 from PyQt5.QtCore import Qt, QAbstractTableModel, QModelIndex, QItemSelection, QSortFilterProxyModel
-from PyQt5.QtWidgets import QDialog, QTableView, QLabel, QHeaderView, QMessageBox
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QDialog, QLabel, QHeaderView, QMessageBox, QDialogButtonBox
 
 from . import ProgressDialog
 from ..config import PLUGINS_PATH
-from ..plugins import get_loaded_plugins
+from ..plugins import get_loaded_plugins, reload_plugins
 from ..workers import WorkerQueue, CheckPluginsVersionsWorker, DownloadPluginsWorker
 
 
@@ -23,9 +24,7 @@ class PluginsModel(QAbstractTableModel):
         if not index.isValid():
             return None
 
-        if role == PluginsModel.PluginRole:
-            return self._plugins[index.row()][1]
-        elif role == Qt.CheckStateRole:
+        if role == Qt.CheckStateRole:
             if index.column() == 0:
                 return Qt.Checked if index.row() in self._selected_indexes else Qt.Unchecked
 
@@ -90,6 +89,8 @@ class AvailablePluginsModel(PluginsModel):
                 return self._plugins[row][0]
             elif column == 1:
                 return self._plugins[row][1]['version']
+        elif role == PluginsModel.PluginRole:
+            return self._plugins[index.row()][1]
         return super().data(index, role)
 
 
@@ -106,6 +107,9 @@ class InstalledPluginsModel(PluginsModel):
                     return self._plugins[row][1].__version__
                 except AttributeError:
                     return
+        elif role == PluginsModel.PluginRole:
+            return self._plugins[index.row()][1]
+
         return super().data(index, role)
 
 
@@ -121,6 +125,8 @@ class UpdatesPluginsModel(PluginsModel):
                 return self._plugins[row][1].__version__
             elif column == 2:
                 return self._plugins[row][2]['version']
+        elif role == PluginsModel.PluginRole:
+            return self._plugins[index.row()][2]
         return super().data(index, role)
 
     def headerData(self, section: int, orientation: Qt.Orientation, role: int = ...) -> typing.Any:
@@ -138,14 +144,14 @@ class UpdatesPluginsModel(PluginsModel):
         return 3
 
 
-class InstallPluginsDialog(QDialog):
+class PluginsManagerDialog(QDialog):
 
     def __init__(self, parent):
         super().__init__(parent)
 
         self.setWindowFlags(Qt.Tool | Qt.CustomizeWindowHint | Qt.WindowCloseButtonHint)
 
-        uic.loadUi(os.path.join(os.path.dirname(__file__), 'install_plugins_dialog.ui'), self)
+        uic.loadUi(os.path.join(os.path.dirname(__file__), 'plugins_manager_dialog.ui'), self)
 
         self.tabWidget.setCurrentIndex(0)
 
@@ -176,6 +182,10 @@ class InstallPluginsDialog(QDialog):
         for button in (self.btASearch, self.btUSearch, self.btISearch):
             button.clicked.connect(self.on_do_search)
 
+        self.btReloadPlugins = self.buttonBox.addButton("Reload Plugins", QDialogButtonBox.ActionRole)
+        self.btReloadPlugins.setIcon(QIcon(":/icons/images/refresh.svg"))
+        self.btReloadPlugins.clicked.connect(self.reload_plugins)
+
         self.btInstall.clicked.connect(self.on_install_clicked)
         self.btUpdate.clicked.connect(self.on_update_clicked)
         self.btUninstall.clicked.connect(self.on_uninstall_clicked)
@@ -200,41 +210,65 @@ class InstallPluginsDialog(QDialog):
 
         table.model().setFilterRegExp(str(edit.text()))
 
-    def on_install_clicked(self):
-        model = self.tvAvailable.model().sourceModel()
-        plugins = []
-        for row in range(model.rowCount()):
-            index = model.index(row, 0)
-            if index.data(Qt.CheckStateRole) == Qt.Checked:
-                plugin = index.data(PluginsModel.PluginRole)
-                if plugin.get('url'):
-                    plugins.append(plugin)
-
+    def install_plugins(self, plugins):
         def plugins_installed():
             nonlocal worker
             downloaded, unreachable = worker.result()
 
-            if any(unreachable.values()):
+            if any(unreachable):
                 msg = ["{}: {}".format(origin, ", ".join(names)) for origin, names in unreachable.items()]
                 QMessageBox.warning(self, None,
                                     "One or more plugins were not accessible on the remote server(s):\n{}"
                                     .format("\n".join(msg)))
 
-            if any(downloaded.values()):
-                QMessageBox.info(self, None, f"{len(downloaded)} plugins succesfully installed.")
+            if any(downloaded):
+                num_installed = len(downloaded)
+                QMessageBox.information(self, None, f"{num_installed} plugin"
+                                                    f"{'s' if num_installed>1 else ''}"
+                                                    " successfully installed.")
 
-            self.update_available_plugins()
+            self.reload_plugins()
 
         worker = DownloadPluginsWorker(PLUGINS_PATH, plugins)
         worker.finished.connect(plugins_installed)
         self._workers.append(worker)
         self._workers.start()
 
+    def uninstall_plugins(self, plugins):
+        for plugin in plugins:
+            try:
+                os.remove(plugin.__file__)
+            except (FileNotFoundError, AttributeError):
+                pass
+        self.reload_plugins()
+
+    def get_checked_items_plugins(self, model):
+        plugins = []
+        for row in range(model.rowCount()):
+            index = model.index(row, 0)
+            if index.data(Qt.CheckStateRole) == Qt.Checked:
+                plugin = index.data(PluginsModel.PluginRole)
+                plugins.append(plugin)
+
+        return plugins
+
+    def on_install_clicked(self):
+        model = self.tvAvailable.model().sourceModel()
+        plugins = self.get_checked_items_plugins(model)
+
+        self.install_plugins(plugins)
+
     def on_update_clicked(self):
-        pass
+        model = self.tvUpdates.model().sourceModel()
+        plugins = self.get_checked_items_plugins(model)
+
+        self.install_plugins(plugins)
 
     def on_uninstall_clicked(self):
-        pass
+        model = self.tvInstalled.model().sourceModel()
+        plugins = self.get_checked_items_plugins(model)
+
+        self.uninstall_plugins(plugins)
 
     def update_description(self, desc_label: QLabel, selected: QItemSelection):
         indexes = selected.indexes()
@@ -250,21 +284,28 @@ class InstallPluginsDialog(QDialog):
                     except KeyError:
                         desc_label.setText("")
 
+    def reload_plugins(self):
+        reload_plugins()
+        self.update_plugins_lists()
+
     def update_plugins_lists(self):
         def finished():
             nonlocal worker, loaded_plugins
-            available_plugins = worker.result()
-            if available_plugins:
+            plugins = worker.result()
+            if plugins:
                 if loaded_plugins:
-                    available_plugins = {k: v for k, v in available_plugins.items() if k not in loaded_plugins}
+                    available_plugins = {k: v for k, v in plugins.items() if k not in loaded_plugins}
+                else:
+                    available_plugins = plugins
                 self.tvAvailable.model().sourceModel().update(sorted(tuple(available_plugins.items())))
+
                 if loaded_plugins:
                     plugins_to_update = []
                     for name, plugin in loaded_plugins.items():
-                        if name in available_plugins:
+                        if name in plugins:
                             version = getattr(plugin, '__version__', '')
-                            if available_plugins[name]['version'] > version:
-                                plugins_to_update.append((name, plugin, available_plugins[name]))
+                            if plugins[name]['version'] > version:
+                                plugins_to_update.append((name, plugin, plugins[name]))
                     self.tvUpdates.model().sourceModel().update(sorted(plugins_to_update))
 
         loaded_plugins = get_loaded_plugins()

@@ -21,4 +21,4 @@ from .size_mapping_dialog import SizeMappingDialog
 from .add_columns_by_formulae import AddColumnsByFormulaeDialog
 from .clusterize_dialog import ClusterizeDialog
 from .updates_dialog import UpdatesDialog
-from .install_plugins_dialog import InstallPluginsDialog
+from .plugins_manager_dialog import PluginsManagerDialog

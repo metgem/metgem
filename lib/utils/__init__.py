@@ -1,4 +1,7 @@
 import itertools
+import os
+import subprocess
+import sys
 from typing import Union
 
 from PyQt5.QtCore import QObject, pyqtSignal, QTimer
@@ -116,3 +119,14 @@ def find_main_window() -> Union[QMainWindow, None]:
         if isinstance(widget, QMainWindow):
             return widget
     return None
+
+
+def open_folder(path: str):
+    """Open a folder in file manager"""
+
+    if sys.platform.startswith('win'):
+        os.startfile(path)
+    elif sys.platform.startswith('darwin'):
+        subprocess.Popen(["open", path])
+    else:
+        subprocess.Popen(["xdg-open", path])

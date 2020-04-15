@@ -197,7 +197,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.actionQuit.triggered.connect(self.close)
         self.actionCheckUpdates.triggered.connect(
             lambda: self.check_for_updates(could_ignore=False, notify_if_no_update=True))
-        self.actionInstallPlugins.triggered.connect(self.on_install_plugins_triggered)
+        self.actionShowPluginManager.triggered.connect(self.on_show_plugins_manager_triggered)
+        self.actionOpenPluginsFolder.triggered.connect(lambda: utils.open_folder(config.PLUGINS_PATH))
         self.actionAbout.triggered.connect(lambda: ui.AboutDialog().exec_())
         self.actionAboutQt.triggered.connect(lambda: QMessageBox.aboutQt(self))
         self.actionProcessFile.triggered.connect(self.on_process_file_triggered)
@@ -206,7 +207,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.actionCurrentParameters.triggered.connect(self.on_current_parameters_triggered)
         self.actionPreferences.triggered.connect(self.on_preferences_triggered)
         self.actionResetLayout.triggered.connect(self.reset_layout)
-        self.actionOpenUserFolder.triggered.connect(self.on_open_user_folder_triggered)
+        self.actionOpenUserFolder.triggered.connect(lambda: utils.open_folder(config.USER_PATH))
         self.actionZoomIn.triggered.connect(lambda: self.current_view.scaleView(1.2)
                                             if self.current_view is not None else None)
         self.actionZoomOut.triggered.connect(lambda: self.current_view.scaleView(1 / 1.2)
@@ -1412,15 +1413,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
         dialog.open()
 
     @debug
-    def on_open_user_folder_triggered(self, *args):
-        if sys.platform.startswith('win'):
-            os.startfile(config.USER_PATH)
-        elif sys.platform.startswith('darwin'):
-            subprocess.Popen(["open", config.USER_PATH])
-        else:
-            subprocess.Popen(["xdg-open", config.USER_PATH])
-
-    @debug
     def on_full_screen_triggered(self, *args):
         if not self.isFullScreen():
             self.setWindowFlags(Qt.Window)
@@ -1430,8 +1422,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.showNormal()
 
     @debug
-    def on_install_plugins_triggered(self, *args):
-       dialog = ui.InstallPluginsDialog(self)
+    def on_show_plugins_manager_triggered(self, *args):
+       dialog = ui.PluginsManagerDialog(self)
        dialog.open()
 
     @debug

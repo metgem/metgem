@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="icons">
+    <file>images/plugin.svg</file>
+    <file>images/plugins-home.svg</file>
     <file>images/metadata.svg</file>
     <file>images/git.svg</file>
     <file>images/academic.svg</file>

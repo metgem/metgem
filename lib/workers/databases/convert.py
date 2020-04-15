@@ -8,7 +8,7 @@ from ...database import DataBaseBuilder
 
 class ConvertDatabasesWorker(BaseWorker):
 
-    def __init__(self, ids: list, output_path: str, input_path: str=None):
+    def __init__(self, ids: list, output_path: str, input_path: str = None):
         super().__init__()
         self.ids = ids
         self.input_path = input_path if input_path is not None else output_path
@@ -27,7 +27,7 @@ class ConvertDatabasesWorker(BaseWorker):
                 for i, (name, ids) in enumerate(self.ids[origin].items()):
                     filenames = []
                     for id_ in ids:
-                        path = os.path.join(self.input_path, id_)
+                        path = os.path.join(self.input_path, os.path.basename(id_))
                         if os.path.exists(path):
                             filenames.append(path)
 
