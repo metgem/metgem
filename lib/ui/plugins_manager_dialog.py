@@ -216,7 +216,7 @@ class PluginsManagerDialog(QDialog):
             downloaded, unreachable = worker.result()
 
             if any(unreachable):
-                msg = ["{}: {}".format(origin, ", ".join(names)) for origin, names in unreachable.items()]
+                msg = ["{}: {}".format(origin, ", ".join(names)) for origin, names in unreachable]
                 QMessageBox.warning(self, None,
                                     "One or more plugins were not accessible on the remote server(s):\n{}"
                                     .format("\n".join(msg)))
