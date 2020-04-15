@@ -1938,13 +1938,13 @@ class MainWindow(MainWindowBase, MainWindowUI):
                     if version == version_to_ignore:
                         return
 
-                dialog = ui.UpdatesDialog(version, release_notes, url)
+                dialog = ui.UpdatesDialog(self, version, release_notes, url)
                 dialog.exec_()
             elif notify_if_no_update:
                 QMessageBox.information(self, None,
                                         f"Your version of {QCoreApplication.applicationName()} is already up-to-date.")
 
-        worker = workers.CheckUpdatesWorker()
+        worker = workers.CheckUpdatesWorker(track_progress=notify_if_no_update)
         worker.finished.connect(notify_update)
         self._workers.append(worker)
         self._workers.start()

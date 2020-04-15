@@ -8,8 +8,8 @@ from PyQt5.QtWidgets import QDialog, QDialogButtonBox
 
 class UpdatesDialog(QDialog):
 
-    def __init__(self, version, release_notes, url):
-        super().__init__()
+    def __init__(self, parent, version, release_notes, url):
+        super().__init__(parent)
 
         self.setWindowFlags(Qt.Tool | Qt.CustomizeWindowHint | Qt.WindowCloseButtonHint)
 

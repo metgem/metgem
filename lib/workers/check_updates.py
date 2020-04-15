@@ -7,22 +7,21 @@ from .base import BaseWorker
 
 
 class CheckUpdatesWorker(BaseWorker):
+    URL = "https://api.github.com/repos/metgem/metgem/releases/latest"
 
-    def __init__(self):
-        super().__init__(track_progress=False)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
     def run(self):
         if self.isStopped():
             self.canceled.emit()
             return False
 
-        URL = "https://api.github.com/repos/metgem/metgem/releases/latest"
-
         current_version = QCoreApplication.applicationVersion()
         if not current_version:
             return False
 
-        r = requests.get(URL)
+        r = requests.get(CheckUpdatesWorker.URL)
         try:
             r.raise_for_status()
         except requests.HTTPError:
