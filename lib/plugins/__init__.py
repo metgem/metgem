@@ -8,6 +8,9 @@ from lxml import html
 from pluginbase import PluginBase
 
 from ..config import PLUGINS_PATH, APP_PATH
+from ..logger import logger
+
+__all__ = ('get_loaded_plugins', 'reload_plugins', 'get_db_sources')
 
 
 class DbSource:
@@ -62,7 +65,10 @@ def register_db_source(obj):
 
 def load_plugin(source, plugin_name):
     builtins.DbSource = DbSource
-    plugin = source.load_plugin(plugin_name)
+    try:
+        plugin = source.load_plugin(plugin_name)
+    except (IndentationError, ImportError, SyntaxError) as e:
+        logger.error(str(e))
     # noinspection PyUnresolvedReferences
     del builtins.DbSource
 

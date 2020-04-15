@@ -27,7 +27,7 @@ from libmetgem import human_readable_data
 
 from .. import config, ui, utils, workers, errors
 from ..ui import widgets
-from ..logger import get_logger, debug
+from ..logger import logger, debug
 from ..utils.network import Network
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'main_window.ui')
@@ -44,8 +44,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-        self._logger = get_logger()
 
         # Keep track of unsaved changes
         self._has_unsaved_changes = False
@@ -914,7 +912,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
             cy = CyRestClient()
 
-            self._logger.debug('Creating exportable copy of the graph object')
+            logger.debug('Creating exportable copy of the graph object')
             g = self.network.graph.copy()
 
             try:
@@ -933,17 +931,17 @@ class MainWindow(MainWindowBase, MainWindowUI):
             g = view.process_graph_before_export(g)
 
             # cy.session.delete()
-            self._logger.debug('CyREST: Creating network')
+            logger.debug('CyREST: Creating network')
             g_cy = cy.network.create_from_igraph(g)
 
-            self._logger.debug('CyREST: Set layout')
+            logger.debug('CyREST: Set layout')
             layout = np.empty((g.vcount(), 2))
             for item in view.scene().nodes():
                 layout[item.index()] = (item.x(), item.y())
             positions = [(suid, x, y) for suid, (x, y) in zip(g_cy.get_nodes()[::-1], layout)]
             cy.layout.apply_from_presets(network=g_cy, positions=positions)
 
-            self._logger.debug('CyREST: Set style')
+            logger.debug('CyREST: Set style')
             style_js = style_to_cytoscape(view.scene().networkStyle())
             style = cy.style.create(style_js['title'], style_js)
             cy.style.apply(style, g_cy)
@@ -953,19 +951,19 @@ class MainWindow(MainWindowBase, MainWindowUI):
         except (ConnectionRefusedError, requests.ConnectionError):
             QMessageBox.information(self, None,
                                     'Please launch Cytoscape before trying to export.')
-            self._logger.error('Cytoscape was not launched.')
+            logger.error('Cytoscape was not launched.')
         except json.decoder.JSONDecodeError:
             QMessageBox.information(self, None,
                                     'Cytoscape was not ready to receive data. Please try again.')
-            self._logger.error('Cytoscape was not ready to receive data.')
+            logger.error('Cytoscape was not ready to receive data.')
         except ImportError:
             QMessageBox.information(self, None,
                                     ('py2tocytoscape is required for this action '
                                      '(https://pypi.python.org/pypi/py2cytoscape).'))
-            self._logger.error('py2cytoscape not found.')
+            logger.error('py2cytoscape not found.')
         except requests.exceptions.HTTPError as e:
             QMessageBox.warning(self, None, 'The following error occurred during export to Cytoscape: {str(e)}')
-            self._logger.error(f'py2cytoscape HTTPError: {str(e)}')
+            logger.error(f'py2cytoscape HTTPError: {str(e)}')
 
     @debug
     def on_export_as_image_triggered(self, type_, to_clipboard=False):
