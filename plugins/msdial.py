@@ -1,11 +1,18 @@
 """MetGem plugin to download databases from MS-DIAL website"""
 
-__version__ = '1.1'
+__version__ = '1.2'
 __description__ = "MetGem plugin to download databases from MS-DIAL website"
 __author__ = "Nicolas Elie"
 __email__ = "nicolas.elie@cnrs.fr"
 __copyright__ = "Copyright 2019-2020, CNRS/ICSN"
 __license__ = "GPLv3"
+
+
+def get_first_xpath_result(element, xpath):
+    result = element.xpath(xpath)
+    if result:
+        return result[0]
+    return None
 
 
 class MSDial(DbSource):
@@ -15,34 +22,75 @@ class MSDial(DbSource):
     items_base_url = "http://prime.psc.riken.jp/compms/msdial/"
 
     def get_items(self, tree):
-        for base in tree.xpath("//h3[@class='title-bg']"):
-            if base.text.startswith("MSDIAL metabolomics MSP"):
-                for br in base.getnext().findall('br'):
-                    a = br.getnext()
-                    tail = br.tail
-                    if tail is None:
-                        continue
-                    tail = tail.strip()
-                    if not tail or tail.startswith('All'):
-                        continue
+        items = {}
 
-                    if a.tag == 'a':
-                        href = a.attrib.get('href')
-                        if not href or not href.endswith('.msp'):
-                            continue
+        for div in tree.xpath("//div[@class='boxMsp']"):
+            a = get_first_xpath_result(div, "div[@class='labelDownloadIcon']/a[1]")
+            if a is None:
+                continue
 
-                        title = tail.split(' (')[0]
-                        yield title, [href], tail
-                    else:
-                        break
-            elif base.text.startswith("LipidBlast fork"):
-                ids = []
-                desc = "In silico MS/MS spectra for lipid identifications.<br>"
-                for a in base.getnext().findall('a'):
-                    href = a.attrib.get('href')
-                    if not href or not href.endswith('.msp'):
-                        continue
+            if a.tag == 'a':
+                href = a.attrib.get('href')
+                if not href or not href.endswith('.msp'):
+                    continue
 
-                    ids.append(href)
-                    desc += a.text + '<br>'
-                yield 'LipidBlast', ids, desc
+            title = get_first_xpath_result(div, "div[@class='labelMspName']")
+            if title is None:
+                continue
+            else:
+                title = title.text_content().strip()
+
+            if title.startswith('All '):
+                continue
+
+            desc = ""
+            if "(" in title:
+                title, desc = title.split('(')
+                if title in items:
+                    desc = ""
+                else:
+                    desc = desc.replace(')', '') + "<br/>"
+
+            polarity = get_first_xpath_result(div, "div[@class='labelPolarity']")
+            desc += polarity.text_content().strip().encode('ascii', 'ignore').decode() + " "\
+                if polarity is not None else ""
+
+            records = get_first_xpath_result(div, "div[@class='labelRecords']")
+            desc += records.text + " " if records is not None else ""
+
+            units = get_first_xpath_result(div, "div[@class='labelUnit']")
+            desc += units.text + " " if units is not None else ""
+
+            if title in items:
+                current_hrefs, current_desc = items[title]
+                items[title] = (current_hrefs + [href], f"{current_desc}<br/>{desc}")
+            else:
+                items[title] = ([href], desc)
+
+        for title, item in items.items():
+            yield (title, *item)
+
+        lipidblast_hrefs = []
+        lipidblast_desc = []
+        for div in tree.xpath("//div[@class='boxFork']"):
+            a = get_first_xpath_result(div, "div[@class='labelDownloadIcon']/a[1]")
+            if a is None:
+                continue
+
+            if a.tag == 'a':
+                href = a.attrib.get('href')
+                if not href or not href.endswith('.msp'):
+                    continue
+
+            lipidblast_hrefs.append(href)
+
+            desc = get_first_xpath_result(div, "div[@class='labelForkName']")
+            desc = desc.xpath('node()')[-1].strip()
+            if desc is not None:
+                try:
+                    _, desc = desc.split("These libraries are also available as MSP format.")
+                except ValueError:
+                    pass
+                lipidblast_desc.append(desc)
+
+        yield 'LipidBlast', lipidblast_hrefs, "<br/>".join(lipidblast_desc)
