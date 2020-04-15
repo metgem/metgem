@@ -66,32 +66,39 @@ def load_plugin(source, plugin_name):
     # noinspection PyUnresolvedReferences
     del builtins.DbSource
 
-    name = plugin.__name__.split('.')[-1]
-    __loaded_plugins[name] = plugin
-
     return plugin
 
 
 __db_sources = []
 __loaded_plugins = {}
 source = None
+builtins_source = None
 
 
 def reload_plugins():
-    global __db_sources, __loaded_plugins, source
+    global __db_sources, __loaded_plugins, source, builtins_source
     __db_sources = []
     __loaded_plugins = {}
 
     base = PluginBase(package='lib.plugins')
     if source is not None:
         source = None
-    source = base.make_plugin_source(searchpath=[PLUGINS_PATH,
-                                                 os.path.join(APP_PATH, 'plugins')],
+    source = base.make_plugin_source(searchpath=[PLUGINS_PATH],
                                      identifier=QCoreApplication.applicationName())
+    if builtins_source is None:
+        builtins_source = base.make_plugin_source(searchpath=[os.path.join(APP_PATH, 'plugins')],
+                                                  identifier=f"{QCoreApplication.applicationName()}_builtins")
+
+    for plugin_name in builtins_source.list_plugins():
+        __loaded_plugins[plugin_name] = load_plugin(builtins_source, plugin_name)
 
     for plugin_name in source.list_plugins():
         plugin = load_plugin(source, plugin_name)
+        if plugin_name in __loaded_plugins:
+            if plugin.__version__ > __loaded_plugins[plugin_name].__version__:
+                __loaded_plugins[plugin_name] = plugin
 
+    for plugin in __loaded_plugins.values():
         for name, obj in inspect.getmembers(plugin, inspect.isclass):
             if issubclass(obj, DbSource):
                 register_db_source(obj())
