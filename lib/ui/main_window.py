@@ -1334,7 +1334,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             column_names = set([model.headerData(index.column(), Qt.Horizontal) for index in selected_columns_indexes])
 
             # Remove columns that are not group mappings
-            if hasattr(self._network.options, 'mappings'):
+            if hasattr(self._network, 'mappings'):
                 df_cols = column_names - self.network.mappings.keys()
 
                 # Remove group mappings columns if any
