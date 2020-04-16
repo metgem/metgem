@@ -2070,8 +2070,38 @@ class MainWindow(MainWindowBase, MainWindowUI):
             model = self.tvNodes.model().sourceModel()
             model.beginResetModel()
             df = self._network.infos
-            if df is not None:
-                df.update(worker.result())
+            if df is not None and not df.empty:
+                df2 = worker.result()
+                df2_columns = set(df2.columns)
+                df_columns = set(df.columns)
+                new_columns = df2_columns - df_columns
+                update_columns = df2_columns.intersection(df_columns)
+
+                do_join = True
+                if any(update_columns):
+                    num_update_columns = len(update_columns)
+                    if num_update_columns == 1:
+                        message = f"'{next(iter(update_columns))}' already exists. Would you like to overwrite it?"
+                        ret = QMessageBox.question(self, None, message,
+                                                   QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)
+                    else:
+                        msg = QMessageBox(self)
+                        msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)
+                        msg.setIcon(QMessageBox.Question)
+                        msg.setText("Some columns already exist. Would you like to overwrite them?")
+                        msg.setDetailedText("\n".join(update_columns))
+                        msg.setWindowModality(Qt.ApplicationModal)
+                        ret = msg.exec_()
+
+                    if ret == QMessageBox.Yes:
+                        df.update(df2[update_columns])
+                    elif ret == QMessageBox.Cancel:
+                        do_join = False
+
+                if do_join and any(new_columns):
+                    df = df.join(df2[new_columns])
+
+                self._network.infos = df
             else:
                 self._network.infos = worker.result()
             self.has_unsaved_changes = True
