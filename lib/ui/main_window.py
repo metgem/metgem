@@ -1139,7 +1139,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
     @debug
     def on_use_columns_for(self, type_):
-        if self.tvNodes.model().columnCount() <= 1:
+        model = self.tvNodes.model().sourceModel()
+        if model.columnCount() <= 1:
             return
 
         selected_columns_indexes = self.tvNodes.selectionModel().selectedColumns(0)
@@ -1155,7 +1156,15 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 self.set_nodes_label(id_)
                 self.has_unsaved_changes = True
         elif type_ == COLUMN_MAPPING_PIE_CHARTS:
-            dialog = ui.PieColorMappingDialog(self.tvNodes.model(), selected_columns_indexes)
+            ids = None
+            if len_ == 0:
+                keys, _ = self.network.columns_mappings.get('pies', (None, None))
+                if keys is not None and len(keys) > 0 and isinstance(keys[0], str):
+                    ids = model.headerKeysToIndices(keys)
+            else:
+                ids = [index.column() for index in selected_columns_indexes]
+
+            dialog = ui.PieColorMappingDialog(self.tvNodes.model(), ids)
 
             def set_mapping(result):
                 if result == QDialog.Accepted:
@@ -1168,13 +1177,22 @@ class MainWindow(MainWindowBase, MainWindowUI):
             if len_ > 1:
                 QMessageBox.information(self, None, "Please select only one column.")
             else:
-                id_ = selected_columns_indexes[0].column() if len_ > 0 else -1
-                dialog = ui.SizeMappingDialog(self.tvNodes.model(), id_)
+                id_ = -1
+                if len_ == 0:
+                    key, func = self.network.columns_mappings.get('size', (None, None))
+                    if key is not None and isinstance(key, str):
+                        id_ = model.headerKeysToIndices([key])
+                        id_ = id_[0] if id_ else -1
+                else:
+                    id_ = selected_columns_indexes[0].column()
+                    func = None
+
+                dialog = ui.SizeMappingDialog(self.tvNodes.model(), id_, func)
 
                 def set_mapping(result):
                     if result == QDialog.Accepted:
                         id_, func = dialog.getValues()
-                        if id_ > 0:
+                        if id_ >= 0:
                             self.set_nodes_sizes_values(id_, func)
                         self.has_unsaved_changes = True
                 dialog.finished.connect(set_mapping)
@@ -1183,24 +1201,27 @@ class MainWindow(MainWindowBase, MainWindowUI):
             if len_ > 1:
                 QMessageBox.information(self, None, "Please select only one column.")
             else:
-                id_ = selected_columns_indexes[0].column() if len_ > 0 else -1
-                column_title = self.tvNodes.model().headerData(id_, Qt.Horizontal)
-                try:
-                    data = self._network.infos[column_title]
-                except IndexError:
-                    pass
+                id_ = -1
+                if len_ == 0:
+                    key, mapping = self.network.columns_mappings.get('colors', (None, None))
+                    if key is not None and isinstance(key, str):
+                        id_ = model.headerKeysToIndices([key])
+                        id_ = id_[0] if id_ else -1
                 else:
-                    dialog = ui.ColorMappingDialog(self.tvNodes.model(), id_, data)
+                    id_ = selected_columns_indexes[0].column()
+                    mapping = None
 
-                    def set_mapping(result):
-                        if result == QDialog.Accepted:
-                            id_, mapping = dialog.getValues()
-                            if id_ > 0:
-                                self.set_nodes_colors_values(id_, mapping)
-                            self.has_unsaved_changes = True
+                dialog = ui.ColorMappingDialog(self.tvNodes.model(), id_, mapping)
 
-                    dialog.finished.connect(set_mapping)
-                    dialog.open()
+                def set_mapping(result):
+                    if result == QDialog.Accepted:
+                        id_, mapping = dialog.getValues()
+                        if id_ >= 0:
+                            self.set_nodes_colors_values(id_, mapping)
+                        self.has_unsaved_changes = True
+
+                dialog.finished.connect(set_mapping)
+                dialog.open()
 
     @debug
     def on_nodes_table_contextmenu(self, event):
@@ -1334,7 +1355,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         num_columns = model.columnCount()
         model.beginResetModel()
         df = self._network.infos
-        column_names = set([model.headerData(index.column(), Qt.Horizontal, model.KeyRole)
+        column_names = set([model.headerData(index.column(), Qt.Horizontal, widgets.metadata.model.KeyRole)
                             for index in selected_columns_indexes])
 
         # Remove columns that are not group mappings
@@ -1370,7 +1391,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         # Cancel movement for columns not in the nodes' dataframe
         model = self.tvNodes.model().sourceModel()
-        key = model.headerData(logical_index, Qt.Horizontal, model.KeyRole)
+        key = model.headerData(logical_index, Qt.Horizontal, widgets.metadata.model.KeyRole)
         if isinstance(key, int):
             with utils.SignalBlocker(self.tvNodes.horizontalHeader()):
                 self.tvNodes.horizontalHeader().moveSection(new_visual_index, old_visual_index)
@@ -1748,7 +1769,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
             for dock in self.network_docks.values():
                 scene = dock.widget().gvNetwork.scene()
                 scene.setLabelsFromModel(model, column_id, ui.widgets.LabelRole)
-            self.network.columns_mappings['label'] = model.headerData(column_id, Qt.Horizontal, role=model.KeyRole)
+            self.network.columns_mappings['label'] = model.headerData(column_id, Qt.Horizontal,
+                                                                      role=widgets.metadata.model.KeyRole)
         else:
             for dock in self.network_docks.values():
                 dock.widget().gvNetwork.scene().resetLabels()
@@ -1788,7 +1810,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 scene.setPieChartsFromModel(model, column_ids)
                 scene.setPieChartsVisibility(True)
 
-            keys = [model.headerData(id_, Qt.Horizontal, role=model.KeyRole) for id_ in column_ids]
+            keys = [model.headerData(id_, Qt.Horizontal, role=widgets.metadata.model.KeyRole) for id_ in column_ids]
             self.network.columns_mappings['pies'] = (keys, save_colors)
         else:
             for column in range(model.columnCount()):
@@ -1827,7 +1849,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             for dock in self.network_docks.values():
                 dock.widget().gvNetwork.scene().setNodesRadiiFromModel(model, column_id, Qt.DisplayRole, func)
 
-            key = model.headerData(column_id, Qt.Horizontal, role=model.KeyRole)
+            key = model.headerData(column_id, Qt.Horizontal, role=widgets.metadata.model.KeyRole)
             self.network.columns_mappings['size'] = (key, func)
         else:
             for dock in self.network_docks.values():
@@ -1860,40 +1882,39 @@ class MainWindow(MainWindowBase, MainWindowUI):
             font.setItalic(True)
             model.setHeaderData(column_id, Qt.Horizontal, font, role=Qt.FontRole)
 
-            key = model.headerData(column_id, Qt.Horizontal, model.KeyRole)
-            try:
-                data = self._network.infos[key]
-            except IndexError:
-                pass
-            else:
-                if isinstance(mapping, dict):
-                    color_list = [mapping.get(key, QColor()) for key in data]
-                elif isinstance(mapping, tuple):
-                    try:
-                        bins, colors = mapping
-                    except TypeError:
-                        return
+            key = model.headerData(column_id, Qt.Horizontal, widgets.metadata.model.KeyRole)
+            data = model.headerData(column_id, Qt.Horizontal, widgets.metadata.model.ColumnDataRole)
+            if data is None:
+                return
 
-                    def r(ranges, colors, val):
-                        if val == ranges[-1]:
-                            return colors[-1]
-
-                        b = bisect.bisect_left(ranges, val)
-                        try:
-                            return colors[b-1]
-                        except IndexError:
-                            return QColor()
-
-                    color_list = []
-                    for value in data:
-                        color_list.append(r(bins, colors, value))
-                else:
+            if isinstance(mapping, dict):
+                color_list = [mapping.get(key, QColor()) for key in data]
+            elif isinstance(mapping, tuple):
+                try:
+                    bins, colors = mapping
+                except TypeError:
                     return
 
-                for dock in self.network_docks.values():
-                    dock.widget().gvNetwork.scene().setNodesColors(color_list)
+                def r(ranges, colors, val):
+                    if val == ranges[-1]:
+                        return colors[-1]
 
-                self.network.columns_mappings['colors'] = (key, mapping)
+                    b = bisect.bisect_left(ranges, val)
+                    try:
+                        return colors[b-1]
+                    except IndexError:
+                        return QColor()
+
+                color_list = []
+                for value in data:
+                    color_list.append(r(bins, colors, value))
+            else:
+                return
+
+            for dock in self.network_docks.values():
+                dock.widget().gvNetwork.scene().setNodesColors(color_list)
+
+            self.network.columns_mappings['colors'] = (key, mapping)
         else:
             for dock in self.network_docks.values():
                 scene = dock.widget().gvNetwork.scene()
@@ -2015,30 +2036,38 @@ class MainWindow(MainWindowBase, MainWindowUI):
         key = columns_mappings.get('label', None)
         if key is not None:
             self.set_nodes_label(column_key=key)
+        else:
+            self.set_nodes_label(None)
 
         try:
             keys, colors = columns_mappings.get('pies', (None, None))
         except TypeError:
-            pass
+            self.set_nodes_pie_chart_values(None)
         else:
             if keys is not None and colors is not None:
                 self.set_nodes_pie_chart_values(column_keys=keys, colors=colors)
+            else:
+                self.set_nodes_pie_chart_values(None)
 
         try:
             key, func = columns_mappings.get('size', (None, None))
         except TypeError:
-            pass
+            self.set_nodes_sizes_values(None)
         else:
             if key is not None and func is not None:
                 self.set_nodes_sizes_values(column_key=key, func=func)
+            else:
+                self.set_nodes_sizes_values(None)
 
         try:
             key, colors = columns_mappings.get('colors', (None, None))
         except TypeError:
-            pass
+            self.set_nodes_colors_values(None)
         else:
             if key is not None and colors is not None:
                 self.set_nodes_colors_values(column_key=key, mapping=colors)
+            else:
+                self.set_nodes_colors_values(None)
 
     @debug
     def prepare_compute_scores_worker(self, spectra, use_multiprocessing):
@@ -2169,7 +2198,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         model = self.tvNodes.model().sourceModel()
         header = self.tvNodes.horizontalHeader()
         df = self._network.infos
-        columns = [model.headerData(header.visualIndex(i), Qt.Horizontal, model.KeyRole) for i in range(model.columnCount())]
+        columns = [model.headerData(header.visualIndex(i), Qt.Horizontal, widgets.metadata.model.KeyRole) for i in range(model.columnCount())]
         if df is not None:
             columns = [c for c in columns if c in df.columns]
             df = df.reindex(columns=columns)

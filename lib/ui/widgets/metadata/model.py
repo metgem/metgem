@@ -12,12 +12,19 @@ try:
 except (ImportError, FileNotFoundError, IOError, pd.errors.ParserError, pd.errors.EmptyDataError):
     NEUTRAL_LOSSES = None
 
+
+# Each column has a unique key: it's title except for the first two columns which use an integer as key
+# Because data is loaded from csv or spreadsheet, the loaded titles are always strings
+# It ensure that the reserved columns can't have the same key of a loaded column
+KeyRole = Qt.UserRole
+
 FilterRole = Qt.UserRole + 1
 LabelRole = Qt.UserRole + 2
 StandardsRole = Qt.UserRole + 3
 AnalogsRole = Qt.UserRole + 4
 DbResultsRole = Qt.UserRole + 5
 ColorMarkRole = Qt.UserRole + 6
+ColumnDataRole = Qt.UserRole + 7
 
 
 class ProxyModel(QSortFilterProxyModel):
@@ -58,11 +65,6 @@ class NodesModel(QAbstractTableModel):
 
     MZCol = 0
     DBResultsCol = 1
-
-    # Each column has a unique key: it's title except for the first two columns which use an integer as key
-    # Because data is loaded from csv or spreadsheet, the loaded titles are always strings
-    # It ensure that the reserved columns can't have the same key of a loaded column
-    KeyRole = Qt.UserRole
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -210,8 +212,15 @@ class NodesModel(QAbstractTableModel):
                     return text
             elif orientation == Qt.Vertical:
                 return str(section+1)
-        elif role == NodesModel.KeyRole:
+        elif role == KeyRole:
             return self.headers[section]
+        elif role == ColumnDataRole:
+            if section == NodesModel.MZCol:
+                return self.mzs
+            elif section == NodesModel.DBResultsCol:
+                return
+            else:
+                return self.infos[self.infos.columns[section - 2]]
         elif role == ColorMarkRole:
             if orientation == Qt.Horizontal and self.headers_colors is not None and section in self.headers_colors:
                 return self.headers_colors[section]

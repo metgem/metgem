@@ -11,7 +11,7 @@ from PyQt5.QtGui import QColor, QStandardItemModel, QIcon, QDropEvent, QKeyEvent
 from PyQt5.QtWidgets import (QDialog, QColorDialog, QListWidgetItem, QFileDialog, QMessageBox, QInputDialog,
                              QAbstractItemView, QDialogButtonBox, QFormLayout, QDoubleSpinBox, QAbstractSpinBox, QLabel)
 
-from ..ui.widgets.metadata import ColorMarkRole
+from .widgets.metadata.model import ColumnDataRole, ColorMarkRole
 from ..utils import pairwise
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'color_mapping_dialog.ui')
@@ -367,7 +367,7 @@ class BaseColorMappingDialog(ColorMappingDialogUI, ColorMappingDialogBase):
 
 class PieColorMappingDialog(BaseColorMappingDialog):
 
-    def __init__(self, model: QAbstractTableModel = None, selected_indexes: List[QModelIndex] = None):
+    def __init__(self, model: QAbstractTableModel = None, selected_columns: List[int] = None):
         super().__init__()
 
         for i in range(self.layoutBins.count()):
@@ -375,19 +375,18 @@ class PieColorMappingDialog(BaseColorMappingDialog):
             if w is not None and not isinstance(w, QLabel):
                 w.hide()
 
-        if model is not None and selected_indexes is not None:
-            for i in range(model.columnCount()):
-                index = model.index(0, i)
-                text = model.headerData(i, Qt.Horizontal, Qt.DisplayRole)
-                color = model.headerData(i, Qt.Horizontal, ColorMarkRole)
-                item = ColumnListWidgetItem(text, column=index.column())
+        if model is not None:
+            for col in range(model.columnCount()):
+                text = model.headerData(col, Qt.Horizontal, Qt.DisplayRole)
+                color = model.headerData(col, Qt.Horizontal, ColorMarkRole)
+                item = ColumnListWidgetItem(text, column=col)
                 if color is not None:
                     item.setBackground(color)
 
-                if index not in selected_indexes:
-                    self.lstColumns.addItem(item)
-                else:
+                if selected_columns is not None and col in selected_columns:
                     self.lstUsedColumns.addItem(item)
+                else:
+                    self.lstColumns.addItem(item)
 
         colors = QSettings().value('NetworkView/pie_colors',
                                    [c.name() for c in generate_colors(8)],
@@ -438,11 +437,16 @@ class PieColorMappingDialog(BaseColorMappingDialog):
 
 class ColorMappingDialog(BaseColorMappingDialog):
 
-    def __init__(self, model: QAbstractTableModel = None, column_id: int = None, data: List = None):
+    def __init__(self, model: QAbstractTableModel = None, column_id: int = None, mapping: dict = None):
         self._model = model
         self._column_id = column_id
 
         super().__init__()
+
+        data = self._model.headerData(self._column_id, Qt.Horizontal, role=ColumnDataRole)
+        if data is not None and not isinstance(data, pd.Series):
+            data = pd.Series(data)
+        self._data = data
 
         if model is not None and column_id is not None:
             for i in range(model.columnCount()):
@@ -458,7 +462,7 @@ class ColorMappingDialog(BaseColorMappingDialog):
 
         self.lstUsedColumns.setSelectionMode(QAbstractItemView.ContiguousSelection)
         self.lstColumns.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.populate_bins()
+        self.populate_bins(mapping)
 
         colors = QSettings().value('NetworkView/node_colors',
                                    [c.name() for c in generate_colors(8)],
@@ -468,12 +472,7 @@ class ColorMappingDialog(BaseColorMappingDialog):
         self.btUseSelectedColumns.clicked.connect(self.on_use_selected_column)
         self.btRemoveSelectedColumns.clicked.connect(self.on_unuse_selected_column)
 
-    @property
-    def data(self):
-        return pd.Series([self._model.data(self._model.index(i, self._column_id))
-                          for i in range(self._model.rowCount())])
-
-    def populate_bins(self):
+    def populate_bins(self, mapping=None):
         try:
             self.btGenerateBins.clicked.disconnect()
             self.btMergeBins.clicked.disconnect()
@@ -484,22 +483,45 @@ class ColorMappingDialog(BaseColorMappingDialog):
         except TypeError:
             pass
 
-        data = self.data
+        data = self._data
 
         if data is not None:
             if data.dtype == np.bool:
                 self.lblUsedColumns.setText('Groups')
-                self.lstUsedColumns.addItem(BoolListWidgetItem(True))
-                self.lstUsedColumns.addItem(BoolListWidgetItem(False))
+                for val in (True, False):
+                    item = BoolListWidgetItem(val)
+                    self.lstUsedColumns.addItem(item)
+                    if mapping is not None:
+                        color = mapping.get(val, None)
+                        if color is None:
+                            color = mapping.get(str(val).lower(), None)  # True -> 'true', False -> 'false'
+                        if color is not None:
+                            item.setBackground(QColor(color))
             elif data.dtype == np.object:
                 self.lblUsedColumns.setText('Groups')
-                groups = data.dropna().unique()
-                for group in groups:
-                    item = GroupListWidgetItem(str(group))
-                    self.lstUsedColumns.addItem(item)
+                if mapping is not None:
+                    for group, color in mapping:
+                        item = GroupListWidgetItem(str(group))
+                        item.setBackground(QColor(color))
+                        self.lstUsedColumns.addItem(item)
+                else:
+                    groups = data.dropna().unique()
+                    for group in groups:
+                        item = GroupListWidgetItem(str(group))
+                        self.lstUsedColumns.addItem(item)
             else:
                 self.lblUsedColumns.setText('Bins')
-                self.generate_new_bins(8)
+                if mapping is not None:
+                    values, colors = mapping
+                    try:
+                        for low, high, color in zip(values[:-1], values[1:], colors):
+                            item = RangeListWidgetItem(low, high)
+                            item.setBackground(QColor(color))
+                            self.lstUsedColumns.addItem(item)
+                    except ValueError:
+                        self.generate_new_bins(8)
+                else:
+                    self.generate_new_bins(8)
 
                 self.btGenerateBins.clicked.connect(self.on_generate_new_bins)
                 self.btMergeBins.clicked.connect(self.on_merge_bins)
@@ -581,7 +603,7 @@ class ColorMappingDialog(BaseColorMappingDialog):
 
     def generate_new_bins(self, bins=8):
         self.lstUsedColumns.clear()
-        for low, high in pairwise(np.histogram_bin_edges(self.data, bins=bins)):
+        for low, high in pairwise(np.histogram_bin_edges(self._data, bins=bins)):
             item = RangeListWidgetItem(low, high)
             self.lstUsedColumns.addItem(item)
 

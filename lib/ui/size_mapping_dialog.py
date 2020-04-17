@@ -314,10 +314,13 @@ class ColumnListWidgetItem(QListWidgetItem):
 
 class SizeMappingDialog(SizeMappingDialogUI, SizeMappingDialogBase):
 
-    def __init__(self, model: QAbstractTableModel, column_id: int, *args, **kwargs):
+    def __init__(self, model: QAbstractTableModel, column_id: int, func: 'SizeMappingFunc' = None, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self._model = model
+        self._first_show = True
+        self._column_id = column_id
+        self._func = func
 
         self.setupUi(self)
         self.setWindowFlags(Qt.Tool | Qt.CustomizeWindowHint | Qt.WindowCloseButtonHint)
@@ -345,18 +348,19 @@ class SizeMappingDialog(SizeMappingDialogUI, SizeMappingDialogBase):
 
         self.lstColumns.selectionModel().currentChanged.connect(self.on_column_changed)
 
-        for i in range(model.columnCount()):
-            index = model.index(0, i)
-            text = model.headerData(i, Qt.Horizontal, Qt.DisplayRole)
-            item = ColumnListWidgetItem(text, column=index.column())
+        for col in range(model.columnCount()):
+            text = model.headerData(col, Qt.Horizontal, Qt.DisplayRole)
+            item = ColumnListWidgetItem(text, column=col)
             self.lstColumns.addItem(item)
-            if index.column() == column_id:
-                self.lstColumns.setCurrentItem(item)
 
     def showEvent(self, event: QShowEvent):
         scene = self.gvMapping.scene()
         self.gvMapping.fitInView(scene.sceneRect(), Qt.IgnoreAspectRatio)
         scene.adjust()
+
+        if self._first_show:
+            self.setValues(self._column_id, self._func)
+            self._first_show = False
 
         super().showEvent(event)
 
@@ -497,6 +501,26 @@ class SizeMappingDialog(SizeMappingDialogUI, SizeMappingDialogBase):
             self.spinHandleSize.setValue(pos.y())
         else:
             self.btRemoveHandle.setEnabled(False)
+
+    def setValues(self, column_id: int, func: 'SizeMappingFunc' = None):
+        model = self.lstColumns.model()
+        for row in range(model.rowCount()):
+            index = model.index(row)
+            if index.data(ColumnRole) == column_id:
+                self.lstColumns.setCurrentIndex(index)
+
+        if func is not None:
+            self.cbMode.setCurrentIndex(func.get('mode', MODE_LINEAR))
+            self.spinMinSize.setValue(func.get('ymin', 0))
+            self.spinMaxSize.setValue(func.get('ymax', 10))
+
+            scene = self.gvMapping.scene()
+            xs = func.get('xs', [0, 0])
+            ys = func.get('ys', [0, 0])
+            for x, y in zip(xs[:-2], ys[:-2]):
+                pos = self.mapValueToHandlePos(QPointF(x, y))
+                scene.addHandle(pos)
+            scene.clearSelection()
 
     def getValues(self):
         ymin = self.spinMinSize.value()
