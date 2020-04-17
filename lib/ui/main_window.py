@@ -875,6 +875,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def on_save_project_as_triggered(self, *args):
         dialog = QFileDialog(self)
         dialog.setAcceptMode(QFileDialog.AcceptSave)
+        dialog.setDefaultSuffix(config.FILE_EXTENSION)
         dialog.setNameFilters([f"{QCoreApplication.applicationName()} Files (*{config.FILE_EXTENSION})",
                                "All files (*)"])
 
