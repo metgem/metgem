@@ -1283,6 +1283,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                     except (pd.core.computation.ops.UndefinedVariableError, AttributeError, SyntaxError) as e:
                         errors[name] = e
 
+                self.check_columns_mappings_after_data_changed(set(mappings.keys()))
                 self.tvNodes.model().sourceModel().endResetModel()
 
                 if errors:
@@ -2028,6 +2029,23 @@ class MainWindow(MainWindowBase, MainWindowUI):
         widget.apply_layout(layout, isolated_nodes=isolated_nodes, hide_isolated_nodes=hide_isolated_nodes)
 
     @debug
+    def check_columns_mappings_after_data_changed(self, updated_columns_keys: set):
+        # Check if one of the updated columns is in the columns mappings
+        # Check only size and colors because these mappings needs data dependent info to be created
+        key, _ = self.network.columns_mappings.get('size', (None, None))
+        if key in updated_columns_keys:
+            try:
+                del self.network.columns_mappings['size']
+            except KeyError:
+                pass
+        key, _ = self.network.columns_mappings.get('colors', (None, None))
+        if key in updated_columns_keys:
+            try:
+                del self.network.columns_mappings['colors']
+            except KeyError:
+                pass
+
+    @debug
     def update_columns_mappings(self):
         columns_mappings = getattr(self.network, 'columns_mappings', {})
 
@@ -2151,6 +2169,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
                     if ret == QMessageBox.Yes:
                         df.update(df2[update_columns])
+                        self.check_columns_mappings_after_data_changed(update_columns)
                     elif ret == QMessageBox.Cancel:
                         do_join = False
 
