@@ -259,6 +259,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         self.tvNodes.viewDetailsClicked.connect(self.on_view_details_clicked)
         self.tvNodes.model().dataChanged.connect(self.on_nodes_table_data_changed)
+        self.tvNodes.model().modelReset.connect(self.update_columns_mappings)
         self.tvNodes.horizontalHeader().sectionMoved.connect(self.on_nodes_table_column_moved)
 
         # Add a menu to show/hide toolbars
@@ -1261,7 +1262,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
                             errors[name] = e
                     except (pd.core.computation.ops.UndefinedVariableError, AttributeError, SyntaxError) as e:
                         errors[name] = e
+
                 self.tvNodes.model().sourceModel().endResetModel()
+
                 if errors:
                     str_errors = '\n'.join([f'"{name}" -> {error}' for (name, error) in errors.items()])
                     QMessageBox.warning(self, None, f'The following error(s) occurred:\n\n{str_errors}')
@@ -1345,7 +1348,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         df.drop(df_cols, axis=1, inplace=True, errors='ignore')
 
-            model.endResetModel()
+        model.endResetModel()
 
         if model.columnCount() < num_columns:
             self.has_unsaved_changes = True
@@ -2130,10 +2133,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
             else:
                 self._network.infos = worker.result()
             self.has_unsaved_changes = True
-            self.set_nodes_pie_chart_values(None)
-            self.set_nodes_sizes_values(None)
-            self.set_nodes_colors_values(None)
-            self.set_nodes_label(None)
             model.endResetModel()
 
         def error(e):
