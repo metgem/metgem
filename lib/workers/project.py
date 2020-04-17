@@ -303,16 +303,16 @@ class SaveProjectWorker(BaseWorker):
         columns_mappings = getattr(self.network, 'columns_mappings', None)
         if columns_mappings:
             try:
-                ids, colors = columns_mappings.get('pies', (None, None))
+                keys, colors = columns_mappings.get('pies', (None, None))
             except TypeError:
                 pass
             else:
                 if colors is not None:
                     colors = [color.name() if isinstance(color, QColor) else color for color in colors]
-                    columns_mappings['pies'] = (ids, colors)
+                    columns_mappings['pies'] = (keys, colors)
 
             try:
-                id_, mapping = columns_mappings.get('colors', (None, None))
+                key, mapping = columns_mappings.get('colors', (None, None))
             except TypeError:
                 pass
             else:
@@ -324,9 +324,11 @@ class SaveProjectWorker(BaseWorker):
                             pass
                         else:
                             colors = [color.name() if isinstance(color, QColor) else color for color in colors]
-                            columns_mappings['colors'] = (id_, (bins, colors))
+                            columns_mappings['colors'] = (key, (bins, colors))
                     elif isinstance(mapping, dict):
-                        columns_mappings['colors'] = (id_, {k: v.name() for k, v in mapping.items()})
+                        columns_mappings['colors'] = (key,
+                                                      {k: v.name() if isinstance(v, QColor)
+                                                       else v for k, v in mapping.items()})
 
             d['0/columns_mappings.json'] = columns_mappings
 
