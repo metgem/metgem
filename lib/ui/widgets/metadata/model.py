@@ -1,3 +1,5 @@
+from typing import List
+
 import numpy as np
 from PyQt5.QtCore import Qt, QAbstractTableModel, QModelIndex, QSortFilterProxyModel, QSettings
 from PyQt5.QtGui import QIcon
@@ -54,12 +56,20 @@ class ProxyModel(QSortFilterProxyModel):
 class NodesModel(QAbstractTableModel):
     """Model based on a pandas DataFrame"""
 
+    MZCol = 0
+    DBResultsCol = 1
+
+    # Each column has a unique key: it's title except for the first two columns which use an integer as key
+    # Because data is loaded from csv or spreadsheet, the loaded titles are always strings
+    # It ensure that the reserved columns can't have the same key of a loaded column
+    KeyRole = Qt.UserRole
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.infos = None
         self.mzs = []
         self.db_results = None
-        self.headers = None
+        self.headers = pd.Index([])
         self.headers_colors = {}
         self.headers_bgcolors = {}
         self.headers_fonts = {}
@@ -69,10 +79,7 @@ class NodesModel(QAbstractTableModel):
         return len(self.mzs)
 
     def columnCount(self, parent=QModelIndex()):
-        count = len(self.mappings) + 2
-        if self.infos is not None:
-            count += self.infos.shape[1]
-        return count
+        return self.headers.shape[0]
 
     def endResetModel(self):
         network = self.parent().network
@@ -80,16 +87,16 @@ class NodesModel(QAbstractTableModel):
         mappings = getattr(network, 'mappings', {})
         if infos is not None:
             self.infos = infos
-            self.headers = np.array(infos.columns.tolist() + list(mappings.keys()))
+            self.headers = pd.Index(list(range(2)) + infos.columns.tolist() + list(mappings.keys()))
         else:
             self.infos = None
-            self.headers = None
+            self.headers = pd.Index(list(range(2)))
 
         # Convert column name's mappings to index mapping
         if self.headers is not None:
             header_to_column = {h: i for i, h in enumerate(self.headers)}
             index_mappings = {}
-            first_mapping_column = infos.shape[1] if infos is not None else 0
+            first_mapping_column = infos.shape[1] + 2 if infos is not None else 2
             for index, (mapname, maplist) in enumerate(mappings.items()):
                 l = [value for key, value in header_to_column.items() for colname in maplist if key.startswith(colname)]
                 index_mappings[first_mapping_column+index] = l
@@ -109,12 +116,12 @@ class NodesModel(QAbstractTableModel):
         row = index.row()
         column = index.column()
         if role in (Qt.DisplayRole, Qt.EditRole, FilterRole, LabelRole, StandardsRole, AnalogsRole, DbResultsRole):
-            if column == 0:
+            if column == NodesModel.MZCol:
                 try:
                     return round(self.mzs[row], QSettings().value('Metadata/float_precision', 4, type=int))
                 except IndexError:
                     return
-            elif column == 1:
+            elif column == NodesModel.DBResultsCol:
                 try:
                     results = self.db_results[row]
                 except KeyError:
@@ -151,8 +158,8 @@ class NodesModel(QAbstractTableModel):
                     data = self.infos.loc[row, self.infos.columns[column - 2]]
                 except IndexError:
                     try:
-                        mappped_columns = self.mappings[column - 2]
-                        data = sum(self.infos.loc[row, self.infos.columns[c]] for c in mappped_columns)
+                        mappped_columns = self.mappings[column]
+                        data = sum(self.infos.loc[row, self.infos.columns[c-2]] for c in mappped_columns)
                     except KeyError:
                         return None
                 except KeyError:
@@ -185,20 +192,26 @@ class NodesModel(QAbstractTableModel):
         else:
             return super().setData(index, value, role)
 
+    def headerKeysToIndices(self, keys: List[str]) -> int:
+        """Return column indices from column keys"""
+        return np.where(self.headers.isin(keys))[0]
+
     def headerData(self, section: int, orientation: int, role=Qt.DisplayRole):
         if role in (Qt.DisplayRole, Qt.ToolTipRole):
             if orientation == Qt.Horizontal:
-                if section == 0:
+                if section == NodesModel.MZCol:
                     return "m/z parent"
-                elif section == 1:
+                elif section == NodesModel.DBResultsCol:
                     return "Database search results"
-                elif self.headers is not None:
-                    text = str(self.headers[section - 2])
-                    if role == Qt.ToolTipRole and section - 2 in self.mappings:
-                        text += " [" + "+".join(self.headers[x] for x in self.mappings[section-2]) + "]"
+                else:
+                    text = str(self.headers[section])
+                    if role == Qt.ToolTipRole and section in self.mappings:
+                        text += " [" + "+".join(self.headers[x] for x in self.mappings[section]) + "]"
                     return text
             elif orientation == Qt.Vertical:
                 return str(section+1)
+        elif role == NodesModel.KeyRole:
+            return self.headers[section]
         elif role == ColorMarkRole:
             if orientation == Qt.Horizontal and self.headers_colors is not None and section in self.headers_colors:
                 return self.headers_colors[section]
@@ -210,9 +223,9 @@ class NodesModel(QAbstractTableModel):
                 return self.headers_fonts[section]
         elif role == Qt.DecorationRole:
             if orientation == Qt.Horizontal:
-                if section == 1:
+                if section == NodesModel.DBResultsCol:
                     return QIcon(":/icons/images/library.svg")
-                elif section - 2 in self.mappings:
+                elif section in self.mappings:
                     return QIcon(":/icons/images/mapping.svg")
         else:
             super().headerData(section, orientation, role)
@@ -284,7 +297,7 @@ class EdgesModel(QAbstractTableModel):
                     return
             else:
                 data = self.interactions[row][column]
-                if column == 0 or column == 1:
+                if column in (NodesModel.MZCol, NodesModel.DBResultsCol):
                     data += 1
                 if role in (FilterRole, LabelRole):
                     return str(data)

@@ -1320,35 +1320,35 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         if len_ == 0:
             return
+
+        message = f"Are you sure you want to delete {'this column' if len_ == 1 else 'these columns'}?"
+        reply = QMessageBox.question(self, None, message)
+        if reply == QMessageBox.No:
+            return
+
+        model = self.tvNodes.model().sourceModel()
+        num_columns = model.columnCount()
+        model.beginResetModel()
+        df = self._network.infos
+        column_names = set([model.headerData(index.column(), Qt.Horizontal, model.KeyRole)
+                            for index in selected_columns_indexes])
+
+        # Remove columns that are not group mappings
+        if hasattr(self._network, 'mappings'):
+            df_cols = column_names - self.network.mappings.keys()
+
+            # Remove group mappings columns if any
+            for col in column_names - df_cols:
+                self.network.mappings.pop(col)
         else:
-            message = f"Are you sure you want to delete {'this column' if len_ == 1 else 'these columns'}?"
-            reply = QMessageBox.question(self, QCoreApplication.applicationName(),
-                                         message, QMessageBox.Yes | QMessageBox.No)
-            if reply == QMessageBox.No:
-                return
+            df_cols = column_names
 
-            model = self.tvNodes.model().sourceModel()
-            num_columns = model.columnCount()
-            model.beginResetModel()
-            df = self._network.infos
-            column_names = set([model.headerData(index.column(), Qt.Horizontal) for index in selected_columns_indexes])
-
-            # Remove columns that are not group mappings
-            if hasattr(self._network, 'mappings'):
-                df_cols = column_names - self.network.mappings.keys()
-
-                # Remove group mappings columns if any
-                for col in column_names - df_cols:
-                    self.network.mappings.pop(col)
-            else:
-                df_cols = column_names
-
-            df.drop(df_cols, axis=1, inplace=True, errors='ignore')
+        df.drop(df_cols, axis=1, inplace=True, errors='ignore')
 
             model.endResetModel()
 
-            if model.columnCount() < num_columns:
-                self.has_unsaved_changes = True
+        if model.columnCount() < num_columns:
+            self.has_unsaved_changes = True
 
     @debug
     def on_show_spectrum(self, *args):
@@ -1365,7 +1365,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.has_unsaved_changes = True
 
         # Cancel movement for columns not in the nodes' dataframe
-        if self.tvNodes.model().sourceModel().headerData(logical_index, Qt.Horizontal) not in self._network.infos.columns:
+        model = self.tvNodes.model().sourceModel()
+        key = model.headerData(logical_index, Qt.Horizontal, model.KeyRole)
+        if isinstance(key, int):
             with utils.SignalBlocker(self.tvNodes.horizontalHeader()):
                 self.tvNodes.horizontalHeader().moveSection(new_visual_index, old_visual_index)
 
@@ -1722,12 +1724,16 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.has_unsaved_changes = True
 
     @debug
-    def set_nodes_label(self, column_id):
+    def set_nodes_label(self, column_id: int = None, column_key: Union[int, str] = None):
         model = self.tvNodes.model().sourceModel()
         for column in range(model.columnCount()):
             font = model.headerData(column, Qt.Horizontal, role=Qt.FontRole)
             if font is not None and font.overline():
                 model.setHeaderData(column, Qt.Horizontal, None, role=Qt.FontRole)
+
+        if column_key is not None and isinstance(column_key, str):
+            column_id = model.headerKeysToIndices([column_key])
+            column_id = column_id[0] if column_id else None
 
         if column_id is not None:
             font = model.headerData(column_id, Qt.Horizontal, role=Qt.FontRole)
@@ -1738,7 +1744,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             for dock in self.network_docks.values():
                 scene = dock.widget().gvNetwork.scene()
                 scene.setLabelsFromModel(model, column_id, ui.widgets.LabelRole)
-            self.network.columns_mappings['label'] = column_id
+            self.network.columns_mappings['label'] = model.headerData(column_id, Qt.Horizontal, role=model.KeyRole)
         else:
             for dock in self.network_docks.values():
                 dock.widget().gvNetwork.scene().resetLabels()
@@ -1751,8 +1757,13 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.has_unsaved_changes = True
 
     @debug
-    def set_nodes_pie_chart_values(self, column_ids, colors: List[QColor] = []):
+    def set_nodes_pie_chart_values(self, column_ids: List[int] = None, colors: List[QColor] = [],
+                                   column_keys: List[Union[int, str]] = None):
         model = self.tvNodes.model().sourceModel()
+
+        if column_keys is not None and len(column_keys) > 0 and isinstance(column_keys[0], str):
+            column_ids = model.headerKeysToIndices(column_keys)
+
         if column_ids is not None:
             if len(colors) < len(column_ids):
                 QMessageBox.critical(self, None, "There is more columns selected than colors available.")
@@ -1773,7 +1784,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 scene.setPieChartsFromModel(model, column_ids)
                 scene.setPieChartsVisibility(True)
 
-            self.network.columns_mappings['pies'] = (column_ids, save_colors)
+            keys = [model.headerData(id_, Qt.Horizontal, role=model.KeyRole) for id_ in column_ids]
+            self.network.columns_mappings['pies'] = (keys, save_colors)
         else:
             for column in range(model.columnCount()):
                 model.setHeaderData(column, Qt.Horizontal, None, role=ui.widgets.metadata.ColorMarkRole)
@@ -1789,12 +1801,18 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.has_unsaved_changes = True
 
     @debug
-    def set_nodes_sizes_values(self, column_id, func: Callable = None):
+    def set_nodes_sizes_values(self, column_id: int = None, func: Callable = None,
+                               column_key: Union[int, str] = None):
         model = self.tvNodes.model().sourceModel()
+
         for column in range(model.columnCount()):
             font = model.headerData(column, Qt.Horizontal, role=Qt.FontRole)
             if font is not None and font.underline():
                 model.setHeaderData(column, Qt.Horizontal, None, role=Qt.FontRole)
+
+        if column_key is not None and isinstance(column_key, str):
+            column_id = model.headerKeysToIndices([column_key])
+            column_id = column_id[0] if column_id else None
 
         if column_id is not None:
             font = model.headerData(column_id, Qt.Horizontal, role=Qt.FontRole)
@@ -1805,7 +1823,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
             for dock in self.network_docks.values():
                 dock.widget().gvNetwork.scene().setNodesRadiiFromModel(model, column_id, Qt.DisplayRole, func)
 
-            self.network.columns_mappings['size'] = (column_id, func)
+            key = model.headerData(column_id, Qt.Horizontal, role=model.KeyRole)
+            self.network.columns_mappings['size'] = (key, func)
         else:
             for dock in self.network_docks.values():
                 dock.widget().gvNetwork.scene().resetNodesRadii()
@@ -1818,12 +1837,18 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.has_unsaved_changes = True
 
     @debug
-    def set_nodes_colors_values(self, column_id, mapping: Union[Dict[str, QColor], Tuple[List[float], List[QColor]]] = {}):
+    def set_nodes_colors_values(self, column_id: int=None,
+                                mapping: Union[Dict[str, QColor], Tuple[List[float], List[QColor]]] = {},
+                                column_key: Union[int, str] = None):
         model = self.tvNodes.model().sourceModel()
         for column in range(model.columnCount()):
             font = model.headerData(column, Qt.Horizontal, role=Qt.FontRole)
             if font is not None and font.italic():
                 model.setHeaderData(column, Qt.Horizontal, None, role=Qt.FontRole)
+
+        if column_key is not None and isinstance(column_key, str):
+            column_id = model.headerKeysToIndices([column_key])
+            column_id = column_id[0] if column_id else None
 
         if column_id is not None:
             font = model.headerData(column_id, Qt.Horizontal, role=Qt.FontRole)
@@ -1831,9 +1856,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
             font.setItalic(True)
             model.setHeaderData(column_id, Qt.Horizontal, font, role=Qt.FontRole)
 
-            column_title = model.headerData(column_id, Qt.Horizontal)
+            key = model.headerData(column_id, Qt.Horizontal, model.KeyRole)
             try:
-                data = self._network.infos[column_title]
+                data = self._network.infos[key]
             except IndexError:
                 pass
             else:
@@ -1864,7 +1889,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 for dock in self.network_docks.values():
                     dock.widget().gvNetwork.scene().setNodesColors(color_list)
 
-                self.network.columns_mappings['colors'] = (column_id, mapping)
+                self.network.columns_mappings['colors'] = (key, mapping)
         else:
             for dock in self.network_docks.values():
                 scene = dock.widget().gvNetwork.scene()
@@ -1983,33 +2008,33 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def update_columns_mappings(self):
         columns_mappings = getattr(self.network, 'columns_mappings', {})
 
-        id_ = columns_mappings.get('label', None)
-        if id_ is not None:
-            self.set_nodes_label(id_)
+        key = columns_mappings.get('label', None)
+        if key is not None:
+            self.set_nodes_label(column_key=key)
 
         try:
-            ids, colors = columns_mappings.get('pies', (None, None))
+            keys, colors = columns_mappings.get('pies', (None, None))
         except TypeError:
             pass
         else:
-            if ids is not None and colors is not None:
-                self.set_nodes_pie_chart_values(ids, colors)
+            if keys is not None and colors is not None:
+                self.set_nodes_pie_chart_values(column_keys=keys, colors=colors)
 
         try:
-            id_, func = columns_mappings.get('size', (None, None))
+            key, func = columns_mappings.get('size', (None, None))
         except TypeError:
             pass
         else:
-            if id_ is not None and func is not None:
-                self.set_nodes_sizes_values(id_, func)
+            if key is not None and func is not None:
+                self.set_nodes_sizes_values(column_key=key, func=func)
 
         try:
-            id_, colors = columns_mappings.get('colors', (None, None))
+            key, colors = columns_mappings.get('colors', (None, None))
         except TypeError:
             pass
         else:
-            if id_ is not None and colors is not None:
-                self.set_nodes_colors_values(id_, colors)
+            if key is not None and colors is not None:
+                self.set_nodes_colors_values(column_key=key, mapping=colors)
 
     @debug
     def prepare_compute_scores_worker(self, spectra, use_multiprocessing):
@@ -2144,7 +2169,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         model = self.tvNodes.model().sourceModel()
         header = self.tvNodes.horizontalHeader()
         df = self._network.infos
-        columns = [model.headerData(header.visualIndex(i), Qt.Horizontal) for i in range(model.columnCount())]
+        columns = [model.headerData(header.visualIndex(i), Qt.Horizontal, model.KeyRole) for i in range(model.columnCount())]
         if df is not None:
             columns = [c for c in columns if c in df.columns]
             df = df.reindex(columns=columns)
