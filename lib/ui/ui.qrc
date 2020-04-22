@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="icons">
+    <file>images/freeze_columns.svg</file>
+    <file>images/freeze_first_column.svg</file>
     <file>images/plugin.svg</file>
     <file>images/plugins-home.svg</file>
     <file>images/metadata.svg</file>

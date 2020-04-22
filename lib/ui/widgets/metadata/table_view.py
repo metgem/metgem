@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import QTableView, QAbstractButton, QHeaderView, QWidget, Q
 from PyQt5.QtCore import Qt, QObject, QEvent, QRect, QItemSelectionModel, pyqtSignal, QTimer, QModelIndex
 from PyQt5 import uic
 
+from .freeze_table import FreezeTableMixin
 from .model import ProxyModel, ColorMarkRole
 from ..delegates import EnsureStringItemDelegate, StandardsResultsDelegate
 from ....utils import SignalBlocker
@@ -126,21 +127,22 @@ class MetadataTableView(QTableView):
         super().setModel(proxy)
 
 
-class NodeTableView(MetadataTableView):
+class NodeTableView(FreezeTableMixin, MetadataTableView):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.timers = {}
 
-        header = HeaderView(Qt.Horizontal, self)
-        header.setHighlightSections(True)
-        header.setSectionsClickable(True)
-        header.setSectionsMovable(True)
-        header.setAllowRightMouseSelection(True)
-        header.sectionPressedRight.connect(self.selectColumn)
-        header.sectionEnteredRight.connect(self.on_section_entered)
-        self.setHorizontalHeader(header)
+        for table in (self, self.frozenTable()):
+            header = HeaderView(Qt.Horizontal, table)
+            header.setHighlightSections(True)
+            header.setSectionsClickable(True)
+            header.setSectionsMovable(True)
+            header.setAllowRightMouseSelection(True)
+            header.sectionPressedRight.connect(self.selectColumn)
+            header.sectionEnteredRight.connect(self.on_section_entered)
+            table.setHorizontalHeader(header)
 
         self.setContextMenuPolicy(Qt.CustomContextMenu)
 
@@ -250,6 +252,12 @@ class NodesWidget(QWidget):
         menu.addAction(self.actionFindAnalogs)
         self.btFindStandards.setMenu(menu)
         self.btFindStandards.setDefaultAction(self.actionFindStandards)
+
+        menu = QMenu()
+        menu.addAction(self.actionFreezeColumns)
+        menu.addAction(self.actionFreezeFirstColumn)
+        self.btFreezeColumns.setMenu(menu)
+        self.btFreezeColumns.setDefaultAction(self.actionFreezeFirstColumn)
 
 
 class EdgesWidget(QWidget):

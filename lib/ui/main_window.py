@@ -175,6 +175,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.nodes_widget.actionAddColumnsByFormulae.triggered.connect(self.on_add_columns_by_formulae)
         self.nodes_widget.actionClusterize.triggered.connect(self.on_clusterize)
         self.nodes_widget.actionDeleteColumns.triggered.connect(self.on_delete_nodes_columns)
+        self.nodes_widget.actionFreezeColumns.triggered.connect(self.on_freeze_columns)
+        self.nodes_widget.actionFreezeFirstColumn.triggered.connect(self.on_freeze_first_column)
 
         self.edges_widget.actionHighlightSelectedEdges.triggered.connect(self.highlight_selected_edges)
         self.edges_widget.actionHighlightNodesFromSelectedEdges.triggered.connect(
@@ -1642,6 +1644,32 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 dialog.open()
             else:
                 QMessageBox.information(self, None, "No databases found, please download one or more database first.")
+
+    @debug
+    def on_freeze_columns(self, *args):
+        if self.nodes_widget.actionFreezeColumns.isChecked():
+            selected_columns = self.tvNodes.selectionModel().selectedColumns()
+            if not selected_columns:
+                with utils.SignalBlocker(self.nodes_widget.actionFreezeColumns):
+                    self.nodes_widget.actionFreezeColumns.setChecked(False)
+                return
+
+            with utils.SignalBlocker(self.nodes_widget.actionFreezeFirstColumn):
+                self.nodes_widget.actionFreezeFirstColumn.setChecked(False)
+            print(self.tvNodes.horizontalHeader().visualIndex(selected_columns[-1].column()))
+            self.tvNodes.setFrozenColumns(
+                self.tvNodes.horizontalHeader().visualIndex(selected_columns[-1].column()) + 1)
+        else:
+            self.tvNodes.setFrozenColumns(None)
+
+    @debug
+    def on_freeze_first_column(self, *args):
+        if self.nodes_widget.actionFreezeFirstColumn.isChecked():
+            with utils.SignalBlocker(self.nodes_widget.actionFreezeColumns):
+                self.nodes_widget.actionFreezeColumns.setChecked(False)
+            self.tvNodes.setFrozenColumns(1)
+        else:
+            self.tvNodes.setFrozenColumns(None)
 
     @debug
     def confirm_save_changes(self):

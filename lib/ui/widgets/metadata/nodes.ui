@@ -481,6 +481,42 @@
     <string>Remove selected columns</string>
    </property>
   </action>
+  <action name="actionFreezeColumns">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../../ui.qrc">
+     <normaloff>:/icons/images/freeze_columns.svg</normaloff>:/icons/images/freeze_columns.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Freeze Columns</string>
+   </property>
+   <property name="toolTip">
+    <string>Freeze the columns to the left of the selected one</string>
+   </property>
+   <property name="statusTip">
+    <string>Freeze the columns to the left of the selected one</string>
+   </property>
+  </action>
+  <action name="actionFreezeFirstColumn">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../../ui.qrc">
+     <normaloff>:/icons/images/freeze_first_column.svg</normaloff>:/icons/images/freeze_first_column.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Freeze First Column</string>
+   </property>
+   <property name="toolTip">
+    <string>Freeze the first column of the table</string>
+   </property>
+   <property name="statusTip">
+    <string>Freeze the first column of the table</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
