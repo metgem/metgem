@@ -138,11 +138,11 @@ class NodeTableView(FreezeTableMixin, MetadataTableView):
             header = HeaderView(Qt.Horizontal, table)
             header.setHighlightSections(True)
             header.setSectionsClickable(True)
-            header.setSectionsMovable(True)
-            header.setAllowRightMouseSelection(True)
-            header.sectionPressedRight.connect(self.selectColumn)
-            header.sectionEnteredRight.connect(self.on_section_entered)
-            table.setHorizontalHeader(header)
+            header.setStretchLastSection(True)
+            if table == self:
+                self.setHorizontalHeader(header)
+            else:
+                self.setFrozenTableHorizontalHeader(header)
 
         self.setContextMenuPolicy(Qt.CustomContextMenu)
 

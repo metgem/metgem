@@ -121,16 +121,15 @@ class FreezeTableMixin:
         self._frozen_table.verticalHeader().hide()
         self._frozen_table.setFocusPolicy(Qt.NoFocus)
         self._frozen_table.setStyleSheet('''
+        QTableView, QHeaderView {
             border: none;
-            border-right-width: 2px;
-            border-right-color: palette(dark);
-            border-right-style: solid;
             background-color: palette(dark);
-            color: palette(base)
-        ''')
+            alternate-background-color: palette(mid);
+            color: palette(base);
+        }''')
         self._frozen_table.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self._frozen_table.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.frozenTable().setSortingEnabled(self.isSortingEnabled())
+        self._frozen_table.horizontalHeader().setStretchLastSection(True)
 
         self.viewport().stackUnder(self._frozen_table)
 
@@ -142,7 +141,8 @@ class FreezeTableMixin:
         self._frozen_table.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
 
         # connect the headers and scrollbars of both tableviews together
-        self.horizontalHeader().sectionResized.connect(self.updateSectionWidth)
+        self.horizontalHeader().sectionResized.connect(self.updateFrozenSectionWidth)
+        self._frozen_table.horizontalHeader().sectionResized.connect(self.updateTableSectionWidth)
         self.verticalHeader().sectionResized.connect(self.updateSectionHeight)
         self._frozen_table.verticalScrollBar().valueChanged.connect(self.verticalScrollBar().setValue)
         self.verticalScrollBar().valueChanged.connect(self._frozen_table.verticalScrollBar().setValue)
@@ -151,9 +151,13 @@ class FreezeTableMixin:
         return self._frozen_table
 
     def setHorizontalHeader(self, header: QHeaderView) -> None:
-        header.sectionResized.connect(self.updateSectionWidth)
+        header.sectionResized.connect(self.updateFrozenSectionWidth)
         super().setHorizontalHeader(header)
         header.stackUnder(self._frozen_table)
+
+    def setFrozenTableHorizontalHeader(self, header: QHeaderView) -> None:
+        header.sectionResized.connect(self.updateTableSectionWidth)
+        self._frozen_table.setHorizontalHeader(header)
 
     def setVerticalHeader(self, header: QHeaderView) -> None:
         header.sectionResized.connect(self.updateSectionHeight)
@@ -172,13 +176,27 @@ class FreezeTableMixin:
         self._frozen_table.setSelectionModel(link_selection_model)
 
     # noinspection PyUnusedLocal
-    def updateSectionWidth(self, logical_index: int, old_size: int, new_size: int):
+    def updateFrozenSectionWidth(self, logical_index: int, old_size: int, new_size: int):
         model = self._frozen_table.model()
         if model is None:
             return
 
-        if logical_index < model.columnCount():
-            self._frozen_table.setColumnWidth(logical_index, new_size)
+        proxy_logical_index = model.proxyColumnForSourceColumn(logical_index)
+        if proxy_logical_index > 0:
+            self._frozen_table.horizontalHeader().blockSignals(True)
+            self._frozen_table.horizontalHeader().resizeSection(proxy_logical_index, new_size)
+            self._frozen_table.horizontalHeader().blockSignals(False)
+            self.updateFrozenTableGeometry()
+
+    # noinspection PyUnusedLocal
+    def updateTableSectionWidth(self, logical_index: int, old_size: int, new_size: int):
+        model = self._frozen_table.model()
+        if model is None:
+            return
+
+        source_logical_index = model.sourceColumnForProxyColumn(logical_index)
+        if source_logical_index > 0:
+            self.setColumnWidth(source_logical_index, new_size)
             self.updateFrozenTableGeometry()
 
     # noinspection PyUnusedLocal
@@ -202,6 +220,12 @@ class FreezeTableMixin:
             mapping = [self.horizontalHeader().logicalIndex(col) for col in range(num_columns)]
             mapping = [col for col in mapping if not self.isColumnHidden(col)]
             model.setSourceColumns(mapping)
+
+            # Synchronize section sizes between table and frozen table
+            hh = self._frozen_table.horizontalHeader()
+            for col in range(num_columns):
+                logical_index = model.sourceColumnForProxyColumn(col)
+                hh.resizeSection(col, self.columnWidth(logical_index))
 
             self._frozen_table.show()
             self.updateFrozenTableGeometry()
