@@ -1,10 +1,10 @@
-from PyQt5.QtGui import QPainter, QMouseEvent, QPalette
+from PyQt5.QtGui import QPainter, QPalette
 from PyQt5.QtWidgets import QTableView, QAbstractButton, QHeaderView, QWidget, QMenu
-from PyQt5.QtCore import Qt, QObject, QEvent, QRect, QItemSelectionModel, pyqtSignal, QTimer, QModelIndex
+from PyQt5.QtCore import Qt, QObject, QEvent, QRect, QTimer, QModelIndex
 from PyQt5 import uic
 
 from .freeze_table import FreezeTableMixin
-from .model import ProxyModel, ColorMarkRole
+from .model import ColorMarkRole
 from ..delegates import EnsureStringItemDelegate, StandardsResultsDelegate
 from ....utils import SignalBlocker
 
@@ -12,17 +12,7 @@ import os
 
 
 class HeaderView(QHeaderView):
-    """QHeaderView that can have a different color background and or color mark for each section and selection
-    of columns with right mouse button."""
-
-    sectionPressedRight = pyqtSignal(int)
-    sectionEnteredRight = pyqtSignal(int)
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._right_selection_active = False
-        self._selection_running = False
-        self._right_pressed_section = -1
+    """QHeaderView that can have a different color background and or color mark for each section"""
 
     def paintSection(self, painter: QPainter, rect: QRect, logical_index: int):
         bg = self.model().headerData(logical_index, Qt.Horizontal, Qt.BackgroundColorRole)
@@ -39,60 +29,6 @@ class HeaderView(QHeaderView):
         if cm is not None and cm.isValid():
             painter.fillRect(rect.adjusted(0, 0, 0, -int(7 * rect.height() / 8)), cm)
 
-    def allowRightMouseSelection(self):
-        return self._right_selection_active
-
-    def setAllowRightMouseSelection(self, value):
-        self._right_selection_active = bool(value)
-
-    def mousePressEvent(self, event: QMouseEvent):
-        if not self._right_selection_active or event.buttons() != Qt.RightButton:
-            return super().mousePressEvent(event)
-
-        if self._selection_running:
-            return
-
-        pos = event.x() if self.orientation() == Qt.Horizontal else event.y()
-        self._right_pressed_section = self.logicalIndexAt(pos)
-        if self.sectionsClickable():
-            self.sectionPressedRight.emit(self._right_pressed_section)
-            if self._right_pressed_section != -1:
-                self.updateSection(self._right_pressed_section)
-                self._selection_running = True
-
-    def mouseMoveEvent(self, event: QMouseEvent):
-        if not self._right_selection_active or event.buttons() != Qt.RightButton:
-            return super().mouseMoveEvent(event)
-
-        pos = event.x() if self.orientation() == Qt.Horizontal else event.y()
-
-        if pos < 0:
-            return
-
-        if self._selection_running:
-            logical = self.logicalIndexAt(pos)
-            if logical == self._right_pressed_section:
-                return  # Nothing to do
-            elif self._right_pressed_section != -1:
-                self.updateSection(self._right_pressed_section)
-            self._right_pressed_section = logical
-            if self.sectionsClickable() and logical != -1:
-                self.sectionEnteredRight.emit(self._right_pressed_section)
-                self.updateSection(self._right_pressed_section)
-            return
-
-    def mouseReleaseEvent(self, event: QMouseEvent):
-        super().mouseReleaseEvent(event)
-
-        pos = event.x() if self.orientation() == Qt.Horizontal else event.y()
-
-        if self._selection_running and self.sectionsClickable():
-            section = self.logicalIndex(pos)
-            self.updateSection(section)
-
-        self._selection_running = False
-        self._right_pressed_section = -1
-
 
 class MetadataTableView(QTableView):
     """ TableView to display metadata"""
@@ -108,8 +44,6 @@ class MetadataTableView(QTableView):
             btn.installEventFilter(self)
         self.horizontalHeader().setSortIndicator(-1, Qt.AscendingOrder)
 
-        self.setSortingEnabled(True)
-
     def eventFilter(self, watched: QObject, event: QEvent):
         # If top-left button is right clicked, reset model's sorting order
         if event.type() == QEvent.MouseButtonRelease:
@@ -120,11 +54,6 @@ class MetadataTableView(QTableView):
     def resetSorting(self):
         self.model().sort(-1)
         self.horizontalHeader().setSortIndicator(-1, Qt.AscendingOrder)
-
-    def setModel(self, model):
-        proxy = ProxyModel()
-        proxy.setSourceModel(model)
-        super().setModel(proxy)
 
 
 class NodeTableView(FreezeTableMixin, MetadataTableView):
@@ -145,17 +74,12 @@ class NodeTableView(FreezeTableMixin, MetadataTableView):
                 self.setFrozenTableHorizontalHeader(header)
 
         self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.setAlternatingRowColors(True)
+        self.frozenTable().setAlternatingRowColors(True)
 
         delegate = StandardsResultsDelegate()
         self.viewDetailsClicked = delegate.viewDetailsClicked
         self.setItemDelegateForColumn(1, delegate)
-
-    def on_section_entered(self, logical_index):
-        index = self.model().index(0, logical_index)
-        model = self.selectionModel()
-        selection = model.selection()
-        selection.select(index, index)
-        model.select(selection, QItemSelectionModel.Select | QItemSelectionModel.Columns)
 
     def setColumnBlinking(self, section: int, blink: bool):
         if section in self.timers:
@@ -186,24 +110,16 @@ class EdgeTableView(MetadataTableView):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # Last column is virtual (content is generated on demand),
-        # so we don't want to sort or resize column from content
-        self.horizontalHeader().sortIndicatorChanged.connect(self.on_sort_indicator_changed)
         self.horizontalHeader().setStretchLastSection(True)
-        self.horizontalHeader().setSectionsMovable(True)
 
         self.setContextMenuPolicy(Qt.CustomContextMenu)
+
+        self.setAlternatingRowColors(True)
 
     def sizeHintForColumn(self, column: int):
         if column == self.model().columnCount() - 1:
             return 0
         return super().sizeHintForColumn(column)
-
-    # noinspection PyUnusedLocal
-    def on_sort_indicator_changed(self, index: int, order: int):
-        if index == self.model().columnCount() - 1:
-            with SignalBlocker(self.horizontalHeader()):
-                self.horizontalHeader().setSortIndicator(-1, Qt.AscendingOrder)
 
 
 class NodesWidget(QWidget):
@@ -211,6 +127,11 @@ class NodesWidget(QWidget):
     def __init__(self):
         super().__init__()
         uic.loadUi(os.path.join(os.path.dirname(__file__), 'nodes.ui'), self)
+
+        hh = self.tvNodes.horizontalHeader()
+        self._sort_indicator_section = -1
+        self._sort_indicator_order = Qt.AscendingOrder
+        hh.setSortIndicator(-1, Qt.AscendingOrder)
 
         menu = QMenu()
         menu.addAction(self.actionUseColumnForLabels)
@@ -240,6 +161,11 @@ class NodesWidget(QWidget):
         self.btAddColumnsByFormulae.setDefaultAction(self.actionAddColumnsByFormulae)
         self.btClusterize.setDefaultAction(self.actionClusterize)
         self.btDeleteColumns.setDefaultAction(self.actionDeleteColumns)
+        self.btSetAlternatingRowColors.setDefaultAction(self.actionSetAlternatingRowColors)
+        self.btEnableOrdering.setDefaultAction(self.actionEnableOrdering)
+        self.btSetColumnsMovable.setDefaultAction(self.actionSetColumnsMovable)
+        self.btFreezeFirstColumn.setDefaultAction(self.actionFreezeFirstColumn)
+        self.btFreezeColumns.setDefaultAction(self.actionFreezeColumns)
 
         menu = QMenu()
         menu.addAction(self.actionViewSpectrum)
@@ -253,11 +179,68 @@ class NodesWidget(QWidget):
         self.btFindStandards.setMenu(menu)
         self.btFindStandards.setDefaultAction(self.actionFindStandards)
 
-        menu = QMenu()
-        menu.addAction(self.actionFreezeColumns)
-        menu.addAction(self.actionFreezeFirstColumn)
-        self.btFreezeColumns.setMenu(menu)
-        self.btFreezeColumns.setDefaultAction(self.actionFreezeFirstColumn)
+        self.actionFreezeColumns.triggered.connect(self.on_freeze_columns)
+        self.actionFreezeFirstColumn.triggered.connect(self.on_freeze_first_column)
+        self.actionSetAlternatingRowColors.triggered.connect(self.on_set_alternating_row_colors)
+        self.actionEnableOrdering.triggered.connect(self.on_enable_sorting)
+        self.actionSetColumnsMovable.triggered.connect(
+            lambda: self.tvNodes.horizontalHeader().setSectionsMovable(self.actionSetColumnsMovable.isChecked()))
+        hh.sortIndicatorChanged.connect(self.on_sort_indicator_changed)
+        self.tvNodes.frozenTable().horizontalHeader().sortIndicatorChanged.connect(self.on_sort_indicator_changed)
+
+    def on_set_alternating_row_colors(self):
+        checked = self.actionSetAlternatingRowColors.isChecked()
+        self.tvNodes.setAlternatingRowColors(checked)
+        self.tvNodes.frozenTable().setAlternatingRowColors(checked)
+
+    def on_sort_indicator_changed(self, logical_index: int, order: int):
+        # Store sort indicator if sorting is enabled, restore the last saved if sorting is disabled
+        # We need to do this because if sort indicator is shown but sorting disabled, the sort indicator
+        # can still be changed
+        if self.tvNodes.isSortingEnabled():
+            self._sort_indicator_section = logical_index
+            self._sort_indicator_order = order
+            hh = self.tvNodes.frozenTable().horizontalHeader() if self.sender() == self.tvNodes.horizontalHeader() \
+                else self.tvNodes.horizontalHeader()
+            with SignalBlocker(hh):
+                hh.setSortIndicator(logical_index, order)
+        else:
+            for hh in (self.tvNodes.horizontalHeader(), self.tvNodes.frozenTable().horizontalHeader()):
+                with SignalBlocker(hh):
+                    hh.setSortIndicator(self._sort_indicator_section, self._sort_indicator_order)
+
+    def on_enable_sorting(self):
+        if self.actionEnableOrdering.isChecked():
+            self.tvNodes.setSortingEnabled(True)
+            self.tvNodes.frozenTable().setSortingEnabled(True)
+        else:
+            self.tvNodes.setSortingEnabled(False)
+            self.tvNodes.frozenTable().setSortingEnabled(False)
+            self.tvNodes.horizontalHeader().setSortIndicatorShown(True)
+            self.tvNodes.frozenTable().horizontalHeader().setSortIndicatorShown(True)
+
+    def on_freeze_columns(self):
+        if self.actionFreezeColumns.isChecked():
+            selected_columns = self.tvNodes.selectionModel().selectedColumns()
+            if not selected_columns:
+                with SignalBlocker(self.actionFreezeColumns):
+                    self.actionFreezeColumns.setChecked(False)
+                return
+
+            with SignalBlocker(self.actionFreezeFirstColumn):
+                self.actionFreezeFirstColumn.setChecked(False)
+            self.tvNodes.setFrozenColumns(
+                self.tvNodes.horizontalHeader().visualIndex(selected_columns[-1].column()) + 1)
+        else:
+            self.tvNodes.setFrozenColumns(None)
+
+    def on_freeze_first_column(self):
+        if self.actionFreezeFirstColumn.isChecked():
+            with SignalBlocker(self.actionFreezeColumns):
+                self.actionFreezeColumns.setChecked(False)
+            self.tvNodes.setFrozenColumns(1)
+        else:
+            self.tvNodes.setFrozenColumns(None)
 
 
 class EdgesWidget(QWidget):
@@ -266,5 +249,45 @@ class EdgesWidget(QWidget):
         super().__init__()
         uic.loadUi(os.path.join(os.path.dirname(__file__), 'edges.ui'), self)
 
+        hh = self.tvEdges.horizontalHeader()
+        self._sort_indicator_section = -1
+        self._sort_indicator_order = Qt.AscendingOrder
+        hh.setSortIndicator(-1, Qt.AscendingOrder)
+
         self.btHighlightSelectedEdges.setDefaultAction(self.actionHighlightSelectedEdges)
         self.btHighlightNodesFromSelectedEdges.setDefaultAction(self.actionHighlightNodesFromSelectedEdges)
+        self.btSetAlternatingRowColors.setDefaultAction(self.actionSetAlternatingRowColors)
+        self.btEnableOrdering.setDefaultAction(self.actionEnableOrdering)
+        self.btSetColumnsMovable.setDefaultAction(self.actionSetColumnsMovable)
+
+        self.actionSetAlternatingRowColors.triggered.connect(
+            lambda: self.tvEdges.setAlternatingRowColors(self.actionSetAlternatingRowColors.isChecked()))
+        self.actionEnableOrdering.triggered.connect(self.on_enable_sorting)
+        self.actionSetColumnsMovable.triggered.connect(
+            lambda: self.tvEdges.horizontalHeader().setSectionsMovable(self.actionSetColumnsMovable.isChecked()))
+        self.tvEdges.horizontalHeader().sortIndicatorChanged.connect(self.on_sort_indicator_changed)
+
+    def on_sort_indicator_changed(self, logical_index: int, order: int):
+        # Store sort indicator if sorting is enabled, restore the last saved if sorting is disabled
+        # We need to do this because if sort indicator is shown but sorting disabled, the sort indicator
+        # can still be changed
+        hh = self.tvEdges.horizontalHeader()
+
+        # Sorting is disabled in proxy model for last column because it's content is generated on demand
+        if self.tvEdges.isSortingEnabled() and logical_index != self.tvEdges.model().columnCount() - 1:
+            self._sort_indicator_section = logical_index
+            self._sort_indicator_order = order
+
+            with SignalBlocker(hh):
+                hh.setSortIndicator(logical_index, order)
+        else:
+            with SignalBlocker(hh):
+                hh.setSortIndicator(self._sort_indicator_section, self._sort_indicator_order)
+
+    def on_enable_sorting(self):
+        if self.actionEnableOrdering.isChecked():
+            self.tvEdges.setSortingEnabled(True)
+        else:
+            self.tvEdges.setSortingEnabled(False)
+            self.tvEdges.horizontalHeader().setSortIndicatorShown(True)
+

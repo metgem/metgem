@@ -1,5 +1,5 @@
 # These two imports SHOULD be left on top of the file
-from .metadata import (NodesModel, EdgesModel, ProxyModel, CsvDelimiterCombo,
+from .metadata import (NodesModel, EdgesModel, NodesProxyModel, EdgesProxyModel, CsvDelimiterCombo,
                        NodeTableView, EdgeTableView, LabelRole,
                        NodesWidget, EdgesWidget)
 from .options_widgets import (TSNEOptionsWidget, NetworkOptionsWidget, MDSOptionsWidget,

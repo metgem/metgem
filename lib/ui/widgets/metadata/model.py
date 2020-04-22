@@ -60,6 +60,18 @@ class ProxyModel(QSortFilterProxyModel):
         self.invalidateFilter()
 
 
+NodesProxyModel = ProxyModel
+
+
+class EdgesProxyModel(ProxyModel):
+    def sort(self, column: int, order: Qt.SortOrder = ...) -> None:
+        # The last column is virtual so we don't want to sort on this column
+        if column == self.columnCount() - 1:
+            return
+        else:
+            super().sort(column, order)
+
+
 class NodesModel(QAbstractTableModel):
     """Model based on a pandas DataFrame"""
 
