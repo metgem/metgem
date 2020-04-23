@@ -8,6 +8,13 @@ from libmetgem import MZ, INTENSITY
 
 import numpy as np
 
+try:
+    import mplcursors
+except ImportError:
+    HAS_MPLCURSORS = False
+else:
+    HAS_MPLCURSORS = True
+
 
 class BaseCanvas(FigureCanvas):
     dataRequested = pyqtSignal()
@@ -72,11 +79,22 @@ class BaseCanvas(FigureCanvas):
             return
 
         if yinverted:
-            return self.axes.vlines(data[:, MZ], 0, np.negative(data[:, INTENSITY]),
-                                    linewidth=0.5, **kwargs)
+            vlines = self.axes.vlines(data[:, MZ], 0, np.negative(data[:, INTENSITY]),
+                                      linewidth=0.5, **kwargs)
         else:
-            return self.axes.vlines(data[:, MZ], 0, data[:, INTENSITY],
-                                    linewidth=0.5, **kwargs)
+            vlines = self.axes.vlines(data[:, MZ], 0, data[:, INTENSITY],
+                                      linewidth=0.5, **kwargs)
+
+        if HAS_MPLCURSORS:
+            cursor = mplcursors.cursor(vlines)
+
+            @cursor.connect('add')
+            def on_add(sel):
+                sel.annotation.set_text(sel.annotation.get_text().replace('<i>m/z</i>\n', '$m/z$ '))
+                sel.annotation.get_bbox_patch().set(fc="tab:gray")
+                sel.annotation.arrow_patch.set(arrowstyle="-|>", alpha=.5)
+
+        return vlines
 
     def auto_adjust_ylim(self):
         pass

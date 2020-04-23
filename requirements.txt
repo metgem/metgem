@@ -18,3 +18,4 @@ rdkit
 numexpr>=2.7.0
 xlrd
 odfpy
+mplcursors

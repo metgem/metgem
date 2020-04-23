@@ -26,5 +26,6 @@ dependencies:
     - xlrd
     - odfpy
     - feedparser
+    - mplcursors
     - pip:
         - py2cytoscape>=0.7.0
