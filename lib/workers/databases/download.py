@@ -26,9 +26,9 @@ class ListDatabasesWorker(BaseWorker):
 
         # Find available databases on GNPS libraries page
         try:
-            r = requests.get(GNPS_LIB_URL)
+            r = requests.get(GNPS_LIB_URL, timeout=1)
             r.raise_for_status()
-        except (requests.ConnectionError, requests.HTTPError) as e:
+        except (requests.ConnectionError, requests.HTTPError, requests.Timeout) as e:
             self.error.emit(e)
             return False
         else:
@@ -60,9 +60,10 @@ class ListDatabasesWorker(BaseWorker):
             try:
                 url = plugin.page
                 if url is not None:
-                    r = requests.get(url)
+                    r = requests.get(url, timeout=1)
                     r.raise_for_status()
-            except (requests.ConnectionError, requests.HTTPError, requests.exceptions.MissingSchema) as e:
+            except (requests.ConnectionError, requests.HTTPError,
+                    requests.exceptions.MissingSchema, requests.exceptions.Timeout) as e:
                 self.error.emit(e)
                 return False
             else:

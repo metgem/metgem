@@ -14,7 +14,11 @@ class CheckPluginsVersionsWorker(BaseWorker):
             self.canceled.emit()
             return False
 
-        r = requests.get(CheckPluginsVersionsWorker.URL)
+        try:
+            r = requests.get(CheckPluginsVersionsWorker.URL, timeout=.5)
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
+            return False
+
         try:
             r.raise_for_status()
         except requests.HTTPError:

@@ -26,17 +26,21 @@ class DownloadPluginsWorker(BaseWorker):
 
             try:
                 with BytesIO() as bytes_io:
-                    # Download zip file of plugin
-                    with requests.get(url, stream=True) as r:
-                        r.raise_for_status()
+                    try:
+                        # Download zip file of plugin
+                        with requests.get(url, stream=True, timeout=10) as r:
+                            r.raise_for_status()
 
-                        for chunk in r.iter_content(chunk_size=1024):
-                            if chunk:  # filter out keep-alive new chunks
-                                bytes_io.write(chunk)
-                                self.updated.emit(1024)
+                            for chunk in r.iter_content(chunk_size=1024):
+                                if chunk:  # filter out keep-alive new chunks
+                                    bytes_io.write(chunk)
+                                    self.updated.emit(1024)
 
-                            if self.isStopped():
-                                self.canceled.emit()
+                                if self.isStopped():
+                                    self.canceled.emit()
+                    except (requests.ConnectionError, requests.HTTPError, requests.exceptions.Timeout) as e:
+                        self.error.emit(e)
+                        return
 
                     # Extract plugin script from zip
                     with ZipFile(bytes_io) as zf:

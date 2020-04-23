@@ -21,7 +21,11 @@ class CheckUpdatesWorker(BaseWorker):
         if not current_version:
             return False
 
-        r = requests.get(CheckUpdatesWorker.URL)
+        try:
+            r = requests.get(CheckUpdatesWorker.URL, timeout=.1)
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
+            return False
+
         try:
             r.raise_for_status()
         except requests.HTTPError:
