@@ -397,17 +397,22 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.setWindowTitle(self.window_title)
 
     @property
-    def current_view(self):
+    def current_network_widget(self):
         docks = list(self.network_docks.values())
         for dock in docks:
-            view = dock.widget().gvNetwork
+            view = dock.widget()
             if view.hasFocus():
                 return view
 
         try:
-            return docks[0].widget().gvNetwork
+            return docks[0].widget()
         except IndexError:
             return
+
+    @property
+    def current_view(self):
+        widget = self.current_network_widget
+        return widget.gvNetwork if widget is not None else None
 
     @property
     def network(self):
@@ -912,9 +917,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
             from py2cytoscape.data.cyrest_client import CyRestClient
             from py2cytoscape import cyrest
 
-            view = self.current_view
-            if view is None:
+            widget = self.current_network_widget
+            if widget is None:
                 return
+            view = widget.gvNetwork
 
             cy = CyRestClient()
 
@@ -934,7 +940,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 else:
                     g.vs[attr] = [str(x + 1) for x in g.vs[attr]]
 
-            g = view.process_graph_before_export(g)
+            g = widget.process_graph_before_export(g)
 
             # cy.session.delete()
             logger.debug('CyREST: Creating network')
