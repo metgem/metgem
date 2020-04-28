@@ -73,6 +73,9 @@
     <addaction name="actionViewSpectrum"/>
     <addaction name="actionViewCompareSpectrum"/>
     <addaction name="separator"/>
+    <addaction name="actionFindStandards"/>
+    <addaction name="actionFindAnalogs"/>
+    <addaction name="separator"/>
     <addaction name="actionZoomIn"/>
     <addaction name="actionZoomOut"/>
     <addaction name="actionZoomToFit"/>
@@ -900,7 +903,7 @@
      <normaloff>:/icons/images/hide-isolated-nodes.svg</normaloff>:/icons/images/hide-isolated-nodes.svg</iconset>
    </property>
    <property name="text">
-    <string>Show/Hide Isolated Nodes</string>
+    <string>Show/Hide &amp;Isolated Nodes</string>
    </property>
    <property name="toolTip">
     <string>Show/Hide Isolated Nodes</string>
@@ -982,6 +985,47 @@
    </property>
    <property name="statusTip">
     <string>Open plugins folder</string>
+   </property>
+  </action>
+  <action name="action_Find_Standards_From_library">
+   <property name="text">
+    <string>&amp;Find Standards From library</string>
+   </property>
+  </action>
+  <action name="actionFindStandards">
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/library-query.svg</normaloff>:/icons/images/library-query.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Find standards in library</string>
+   </property>
+   <property name="toolTip">
+    <string>Search for known spectra in library similar to the selected nodes' spectra with same precursor ion</string>
+   </property>
+   <property name="statusTip">
+    <string>Search for known spectra in library similar to the selected nodes' spectra with same precursor ion</string>
+   </property>
+   <property name="shortcut">
+    <string>F</string>
+   </property>
+  </action>
+  <action name="actionFindAnalogs">
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/library-query.svg</normaloff>:/icons/images/library-query.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Find analogs in library</string>
+   </property>
+   <property name="toolTip">
+    <string>Search for known spectra in library similar to the selected nodes' spectra with different precursor ion</string>
+   </property>
+   <property name="statusTip">
+    <string>Search for known spectra in library similar to the selected nodes' spectra with different precursor ion</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+F</string>
    </property>
   </action>
  </widget>

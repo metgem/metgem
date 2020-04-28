@@ -231,6 +231,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
         qApp.focusChanged.connect(self.on_focus_changed)
         self.actionViewSpectrum.triggered.connect(lambda: self.on_show_spectrum_triggered('show'))
         self.actionViewCompareSpectrum.triggered.connect(lambda: self.on_show_spectrum_triggered('compare'))
+        self.actionFindStandards.triggered.connect(lambda: self.on_query_databases('show',
+            {node.index() for node in self.current_view.scene().selectedNodes()}))
+        self.actionFindAnalogs.triggered.connect(lambda: self.on_query_databases('compare',
+           {node.index() for node in self.current_view.scene().selectedNodes()}))
 
         self.actionFullScreen.triggered.connect(self.on_full_screen_triggered)
         self.actionHideSelected.triggered.connect(lambda: self.current_view.scene().hideSelectedItems()
@@ -1257,6 +1261,18 @@ class MainWindow(MainWindowBase, MainWindowUI):
             menu.popup(QCursor.pos())
 
     @debug
+    def on_view_contextmenu(self, pos):
+        view = self.sender()
+        item = view.itemAt(pos)
+        if item and item.isSelected():
+            menu = QMenu(view)
+            menu.addAction(self.actionViewSpectrum)
+            menu.addAction(self.actionViewCompareSpectrum)
+            menu.addAction(self.actionFindStandards)
+            menu.addAction(self.actionFindAnalogs)
+            menu.popup(view.mapToGlobal(pos))
+
+    @debug
     def on_add_columns_by_formulae(self, *args):
         dialog = ui.AddColumnsByFormulaeDialog(self.tvNodes.model())
 
@@ -1408,8 +1424,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 self.tvNodes.horizontalHeader().moveSection(new_visual_index, old_visual_index)
 
     @debug
-    def on_query_databases(self, type_='standards'):
-        selected_idx = self.nodes_selection()
+    def on_query_databases(self, type_='standards', selected_idx=None):
+        if selected_idx is None:
+            selected_idx = self.nodes_selection()
+
         if not selected_idx:
             return
         options = workers.QueryDatabasesOptions()
@@ -1717,6 +1735,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
             scene.setNetworkStyle(self.style)
             scene.selectionChanged.connect(self.on_scene_selection_changed)
             view.focusedIn.connect(lambda: self.on_scene_selection_changed(update_view=False))
+            view.setContextMenuPolicy(Qt.CustomContextMenu)
+            view.customContextMenuRequested.connect(self.on_view_contextmenu)
             scene.pieChartsVisibilityChanged.connect(
                 lambda visibility: self.actionSetPieChartsVisibility.setChecked(visibility))
             widget.btOptions.clicked.connect(lambda: self.on_edit_options_triggered(widget))
