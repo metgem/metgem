@@ -1,2 +1,0 @@
--r ../requirements.win.txt
--r requirements.dev.base.txt

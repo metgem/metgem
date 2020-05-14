@@ -1,4 +1,0 @@
-pyinstaller>=3.3
-invoke>=1.0
-wheel
-cython>=0.28

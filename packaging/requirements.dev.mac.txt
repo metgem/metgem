@@ -1,3 +1,0 @@
--r ../requirements.txt
--r requirements.dev.base.txt
-dmgbuild>=1.3

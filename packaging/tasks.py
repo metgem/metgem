@@ -4,7 +4,8 @@ import sys
 
 from invoke import task
 
-DIST = 'dist'
+PACKAGING_DIR = os.path.dirname(__file__)
+DIST = os.path.join(PACKAGING_DIR, 'dist')
 NAME = 'MetGem'
 
 if sys.platform.startswith('win'):
@@ -18,7 +19,7 @@ if sys.platform.startswith('win'):
         with urllib.request.urlopen(url) as response, open(file_name, 'wb') as out_file:
             shutil.copyfileobj(response, out_file)
 
-    def extract_zip(file_name, extract_path='.'):
+    def extract_zip(file_name, extract_path=PACKAGING_DIR):
         """Extract contents of the zip file `file_name` under the path `extract_path` using no external tools"""
 
         from win32com.client import gencache
@@ -64,12 +65,12 @@ def build(ctx, clean=False):
 @task(check_dependencies)
 def icon(ctx):
     if sys.platform.startswith('win'):
-        ctx.run("bin\ImageMagick\convert.exe -density 384 -background transparent ../lib/ui/images/main.svg -define icon:auto-resize -colors 256 main.ico")
+        ctx.run("bin\ImageMagick\convert.exe -density 384 -background transparent {} -define icon:auto-resize -colors 256 main.ico".format(os.path.join(PACKAGING_DIR, '../metgem/lib/ui/images/main.svg')))
 
 
 @task(check_dependencies)
 def rc(ctx):
-    ctx.run("pyrcc5 ../lib/ui/ui.qrc -o ../lib/ui/ui_rc.py")
+    ctx.run("pyrcc5 {} -o {}".format(os.path.join(PACKAGING_DIR, '../metgem/ui/ui.qrc'), os.path.join(PACKAGING_DIR, '../metgem/ui/ui_rc.py')))
 
 
 @task(check_dependencies)
@@ -77,7 +78,7 @@ def exe(ctx, clean=False):
     icon(ctx)
     rc(ctx)
     switchs = "--clean" if clean else ""
-    result = ctx.run("pyinstaller gui.spec --noconfirm" + " " + switchs)
+    result = ctx.run("pyinstaller {} --noconfirm {}".format(os.path.join(PACKAGING_DIR, 'MetGem.spec'), switchs))
     if result:
         if sys.platform.startswith('win'):
             replace_icon(ctx)
@@ -87,25 +88,30 @@ def exe(ctx, clean=False):
 @task(check_dependencies)
 def replace_icon(ctx):
     if sys.platform.startswith('win'):
-        ctx.run("bin\ResHacker\ResourceHacker.exe -open {0}\{1}\{1}.exe -save {0}\{1}\{1}.exe -action delete -mask ICONGROUP,101, -log CONSOLE".format(DIST, NAME))
-        ctx.run("bin\ResHacker\ResourceHacker.exe -open {0}\{1}\{1}.exe -save {0}\{1}\{1}.exe -resource main.ico -action addoverwrite -mask ICONGROUP,101, -log CONSOLE".format(DIST, NAME))
+        res_hack = os.path.join(PACKAGING_DIR, 'bin\ResHacker\ResourceHacker.exe')
+        ctx.run("{0} -open {1}\{2}\{2}.exe -save {1}\{2}\{2}.exe -action delete -mask ICONGROUP,101, -log CONSOLE".format(res_hack, DIST, NAME))
+        ctx.run("{0} -open {1}\{2}\{2}.exe -save {1}\{2}\{2}.exe -resource main.ico -action addoverwrite -mask ICONGROUP,101, -log CONSOLE".format(res_hack, DIST, NAME))
 
 
 @task(check_dependencies)
 def replace_manifest(ctx):
     if sys.platform.startswith('win'):
-        ctx.run("bin\ResHacker\ResourceHacker.exe -open {0}\{1}\{1}.exe -save {0}\{1}\{1}.exe -resource {0}\{1}\{1}.exe.manifest -action add -mask MANIFEST,1, -log CONSOLE".format(DIST, NAME))
+        res_hack = os.path.join(PACKAGING_DIR, 'bin\ResHacker\ResourceHacker.exe')
+        ctx.run("{0} -open {1}\{2}\{2}.exe -save {1}\{2}\{2}.exe -resource {1}\{2}\{2}.exe.manifest -action add -mask MANIFEST,1, -log CONSOLE".format(res_hack, DIST, NAME))
         ctx.run("del {0}\{1}\{1}.exe.manifest".format(DIST, NAME))
 
 
 @task(check_dependencies)
 def installer(ctx):
     if sys.platform.startswith('win'):
-        ctx.run("bin\InnoSetup\ISCC.exe setup.iss")
+        iscc = os.path.join(PACKAGING_DIR, 'bin\InnoSetup\ISCC.exe')
+        iss = os.path.join(PACKAGING_DIR, 'setup.iss')
+        ctx.run("{} {}".format(iscc, iss))
     elif sys.platform.startswith('darwin'):
-        ctx.run("dmgbuild -s dmgbuild_settings.py '' XXX.dmg")
+        settings = os.path.join(PACKAGING_DIR, 'dmgbuild_settings.py')
+        ctx.run("dmgbuild -s {} '' XXX.dmg".format(settings))
     elif sys.platform.startswith('linux'):
         import tarfile
-        with tarfile.open("dist/MetGem.tar.xz", "w:xz") as tar:
-            tar.add("dist/MetGem", arcname="MetGem")
-            tar.add("MetGem.sh", arcname="MetGem.sh")
+        with tarfile.open("{}/MetGem.tar.xz".format(DIST), "w:xz") as tar:
+            tar.add("{}/MetGem".format(DIST), arcname="MetGem")
+            tar.add(os.path.join(PACKAGING_DIR, "MetGem.sh"), arcname="MetGem.sh")

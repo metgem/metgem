@@ -1,12 +1,8 @@
 name: metgem
 channels:
-    - vtraag
-    - anaconda
     - conda-forge
-    - bioconda
-    - rdkit
+    - metgem
 dependencies:
-    - pip
     - pandas>=0.22
     - lxml>=4.0
     - numpy>=1.14
@@ -27,5 +23,9 @@ dependencies:
     - odfpy
     - feedparser
     - mplcursors
-    - pip:
-        - py2cytoscape>=0.7.0
+    - py2cytoscape>=0.7.0
+    - libmetgem>=0.4
+    - pyqtnetworkview>=0.5.1
+    - forceatlas2>=0.2
+    - pyemf>=2.1.2alpha
+    - pyqtads >=3.3.0

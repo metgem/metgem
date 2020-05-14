@@ -1,0 +1,41 @@
+{% set data = load_setup_py_data(setup_file='../setup.py', from_recipe_dir=True) %}
+
+package:
+    name: metgem
+    version: {{ data.get('version') }}
+
+source:
+    path: ../
+
+build:
+    noarch: python
+    number: 0
+    script: python setup.py install --single-version-externally-managed --record=record.txt
+
+requirements:
+    host:
+        - python
+        - pyqt
+    run:
+        - python
+        - {{ pin_compatible('numpy') }}
+    {% for package in data.get('install_requires') %}
+        - {{ package }}
+    {% endfor %}
+
+test:
+    run:
+        - MetGem
+
+about:
+    home: https://metgem.github.io
+    license: {{ data.get('license') }}
+    license_family: GPL
+    license_file: 'LICENSE'
+    summary: {{ data.get('description') }}
+    description: {{ data.get('long_description') }}
+    doc_url: 'https://metgem.readthedocs.io/'
+    dev_url: {{ data.get('url') }}
+
+extra:
+    recipe-maintainers: {{ data.get('author_email') }}
