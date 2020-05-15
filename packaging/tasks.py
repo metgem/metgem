@@ -114,5 +114,5 @@ def installer(ctx):
         if not os.path.exists('{}/appimagetool-x86_64.AppImage'.format(PACKAGING_DIR)):
             ctx.run('wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -P {}'.format(PACKAGING_DIR))
         ctx.run('cp -r {0}/{1}/* {2}/AppDir/usr/lib/'.format(DIST, NAME, PACKAGING_DIR))
-        ctx.run('cd {0} && ARCH=x86_64 ./appimagetool-x86_64.AppImage AppDir -n'.format(PACKAGING_DIR))
-        ctx.run('rm {}/AppDir/usr/lib/*'.format(PACKAGING_DIR))
+        ctx.run('cd {0} && ARCH=x86_64 ./appimagetool-x86_64.AppImage AppDir'.format(PACKAGING_DIR))
+        ctx.run('rm -r {}/AppDir/usr/lib/*'.format(PACKAGING_DIR))
