@@ -111,7 +111,8 @@ def installer(ctx):
         settings = os.path.join(PACKAGING_DIR, 'dmgbuild_settings.py')
         ctx.run("dmgbuild -s {} '' XXX.dmg".format(settings))
     elif sys.platform.startswith('linux'):
-        import tarfile
-        with tarfile.open("{}/MetGem.tar.xz".format(DIST), "w:xz") as tar:
-            tar.add("{}/MetGem".format(DIST), arcname="MetGem")
-            tar.add(os.path.join(PACKAGING_DIR, "MetGem.sh"), arcname="MetGem.sh")
+        if not os.path.exists('{}/appimagetool-x86_64.AppImage'.format(PACKAGING_DIR)):
+            ctx.run('wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -P {}'.format(PACKAGING_DIR))
+        ctx.run('cp -r {0}/{1}/* {2}/AppDir/usr/lib/'.format(DIST, NAME, PACKAGING_DIR))
+        ctx.run('cd {0} && ARCH=x86_64 ./appimagetool-x86_64.AppImage AppDir -n'.format(PACKAGING_DIR))
+        ctx.run('rm {}/AppDir/usr/lib/*'.format(PACKAGING_DIR))

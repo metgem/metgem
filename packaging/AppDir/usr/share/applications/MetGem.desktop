@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Name=MetGem
+Comment=Calculation and visualization of molecular networks based on t-SNE algorithm
+Exec=MetGem %F
+Terminal=false
+Type=Application
+Icon=metgem
+Categories=Graphics;Science;
+StartupNotify=true
