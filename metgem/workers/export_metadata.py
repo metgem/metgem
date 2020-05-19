@@ -3,6 +3,10 @@ from PyQt5.QtCore import Qt
 from .base import BaseWorker
 
 
+class NoDataError(Exception):
+    pass
+
+
 class ExportMetadataWorker(BaseWorker):
 
     def __init__(self, filename, model, sep=None):
@@ -19,10 +23,15 @@ class ExportMetadataWorker(BaseWorker):
         ncolumns = self.model.columnCount()
         nrows = self.model.rowCount()
 
+        if ncolumns <= 0 or nrows <= 0:
+            self.error.emit(NoDataError())
+            return
+
         try:
             with open(self.filename, 'w') as f:
                 # Export headers
-                data = f"id{self.sep}"
+                data = ""
+                data += f"id{self.sep}"
                 for j in range(ncolumns):
                     data += f"{self.model.headerData(j, Qt.Horizontal)}{self.sep}"
                 f.write(f"{data[:-1]}\n")

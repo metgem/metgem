@@ -2373,8 +2373,12 @@ class MainWindow(MainWindowBase, MainWindowUI):
             QMessageBox.information(self, None, f"Metadata were successfully exported to \"{filename}\".")
 
         def error(e):
-            QMessageBox.warning(self, None,
-                                f"Metadata were not exported because the following error occurred: {str(e)})")
+            if isinstance(e, workers.export_metadata.NoDataError):
+                QMessageBox.warning(self, None,
+                                    "Metadata were not exported because there is nothing to export.")
+            else:
+                QMessageBox.warning(self, None,
+                                    f"Metadata were not exported because the following error occurred: {str(e)})")
 
         worker.finished.connect(finished)
         worker.error.connect(error)
@@ -2388,8 +2392,12 @@ class MainWindow(MainWindowBase, MainWindowUI):
             QMessageBox.information(self, None, f"Database results were successfully exported to \"{filename}\".")
 
         def error(e):
-            QMessageBox.warning(self, None,
-                                f"Database results were not exported because the following error occurred: {str(e)})")
+            if isinstance(e, workers.export_db_results.NoDataError):
+                QMessageBox.warning(self, None,
+                                    "Database were not exported because there is nothing to export.")
+            else:
+                QMessageBox.warning(self, None,
+                                    f"Database results were not exported because the following error occurred: {str(e)})")
 
         worker.finished.connect(finished)
         worker.error.connect(error)

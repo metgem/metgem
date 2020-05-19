@@ -6,6 +6,10 @@ from .base import BaseWorker
 from ..ui.widgets.metadata.model import DbResultsRole
 
 
+class NoDataError(Exception):
+    pass
+
+
 class CustomDumper(yaml.Dumper):
     # https://stackoverflow.com/questions/16782112/can-pyyaml-dump-dict-items-in-non-alphabetical-order
     def represent_dict_preserve_order(self, data):
@@ -34,6 +38,10 @@ class ExportDbResultsWorker(BaseWorker):
 
     def run(self):
         nrows = self.model.rowCount()
+
+        if nrows <= 0:
+            self.error.emit(NoDataError())
+            return
 
         try:
             with open(self.filename, 'w') as f:
