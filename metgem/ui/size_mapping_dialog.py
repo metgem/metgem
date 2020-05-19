@@ -10,7 +10,8 @@ from PyQt5.QtGui import QPainter, QPen, QPainterPath, QShowEvent, QBrush, QColor
 from PyQt5.QtWidgets import (QGraphicsScene, QGraphicsEllipseItem, QGraphicsItem,
                              QGraphicsPathItem, QGraphicsSceneMouseEvent, QStyleOptionGraphicsItem,
                              QWidget, QStyle, QListWidgetItem, QMessageBox)
-from scipy.interpolate import interp1d
+
+from metgem.mappings import MODE_LINEAR, MODE_LOG, SizeMappingFunc
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'size_mapping_dialog.ui')
 
@@ -19,9 +20,6 @@ SizeMappingDialogUI, SizeMappingDialogBase = uic.loadUiType(UI_FILE,
                                                             import_from='metgem.ui')
 
 ColumnRole = Qt.UserRole + 1
-
-MODE_LINEAR = 0
-MODE_LOG = 1
 
 
 class IterInstances:
@@ -538,31 +536,3 @@ class SizeMappingDialog(SizeMappingDialogUI, SizeMappingDialogBase):
                 ys.append(pos.y())
 
         return id_, SizeMappingFunc(xs, ys, ymin, ymax, mode=self.cbMode.currentIndex())
-
-
-class SizeMappingFunc(dict):
-
-    def __init__(self, xs, ys, ymin, ymax, mode=MODE_LINEAR):
-        if mode == MODE_LOG:
-            xsarr = np.array(xs)
-            with np.errstate(divide='ignore'):
-                xsarr = np.log10(xs)
-            xsarr[np.isneginf(xsarr)] = 0
-            f = interp1d(xsarr, ys, bounds_error=False, fill_value=(ymin, ymax), copy=False)
-
-            def f2(x):
-                return f(np.log10(x)) if x > 0 else ymin
-
-            self._func = f2
-        else:
-            self._func = interp1d(xs, ys, bounds_error=False, fill_value=(ymin, ymax), copy=False)
-
-        # Store values as items in a subclassed dict instead of attributes of the class to allow serialization (json)
-        self.__setitem__('xs', xs)
-        self.__setitem__('ys', ys)
-        self.__setitem__('ymin', ymin)
-        self.__setitem__('ymax', ymax)
-        self.__setitem__('mode', mode)
-
-    def __call__(self, *args, **kwargs):
-        return self._func(*args, **kwargs)

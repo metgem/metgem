@@ -10,7 +10,7 @@ from ..config import FILE_EXTENSION
 from ..errors import UnsupportedVersionError
 from ..graphml import GraphMLParser, GraphMLWriter
 from ..save import MnzFile, savez
-from ..ui.size_mapping_dialog import SizeMappingFunc, MODE_LINEAR
+from ..mappings import MODE_LINEAR, SizeMappingFunc
 from ..utils import AttrDict
 from ..utils.network import Network
 from ..workers import (NetworkVisualizationOptions, TSNEVisualizationOptions,
