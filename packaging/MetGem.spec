@@ -74,10 +74,10 @@ else:
     hiddenimports.extend(['pybel'])
     
 # Define path for build hooks
-hookspath.extend(['hooks'])
+hookspath.extend([os.path.join(SPECPATH, "hooks")])
 
 # Define path for runtime hooks
-runtime_hooks.extend(sorted(glob.glob('rthooks/*_pyi_*.py')))
+runtime_hooks.extend(sorted(glob.glob(os.path.join(SPECPATH, "rthooks", "*_pyi_*.py"))))
 
 a = Analysis(['../MetGem'],
              pathex=pathex,

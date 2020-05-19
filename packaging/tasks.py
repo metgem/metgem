@@ -3,9 +3,11 @@ import shutil
 import sys
 
 from invoke import task
+from PyQt5.pyrcc_main import processResourceFile
 
 PACKAGING_DIR = os.path.dirname(__file__)
 DIST = os.path.join(PACKAGING_DIR, 'dist')
+BUILD = os.path.join(PACKAGING_DIR, 'build')
 NAME = 'MetGem'
 
 if sys.platform.startswith('win'):
@@ -65,20 +67,25 @@ def build(ctx, clean=False):
 @task(check_dependencies)
 def icon(ctx):
     if sys.platform.startswith('win'):
-        ctx.run("bin\ImageMagick\convert.exe -density 384 -background transparent {} -define icon:auto-resize -colors 256 main.ico".format(os.path.join(PACKAGING_DIR, '../metgem/lib/ui/images/main.svg')))
+        convert = os.path.join(PACKAGING_DIR, 'bin', 'ImageMagick', 'convert.exe')
+        ctx.run("{} -density 384 -background transparent {} -define icon:auto-resize -colors 256 main.ico".format(convert, os.path.join(PACKAGING_DIR, '..', 'metgem', 'lib', 'ui', 'images', 'main.svg')))
 
 
 @task(check_dependencies)
 def rc(ctx):
-    ctx.run("pyrcc5 {} -o {}".format(os.path.join(PACKAGING_DIR, '../metgem/ui/ui.qrc'), os.path.join(PACKAGING_DIR, '../metgem/ui/ui_rc.py')))
+    processResourceFile([os.path.join(PACKAGING_DIR, '..', 'metgem', 'ui', 'ui.qrc')],
+                        os.path.join(PACKAGING_DIR, '..', 'metgem', 'ui', 'ui_rc.py'), False)
 
 
 @task(check_dependencies)
-def exe(ctx, clean=False):
+def exe(ctx, clean=False, debug=False):
     icon(ctx)
     rc(ctx)
-    switchs = "--clean" if clean else ""
-    result = ctx.run("pyinstaller {} --noconfirm {}".format(os.path.join(PACKAGING_DIR, 'MetGem.spec'), switchs))
+
+    switchs = ["--clean"] if clean else []
+    if debug:
+        switchs.append("--debug all")
+    result = ctx.run("pyinstaller {0} --noconfirm {1} --distpath {2} --workpath {3}".format(os.path.join(PACKAGING_DIR, 'MetGem.spec'), " ".join(switchs), DIST, BUILD))
     if result:
         if sys.platform.startswith('win'):
             replace_icon(ctx)
@@ -88,7 +95,7 @@ def exe(ctx, clean=False):
 @task(check_dependencies)
 def replace_icon(ctx):
     if sys.platform.startswith('win'):
-        res_hack = os.path.join(PACKAGING_DIR, 'bin\ResHacker\ResourceHacker.exe')
+        res_hack = os.path.join(PACKAGING_DIR, 'bin', 'ResHacker', 'ResourceHacker.exe')
         ctx.run("{0} -open {1}\{2}\{2}.exe -save {1}\{2}\{2}.exe -action delete -mask ICONGROUP,101, -log CONSOLE".format(res_hack, DIST, NAME))
         ctx.run("{0} -open {1}\{2}\{2}.exe -save {1}\{2}\{2}.exe -resource main.ico -action addoverwrite -mask ICONGROUP,101, -log CONSOLE".format(res_hack, DIST, NAME))
 
@@ -96,7 +103,7 @@ def replace_icon(ctx):
 @task(check_dependencies)
 def replace_manifest(ctx):
     if sys.platform.startswith('win'):
-        res_hack = os.path.join(PACKAGING_DIR, 'bin\ResHacker\ResourceHacker.exe')
+        res_hack = os.path.join(PACKAGING_DIR, 'bin', 'ResHacker', 'ResourceHacker.exe')
         ctx.run("{0} -open {1}\{2}\{2}.exe -save {1}\{2}\{2}.exe -resource {1}\{2}\{2}.exe.manifest -action add -mask MANIFEST,1, -log CONSOLE".format(res_hack, DIST, NAME))
         ctx.run("del {0}\{1}\{1}.exe.manifest".format(DIST, NAME))
 
@@ -104,7 +111,7 @@ def replace_manifest(ctx):
 @task(check_dependencies)
 def installer(ctx):
     if sys.platform.startswith('win'):
-        iscc = os.path.join(PACKAGING_DIR, 'bin\InnoSetup\ISCC.exe')
+        iscc = os.path.join(PACKAGING_DIR, 'bin', 'InnoSetup', 'ISCC.exe')
         iss = os.path.join(PACKAGING_DIR, 'setup.iss')
         ctx.run("{} {}".format(iscc, iss))
     elif sys.platform.startswith('darwin'):
