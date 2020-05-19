@@ -22,14 +22,14 @@ class ExportMetadataWorker(BaseWorker):
         try:
             with open(self.filename, 'w') as f:
                 # Export headers
-                data = ''
+                data = f"id{self.sep}"
                 for j in range(ncolumns):
                     data += f"{self.model.headerData(j, Qt.Horizontal)}{self.sep}"
                 f.write(f"{data[:-1]}\n")
 
                 # Export data
                 for i in range(nrows):
-                    data = ''
+                    data = f"{self.model.headerData(i, Qt.Vertical)}{self.sep}"
                     for j in range(ncolumns):
                         index = self.model.index(i, j)
                         data += f"{self.model.data(index)}{self.sep}"
