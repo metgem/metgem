@@ -1,7 +1,5 @@
 import re
-
 import requests
-from PyQt5.QtCore import QCoreApplication
 
 from .base import BaseWorker
 
@@ -9,16 +7,16 @@ from .base import BaseWorker
 class CheckUpdatesWorker(BaseWorker):
     URL = "https://api.github.com/repos/metgem/metgem/releases/latest"
 
-    def __init__(self, **kwargs):
+    def __init__(self, current_version, **kwargs):
         super().__init__(**kwargs)
+        self._current_version = current_version
 
     def run(self):
         if self.isStopped():
             self.canceled.emit()
             return False
 
-        current_version = QCoreApplication.applicationVersion()
-        if not current_version:
+        if not self._current_version:
             return False
 
         try:

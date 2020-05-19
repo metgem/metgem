@@ -1,12 +1,5 @@
 import io
 
-try:
-    from phate import PHATE
-except ImportError:
-    HAS_PHATE = False
-else:
-    HAS_PHATE = True
-
 from .base import EmbeddingWorker
 from ...utils import AttrDict
 from ...errors import UserRequestedStopError
@@ -55,3 +48,9 @@ class PHATEWorker(EmbeddingWorker):
         self.iterative_update = True
         self.desc = 'PHATE: Step {value:d} of {max:d}'
         self._io_wrapper = ProgressStringIO(self)
+
+    @staticmethod
+    def import_modules():
+        global PHATE
+        # noinspection PyUnresolvedReferences
+        from phate import PHATE

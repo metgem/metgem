@@ -28,7 +28,6 @@ def run():
     app = QApplication(sys.argv)
 
     from .splash import SplashScreen
-    #sys.path.insert(0, os.path.dirname(__file__))
     splash = SplashScreen()
     splash.show()
 
@@ -36,25 +35,29 @@ def run():
     import numpy
     splash.setValue(5)
 
+    splash.showMessage("Loading numba library...")
+    import numba
+    splash.setValue(10)
+
     splash.showMessage("Loading pandas library...")
     import pandas
-    splash.setValue(10)
+    splash.setValue(15)
 
     splash.showMessage("Loading pyarrow library...")
     import pyarrow
-    splash.setValue(15)
+    splash.setValue(20)
 
     splash.showMessage("Loading igraph library...")
     import igraph
-    splash.setValue(20)
+    splash.setValue(25)
 
     splash.showMessage("Loading scipy library...")
     import scipy
-    splash.setValue(25)
+    splash.setValue(30)
 
     splash.showMessage("Loading lxml library...")
     import lxml
-    splash.setValue(30)
+    splash.setValue(35)
 
     splash.showMessage("Loading sklearn library...")
     import sklearn
@@ -62,39 +65,50 @@ def run():
 
     splash.showMessage("Loading matplotlib library...")
     import matplotlib
-    splash.setValue(50)
+    splash.setValue(45)
 
     splash.showMessage("Loading Configuration module...")
     importlib.import_module('.config', 'metgem')
-    splash.setValue(55)
+    splash.setValue(46)
 
     splash.showMessage("Loading Errors modules...")
     importlib.import_module('.errors', 'metgem')
-    splash.setValue(60)
+    splash.setValue(47)
 
     splash.showMessage("Loading Logger module...")
     importlib.import_module('.logger', 'metgem')
-    splash.setValue(65)
+    splash.setValue(48)
 
     splash.showMessage("Loading GraphML parser module...")
     importlib.import_module('.graphml', 'metgem')
-    splash.setValue(70)
+    splash.setValue(49)
 
     splash.showMessage("Loading Databases module...")
     importlib.import_module('.database', 'metgem')
-    splash.setValue(75)
+    splash.setValue(50)
 
-    splash.showMessage("Loading User interface module...")
+    splash.showMessage("Loading Workers...")
+    workers = importlib.import_module('.workers', 'metgem')
+    splash.setValue(55)
+    workers_to_load = list(workers.base.BaseWorker.get_subclasses())
+    step = 35 // len(workers_to_load)
+    for i, worker_class in enumerate(workers_to_load):
+        splash.showMessage(f"Loading Workers ({worker_class.__name__})")
+        try:
+            worker_class.import_modules()
+        except ImportError:
+            worker_class.disable()
+        else:
+            worker_class.enable()
+        splash.setValue(50+i*step)
+
+    splash.showMessage("Loading User interface...")
     importlib.import_module('.ui', 'metgem')
-    splash.setValue(80)
-
-    splash.showMessage("Loading Workers module...")
-    importlib.import_module('.workers', 'metgem')
-    splash.setValue(85)
+    splash.setValue(90)
 
     splash.showMessage("Loading Project module...")
     importlib.import_module('.save', 'metgem')
-    splash.setValue(90)
+    splash.setValue(95)
 
     splash.showMessage("Loading plugins...")
     importlib.import_module('.plugins', 'metgem')

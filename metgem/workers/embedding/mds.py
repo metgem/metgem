@@ -1,7 +1,5 @@
 import io
 
-from sklearn.manifold import MDS
-
 from .base import EmbeddingWorker
 from ...errors import UserRequestedStopError
 from ...utils import AttrDict
@@ -58,3 +56,9 @@ class MDSWorker(EmbeddingWorker):
         self.iterative_update = False
         self.desc = 'MDS: Iteration {value:d} of {max:d}'
         self._io_wrapper = ProgressStringIO(self, n_init)
+
+    @staticmethod
+    def import_modules():
+        global MDS
+        # noinspection PyUnresolvedReferences
+        from sklearn.manifold import MDS

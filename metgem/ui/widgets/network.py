@@ -12,10 +12,8 @@ from ..edit_options_dialog import (EditNetworkOptionsDialog, EditTSNEOptionsDial
 from ... import config
 from ... import workers
 
-if workers.HAS_UMAP:
-    from ..edit_options_dialog import EditUMAPOptionsDialog
-if workers.HAS_PHATE:
-    from ..edit_options_dialog import EditPHATEOptionsDialog
+from ..edit_options_dialog import EditUMAPOptionsDialog
+from ..edit_options_dialog import EditPHATEOptionsDialog
 
 
 class BaseFrame(QFrame):
@@ -23,6 +21,7 @@ class BaseFrame(QFrame):
     title = None
     unlockable = False
     dialog_class = None
+    worker_class = None
     use_edges = True
     editOptionsTriggered = pyqtSignal(QWidget)
     workerReady = pyqtSignal(QObject)
@@ -30,7 +29,8 @@ class BaseFrame(QFrame):
     @classmethod
     def get_subclasses(cls):
         for subclass in cls.__subclasses__():
-            yield subclass
+            if subclass.worker_class is not None and subclass.worker_class.enabled():
+                yield subclass
             yield from subclass.get_subclasses()
 
     def __init__(self, network):
@@ -139,6 +139,7 @@ class NetworkFrame(BaseFrame):
     title = 'Network'
     unlockable = True
     dialog_class = EditNetworkOptionsDialog
+    worker_class = workers.NetworkWorker
     use_edges = True
 
     def process_graph_before_export(self, g):
@@ -149,7 +150,7 @@ class NetworkFrame(BaseFrame):
         return g
 
     def create_worker(self):
-        return workers.NetworkWorker(self._network.graph, self.gvNetwork.scene().nodesRadii())
+        return self.worker_class(self._network.graph, self.gvNetwork.scene().nodesRadii())
 
 
 class TSNEFrame(NetworkFrame):
@@ -157,6 +158,7 @@ class TSNEFrame(NetworkFrame):
     title = 't-SNE'
     unlockable = False
     dialog_class = EditTSNEOptionsDialog
+    worker_class = workers.TSNEWorker
     use_edges = False
 
     def __init__(self, *args, **kwargs):
@@ -209,7 +211,7 @@ class TSNEFrame(NetworkFrame):
         return g
 
     def create_worker(self):
-        return workers.TSNEWorker(self._network.scores, self._network.options.tsne)
+        return self.worker_class(self._network.scores, self._network.options.tsne)
 
     def set_style(self, style):
         super().set_style(style)
@@ -221,22 +223,23 @@ class MDSFrame(TSNEFrame):
     title = 'MDS'
     unlockable = False
     dialog_class = EditMDSOptionsDialog
+    worker_class = workers.MDSWorker
     use_edges = False
 
     def create_worker(self):
-        return workers.MDSWorker(self._network.scores, self._network.options.mds)
+        return self.worker_class(self._network.scores, self._network.options.mds)
 
 
-if workers.HAS_UMAP:
-    class UMAPFrame(TSNEFrame):
-        name = 'umap'
-        title = 'UMAP'
-        unlockable = False
-        dialog_class = EditUMAPOptionsDialog
-        use_edges = False
+class UMAPFrame(TSNEFrame):
+    name = 'umap'
+    title = 'UMAP'
+    unlockable = False
+    dialog_class = EditUMAPOptionsDialog
+    worker_class = workers.UMAPWorker
+    use_edges = False
 
-        def create_worker(self):
-            return workers.UMAPWorker(self._network.scores, self._network.options.umap)
+    def create_worker(self):
+        return self.worker_class(self._network.scores, self._network.options.umap)
 
 
 class IsomapFrame(TSNEFrame):
@@ -244,22 +247,23 @@ class IsomapFrame(TSNEFrame):
     title = 'Isomap'
     unlockable = False
     dialog_class = EditIsomapOptionsDialog
+    worker_class = workers.IsomapWorker
     use_edges = False
 
     def create_worker(self):
-        return workers.IsomapWorker(self._network.scores, self._network.options.isomap)
+        return self.worker_class(self._network.scores, self._network.options.isomap)
 
 
-if workers.HAS_PHATE:
-    class PHATEFrame(TSNEFrame):
-        name = 'phate'
-        title = 'PHATE'
-        unlockable = False
-        dialog_class = EditPHATEOptionsDialog
-        use_edges = False
+class PHATEFrame(TSNEFrame):
+    name = 'phate'
+    title = 'PHATE'
+    unlockable = False
+    dialog_class = EditPHATEOptionsDialog
+    worker_class = workers.PHATEWorker
+    use_edges = False
 
-        def create_worker(self):
-            return workers.PHATEWorker(self._network.scores, self._network.options.phate)
+    def create_worker(self):
+        return self.worker_class(self._network.scores, self._network.options.phate)
 
 
 AVAILABLE_NETWORK_WIDGETS = {obj.name: obj for obj in BaseFrame.get_subclasses()}

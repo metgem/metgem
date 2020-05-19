@@ -1,7 +1,5 @@
 import io
 
-from sklearn.manifold import TSNE
-
 from .base import EmbeddingWorker
 from ...errors import UserRequestedStopError
 from ...utils import AttrDict
@@ -61,3 +59,9 @@ class TSNEWorker(EmbeddingWorker):
         self._io_wrapper = ProgressStringIO(self)
         self.iterative_update = False
         self.desc = 't-SNE: Iteration {value:d} of {max:d}'
+
+    @staticmethod
+    def import_modules():
+        global TSNE
+        # noinspection PyUnresolvedReferences
+        from sklearn.manifold import TSNE

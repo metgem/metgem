@@ -1,6 +1,6 @@
 from .check_updates import CheckUpdatesWorker
 from .check_plugins_updates import CheckPluginsVersionsWorker
-from .clusterize import (ClusterizeOptions, ClusterizeWorker, HAS_HDBSCAN)
+from .clusterize import (ClusterizeOptions, ClusterizeWorker)
 from .cosine import ComputeScoresWorker, CosineComputationOptions
 from .databases import (ListDatabasesWorker, DownloadDatabasesWorker,
                         GetGNPSDatabasesMtimeWorker, ConvertDatabasesWorker,
@@ -10,8 +10,8 @@ from .download_plugins import DownloadPluginsWorker
 from .embedding import (TSNEWorker, TSNEVisualizationOptions,
                         MDSWorker, MDSVisualizationOptions,
                         IsomapWorker, IsomapVisualizationOptions,
-                        UMAPWorker, UMAPVisualizationOptions, HAS_UMAP,
-                        PHATEWorker, PHATEVisualizationOptions, HAS_PHATE)
+                        UMAPWorker, UMAPVisualizationOptions,
+                        PHATEWorker, PHATEVisualizationOptions)
 from .export_db_results import ExportDbResultsWorker
 from .export_metadata import ExportMetadataWorker
 from .generic import GenericWorker

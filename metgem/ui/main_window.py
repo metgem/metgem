@@ -2016,7 +2016,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 QMessageBox.information(self, None,
                                         f"Your version of {QCoreApplication.applicationName()} is already up-to-date.")
 
-        worker = workers.CheckUpdatesWorker(track_progress=notify_if_no_update)
+        worker = workers.CheckUpdatesWorker(current_version=QCoreApplication.applicationVersion(),
+                                            track_progress=notify_if_no_update)
         worker.finished.connect(notify_update)
         self._workers.append(worker)
         self._workers.start()

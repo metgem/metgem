@@ -1,5 +1,3 @@
-from sklearn.manifold import Isomap
-
 from .base import EmbeddingWorker
 from ...utils import AttrDict
 
@@ -25,3 +23,9 @@ class IsomapWorker(EmbeddingWorker):
         self.max = 0
         self.iterative_update = False
         self.desc = 'MDS: Iteration {value:d} of {max:d}'
+
+    @staticmethod
+    def import_modules():
+        global Isomap
+        # noinspection PyUnresolvedReferences
+        from sklearn.manifold import Isomap

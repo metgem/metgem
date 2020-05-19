@@ -3,13 +3,6 @@ import numpy as np
 from .base import BaseWorker
 from ..utils import AttrDict
 
-try:
-    import hdbscan
-except ImportError:
-    HAS_HDBSCAN = False
-else:
-    HAS_HDBSCAN = True
-
 
 class ClusterizeOptions(AttrDict):
 
@@ -31,16 +24,22 @@ class ClusterizeWorker(BaseWorker):
         self.iterative_update = True
         self.desc = 'Clusterizing data (HDBSCAN)...'
 
+    @staticmethod
+    def import_modules():
+        global HDBSCAN
+        # noinspection PyUnresolvedReferences
+        from hdbscan import HDBSCAN
+
     def run(self):
         if self.isStopped():
             self.canceled.emit()
             return False
 
         options = self.options
-        clusterer = hdbscan.HDBSCAN(min_cluster_size=options.min_cluster_size,
-                                    min_samples=options.min_samples,
-                                    cluster_selection_epsilon=options.cluster_selection_epsilon,
-                                    cluster_selection_method=options.cluster_selection_method)
+        clusterer = HDBSCAN(min_cluster_size=options.min_cluster_size,
+                            min_samples=options.min_samples,
+                            cluster_selection_epsilon=options.cluster_selection_epsilon,
+                            cluster_selection_method=options.cluster_selection_method)
         layout_data = self._view.get_layout_data()
         isolated_nodes = layout_data['isolated_nodes']
         layout = layout_data['layout']

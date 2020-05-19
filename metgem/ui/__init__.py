@@ -1,11 +1,7 @@
 from .main_window import MainWindow
 from .process_data_dialog import ProcessDataDialog
 from .edit_options_dialog import (EditTSNEOptionsDialog, EditNetworkOptionsDialog, EditMDSOptionsDialog,
-                                  EditIsomapOptionsDialog, HAS_UMAP, HAS_PHATE)
-if HAS_UMAP:
-    from .edit_options_dialog import EditUMAPOptionsDialog
-if HAS_PHATE:
-    from .edit_options_dialog import EditPHATEOptionsDialog
+                                  EditIsomapOptionsDialog, EditUMAPOptionsDialog, EditPHATEOptionsDialog)
 from .current_parameters_dialog import CurrentParametersDialog
 from .download_databases_dialog import DownloadDatabasesDialog
 from .view_databases_dialog import ViewDatabasesDialog

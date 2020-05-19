@@ -1,12 +1,5 @@
 import io
 
-try:
-    from umap import UMAP
-except ImportError:
-    HAS_UMAP = False
-else:
-    HAS_UMAP = True
-
 from .base import EmbeddingWorker
 from ...utils import AttrDict
 from ...errors import UserRequestedStopError
@@ -71,3 +64,9 @@ class UMAPWorker(EmbeddingWorker):
         self.iterative_update = False
         self.desc = 'UMAP: Iteration {value:d} of {max:d}'
         self._io_wrapper = ProgressStringIO(self)
+
+    @staticmethod
+    def import_modules():
+        global UMAP
+        # noinspection PyUnresolvedReferences
+        from umap import UMAP

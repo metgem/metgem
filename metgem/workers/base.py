@@ -10,8 +10,12 @@ class BaseWorker(QObject):
     error = pyqtSignal(Exception)
     maximumChanged = pyqtSignal(int)
 
+    _enabled = True
+
     def __init__(self, track_progress=True):
         super().__init__()
+
+        self.import_modules()
 
         self._should_stop = False
         self._result = None
@@ -22,6 +26,29 @@ class BaseWorker(QObject):
         self.iterative_update = True
 
         self.desc = ''
+
+    @classmethod
+    def enable(cls):
+        cls._enabled = True
+
+    @classmethod
+    def disable(cls):
+        cls._enabled = False
+
+    @classmethod
+    def enabled(cls):
+        return cls._enabled
+
+    @staticmethod
+    def import_modules():
+        """Import module needed for this worker to run"""
+        pass
+
+    @classmethod
+    def get_subclasses(cls):
+        for subclass in cls.__subclasses__():
+            yield subclass
+            yield from subclass.get_subclasses()
 
     def start(self):
         self.started.emit()

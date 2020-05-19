@@ -3,7 +3,6 @@ from PyQt5.QtWidgets import QDialog, QVBoxLayout, QDialogButtonBox
 
 from .widgets import (TSNEOptionsWidget, NetworkOptionsWidget, MDSOptionsWidget,
                       UMAPOptionsWidget, IsomapOptionsWidget, PHATEOptionsWidget)
-from ..workers import HAS_UMAP, HAS_PHATE
 
 
 class EditOptionsDialogBase(QDialog):
@@ -55,11 +54,10 @@ class EditMDSOptionsDialog(EditOptionsDialogBase):
     options_class = MDSOptionsWidget
 
 
-if HAS_UMAP:
-    class EditUMAPOptionsDialog(EditOptionsDialogBase):
-        """Dialog to modify the UMAP options"""
+class EditUMAPOptionsDialog(EditOptionsDialogBase):
+    """Dialog to modify the UMAP options"""
 
-        options_class = UMAPOptionsWidget
+    options_class = UMAPOptionsWidget
 
 
 class EditIsomapOptionsDialog(EditOptionsDialogBase):
@@ -68,8 +66,7 @@ class EditIsomapOptionsDialog(EditOptionsDialogBase):
     options_class = IsomapOptionsWidget
 
 
-if HAS_PHATE:
-    class EditPHATEOptionsDialog(EditOptionsDialogBase):
-        """Dialog to modify the PHATE options"""
+class EditPHATEOptionsDialog(EditOptionsDialogBase):
+    """Dialog to modify the PHATE options"""
 
-        options_class = PHATEOptionsWidget
+    options_class = PHATEOptionsWidget
