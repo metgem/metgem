@@ -1,7 +1,7 @@
 # These two imports SHOULD be left on top of the file
-from .metadata import (NodesModel, EdgesModel, NodesProxyModel, EdgesProxyModel, CsvDelimiterCombo,
-                       NodeTableView, EdgeTableView, LabelRole,
-                       NodesWidget, EdgesWidget)
+from .metadata import (CsvDelimiterCombo,
+                       NodeTableView, EdgeTableView, NodesWidget, EdgesWidget)
+from ...models.metadata import LabelRole, NodesProxyModel, EdgesProxyModel, NodesModel, EdgesModel
 from .options_widgets import (TSNEOptionsWidget, NetworkOptionsWidget, MDSOptionsWidget,
                               UMAPOptionsWidget, IsomapOptionsWidget, PHATEOptionsWidget,
                               CosineOptionsWidget, QueryDatabasesOptionsWidget)

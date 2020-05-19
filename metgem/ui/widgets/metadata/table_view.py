@@ -4,7 +4,7 @@ from PyQt5.QtCore import Qt, QObject, QEvent, QRect, QTimer, QModelIndex
 from PyQt5 import uic
 
 from .freeze_table import FreezeTableMixin
-from .model import ColorMarkRole
+from ....models.metadata import ColorMarkRole
 from ..delegates import EnsureStringItemDelegate, StandardsResultsDelegate
 from ....utils import SignalBlocker
 

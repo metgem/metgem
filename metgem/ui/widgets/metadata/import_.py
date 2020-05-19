@@ -1,26 +1,7 @@
-from PyQt5.QtCore import QStringListModel, QModelIndex, Qt, pyqtSignal
+from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QComboBox, QLineEdit
 
-
-class CsvDelimiterModel(QStringListModel):
-    seps = [',', ';', ' ', '\t', None]
-    texts = ["Comma (,)", "Semicolon (;)", "Space", "Tabulation", "Other"]
-
-    def rowCount(self, parent=QModelIndex()):
-        return len(self.texts)
-
-    def data(self, index: QModelIndex, role=None):
-        if not index.isValid():
-            return None
-
-        if role in (Qt.DisplayRole, Qt.EditRole):
-            return self.texts[index.row()]
-
-    def itemData(self, index: QModelIndex):
-        if not index.isValid():
-            return None
-
-        return self.seps[index.row()]
+from ....models.metadata import CsvDelimiterModel
 
 
 class CsvDelimiterCombo(QComboBox):

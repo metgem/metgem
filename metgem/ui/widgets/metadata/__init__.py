@@ -1,3 +1,3 @@
-from .model import NodesModel, EdgesModel, NodesProxyModel, EdgesProxyModel, LabelRole, ColorMarkRole
+from metgem.models.metadata import LabelRole, ColorMarkRole, NodesProxyModel, EdgesProxyModel, NodesModel, EdgesModel
 from .table_view import NodeTableView, EdgeTableView, NodesWidget, EdgesWidget
 from .import_ import CsvDelimiterCombo

@@ -11,7 +11,7 @@ from PyQt5.QtGui import QColor, QStandardItemModel, QIcon, QDropEvent, QKeyEvent
 from PyQt5.QtWidgets import (QDialog, QColorDialog, QListWidgetItem, QFileDialog, QMessageBox, QInputDialog,
                              QAbstractItemView, QDialogButtonBox, QFormLayout, QDoubleSpinBox, QAbstractSpinBox, QLabel)
 
-from .widgets.metadata.model import ColumnDataRole, ColorMarkRole
+from ..models.metadata import ColorMarkRole, ColumnDataRole
 from ..utils import pairwise
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'color_mapping_dialog.ui')

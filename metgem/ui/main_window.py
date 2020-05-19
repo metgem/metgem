@@ -23,6 +23,7 @@ from PyQtAds.QtAds import (CDockManager, CDockWidget,
 from PyQtNetworkView import style_from_css, style_to_cytoscape, disable_opengl
 from libmetgem import human_readable_data
 
+import metgem.models.metadata
 from .. import config, ui, utils, workers, errors
 from ..ui import widgets
 from ..logger import logger, debug
@@ -80,12 +81,12 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self._welcome_screen = widgets.WelcomeWidget(self.dock_manager)
 
         # Add model to table views
-        model = ui.widgets.NodesModel(self)
-        proxy = ui.widgets.NodesProxyModel()
+        model = metgem.models.metadata.NodesModel(self)
+        proxy = metgem.models.metadata.NodesProxyModel()
         proxy.setSourceModel(model)
         self.tvNodes.setModel(proxy)
-        model = ui.widgets.EdgesModel(self)
-        proxy = ui.widgets.EdgesProxyModel()
+        model = metgem.models.metadata.EdgesModel(self)
+        proxy = metgem.models.metadata.EdgesProxyModel()
         proxy.setSourceModel(model)
         self.tvEdges.setModel(proxy)
 
@@ -1382,7 +1383,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         num_columns = model.columnCount()
         model.beginResetModel()
         df = self._network.infos
-        column_names = set([model.headerData(index.column(), Qt.Horizontal, widgets.metadata.model.KeyRole)
+        column_names = set([model.headerData(index.column(), Qt.Horizontal, metgem.models.metadata.KeyRole)
                             for index in selected_columns_indexes])
 
         # Remove columns that are not group mappings
@@ -1418,7 +1419,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         # Cancel movement for columns not in the nodes' dataframe
         model = self.tvNodes.model().sourceModel()
-        key = model.headerData(logical_index, Qt.Horizontal, widgets.metadata.model.KeyRole)
+        key = model.headerData(logical_index, Qt.Horizontal, metgem.models.metadata.KeyRole)
         if isinstance(key, int):
             with utils.SignalBlocker(self.tvNodes.horizontalHeader()):
                 self.tvNodes.horizontalHeader().moveSection(new_visual_index, old_visual_index)
@@ -1799,9 +1800,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
             for dock in self.network_docks.values():
                 scene = dock.widget().gvNetwork.scene()
-                scene.setLabelsFromModel(model, column_id, ui.widgets.LabelRole)
+                scene.setLabelsFromModel(model, column_id, metgem.models.metadata.LabelRole)
             self.network.columns_mappings['label'] = model.headerData(column_id, Qt.Horizontal,
-                                                                      role=widgets.metadata.model.KeyRole)
+                                                                      role=metgem.models.metadata.KeyRole)
         else:
             for dock in self.network_docks.values():
                 dock.widget().gvNetwork.scene().resetLabels()
@@ -1827,13 +1828,13 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 return
 
             for column in range(model.columnCount()):
-                model.setHeaderData(column, Qt.Horizontal, None, role=ui.widgets.metadata.ColorMarkRole)
+                model.setHeaderData(column, Qt.Horizontal, None, role=metgem.models.metadata.ColorMarkRole)
 
             save_colors = []
             for column, color in zip(column_ids, colors):
                 color = QColor(color)
                 save_colors.append(color)
-                model.setHeaderData(column, Qt.Horizontal, color, role=ui.widgets.metadata.ColorMarkRole)
+                model.setHeaderData(column, Qt.Horizontal, color, role=metgem.models.metadata.ColorMarkRole)
 
             for dock in self.network_docks.values():
                 scene = dock.widget().gvNetwork.scene()
@@ -1841,11 +1842,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 scene.setPieChartsFromModel(model, column_ids)
                 scene.setPieChartsVisibility(True)
 
-            keys = [model.headerData(id_, Qt.Horizontal, role=widgets.metadata.model.KeyRole) for id_ in column_ids]
+            keys = [model.headerData(id_, Qt.Horizontal, role=metgem.models.metadata.KeyRole) for id_ in column_ids]
             self.network.columns_mappings['pies'] = (keys, save_colors)
         else:
             for column in range(model.columnCount()):
-                model.setHeaderData(column, Qt.Horizontal, None, role=ui.widgets.metadata.ColorMarkRole)
+                model.setHeaderData(column, Qt.Horizontal, None, role=metgem.models.metadata.ColorMarkRole)
 
             for dock in self.network_docks.values():
                 dock.widget().gvNetwork.scene().resetPieCharts()
@@ -1880,7 +1881,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             for dock in self.network_docks.values():
                 dock.widget().gvNetwork.scene().setNodesRadiiFromModel(model, column_id, Qt.DisplayRole, func)
 
-            key = model.headerData(column_id, Qt.Horizontal, role=widgets.metadata.model.KeyRole)
+            key = model.headerData(column_id, Qt.Horizontal, role=metgem.models.metadata.KeyRole)
             self.network.columns_mappings['size'] = (key, func)
         else:
             for dock in self.network_docks.values():
@@ -1913,8 +1914,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
             font.setItalic(True)
             model.setHeaderData(column_id, Qt.Horizontal, font, role=Qt.FontRole)
 
-            key = model.headerData(column_id, Qt.Horizontal, widgets.metadata.model.KeyRole)
-            data = model.headerData(column_id, Qt.Horizontal, widgets.metadata.model.ColumnDataRole)
+            key = model.headerData(column_id, Qt.Horizontal, metgem.models.metadata.KeyRole)
+            data = model.headerData(column_id, Qt.Horizontal, metgem.models.metadata.ColumnDataRole)
             if data is None:
                 return
 
@@ -2247,7 +2248,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         model = self.tvNodes.model().sourceModel()
         header = self.tvNodes.horizontalHeader()
         df = self._network.infos
-        columns = [model.headerData(header.visualIndex(i), Qt.Horizontal, widgets.metadata.model.KeyRole) for i in range(model.columnCount())]
+        columns = [model.headerData(header.visualIndex(i), Qt.Horizontal, metgem.models.metadata.KeyRole) for i in range(model.columnCount())]
         if df is not None:
             columns = [c for c in columns if c in df.columns]
             df = df.reindex(columns=columns)

@@ -3,7 +3,7 @@ from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon
 from PyQt5.QtWidgets import (QStyledItemDelegate, QComboBox, QTreeView,
                              QWidget, QHBoxLayout, QSizePolicy, QToolButton)
 
-from ..metadata.model import StandardsRole, AnalogsRole, DbResultsRole
+from metgem.models.metadata import StandardsRole, AnalogsRole, DbResultsRole
 
 ANALOGS = 1
 

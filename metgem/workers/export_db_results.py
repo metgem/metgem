@@ -3,7 +3,7 @@ import json
 import yaml
 
 from .base import BaseWorker
-from ..ui.widgets.metadata.model import DbResultsRole
+from ..models.metadata import DbResultsRole
 
 
 class NoDataError(Exception):
