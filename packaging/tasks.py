@@ -59,9 +59,9 @@ def clean(ctx, dist=False, bytecode=False, extra=''):
 
 
 @task(check_dependencies)
-def build(ctx, clean=False):
+def build(ctx, clean=False, validate_appstream=True):
     exe(ctx, clean)
-    installer(ctx)
+    installer(ctx, validate_appstream)
 
 
 @task(check_dependencies)
@@ -73,8 +73,13 @@ def icon(ctx):
 
 @task(check_dependencies)
 def rc(ctx):
-    processResourceFile([os.path.join(PACKAGING_DIR, '..', 'metgem', 'ui', 'ui.qrc')],
-                        os.path.join(PACKAGING_DIR, '..', 'metgem', 'ui', 'ui_rc.py'), False)
+    qrcs = [os.path.join(PACKAGING_DIR, '..', 'metgem', 'ui', 'ui.qrc')]
+    rc = os.path.join(PACKAGING_DIR, '..', 'metgem', 'ui', 'ui_rc.py')
+    rc_mtime = os.path.getmtime(rc)
+    if any([os.path.getmtime(qrc) > rc_mtime for qrc in qrcs]):
+        processResourceFile(qrcs, rc, False)
+    else:
+        print('Nothing to do.')
 
 
 @task(check_dependencies)
@@ -109,7 +114,7 @@ def replace_manifest(ctx):
 
 
 @task(check_dependencies)
-def installer(ctx):
+def installer(ctx, validate_appstream=True):
     if sys.platform.startswith('win'):
         iscc = os.path.join(PACKAGING_DIR, 'bin', 'InnoSetup', 'ISCC.exe')
         iss = os.path.join(PACKAGING_DIR, 'setup.iss')
@@ -121,5 +126,6 @@ def installer(ctx):
         if not os.path.exists('{}/appimagetool-x86_64.AppImage'.format(PACKAGING_DIR)):
             ctx.run('wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -P {}'.format(PACKAGING_DIR))
         ctx.run('cp -r {0}/{1}/* {2}/AppDir/usr/lib/'.format(DIST, NAME, PACKAGING_DIR))
-        ctx.run('cd {0} && ARCH=x86_64 ./appimagetool-x86_64.AppImage AppDir'.format(PACKAGING_DIR))
+        switch = '-n' if not validate_appstream else ''
+        ctx.run('cd {0} && ARCH=x86_64 ./appimagetool-x86_64.AppImage AppDir {1}'.format(PACKAGING_DIR, switch))
         ctx.run('rm -r {}/AppDir/usr/lib/*'.format(PACKAGING_DIR))
