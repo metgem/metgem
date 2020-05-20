@@ -767,21 +767,21 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
     @debug
     def on_scene_selection_changed(self, update_view=True):
-        current_view = self.current_view
-        if current_view is None:
-            return
+        sender = self.sender()
+        if isinstance(sender, QGraphicsView):
+            sender = sender.scene()
 
-        nodes_idx = [item.index() for item in current_view.scene().selectedNodes()]
-        edges_idx = [item.index() for item in current_view.scene().selectedEdges()]
+        nodes_idx = [item.index() for item in sender.selectedNodes()]
+        edges_idx = [item.index() for item in sender.selectedEdges()]
         self.tvNodes.model().setSelection(nodes_idx)
         self.tvEdges.model().setSelection(edges_idx)
 
         if update_view and self.actionLinkViews.isChecked():
             for dock in self.network_docks.values():
-                view = dock.widget().gvNetwork
-                if view != current_view:
-                    with utils.SignalBlocker(view.scene()):
-                        view.scene().setNodesSelection(nodes_idx)
+                scene = dock.widget().gvNetwork.scene()
+                if scene != sender:
+                    with utils.SignalBlocker(scene):
+                        scene.setNodesSelection(nodes_idx)
 
     @debug
     def on_set_selected_nodes_color(self, color: QColor):
