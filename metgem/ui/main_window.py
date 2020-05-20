@@ -187,16 +187,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.edges_widget.actionHighlightNodesFromSelectedEdges.triggered.connect(
             self.highlight_nodes_from_selected_edges)
 
-        for dock in self.network_docks.values():
-            widget = dock.widget()
-            view = dock.widget().gvNetwork
-            scene = view.scene()
-            scene.selectionChanged.connect(self.on_scene_selection_changed)
-            view.focusedIn.connect(lambda: self.on_scene_selection_changed(update_view=False))
-            scene.pieChartsVisibilityChanged.connect(
-                lambda visibility: self.actionSetPieChartsVisibility.setChecked(visibility))
-            widget.btOptions.clicked.connect(lambda: self.on_edit_options_triggered(widget))
-
         self.actionQuit.triggered.connect(self.close)
         self.actionCheckUpdates.triggered.connect(
             lambda: self.check_for_updates(could_ignore=False, notify_if_no_update=True))
