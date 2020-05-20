@@ -72,7 +72,23 @@ except ImportError:
     pass
 else:
     hiddenimports.extend(['pybel'])
-    
+
+# Add phate
+try:
+    import phate
+except ImportError:
+    pass
+else:
+    hiddenimports.extend(['phate'])
+
+# Add umap
+try:
+    import umap
+except ImportError:
+    pass
+else:
+    hiddenimports.extend(['umap'])
+
 # Define path for build hooks
 hookspath.extend([os.path.join(SPECPATH, "hooks")])
 
