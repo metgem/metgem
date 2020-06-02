@@ -41,35 +41,11 @@ class SpectraList(list):
         self._file.close()
 
     def load(self, filename):
-        # noinspection PyAttributeOutsideInit
         self._file = MnzFile(filename, 'r')
 
         self.clear()
         for s in self._file['0/spectra/index.json']:
             self.append(s['id'])
-
-
-class ScoresArray:
-    """Thin wrapper around a numpy array to delay loading to whenever we will need to access it."""
-
-    def __init__(self, filename, section='0/scores', *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._filename = filename
-        self._section = section
-        self._values = None
-
-    @property
-    def values(self):
-        if self._values is None:
-            with MnzFile(self._filename, 'r') as fid:
-                self._values = fid[self._section]
-        return self._values
-
-    def __getitem__(self, val):
-        return self.values.__getitem__(val)
-
-    def __getattr__(self, item):
-        return getattr(self.values, item)
 
 
 class LoadProjectWorker(BaseWorker):
@@ -101,7 +77,7 @@ class LoadProjectWorker(BaseWorker):
                     network.lazyloaded = True
 
                     # Load scores matrix
-                    network.scores = ScoresArray(self.filename, '0/scores')
+                    network.scores = fid['0/scores']
 
                     if self.isStopped():
                         self.canceled.emit()
