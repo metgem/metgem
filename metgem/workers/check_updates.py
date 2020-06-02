@@ -40,7 +40,7 @@ class CheckUpdatesWorker(BaseWorker):
                 return False
 
             new_version = re.sub("[^0-9.]", "", tag_name)
-            if not new_version or new_version <= current_version:
+            if not new_version or new_version <= self._current_version:
                 return False
 
             release_notes = json.get("body")
