@@ -396,7 +396,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         docks = list(self.network_docks.values())
         for dock in docks:
             view = dock.widget()
-            if view.hasFocus():
+            if view.gvNetwork.hasFocus():
                 return view
 
         try:
@@ -788,11 +788,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
         for dock in self.network_docks.values():
             dock.widget().gvNetwork.scene().setSelectedNodesColor(color)
 
-        # try:
-        #     self.network.graph.vs['__color'] = dock.widget().gvNetwork.scene().nodesColors()
-        # except UnboundLocalError:
-        #     pass
-
         self.has_unsaved_changes = True
 
     @debug
@@ -800,11 +795,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
         for dock in self.network_docks.values():
             scene = dock.widget().gvNetwork.scene()
             scene.setSelectedNodesColor(scene.networkStyle().nodeBrush().color())
-
-        # try:
-        #     self.network.graph.vs['__color'] = dock.widget().gvNetwork.scene().nodesColors()
-        # except UnboundLocalError:
-        #     pass
 
         self.has_unsaved_changes = True
 
@@ -817,11 +807,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         for dock in self.network_docks.values():
             dock.widget().gvNetwork.scene().setSelectedNodesRadius(size)
-
-        # try:
-            # self.network.graph.vs['__size'] = dock.widget().scene().nodesRadii()
-        # except UnboundLocalError:
-        #     pass
 
         self.has_unsaved_changes = True
 
@@ -1120,11 +1105,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
             else:
                 # Set data as first or second spectrum
                 if type_ == 'compare':
-                    score = self.network.scores[self.spectra_widget.spectrum1_index, node_idx] \
+                    score = self.network.scores.values[self.spectra_widget.spectrum1_index, node_idx] \
                         if self.spectra_widget.spectrum1_index is not None else None
                     set_spectrum = self.spectra_widget.set_spectrum2
                 else:
-                    score = self.network.scores[node_idx, self.spectra_widget.spectrum2_index] \
+                    score = self.network.scores.values[node_idx, self.spectra_widget.spectrum2_index] \
                         if self.spectra_widget.spectrum2_index is not None else None
                     set_spectrum = self.spectra_widget.set_spectrum1
                 if score is not None:
@@ -1316,7 +1301,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
     @debug
     def on_clusterize(self, *args):
-        if not workers.HAS_HDBSCAN:
+        if not workers.ClusterizeWorker.enabled():
             QMessageBox.information(self, None,
                                     ('hdbscan is required for this action '
                                      '(https://hdbscan.readthedocs.io).'))
@@ -2151,7 +2136,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         if not mzs:
             mzs = np.zeros(self._network.scores.shape[:1], dtype=int)
 
-        worker = workers.GenerateNetworkWorker(self._network.scores, mzs, self._network.graph,
+        worker = workers.GenerateNetworkWorker(self._network.scores.values, mzs, self._network.graph,
                                                self._network.options.network, keep_vertices=keep_vertices)
 
         def store_interactions(worker: workers.GenerateNetworkWorker):
