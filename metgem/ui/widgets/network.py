@@ -64,6 +64,7 @@ class BaseFrame(QFrame):
         if layout is not None:
             scene.setLayout(layout, isolated_nodes=isolated_nodes if hide_isolated_nodes else None)
         self._layout = layout
+        self._isolated_nodes = isolated_nodes
         scene.lock(self.btLock.isChecked())
         
     def reset_layout(self):
@@ -211,7 +212,7 @@ class TSNEFrame(NetworkFrame):
         return g
 
     def create_worker(self):
-        return self.worker_class(self._network.scores, self._network.options.tsne)
+        return self.worker_class(self._network.scores.values, self._network.options.tsne)
 
     def set_style(self, style):
         super().set_style(style)
@@ -227,7 +228,7 @@ class MDSFrame(TSNEFrame):
     use_edges = False
 
     def create_worker(self):
-        return self.worker_class(self._network.scores, self._network.options.mds)
+        return self.worker_class(self._network.scores.values, self._network.options.mds)
 
 
 class UMAPFrame(TSNEFrame):
@@ -239,7 +240,7 @@ class UMAPFrame(TSNEFrame):
     use_edges = False
 
     def create_worker(self):
-        return self.worker_class(self._network.scores, self._network.options.umap)
+        return self.worker_class(self._network.scores.values, self._network.options.umap)
 
 
 class IsomapFrame(TSNEFrame):
@@ -251,7 +252,7 @@ class IsomapFrame(TSNEFrame):
     use_edges = False
 
     def create_worker(self):
-        return self.worker_class(self._network.scores, self._network.options.isomap)
+        return self.worker_class(self._network.scores.values, self._network.options.isomap)
 
 
 class PHATEFrame(TSNEFrame):
@@ -263,7 +264,7 @@ class PHATEFrame(TSNEFrame):
     use_edges = False
 
     def create_worker(self):
-        return self.worker_class(self._network.scores, self._network.options.phate)
+        return self.worker_class(self._network.scores.values, self._network.options.phate)
 
 
 AVAILABLE_NETWORK_WIDGETS = {obj.name: obj for obj in BaseFrame.get_subclasses()}
