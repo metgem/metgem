@@ -1105,11 +1105,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
             else:
                 # Set data as first or second spectrum
                 if type_ == 'compare':
-                    score = self.network.scores.values[self.spectra_widget.spectrum1_index, node_idx] \
+                    score = self.network.scores[self.spectra_widget.spectrum1_index, node_idx] \
                         if self.spectra_widget.spectrum1_index is not None else None
                     set_spectrum = self.spectra_widget.set_spectrum2
                 else:
-                    score = self.network.scores.values[node_idx, self.spectra_widget.spectrum2_index] \
+                    score = self.network.scores[node_idx, self.spectra_widget.spectrum2_index] \
                         if self.spectra_widget.spectrum2_index is not None else None
                     set_spectrum = self.spectra_widget.set_spectrum1
                 if score is not None:
@@ -2136,7 +2136,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         if not mzs:
             mzs = np.zeros(self._network.scores.shape[:1], dtype=int)
 
-        worker = workers.GenerateNetworkWorker(self._network.scores.values, mzs, self._network.graph,
+        worker = workers.GenerateNetworkWorker(self._network.scores, mzs, self._network.graph,
                                                self._network.options.network, keep_vertices=keep_vertices)
 
         def store_interactions(worker: workers.GenerateNetworkWorker):
