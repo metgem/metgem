@@ -1,4 +1,5 @@
 .. _website: https://github.com/metgem/metgem/releases/latest
+.. _AppImage: https://appimage.org
 
 .. _installation:
 
@@ -26,6 +27,5 @@ You can download the latest binary from our website_.
 Linux
 *****
 
-Linux binaries are available from the website_. For the moment, support is minimal and binaries are just provided
-in a tarball. Any help to produce an AppImage or any container will be much appreciated.
+Linux binaries are available from the website_ as an AppImage_. It should be as simple as click and run in any distribution.
 

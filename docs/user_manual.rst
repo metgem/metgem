@@ -12,7 +12,6 @@ Discover |appname|'s features through an online manual.
    :glob:
    
    user_manual/getting_started
-   user_manual/overview
    user_manual/toolbars
    user_manual/views
    user_manual/parameters

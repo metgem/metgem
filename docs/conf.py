@@ -99,6 +99,8 @@ rst_epilog = """
 .. _LibreOffice: https://www.libreoffice.org
 .. _Cytoscape: https://cytoscape.org
 .. _HDBScan: https://hdbscan.readthedocs.io
+.. _Python: https://www.python.org
+.. _Pandas: https://pandas.pydata.org
 
 .. |mousescroll| image:: /images/mouse-scroll.svg
 .. |mouseleft| image:: /images/mouse-left.svg

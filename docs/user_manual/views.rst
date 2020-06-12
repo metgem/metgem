@@ -1,3 +1,5 @@
+.. _cosine-score: https://en.wikipedia.org/wiki/Cosine_similarity
+
 .. |add-view| image:: /images/icons/list-add.svg
 .. |link| image:: /images/icons/chain-link.svg
 .. |settings| image:: /images/icons/preferences-system.svg
@@ -17,7 +19,6 @@
 
 .. |scale-slider| image:: /images/view-scale-slider.png
   :alt: Scale Slider
-  :height: 16
   
 .. _network_views:
 
@@ -31,7 +32,7 @@ Data can be visualised using different views. |appname| offers two types of visu
 
 .. _classical_network:
 
- - **Network**: A classical Molecular Network view like what can be obtained by the  GNPS_ platform. In this view, each node represent an MS/MS spectrum and each edge represent a the distance between two nodes (obtained via a modified `cosine-score <https://en.wikipedia.org/wiki/Cosine_similarity>`_ calculation). Distance between clusters is arbitrary and has no special meaning.
+ - **Network**: A classical Molecular Network view like what can be obtained by the  GNPS_ platform. In this view, each node represent an MS/MS spectrum and each edge represent a the distance between two nodes (obtained via a modified `cosine-score`_ calculation). Distance between clusters is arbitrary and has no special meaning.
 
  .. _2d_projections:
  
