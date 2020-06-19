@@ -25,7 +25,6 @@ jobs:
         auto-update-conda: true
         activate-environment: metgem
         python-version: ${{ matrix.python-version }}
-        channels: conda-forge,metgem
         environment-file: environment.yml
     - name: Conda info
       shell: bash -l {0}

@@ -28,7 +28,7 @@ if sys.platform.startswith('win'):
 
         shell = gencache.EnsureDispatch('Shell.Application')             # Create scripting object
         files = shell.NameSpace(os.path.realpath(file_name)).Items()     # Get list of files in zip
-        shell.NameSpace(os.path.realpath(extract_path)).CopyHere(files)  # Extract all files
+        shell.NameSpace(os.path.realpath(extract_path)).CopyHere(files, 16)  # Extract all files (16=Click "Yes to All" in any dialog box displayed)
 
 
 @task
@@ -37,7 +37,7 @@ def check_dependencies(ctx):
         print('Download binaries needed for build...', end='\t')
         download_file(WINDOWS_BIN_URL, 'bin.zip')
         extract_zip('bin.zip')
-        assert(os.path.exists('bin'))
+        assert os.path.exists(os.path.join(PACKAGING_DIR, 'bin'))
         os.remove('bin.zip')
         print('Done')
 
@@ -68,7 +68,7 @@ def build(ctx, clean=False, validate_appstream=True):
 def icon(ctx):
     if sys.platform.startswith('win'):
         convert = os.path.join(PACKAGING_DIR, 'bin', 'ImageMagick', 'convert.exe')
-        ctx.run("{} -density 384 -background transparent {} -define icon:auto-resize -colors 256 main.ico".format(convert, os.path.join(PACKAGING_DIR, '..', 'metgem', 'lib', 'ui', 'images', 'main.svg')))
+        ctx.run("{} -density 384 -background transparent {} -define icon:auto-resize -colors 256 main.ico".format(convert, os.path.join(PACKAGING_DIR, '..', 'metgem', 'ui', 'images', 'main.svg')))
 
 
 @task(check_dependencies)
@@ -129,7 +129,7 @@ def installer(ctx, validate_appstream=True):
     elif sys.platform.startswith('linux'):
         if not os.path.exists('{}/appimagetool-x86_64.AppImage'.format(PACKAGING_DIR)):
             ctx.run('wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -P {}'.format(PACKAGING_DIR))
-            ctx.run('chmod u+x appimagetool-x86_64.AppImage')
+            ctx.run('chmod u+x {}/appimagetool-x86_64.AppImage'.format(PACKAGING_DIR))
         ctx.run('cp -r {0}/{1}/* {2}/AppDir/usr/lib/'.format(DIST, NAME, PACKAGING_DIR))
         switch = '-n' if not validate_appstream else ''
         ctx.run('cd {0} && ARCH=x86_64 ./appimagetool-x86_64.AppImage AppDir {1}'.format(PACKAGING_DIR, switch))
