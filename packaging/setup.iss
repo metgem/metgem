@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define AppName "MetGem"
-#define AppVersion "1.2.2"
+#define AppVersion "1.3.0RC1"
 #define AppPublisher "CNRS/ICSN"
 #define AppURL "https://metgem.github.io"
 #define AppExeName "MetGem.exe"
