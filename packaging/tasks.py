@@ -75,11 +75,15 @@ def icon(ctx):
 def rc(ctx):
     qrcs = [os.path.join(PACKAGING_DIR, '..', 'metgem', 'ui', 'ui.qrc')]
     rc = os.path.join(PACKAGING_DIR, '..', 'metgem', 'ui', 'ui_rc.py')
-    rc_mtime = os.path.getmtime(rc)
-    if any([os.path.getmtime(qrc) > rc_mtime for qrc in qrcs]):
-        processResourceFile(qrcs, rc, False)
+    skip = False
+    if os.path.exists(rc):
+        rc_mtime = os.path.getmtime(rc)
+        skip = not any([os.path.getmtime(qrc) > rc_mtime for qrc in qrcs])
+
+    if skip:
+        print('[RC] resource file is up-to-date, skipping build.')
     else:
-        print('Nothing to do.')
+        processResourceFile(qrcs, rc, False)
 
 
 @task(check_dependencies)
