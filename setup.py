@@ -37,8 +37,8 @@ class ProcessResourceCommand(cmd.Command):
         return
 
     def run(self):
-        processResourceFile([os.path.join('metgem', 'ui', 'ui.qrc')],
-                            os.path.join('metgem', 'ui', 'ui_rc.py'), False)
+        processResourceFile([os.path.join('metgem_app', 'ui', 'ui.qrc')],
+                            os.path.join('metgem_app', 'ui', 'ui_rc.py'), False)
 
 
 class BuildPyCommand(build_py):
