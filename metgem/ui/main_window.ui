@@ -277,7 +277,7 @@
      <normaloff>:/icons/images/main.svg</normaloff>:/icons/images/main.svg</iconset>
    </property>
    <property name="text">
-    <string>&amp;About</string>
+    <string>&amp;About...</string>
    </property>
    <property name="shortcut">
     <string>F1</string>
@@ -289,7 +289,7 @@
      <normaloff>:/icons/images/qt-logo.svg</normaloff>:/icons/images/qt-logo.svg</iconset>
    </property>
    <property name="text">
-    <string>About &amp;Qt</string>
+    <string>About &amp;Qt...</string>
    </property>
   </action>
   <action name="actionOpen">
@@ -340,7 +340,7 @@
      <normaloff>:/icons/images/document-save-as.svg</normaloff>:/icons/images/document-save-as.svg</iconset>
    </property>
    <property name="text">
-    <string>Sa&amp;ve as</string>
+    <string>Sa&amp;ve as...</string>
    </property>
    <property name="toolTip">
     <string>Save project as</string>
@@ -532,7 +532,7 @@
      <normaloff>:/icons/images/emblem-photos.svg</normaloff>:/icons/images/emblem-photos.svg</iconset>
    </property>
    <property name="text">
-    <string>Export As &amp;Image</string>
+    <string>Export As &amp;Image...</string>
    </property>
    <property name="toolTip">
     <string>Export current network as image</string>
@@ -574,7 +574,7 @@
      <normaloff>:/icons/images/new-library.svg</normaloff>:/icons/images/new-library.svg</iconset>
    </property>
    <property name="text">
-    <string>&amp;Download databases</string>
+    <string>&amp;Download databases...</string>
    </property>
    <property name="iconText">
     <string>Download databases</string>
@@ -616,7 +616,7 @@
      <normaloff>:/icons/images/info.svg</normaloff>:/icons/images/info.svg</iconset>
    </property>
    <property name="text">
-    <string>Current &amp;Parameters</string>
+    <string>Current &amp;Parameters...</string>
    </property>
    <property name="toolTip">
     <string>Show Current Parameters</string>
@@ -631,7 +631,7 @@
      <normaloff>:/icons/images/import-metadata.svg</normaloff>:/icons/images/import-metadata.svg</iconset>
    </property>
    <property name="text">
-    <string>Import &amp;Metadata</string>
+    <string>Import &amp;Metadata...</string>
    </property>
    <property name="toolTip">
     <string>Import nodes metadata</string>
@@ -667,7 +667,7 @@
      <normaloff>:/icons/images/preferences-system.svg</normaloff>:/icons/images/preferences-system.svg</iconset>
    </property>
    <property name="text">
-    <string>&amp;Preferences</string>
+    <string>&amp;Preferences...</string>
    </property>
    <property name="toolTip">
     <string>Change application settings</string>
@@ -682,7 +682,7 @@
      <normaloff>:/icons/images/emblem-photos.svg</normaloff>:/icons/images/emblem-photos.svg</iconset>
    </property>
    <property name="text">
-    <string>Export Current &amp;View As Image</string>
+    <string>Export Current &amp;View As Image...</string>
    </property>
    <property name="toolTip">
     <string>Export current view of network as image</string>
@@ -756,7 +756,7 @@
      <normaloff>:/icons/images/import-mapping.svg</normaloff>:/icons/images/import-mapping.svg</iconset>
    </property>
    <property name="text">
-    <string>Import &amp;Group Mapping</string>
+    <string>Import &amp;Group Mapping...</string>
    </property>
    <property name="toolTip">
     <string>Import metadata's group mapping</string>
@@ -804,7 +804,7 @@
      <normaloff>:/icons/images/new-library-user.svg</normaloff>:/icons/images/new-library-user.svg</iconset>
    </property>
    <property name="text">
-    <string>Import &amp;user database</string>
+    <string>Import &amp;user database...</string>
    </property>
    <property name="toolTip">
     <string>Import user database from local file</string>
@@ -849,7 +849,7 @@
      <normaloff>:/icons/images/export-metadata.svg</normaloff>:/icons/images/export-metadata.svg</iconset>
    </property>
    <property name="text">
-    <string>Export &amp;Metadata as CSV</string>
+    <string>Export &amp;Metadata as CSV...</string>
    </property>
    <property name="toolTip">
     <string>Export data of nodes table in a text file (Comma Separated Values format)</string>
@@ -864,7 +864,7 @@
      <normaloff>:/icons/images/export-metadata.svg</normaloff>:/icons/images/export-metadata.svg</iconset>
    </property>
    <property name="text">
-    <string>Export &amp;Database results</string>
+    <string>Export &amp;Database results...</string>
    </property>
    <property name="statusTip">
     <string>Export Database results</string>
@@ -972,7 +972,7 @@
      <normaloff>:/icons/images/plugin.svg</normaloff>:/icons/images/plugin.svg</iconset>
    </property>
    <property name="text">
-    <string>Plugins &amp;manager</string>
+    <string>Plugins &amp;manager...</string>
    </property>
   </action>
   <action name="actionOpenPluginsFolder">
@@ -998,7 +998,7 @@
      <normaloff>:/icons/images/library-query.svg</normaloff>:/icons/images/library-query.svg</iconset>
    </property>
    <property name="text">
-    <string>Find standards in library</string>
+    <string>Find standards in library...</string>
    </property>
    <property name="toolTip">
     <string>Search for known spectra in library similar to the selected nodes' spectra with same precursor ion</string>
@@ -1016,7 +1016,7 @@
      <normaloff>:/icons/images/library-query.svg</normaloff>:/icons/images/library-query.svg</iconset>
    </property>
    <property name="text">
-    <string>Find analogs in library</string>
+    <string>Find analogs in library...</string>
    </property>
    <property name="toolTip">
     <string>Search for known spectra in library similar to the selected nodes' spectra with different precursor ion</string>
