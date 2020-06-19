@@ -1,0 +1,4 @@
+#!/usr/bin/env python
+import metgem_app
+
+metgem_app.run()

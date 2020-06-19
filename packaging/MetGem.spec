@@ -23,14 +23,14 @@ binaries = []
 datas = []
 hookspath = []
 runtime_hooks = []
-hiddenimports = ['metgem.ui.ui_rc']
+hiddenimports = ['metgem_app.ui.ui_rc']
 excludes = []
 
 # Get data from setup.py
 distribution = run_setup(os.path.join(SPECPATH, "..", "setup.py"), stop_after="init") 
-for f in distribution.package_data['metgem']:
-    datas.append((os.path.join(SPECPATH, "..", "metgem", f), os.path.join("metgem", os.path.dirname(f))))
-for d, files in distribution.data_files: 
+for f in distribution.package_data['metgem_app']:
+    datas.append((os.path.join(SPECPATH, "..", "metgem_app", f), os.path.join("metgem_app", os.path.dirname(f))))
+for d, files in distribution.data_files:
     for f in files:
         datas.append((os.path.join(SPECPATH, "..", f), d))
 
@@ -95,7 +95,7 @@ hookspath.extend([os.path.join(SPECPATH, "hooks")])
 # Define path for runtime hooks
 runtime_hooks.extend(sorted(glob.glob(os.path.join(SPECPATH, "rthooks", "*_pyi_*.py"))))
 
-a = Analysis([os.path.join(SPECPATH, '..', 'bin', 'MetGem')],
+a = Analysis([os.path.join(SPECPATH, '..', 'MetGem')],
              pathex=pathex,
              binaries=binaries,
              datas=datas,
