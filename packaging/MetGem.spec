@@ -18,7 +18,7 @@ for k in location.keys():
 # if --debug flag is passed, make a debug release
 DEBUG = '--debug' in sys.argv
         
-pathex = []
+pathex = [os.path.dirname(SPECPATH)]
 binaries = []
 datas = []
 hookspath = []
@@ -95,7 +95,7 @@ hookspath.extend([os.path.join(SPECPATH, "hooks")])
 # Define path for runtime hooks
 runtime_hooks.extend(sorted(glob.glob(os.path.join(SPECPATH, "rthooks", "*_pyi_*.py"))))
 
-a = Analysis(['../MetGem'],
+a = Analysis(['../bin/MetGem'],
              pathex=pathex,
              binaries=binaries,
              datas=datas,

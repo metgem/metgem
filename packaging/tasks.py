@@ -129,6 +129,7 @@ def installer(ctx, validate_appstream=True):
     elif sys.platform.startswith('linux'):
         if not os.path.exists('{}/appimagetool-x86_64.AppImage'.format(PACKAGING_DIR)):
             ctx.run('wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -P {}'.format(PACKAGING_DIR))
+            ctx.run('chmod u+x appimagetool-x86_64.AppImage')
         ctx.run('cp -r {0}/{1}/* {2}/AppDir/usr/lib/'.format(DIST, NAME, PACKAGING_DIR))
         switch = '-n' if not validate_appstream else ''
         ctx.run('cd {0} && ARCH=x86_64 ./appimagetool-x86_64.AppImage AppDir {1}'.format(PACKAGING_DIR, switch))
