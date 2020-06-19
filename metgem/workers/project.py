@@ -267,7 +267,7 @@ class SaveProjectWorker(BaseWorker):
         self.tmp_filename = os.path.join(path, f".tmp-{fname}")
         self.graph = graph
         self.network = network
-        self.infos = infos if infos is not None else np.array([])
+        self.infos = infos if infos is not None else pd.DataFrame()
         self.layouts = layouts
         self.options = options
         self.layouts = layouts
