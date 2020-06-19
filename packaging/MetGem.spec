@@ -95,7 +95,7 @@ hookspath.extend([os.path.join(SPECPATH, "hooks")])
 # Define path for runtime hooks
 runtime_hooks.extend(sorted(glob.glob(os.path.join(SPECPATH, "rthooks", "*_pyi_*.py"))))
 
-a = Analysis(['../bin/MetGem'],
+a = Analysis([os.path.join(SPECPATH, '..', 'bin', 'MetGem')],
              pathex=pathex,
              binaries=binaries,
              datas=datas,
