@@ -29,10 +29,10 @@ excludes = []
 # Get data from setup.py
 distribution = run_setup(os.path.join(SPECPATH, "..", "setup.py"), stop_after="init") 
 for f in distribution.package_data['metgem']:
-    datas.append((os.path.join("..", "metgem", f), os.path.join("metgem", os.path.dirname(f))))
+    datas.append((os.path.join(SPECPATH, "..", "metgem", f), os.path.join("metgem", os.path.dirname(f))))
 for d, files in distribution.data_files: 
-    for f in files: 
-        datas.append((os.path.join("..", f), d))
+    for f in files:
+        datas.append((os.path.join(SPECPATH, "..", f), d))
 
 # Encrypt files?
 block_cipher = None
