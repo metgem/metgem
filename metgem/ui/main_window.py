@@ -474,6 +474,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.network, layouts = worker.result()
             self.tvNodes.model().sourceModel().endResetModel()
             self.tvEdges.model().sourceModel().endResetModel()
+
+            self.tvNodes.setColumnHidden(1, self.network.db_results is None or len(self.network.db_results) == 0)
+
             self.dock_edges.toggleView(True)
             self.dock_nodes.toggleView(True)
 
@@ -1486,6 +1489,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                     self._network.interactions = None
                     self.tvEdges.model().sourceModel().endResetModel()
 
+                    self.tvNodes.setColumnHidden(1, self.network.db_results is None or len(self.network.db_results) == 0)
                     self.dock_edges.toggleView(True)
                     self.dock_nodes.toggleView(True)
 
