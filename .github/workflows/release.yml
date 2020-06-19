@@ -35,7 +35,7 @@ jobs:
         conda config --show
     - name: Install build dependencies
       shell: bash -l {0}
-      run: conda install invoke
+      run: conda install invoke pyinstaller
     - name: Build
       id: build
       shell: bash -l {0}
