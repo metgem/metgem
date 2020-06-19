@@ -1,0 +1,55 @@
+name: Release
+
+on:
+  release:
+    types: [ published ]
+    branches: [ master ]
+    
+env:
+  GITHUB_TOKEN: ${{ github.token }}
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        python-version: [3.7]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }} (Miniconda)
+      uses: goanpeca/setup-miniconda@v1
+      with:
+        auto-update-conda: true
+        activate-environment: metgem
+        python-version: ${{ matrix.python-version }}
+        channels: conda-forge,metgem
+        environment-file: environment.yml
+    - name: Conda info
+      shell: bash -l {0}
+      run: |
+        conda info
+        conda list
+        conda config --show-sources
+        conda config --show
+    - name: Install build dependencies
+      shell: bash -l {0}
+      run: conda install invoke
+    - name: Build
+      id: build
+      shell: bash -l {0}
+      run: |
+        inv packaging.build
+        echo "::set-output name=asset_path::`ls packaging/MetGem*@(.exe|.dmg|.AppImage)`"
+    - name: Get Release
+        id: get_release
+        uses: bruceadams/get-release@v1.2.0
+    - name: Upload Release Asset
+        id: upload-release-asset 
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.get_release.outputs.upload_url }} 
+          asset_path: ${{ steps.build.outputs.asset_path }}
