@@ -7,12 +7,13 @@ import tempfile
 
 import biplist
 
-appname = "MetGem"
+APPNAME = "MetGem"
+PACKAGING_DIR = os.path.dirname(__file__)
 
 tmp_dir = tempfile.TemporaryDirectory()
-os.makedirs(os.path.join(tmp_dir.name, appname))
-shutil.copy("main.icns", tmp_dir.name)
-os.system(f"./set_folder_icon.sh main.icns {tmp_dir.name} {appname}")
+os.makedirs(os.path.join(tmp_dir.name, APPNAME))
+shutil.copy(f"{PACKAGING_DIR}/main.icns", tmp_dir.name)
+os.system(f"./set_folder_icon.sh {PACKAGING_DIR}/main.icns {tmp_dir.name} {APPNAME}")
 
 #
 # Example settings file for dmgbuild
@@ -27,9 +28,9 @@ os.system(f"./set_folder_icon.sh main.icns {tmp_dir.name} {appname}")
 
 # .. Useful stuff ..............................................................
 
-application = defines.get('app', f'dist/{appname}.app')
-shutil.copytree(application, os.path.join(tmp_dir.name, appname, f'{appname}.app'))
-shutil.copytree('../examples', os.path.join(tmp_dir.name, appname, 'examples'))
+application = defines.get('app', f'dist/{APPNAME}.app')
+shutil.copytree(application, os.path.join(tmp_dir.name, APPNAME, f'{APPNAME}.app'))
+shutil.copytree('../examples', os.path.join(tmp_dir.name, APPNAME, 'examples'))
 
 def icon_from_app(app_path):
     plist_path = os.path.join(app_path, 'Contents', 'Info.plist')
@@ -44,10 +45,10 @@ def icon_from_app(app_path):
 # .. Basics ....................................................................
 
 # Uncomment to override the output filename
-filename = f'{appname}.dmg'
+filename = f'{APPNAME}.dmg'
 
 # Uncomment to override the output volume name
-volume_name = appname
+volume_name = APPNAME
 
 # Volume format (see hdiutil create -help)
 format = defines.get('format', 'UDBZ')
@@ -56,7 +57,7 @@ format = defines.get('format', 'UDBZ')
 size = defines.get('size', None)
 
 # Files to include
-files = [os.path.join(tmp_dir.name, appname)]
+files = [os.path.join(tmp_dir.name, APPNAME)]
 
 # Symlinks to create
 symlinks = {'Applications': f'/Applications'}
@@ -72,7 +73,7 @@ badge_icon = icon_from_app(application)
 
 # Where to put the icons
 icon_locations = {
-    appname:        (140, 120),
+    APPNAME:        (140, 120),
     'Applications': (500, 120)
     }
 

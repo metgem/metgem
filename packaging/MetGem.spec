@@ -18,7 +18,7 @@ for k in location.keys():
 # if --debug flag is passed, make a debug release
 DEBUG = '--debug' in sys.argv
         
-pathex = [os.path.dirname(SPECPATH)]
+pathex = []
 binaries = []
 datas = []
 hookspath = []

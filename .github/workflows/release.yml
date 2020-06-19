@@ -38,7 +38,7 @@ jobs:
       run: conda install invoke pyinstaller
     - name: Install build dependencies (macOS)
       shell: bash -l {0}
-      run: pip install dmgbuild
+      run: pip install dmgbuild biplist
       if: runner.os == 'macOS'
     - name: Install build dependencies (Windows)
       shell: bash -l {0}
