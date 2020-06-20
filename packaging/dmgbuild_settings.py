@@ -8,12 +8,12 @@ import tempfile
 import biplist
 
 APPNAME = "MetGem"
-PACKAGING_DIR = defines.get('app', packaging_dir)
+PACKAGING_DIR = defines.get('packaging_dir', 'packaging')
 
 tmp_dir = tempfile.TemporaryDirectory()
 os.makedirs(os.path.join(tmp_dir.name, APPNAME))
 shutil.copy(f"{PACKAGING_DIR}/main.icns", tmp_dir.name)
-os.system(f"{PACKAGING_DIR}//set_folder_icon.sh {PACKAGING_DIR}/main.icns {tmp_dir.name} {APPNAME}")
+os.system(f"{PACKAGING_DIR}/set_folder_icon.sh {PACKAGING_DIR}/main.icns {tmp_dir.name} {APPNAME}")
 
 #
 # Example settings file for dmgbuild

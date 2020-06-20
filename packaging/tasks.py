@@ -125,7 +125,7 @@ def installer(ctx, validate_appstream=True):
         ctx.run("{} {}".format(iscc, iss))
     elif sys.platform.startswith('darwin'):
         settings = os.path.join(PACKAGING_DIR, 'dmgbuild_settings.py')
-        ctx.run("dmgbuild -s {} '' XXX.dmg".format(settings))
+        ctx.run("dmgbuild -s {} '' XXX.dmg -Dpackaging_dir={}".format(settings, PACKAGING_DIR))
     elif sys.platform.startswith('linux'):
         if not os.path.exists('{}/appimagetool-x86_64.AppImage'.format(PACKAGING_DIR)):
             ctx.run('wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -P {}'.format(PACKAGING_DIR))
