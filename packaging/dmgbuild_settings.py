@@ -8,12 +8,12 @@ import tempfile
 import biplist
 
 APPNAME = "MetGem"
-PACKAGING_DIR = os.path.dirname(__file__)
+PACKAGING_DIR = defines.get('app', packaging_dir)
 
 tmp_dir = tempfile.TemporaryDirectory()
 os.makedirs(os.path.join(tmp_dir.name, APPNAME))
 shutil.copy(f"{PACKAGING_DIR}/main.icns", tmp_dir.name)
-os.system(f"./set_folder_icon.sh {PACKAGING_DIR}/main.icns {tmp_dir.name} {APPNAME}")
+os.system(f"{PACKAGING_DIR}//set_folder_icon.sh {PACKAGING_DIR}/main.icns {tmp_dir.name} {APPNAME}")
 
 #
 # Example settings file for dmgbuild
@@ -28,9 +28,10 @@ os.system(f"./set_folder_icon.sh {PACKAGING_DIR}/main.icns {tmp_dir.name} {APPNA
 
 # .. Useful stuff ..............................................................
 
-application = defines.get('app', f'dist/{APPNAME}.app')
-shutil.copytree(application, os.path.join(tmp_dir.name, APPNAME, f'{APPNAME}.app'))
-shutil.copytree('../examples', os.path.join(tmp_dir.name, APPNAME, 'examples'))
+application = defines.get('app', f'{PACKAGING_DIR}/dist/{APPNAME}.app')
+shutil.copytree(application, os.path.join(tmp_dir.name, APPNAME, f'{PACKAGING_DIR}/{APPNAME}.app'))
+shutil.copytree(f'{PACKAGING_DIR}/../examples', os.path.join(tmp_dir.name, APPNAME, f'{PACKAGING_DIR}/examples'))
+
 
 def icon_from_app(app_path):
     plist_path = os.path.join(app_path, 'Contents', 'Info.plist')
@@ -42,10 +43,11 @@ def icon_from_app(app_path):
     icon_name = icon_root + icon_ext
     return os.path.join(app_path, 'Contents', 'Resources', icon_name)
 
+
 # .. Basics ....................................................................
 
 # Uncomment to override the output filename
-filename = f'{APPNAME}.dmg'
+filename = f'{PACKAGING_DIR}/{APPNAME}.dmg'
 
 # Uncomment to override the output volume name
 volume_name = APPNAME
@@ -60,7 +62,7 @@ size = defines.get('size', None)
 files = [os.path.join(tmp_dir.name, APPNAME)]
 
 # Symlinks to create
-symlinks = {'Applications': f'/Applications'}
+symlinks = {'Applications': '/Applications'}
 
 # Volume icon
 #
@@ -134,7 +136,7 @@ arrange_by = None
 grid_offset = (0, 0)
 grid_spacing = 100
 scroll_position = (0, 0)
-label_pos = 'bottom' # or 'right'
+label_pos = 'bottom'  # or 'right'
 text_size = 16
 icon_size = 128
 
