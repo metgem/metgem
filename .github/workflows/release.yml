@@ -53,7 +53,7 @@ jobs:
       run: |
         python -m invoke packaging.build
         shopt -s extglob
-        echo "::set-output name=asset_name::`find packaging -maxdepth 1 \( -name "setup_MetGem*" -or -name "MetGem*.dmg" -or -name "MetGem*.AppImage" \) -printf "%T@ %f\n" | sort -r | cut -d' ' -f2`"
+        echo "::set-output name=asset_name::`find packaging -maxdepth 1 \( -name "setup_MetGem*" -or -name "MetGem*.dmg" -or -name "MetGem*.AppImage" \) -print0 | xargs -0 ls -t | head -n 1 | xargs -n 1 basename`"
     - name: Check Asset Path
       shell: bash -l {0}
       run: echo "${{ steps.build.outputs.asset_path }}"

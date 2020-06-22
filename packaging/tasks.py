@@ -10,37 +10,6 @@ DIST = os.path.join(PACKAGING_DIR, 'dist')
 BUILD = os.path.join(PACKAGING_DIR, 'build')
 NAME = 'MetGem'
 
-if sys.platform.startswith('win'):
-    WINDOWS_BIN_URL = 'https://mycore.core-cloud.net/index.php/s/2z4z9phDvxplWiE/download'
-
-    import urllib.request
-
-    def download_file(url, file_name):
-        """Download the file from `url` and save it locally under `file_name`:"""
-
-        with urllib.request.urlopen(url) as response, open(file_name, 'wb') as out_file:
-            shutil.copyfileobj(response, out_file)
-
-    def extract_zip(file_name, extract_path=PACKAGING_DIR):
-        """Extract contents of the zip file `file_name` under the path `extract_path` using no external tools"""
-
-        from win32com.client import gencache
-
-        shell = gencache.EnsureDispatch('Shell.Application')             # Create scripting object
-        files = shell.NameSpace(os.path.realpath(file_name)).Items()     # Get list of files in zip
-        shell.NameSpace(os.path.realpath(extract_path)).CopyHere(files, 16)  # Extract all files (16=Click "Yes to All" in any dialog box displayed)
-
-
-@task
-def check_dependencies(ctx):
-    if sys.platform.startswith('win') and not os.path.exists('bin'):
-        print('Download binaries needed for build...', end='\t')
-        download_file(WINDOWS_BIN_URL, 'bin.zip')
-        extract_zip('bin.zip')
-        assert os.path.exists(os.path.join(PACKAGING_DIR, 'bin'))
-        os.remove('bin.zip')
-        print('Done')
-
 
 @task
 def clean(ctx, dist=False, bytecode=False, extra=''):
@@ -58,13 +27,13 @@ def clean(ctx, dist=False, bytecode=False, extra=''):
             ctx.run("rm -rf {}".format(pattern))
 
 
-@task(check_dependencies)
+@task
 def build(ctx, clean=False, validate_appstream=True):
     exe(ctx, clean)
     installer(ctx, validate_appstream)
 
 
-@task(check_dependencies)
+@task
 def rc(ctx):
     qrcs = [os.path.join(PACKAGING_DIR, '..', 'metgem_app', 'ui', 'ui.qrc')]
     rc = os.path.join(PACKAGING_DIR, '..', 'metgem_app', 'ui', 'ui_rc.py')
@@ -79,7 +48,7 @@ def rc(ctx):
         processResourceFile(qrcs, rc, False)
 
 
-@task(check_dependencies)
+@task
 def exe(ctx, clean=False, debug=False):
     rc(ctx)
 
@@ -87,32 +56,24 @@ def exe(ctx, clean=False, debug=False):
     if debug:
         switchs.append("--debug all")
     result = ctx.run("pyinstaller {0} --noconfirm {1} --distpath {2} --workpath {3}".format(os.path.join(PACKAGING_DIR, 'MetGem.spec'), " ".join(switchs), DIST, BUILD))
-    if result:
-        if sys.platform.startswith('win'):
-            replace_icon(ctx)
-            replace_manifest(ctx)
+    if result and sys.platform.startswith('win'):
+        embed_manifest(ctx)
 
 
-@task(check_dependencies)
-def replace_icon(ctx):
+@task
+def embed_manifest(ctx):
     if sys.platform.startswith('win'):
-        res_hack = os.path.join(PACKAGING_DIR, 'bin', 'ResHacker', 'ResourceHacker.exe')
-        ctx.run("{0} -open {1}\{2}\{2}.exe -save {1}\{2}\{2}.exe -action delete -mask ICONGROUP,101, -log CONSOLE".format(res_hack, DIST, NAME))
-        ctx.run("{0} -open {1}\{2}\{2}.exe -save {1}\{2}\{2}.exe -resource main.ico -action addoverwrite -mask ICONGROUP,101, -log CONSOLE".format(res_hack, DIST, NAME))
+        from PyInstaller.utils.win32 import winmanifest
+        exe = "{0}\{1}\{1}.exe".format(DIST, NAME)
+        manifest = exe + '.manifest'
+        winmanifest.UpdateManifestResourcesFromXMLFile(exe, manifest)
+        os.remove(manifest)
 
 
-@task(check_dependencies)
-def replace_manifest(ctx):
-    if sys.platform.startswith('win'):
-        res_hack = os.path.join(PACKAGING_DIR, 'bin', 'ResHacker', 'ResourceHacker.exe')
-        ctx.run("{0} -open {1}\{2}\{2}.exe -save {1}\{2}\{2}.exe -resource {1}\{2}\{2}.exe.manifest -action add -mask MANIFEST,1, -log CONSOLE".format(res_hack, DIST, NAME))
-        ctx.run("del {0}\{1}\{1}.exe.manifest".format(DIST, NAME))
-
-
-@task(check_dependencies)
+@task
 def installer(ctx, validate_appstream=True):
     if sys.platform.startswith('win'):
-        iscc = os.path.join(PACKAGING_DIR, 'bin', 'InnoSetup', 'ISCC.exe')
+        iscc = shutil.which("ISCC")
         iss = os.path.join(PACKAGING_DIR, 'setup.iss')
         ctx.run("{} {}".format(iscc, iss))
     elif sys.platform.startswith('darwin'):

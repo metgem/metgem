@@ -5,6 +5,7 @@ import sys
 import glob
 
 from distutils.core import run_setup
+
 from PyInstaller.utils.hooks import qt_plugins_binaries, get_module_file_attribute
 
 # On Anaconda distributions, qt_plugins_binaries can't be found because QLibraryInfo returns wrong path
@@ -128,7 +129,8 @@ exe = EXE(pyz,
           bootloader_ignore_signals=False,
           strip=False,
           upx=True,
-          console=DEBUG)
+          console=DEBUG,
+          icon=os.path.join(SPECPATH, 'main.ico') if sys.platform.startswith('win') else None)
 
 coll_name = 'MetGem'
 if DEBUG:
