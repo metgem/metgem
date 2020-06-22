@@ -117,8 +117,7 @@ a.datas = [dat for dat in a.datas if not dat[0].startswith('pytz')]
 # Remove matplotlib sample data
 a.datas = [dat for dat in a.datas if not ('sample_data' in dat[0] and dat[0].startswith('mpl-data'))]
              
-pyz = PYZ(a.pure, a.zipped_data,
-             cipher=block_cipher)          
+pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 
 exe = EXE(pyz,
           a.scripts,
@@ -147,5 +146,5 @@ coll = COLLECT(exe,
 if sys.platform.startswith('darwin') and not DEBUG:
     app = BUNDLE(coll,
                  name='MetGem.app',
-                 icon='main.icns',
+                 icon=os.path.join(SPECPATH, 'main.icns'),
                  bundle_identifier=None)

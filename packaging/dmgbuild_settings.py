@@ -28,20 +28,26 @@ os.system(f"{PACKAGING_DIR}/set_folder_icon.sh {PACKAGING_DIR}/main.icns {tmp_di
 
 # .. Useful stuff ..............................................................
 
-application = defines.get('app', f'{PACKAGING_DIR}/dist/{APPNAME}.app')
-shutil.copytree(application, os.path.join(tmp_dir.name, APPNAME, f'{PACKAGING_DIR}/{APPNAME}.app'))
-shutil.copytree(f'{PACKAGING_DIR}/../examples', os.path.join(tmp_dir.name, APPNAME, f'{PACKAGING_DIR}/examples'))
-
 
 def icon_from_app(app_path):
     plist_path = os.path.join(app_path, 'Contents', 'Info.plist')
     plist = biplist.readPlist(plist_path)
     icon_name = plist['CFBundleIconFile']
-    icon_root,icon_ext = os.path.splitext(icon_name)
+    icon_root, icon_ext = os.path.splitext(icon_name)
     if not icon_ext:
         icon_ext = '.icns'
     icon_name = icon_root + icon_ext
     return os.path.join(app_path, 'Contents', 'Resources', icon_name)
+
+
+def copytree(src, dest):
+    if os.path.exists(dest):
+        shutil.rmtree(dest)
+    shutil.copytree(src, dest)
+
+application = defines.get('app', f'{PACKAGING_DIR}/dist/{APPNAME}.app')
+copytree(application, os.path.join(tmp_dir.name, APPNAME, f'{PACKAGING_DIR}/{APPNAME}.app'))
+copytree(f'{PACKAGING_DIR}/../examples', os.path.join(tmp_dir.name, APPNAME, f'{PACKAGING_DIR}/examples'))
 
 
 # .. Basics ....................................................................
