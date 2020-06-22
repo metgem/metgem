@@ -65,13 +65,6 @@ def build(ctx, clean=False, validate_appstream=True):
 
 
 @task(check_dependencies)
-def icon(ctx):
-    if sys.platform.startswith('win'):
-        convert = os.path.join(PACKAGING_DIR, 'bin', 'ImageMagick', 'convert.exe')
-        ctx.run("{} -density 384 -background transparent {} -define icon:auto-resize -colors 256 main.ico".format(convert, os.path.join(PACKAGING_DIR, '..', 'metgem_app', 'ui', 'images', 'main.svg')))
-
-
-@task(check_dependencies)
 def rc(ctx):
     qrcs = [os.path.join(PACKAGING_DIR, '..', 'metgem_app', 'ui', 'ui.qrc')]
     rc = os.path.join(PACKAGING_DIR, '..', 'metgem_app', 'ui', 'ui_rc.py')
@@ -88,7 +81,6 @@ def rc(ctx):
 
 @task(check_dependencies)
 def exe(ctx, clean=False, debug=False):
-    icon(ctx)
     rc(ctx)
 
     switchs = ["--clean"] if clean else []
