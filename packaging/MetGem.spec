@@ -32,7 +32,7 @@ for f in distribution.package_data['metgem_app']:
     datas.append((os.path.join(SPECPATH, "..", "metgem_app", f), os.path.join("metgem_app", os.path.dirname(f))))
 for d, files in distribution.data_files:
     for f in files:
-        datas.append((os.path.join(SPECPATH, "..", f), d))
+        datas.append((os.path.join(SPECPATH, "..", f), d if d else "."))
 
 # Encrypt files?
 block_cipher = None

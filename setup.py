@@ -18,7 +18,7 @@ package_data = {'metgem_app': ['splash.png',
                                'ui/widgets/metadata/*.csv'
                                ]}
 
-data_files = []
+data_files = [("", ["LICENSE"])]
 if not sys.platform.startswith('darwin'):
     data_files.extend([('examples', ['examples/Codiaeum.csv', 'examples/Codiaeum.mgf',
                                      'examples/Stillingia SFE.csv', 'examples/Stillingia SFE.mgf',
