@@ -40,15 +40,9 @@ def icon_from_app(app_path):
     return os.path.join(app_path, 'Contents', 'Resources', icon_name)
 
 
-def copytree(src, dest):
-    if os.path.exists(dest):
-        shutil.rmtree(dest)
-    shutil.copytree(src, dest)
-
 application = defines.get('app', f'{PACKAGING_DIR}/dist/{APPNAME}.app')
-copytree(application, os.path.join(tmp_dir.name, APPNAME, f'{PACKAGING_DIR}/{APPNAME}.app'))
-copytree(f'{PACKAGING_DIR}/../examples', os.path.join(tmp_dir.name, APPNAME, f'{PACKAGING_DIR}/examples'))
-
+shutil.copytree(application, os.path.join(tmp_dir.name, APPNAME, f'{APPNAME}.app'))
+shutil.copytree(f'{PACKAGING_DIR}/../examples', os.path.join(tmp_dir.name, APPNAME, 'examples'))
 
 # .. Basics ....................................................................
 
