@@ -37,6 +37,7 @@ jobs:
       shell: bash -l {0}
       run: conda install invoke pyinstaller
     - name: Test invoke command
+      shell: bash -l {0}
       run: inv -l
     - name: Install build dependencies (macOS)
       shell: bash -l {0}
@@ -54,6 +55,7 @@ jobs:
         shopt -s extglob
         echo "::set-output name=asset_path::`ls packaging/*MetGem*@(.exe|.dmg|.AppImage)`"
     - name: Check Asset Path
+      shell: bash -l {0}
       run: echo "${{ steps.build.outputs.asset_path }}"
     - name: Get Release
       id: get_release
