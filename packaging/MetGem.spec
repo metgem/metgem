@@ -5,6 +5,7 @@ import sys
 import glob
 
 from distutils.core import run_setup
+sys.path.insert(0, os.path.join(SPECPATH, '..'))
 
 from PyInstaller.utils.hooks import qt_plugins_binaries, get_module_file_attribute
 
