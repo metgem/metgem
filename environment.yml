@@ -29,7 +29,7 @@ dependencies:
     - pyqtnetworkview>=0.5.1
     - forceatlas2>=0.2
     - pyemf>=2.1.2alpha
-    - pyqtads >=3.3.0
-    - numba >=0.46.0
-    - umap-learn >= 0.3.10
-    - phate >= 0.4.5
+    - pyqtads>=3.3.0
+    - numba>=0.46.0
+    - umap-learn>=0.3.10
+    - phate>=0.4.5

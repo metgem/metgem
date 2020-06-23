@@ -5,6 +5,7 @@ from setuptools import setup, find_packages
 from setuptools.command.build_py import build_py
 from distutils import cmd
 from PyQt5.pyrcc_main import processResourceFile
+from metgem_app import version
 
 # Gather data files
 package_data = {'metgem_app': ['splash.png',
@@ -50,8 +51,8 @@ class BuildPyCommand(build_py):
 
 
 setup(
-    name="metgem",
-    version="1.3.0",
+    name=version.APPLICATION.lower(),
+    version=version.VERSION.lower(),
     author="Nicolas Elie",
     author_email="nicolas.elie@cnrs.fr",
     url="https://github.com/metgem/metgem",
@@ -102,6 +103,9 @@ setup(
                       'pyqtnetworkview >=0.5.1',
                       'forceatlas2 >=0.2',
                       'pyemf >=2.1.2alpha',
-                      'pyqtads >=3.3.0'],
+                      'pyqtads >=3.3.0',
+                      'numba >=0.46.0',
+                      'umap-learn >= 0.3.10',
+                      'phate >= 0.4.5'],
     zip_safe=False
 )
