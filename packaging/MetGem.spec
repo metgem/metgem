@@ -54,6 +54,8 @@ if not os.path.exists(qt_base_dir):
 # Add some useful folders to path
 if sys.platform.startswith('win'):
     pathex.append(os.path.join(sys.prefix, 'Lib', 'site-packages', 'scipy', 'extra-dll'))
+    pathex.append(os.path.join(sys.prefix, 'Library', 'bin'))
+    pathex.append(os.path.join('C:', 'Program Files', 'OpenSSL', 'bin'))
     
 # Get Qt styles dll
 binaries.extend(qt_plugins_binaries('styles', namespace='PyQt5'))
