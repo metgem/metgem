@@ -57,12 +57,6 @@ def exe(ctx, clean=False, debug=False):
         switchs.append("--debug all")
     result = ctx.run("pyinstaller {0} --noconfirm {1} --distpath {2} --workpath {3}".format(os.path.join(PACKAGING_DIR, 'MetGem.spec'), " ".join(switchs), DIST, BUILD))
     if result and sys.platform.startswith('win'):
-        embed_manifest(ctx)
-
-
-@task
-def embed_manifest(ctx):
-    if sys.platform.startswith('win'):
         from PyInstaller.utils.win32 import winmanifest
         exe = "{0}\{1}\{1}.exe".format(DIST, NAME)
         manifest = exe + '.manifest'
