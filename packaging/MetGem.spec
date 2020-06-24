@@ -71,7 +71,7 @@ if sys.platform.startswith('win'):
 
 # Add Qt Dbus on macOS
 if sys.platform.startswith('darwin'):
-    hiddenimports.extend(['PyQt5.QtDbus'])
+    hiddenimports.extend(['PyQt5.QtDBus'])
 
 # Add pybel
 try:
