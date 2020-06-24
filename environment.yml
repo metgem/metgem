@@ -15,7 +15,7 @@ dependencies:
     - matplotlib>=2.2
     - requests>=2.18
     - sqlalchemy>=1.2
-    - pyarrow>=0.9.0
+    - pyarrow==0.15.1
     - pluginbase>=1.0
     - pyyaml>=3.13
     - rdkit
