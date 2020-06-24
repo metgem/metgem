@@ -69,6 +69,10 @@ if sys.platform.startswith('win'):
     binaries.extend([(os.path.join(qt_base_dir, 'bin', dll), r'PyQt5\Qt\bin')
                       for dll in ('libEGL.dll', 'libGLESv2.dll')])
 
+# Add Qt Dbus on macOS
+if sys.platform.startswith('darwin'):
+    hiddenimports.extend(['PyQt5.QtDbus'])
+
 # Add pybel
 try:
     import pybel
