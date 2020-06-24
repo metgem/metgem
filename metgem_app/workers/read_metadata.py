@@ -25,8 +25,8 @@ class ReadMetadataWorker(BaseWorker):
         super().__init__()
         self.filename = filename
         self.options = options
-        self.options.skiprows = self.options.skiprows if self.options.skiprows is not 0 else None
-        self.options.nrows = self.options.nrows if self.options.nrows is not 0 else None
+        self.options.skiprows = self.options.skiprows if self.options.skiprows != 0 else None
+        self.options.nrows = self.options.nrows if self.options.nrows != 0 else None
 
         self.track_progress = track_progress
         self.max = 0
