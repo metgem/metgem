@@ -28,6 +28,7 @@ from .config import FILE_EXTENSION
 
 
 class MnzFile(NpzFile):
+    zip = None
 
     def __init__(self, file, *args, **kwargs):
         if isinstance(file, basestring):
