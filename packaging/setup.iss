@@ -2,7 +2,8 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define AppName "MetGem"
-#define AppVersion "1.3.0RC1"
+#define AppId "{15225AA3-EFDB-4261-A26D-138260F4B3D2}"
+#define AppVersion GetFileVersion("dist/MetGem/MetGem.exe")
 #define AppPublisher "CNRS/ICSN"
 #define AppURL "https://metgem.github.io"
 #define AppExeName "MetGem.exe"
@@ -11,20 +12,20 @@
 ; NOTE: The value of AppId uniquely identifies this application.
 ; Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
-AppId={{15225AA3-EFDB-4261-A26D-138260F4B3D2}
+AppId={{#AppId}
 AppName={#AppName}
 AppVersion={#AppVersion}
-;AppVerName={#AppName} {#AppVersion}
+AppVerName={#AppName} {#AppVersion}
 AppPublisher={#AppPublisher}
 AppPublisherURL={#AppURL}
 AppSupportURL={#AppURL}
 AppUpdatesURL={#AppURL}
-DefaultDirName={pf}\{#AppName}
+DefaultDirName={autopf}\{#AppName}
 DefaultGroupName={#AppName}
 AllowNoIcons=yes
 OutputBaseFilename=setup_{#AppName}
 Compression=lzma
-SolidCompression=yes
+SolidCompression=no
 OutputDir=.
 SetupIconFile=main.ico
 WizardImageFile=compiler:WizModernImage-IS.bmp
@@ -32,7 +33,7 @@ WizardSmallImageFile=compiler:WizModernSmallImage-IS.bmp
 ArchitecturesInstallIn64BitMode=x64
 ArchitecturesAllowed=x64
 ChangesAssociations=True
-LicenseFile=dist\MetGem\LICENSE
+LicenseFile=dist\{#AppName}\LICENSE
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -42,8 +43,8 @@ Name: "french"; MessagesFile: "compiler:Languages\French.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "dist\MetGem\MetGem.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "dist\MetGem\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "dist\{#AppName}\{#AppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "dist\{#AppName}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
@@ -57,5 +58,153 @@ Filename: "{app}\{#AppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(
 [Registry]
 Root: HKCR; SubKey: ".mnz"; ValueType: string; ValueData: "Molecular Network"; Flags: uninsdeletekey
 Root: HKCR; SubKey: "Molecular Network"; ValueType: string; ValueData: "Molecular Network"; Flags: uninsdeletekey
-Root: HKCR; SubKey: "Molecular Network\Shell\Open\Command"; ValueType: string; ValueData: """{app}\MetGem.exe"" ""%1"""; Flags: uninsdeletekey
-Root: HKCR; Subkey: "Molecular Network\DefaultIcon"; ValueType: string; ValueData: "{app}\MetGem.exe,0"; Flags: uninsdeletevalue
+Root: HKCR; SubKey: "Molecular Network\Shell\Open\Command"; ValueType: string; ValueData: """{app}\{#AppExeName}"" ""%1"""; Flags: uninsdeletekey
+Root: HKCR; Subkey: "Molecular Network\DefaultIcon"; ValueType: string; ValueData: "{app}\{#AppExeName},0"; Flags: uninsdeletevalue
+
+[CustomMessages]
+english.UninstallOldVersion=Version %1 of {#AppName} is already installed. Would you like to uninstall it before?
+french.UninstallOldVersion=La version %1 de {#AppName} est déjà installée. Voulez-vous la désinstaller?
+english.AppRunning={#AppName} is running, please close it and run again uninstall.
+french.AppRunning={#AppName} est actuellement démarré, merci de fermer la fenêtre et de relancer l'installation.
+english.AlreadyInstalled=Version %1 of {#AppName} is already installed. This installer will exit.
+french.AlreadyInstalled=La version %1 de {#AppName} est déjà installée. Cet installeur va quitter.
+english.UninstallFailed=Failed to uninstall {#AppName} version %1. Please restart Windows and run setup again.
+french.UninstallFailed=Impossible de désinstaller {#AppName} version %1. Merci de redémarrer Windows et de relancer l'installation.
+
+[Code]
+function IsAppRunning(const FileName: string): Boolean;
+var
+  FWMIService: Variant;
+  FSWbemLocator: Variant;
+  FWbemObjectSet: Variant;
+begin
+  Result := false;
+  FSWbemLocator := CreateOleObject('WBEMScripting.SWBEMLocator');
+  FWMIService := FSWbemLocator.ConnectServer('', 'root\CIMV2', '', '');
+  FWbemObjectSet := FWMIService.ExecQuery(Format('SELECT Name FROM Win32_Process Where Name="%s"',[FileName]));
+  Result := (FWbemObjectSet.Count > 0);
+  FWbemObjectSet := Unassigned;
+  FWMIService := Unassigned;
+  FSWbemLocator := Unassigned;
+end;
+
+function GetNumber(var temp: String): Integer;
+var
+  part: String;
+  pos1: Integer;
+begin
+  if Length(temp) = 0 then
+  begin
+    Result := -1;
+    Exit;
+  end;
+    pos1 := Pos('.', temp);
+    if (pos1 = 0) then
+    begin
+      Result := StrToInt(temp);
+    temp := '';
+    end
+    else
+    begin
+    part := Copy(temp, 1, pos1 - 1);
+      temp := Copy(temp, pos1 + 1, Length(temp));
+      Result := StrToInt(part);
+    end;
+end;
+
+function CompareInner(var temp1, temp2: String): Integer;
+var
+  num1, num2: Integer;
+begin
+    num1 := GetNumber(temp1);
+  num2 := GetNumber(temp2);
+  if (num1 = -1) or (num2 = -1) then
+  begin
+    Result := 0;
+    Exit;
+  end;
+      if (num1 > num2) then
+      begin
+        Result := 1;
+      end
+      else if (num1 < num2) then
+      begin
+        Result := -1;
+      end
+      else
+      begin
+        Result := CompareInner(temp1, temp2);
+      end;
+end;
+
+function CompareVersion(str1, str2: String): Integer;
+var
+  temp1, temp2: String;
+begin
+    temp1 := str1;
+    temp2 := str2;
+    Result := CompareInner(temp1, temp2);
+end;
+
+function InitializeSetup(): Boolean;
+var
+  oldVersion: String;
+  uninstaller: String;
+  ErrorCode: Integer;
+begin
+  if IsAppRunning('{#AppExeName}') then
+  begin
+    MsgBox(CustomMessage('AppRunning'), mbError, MB_OK );
+    Result := False;
+    Exit;
+  end;
+
+  if RegKeyExists(HKEY_LOCAL_MACHINE,
+    'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{#AppID}_is1') then
+  begin
+    RegQueryStringValue(HKEY_LOCAL_MACHINE,
+      'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{#AppID}_is1',
+      'DisplayVersion', oldVersion);
+    if (CompareVersion(oldVersion, '{#AppVersion}') < 0) then
+    begin
+      if MsgBox(FmtMessage(CustomMessage('UninstallOldVersion'), [oldVersion]), mbConfirmation, MB_YESNO) = IDYES then
+      begin
+          RegQueryStringValue(HKEY_LOCAL_MACHINE,
+            'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{#AppID}_is1',
+            'UninstallString', uninstaller);
+          ShellExec('runas', uninstaller, '/SILENT', '', SW_HIDE, ewWaitUntilTerminated, ErrorCode);
+          if (ErrorCode <> 0) then
+          begin
+            MsgBox(CustomMessage('UninstallFailed}'), mbError, MB_OK );
+            Result := False;
+          end
+          else
+          begin
+            Result := True;
+          end;
+      end;
+    end
+    else
+    begin
+      MsgBox(FmtMessage(CustomMessage('AlreadyInstalled'), [oldVersion]), mbInformation, MB_OK);
+      Result := False;
+    end;
+  end
+  else
+  begin
+    Result := True;
+  end;
+end;
+
+function InitializeUninstall(): Boolean;
+begin
+
+  // check if notepad is running
+  if IsAppRunning('{#AppExeName}') then
+  begin
+    MsgBox(CustomMessage('AppRunning}'), mbError, MB_OK );
+    Result := false;
+  end
+  else Result := true;
+
+end;

@@ -171,6 +171,7 @@ packaging/sip/
 packaging/*.AppImage
 packaging/*.exe
 packaging/*.dmg
+packaging/file_version_info.txt
 examples/*.ods
 examples/*.xls
 examples/*.txt

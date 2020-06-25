@@ -5,6 +5,7 @@ import sys
 import glob
 
 from distutils.core import run_setup
+
 sys.path.insert(0, os.path.join(SPECPATH, '..'))
 
 from PyInstaller.utils.hooks import qt_plugins_binaries, get_module_file_attribute
@@ -35,6 +36,7 @@ for f in distribution.package_data['metgem_app']:
 for d, files in distribution.data_files:
     for f in files:
         datas.append((os.path.join(SPECPATH, "..", f), d if d else "."))
+version = distribution.get_version()
 
 # Encrypt files?
 block_cipher = None
@@ -127,6 +129,66 @@ a.datas = [dat for dat in a.datas if not ('sample_data' in dat[0] and dat[0].sta
              
 pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 
+if sys.platform.startswith('win'):
+    icon = os.path.join(SPECPATH, 'main.ico')
+
+    # Write file_version_info.txt to use it in EXE
+    import re
+    v = re.match("(\d)\.(\d)\.(\d)\w*(\d?)", version)
+    v = ", ".join(a if a else '0' for a in v.groups())
+    version_file = os.path.join(SPECPATH, 'file_version_info.txt')
+    with open(version_file, 'w') as f:
+        f.write("# UTF-8\n")
+        f.write("#\n")
+        f.write("# For more details about fixed file info 'ffi' see:\n")
+        f.write("#http://msdn.microsoft.com/en-us/library/ms646997.aspx\n")
+        f.write("VSVersionInfo(\n")
+        f.write("    ffi=FixedFileInfo(\n")
+        f.write("        # filevers and prodvers should be always a tuple with four items: (1, 2, 3, 4)\n")
+        f.write("        # Set not needed items to zero 0.\n")
+        f.write("        filevers=({}),\n".format(v))
+        f.write("        prodvers=({}),\n".format(v))
+        f.write("        # Contains a bitmask that specifies the valid bits 'flags'r\n")
+        f.write("        mask=0x17,\n")
+        f.write("        # Contains a bitmask that specifies the Boolean attributes of the file.\n")
+        f.write("        flags=0x0,\n")
+        f.write("        # The operating system for which this file was designed.\n")
+        f.write("        # 0x4 - NT and there is no need to change it.\n")
+        f.write("        OS=0x4,\n")
+        f.write("        # The general type of file.\n")
+        f.write("        # 0x1 - the file is an application.\n")
+        f.write("        fileType=0x1,\n")
+        f.write("        # The function of the file.\n")
+        f.write("        # 0x0 - the function is not defined for this fileType\n")
+        f.write("        subtype=0x0,\n")
+        f.write("        # Creation date and time stamp.\n")
+        f.write("        date=(0, 0)\n")
+        f.write("    ),\n")
+        f.write("    kids=[\n")
+        f.write("        StringFileInfo(\n")
+        f.write("            [\n")
+        f.write("                StringTable(\n")
+        f.write("                    u'000004b0',\n")
+        f.write("                    [StringStruct(u'Comments', u'Version {}'),\n".format(version))
+        f.write("                     StringStruct(u'CompanyName', u'CNRS/ICSN'),\n")
+        f.write("                     StringStruct(u'FileDescription', u'MetGem'),\n")
+        f.write("                     StringStruct(u'FileVersion', u'{}'),\n".format(version))
+        f.write("                     StringStruct(u'InternalName', u'MetGem'),\n")
+        f.write("                     StringStruct(u'LegalCopyright', u'Copyright (C) 2018-2020'),\n")
+        f.write("                     StringStruct(u'OriginalFilename', u'MetGem.exe'),\n")
+        f.write("                     StringStruct(u'ProductName', u'MetGem'),\n")
+        f.write("                     StringStruct(u'ProductVersion', u'{}')])\n".format(version))
+        f.write("            ]),\n")
+        f.write("        VarFileInfo([VarStruct(u'Translation', [0, 1200])])\n")
+        f.write("    ]\n")
+        f.write(")\n")
+elif sys.platform.startswith('darwin'):
+    icon = os.path.join(SPECPATH, 'main.icns')
+    version_file = None
+else:
+    icon = None
+    version_file = None
+
 exe = EXE(pyz,
           a.scripts,
           [],
@@ -138,7 +200,8 @@ exe = EXE(pyz,
           strip=False,
           upx=True,
           console=DEBUG,
-          icon=os.path.join(SPECPATH, 'main.ico') if sys.platform.startswith('win') else None)
+          version=version_file,
+          icon=icon)
 
 coll_name = 'MetGem'
 if DEBUG:
@@ -156,5 +219,6 @@ coll = COLLECT(exe,
 if sys.platform.startswith('darwin') and not DEBUG:
     app = BUNDLE(coll,
                  name='MetGem.app',
-                 icon=os.path.join(SPECPATH, 'main.icns'),
-                 bundle_identifier=None)
+                 icon=icon,
+                 bundle_identifier=None,
+                 version=version)
