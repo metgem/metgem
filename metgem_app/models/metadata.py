@@ -133,7 +133,7 @@ class NodesModel(QAbstractTableModel):
             index_mappings = {}
             first_mapping_column = infos.shape[1] + 2 if infos is not None else 2
             for index, (mapname, maplist) in enumerate(mappings.items()):
-                l = [value for key, value in header_to_column.items() for colname in maplist if key.startswith(colname)]
+                l = [value for key, value in header_to_column.items() for colname in maplist if str(key).startswith(colname)]
                 index_mappings[first_mapping_column+index] = l
             self.mappings = index_mappings
         else:
