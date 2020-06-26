@@ -63,31 +63,13 @@ Root: HKCR; Subkey: "Molecular Network\DefaultIcon"; ValueType: string; ValueDat
 
 [CustomMessages]
 english.UninstallOldVersion=Version %1 of {#AppName} is already installed. Would you like to uninstall it before?
-french.UninstallOldVersion=La version %1 de {#AppName} est déjà installée. Voulez-vous la désinstaller?
-english.AppRunning={#AppName} is running, please close it and run again uninstall.
-french.AppRunning={#AppName} est actuellement démarré, merci de fermer la fenêtre et de relancer l'installation.
-english.AlreadyInstalled=Version %1 of {#AppName} is already installed. This installer will exit.
-french.AlreadyInstalled=La version %1 de {#AppName} est déjà installée. Cet installeur va quitter.
+french.UninstallOldVersion=La version %1 de {#AppName} est déjà  installée. Voulez-vous la désinstaller ?
+english.AlreadyInstalled=Version %1 of {#AppName} is already installed. Would you like to continue installation?
+french.AlreadyInstalled=La version %1 de {#AppName} est déjà  installée. Voulez-vous poursuivre l'installation ?
 english.UninstallFailed=Failed to uninstall {#AppName} version %1. Please restart Windows and run setup again.
 french.UninstallFailed=Impossible de désinstaller {#AppName} version %1. Merci de redémarrer Windows et de relancer l'installation.
 
 [Code]
-function IsAppRunning(const FileName: string): Boolean;
-var
-  FWMIService: Variant;
-  FSWbemLocator: Variant;
-  FWbemObjectSet: Variant;
-begin
-  Result := false;
-  FSWbemLocator := CreateOleObject('WBEMScripting.SWBEMLocator');
-  FWMIService := FSWbemLocator.ConnectServer('', 'root\CIMV2', '', '');
-  FWbemObjectSet := FWMIService.ExecQuery(Format('SELECT Name FROM Win32_Process Where Name="%s"',[FileName]));
-  Result := (FWbemObjectSet.Count > 0);
-  FWbemObjectSet := Unassigned;
-  FWMIService := Unassigned;
-  FSWbemLocator := Unassigned;
-end;
-
 function GetNumber(var temp: String): Integer;
 var
   part: String;
@@ -152,13 +134,6 @@ var
   uninstaller: String;
   ErrorCode: Integer;
 begin
-  if IsAppRunning('{#AppExeName}') then
-  begin
-    MsgBox(CustomMessage('AppRunning'), mbError, MB_OK );
-    Result := False;
-    Exit;
-  end;
-
   if RegKeyExists(HKEY_LOCAL_MACHINE,
     'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{#AppID}_is1') then
   begin
@@ -182,29 +157,26 @@ begin
           begin
             Result := True;
           end;
+      end
+      else
+      begin
+        Result := True;
       end;
     end
     else
     begin
-      MsgBox(FmtMessage(CustomMessage('AlreadyInstalled'), [oldVersion]), mbInformation, MB_OK);
-      Result := False;
+      if MsgBox(FmtMessage(CustomMessage('AlreadyInstalled'), [oldVersion]), mbInformation, MB_YESNO) = IDNO then
+      begin
+        Result := False;
+      end
+      else
+      begin
+        Result := True;
+      end;
     end;
   end
   else
   begin
     Result := True;
   end;
-end;
-
-function InitializeUninstall(): Boolean;
-begin
-
-  // check if notepad is running
-  if IsAppRunning('{#AppExeName}') then
-  begin
-    MsgBox(CustomMessage('AppRunning}'), mbError, MB_OK );
-    Result := false;
-  end
-  else Result := true;
-
 end;
