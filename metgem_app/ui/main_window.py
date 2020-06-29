@@ -1045,8 +1045,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         if filename:
             sep = '\t' if filter_.endswith("(*.tsv)") else ','
+            selected_rows = {self.tvNodes.model().mapToSource(index).row()
+                             for index in self.tvNodes.selectionModel().selectedRows()}
 
-            worker = self.prepare_export_metadata_worker(filename, self.tvNodes.model().sourceModel(), sep)
+            worker = self.prepare_export_metadata_worker(filename, self.tvNodes.model().sourceModel(),
+                                                         sep, selected_rows)
             if worker is not None:
                 self._workers.append(worker)
                 self._workers.start()
@@ -2347,11 +2350,12 @@ class MainWindow(MainWindowBase, MainWindowUI):
         return worker
 
     @debug
-    def prepare_export_metadata_worker(self, filename, model, sep):
-        worker = workers.ExportMetadataWorker(filename, model, sep)
+    def prepare_export_metadata_worker(self, filename, model, sep, selected_rows):
+        worker = workers.ExportMetadataWorker(filename, model, sep, selected_rows if selected_rows else None)
 
         def finished():
-            QMessageBox.information(self, None, f"Metadata were successfully exported to \"{filename}\".")
+            nnodes = len(selected_rows) if selected_rows else self.tVNodes.model().rowCount()
+            QMessageBox.information(self, None, f"Metadata of {nnodes} nodes were successfully exported to \"{filename}\".")
 
         def error(e):
             if isinstance(e, workers.export_metadata.NoDataError):

@@ -9,11 +9,12 @@ class NoDataError(Exception):
 
 class ExportMetadataWorker(BaseWorker):
 
-    def __init__(self, filename, model, sep=None):
+    def __init__(self, filename, model, sep=None, selected_rows=None):
         super().__init__()
         self.filename = filename
         self.model = model
         self.sep = sep if sep is not None else ','
+        self.selected_rows = selected_rows
 
         self.max = self.model.rowCount()
         self.iterative_update = True
@@ -27,6 +28,8 @@ class ExportMetadataWorker(BaseWorker):
             self.error.emit(NoDataError())
             return
 
+        rows = self.selected_rows if self.selected_rows else range(nrows)
+
         try:
             with open(self.filename, 'w') as f:
                 # Export headers
@@ -37,7 +40,7 @@ class ExportMetadataWorker(BaseWorker):
                 f.write(f"{data[:-1]}\n")
 
                 # Export data
-                for i in range(nrows):
+                for i in rows:
                     data = f"{self.model.headerData(i, Qt.Vertical)}{self.sep}"
                     for j in range(ncolumns):
                         index = self.model.index(i, j)
