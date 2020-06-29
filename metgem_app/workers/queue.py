@@ -61,6 +61,7 @@ class WorkerQueue(deque):
                 worker.thread().quit()
 
             # self.disconnect_events(worker)
+            self._isrunning = False
             self.hide_progressbar()
 
         def update_progress(i):
