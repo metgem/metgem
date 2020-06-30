@@ -45,7 +45,7 @@ templates_path = ['_templates']
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'includes/colors.rst']
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -122,10 +122,6 @@ rst_epilog = """
 .. |refresh| image:: /images/icons/refresh.svg
     :alt: Refresh
 """
-
-# A list of glob-style patterns that should be excluded when looking for source files. 
-# They are matched against the source file names relative to the source directory, using slashes as directory separators on all platforms.
-exclude_patterns = ['includes/colors.rst']
 
 
 latex_elements = {
