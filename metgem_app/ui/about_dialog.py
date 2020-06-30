@@ -25,7 +25,7 @@ class AboutDialog(AboutDialogDialogBase, AboutDialogUI):
         self.setWindowTitle(f"About {appname}")
         self.setTitle(appname)
         self.setVersion(f"Version {QCoreApplication.applicationVersion()}")
-        self.setAbout("<p>(c) 2018, CNRS/ICSN</p>"
+        self.setAbout("<p>(C) 2018-2020, CNRS/ICSN</p>"
                       f"<p><a href='https://metgem.github.io/'>{appname}</a></p>"
                       "<p><a href='https://github.com/metgem'>Source Code</a></p>")
 
@@ -89,6 +89,21 @@ class AboutDialog(AboutDialogDialogBase, AboutDialogUI):
             "<li><a href=\"https://github.com/bhargavchippada/forceatlas2\">Gephi's ForceAtlas2</a>: GPLv3</li>"
             "<li><a href=\"https://qtconsole.readthedocs.io/en/stable\">qtconsole</a>: 3-clause BSD</li>"
             "<li><a href=\"http://pluginbase.pocoo.org/\">pluginbase</a>: 3-clause BSD</li>"
+            "<li><a href=\"https://pyyaml.org/\">PyYAML</a>: MIT</li>"
+            "<li><a href=\"http://www.rdkit.org//\">rdKIT</a>: 3-clause BSD</li>"
+            "<li><a href=\"https://numexpr.readthedocs.io/\">NumExpr</a>: MIT</li>"
+            "<li><a href=\"https://github.com/python-excel/xlrd/\">xlrd</a>: 3-clause BSD</li>"
+            "<li><a href=\"https://github.com/eea/odfpy/\">odfpy</a>: Apache v2</li>"
+            "<li><a href=\"https://github.com/kurtmckee/feedparser/\">xlrd</a>: MIT</li>"
+            "<li><a href=\"https://mplcursors.readthedocs.io/\">mplcursors</a>: MIT</li>"
+            "<li><a href=\"https://github.com/githubuser0xFFFF/Qt-Advanced-Docking-System/\">"
+            "Qt-Advanced-Docking-System</a>: LGPL v2.1</li>"
+            "<li><a href=\"https://github.com/metgem/pyemf/\">pyemf</a>: GPL v2</li>"
+            "<li><a href=\"https://github.com/metgem/PyQtNetworkView/\">PyQtNetworkView</a>: GPL v3</li>"
+            "<li><a href=\"https://github.com/metgem/libmetgem/\">libmetgem</a>: GPL v3</li>"
+            "<li><a href=\"http://numba.pydata.org/\">numba</a>: 2-clause BSD</li>"
+            "<li><a href=\"https://umap-learn.readthedocs.io/\">umap-learn</a>: 3-clause BSD</li>"
+            "<li><a href=\"http://phate.readthedocs.io/\">PHATE</a>: GPL v2</li>"
             "</ul></p>"
         )
 
