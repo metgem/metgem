@@ -104,6 +104,7 @@ class AboutDialog(AboutDialogDialogBase, AboutDialogUI):
             "<li><a href=\"http://numba.pydata.org/\">numba</a>: 2-clause BSD</li>"
             "<li><a href=\"https://umap-learn.readthedocs.io/\">umap-learn</a>: 3-clause BSD</li>"
             "<li><a href=\"http://phate.readthedocs.io/\">PHATE</a>: GPL v2</li>"
+            "<li><a href=\"https://hdbscan.readthedocs.io/\">hdbscan</a>: 3-clause BSD</li>"
             "</ul></p>"
         )
 
