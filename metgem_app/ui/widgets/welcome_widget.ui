@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>894</width>
-    <height>468</height>
+    <width>902</width>
+    <height>473</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -44,13 +44,19 @@
         <string notr="true">QListWidget
 {
 	text-decoration: underline;
-	color: palette(base);
-	background-color: palette(text);
-	selection-background-color: palette(text);
+	color: palette(midlight);
+	background-color: palette(mid);
+	selection-background-color: palette(mid);
+}
+
+QToolTip
+{
+	color: palette(tooltiptext);
+	background-color: palette(tooltip);
 }</string>
        </property>
-       <property name="frameShadow">
-        <enum>QFrame::Plain</enum>
+       <property name="frameShape">
+        <enum>QFrame::Box</enum>
        </property>
        <property name="verticalScrollBarPolicy">
         <enum>Qt::ScrollBarAlwaysOff</enum>
@@ -183,6 +189,12 @@
 	text-decoration: underline;
 	color: palette(base);
 	border: none;
+}
+
+QToolTip
+{
+	color: palette(tooltiptext);
+	background-color: palette(tooltip);
 }</string>
        </property>
        <property name="text">
@@ -240,8 +252,14 @@
         <string notr="true">QPushButton
 {
 	text-decoration: underline;
-	color: palette(base);
+	color: palette(midlight);
 	border: none;
+}
+
+QToolTip
+{
+	color: palette(tooltiptext);
+	background-color: palette(tooltip);
 }</string>
        </property>
        <property name="text">
@@ -277,8 +295,14 @@
         <string notr="true">QPushButton
 {
 	text-decoration: underline;
-	color: palette(base);
+	color: palette(midlight);
 	border: none;
+}
+
+QToolTip
+{
+	color: palette(tooltiptext);
+	background-color: palette(tooltip);
 }</string>
        </property>
        <property name="text">
@@ -350,8 +374,15 @@
        <property name="statusTip">
         <string>https://dx.doi.org/10.1021/acs.analchem.9b02802</string>
        </property>
+       <property name="styleSheet">
+        <string notr="true">QToolTip
+{
+	color: palette(tooltiptext);
+	background-color: palette(tooltip);
+}</string>
+       </property>
        <property name="text">
-        <string>&lt;a href=&quot;https://dx.doi.org/10.1021/acs.analchem.9b02802&quot; style=&quot;text-decoration: underline; color: palette(base);&quot;&gt;Anal. Chem. 2019, 91, 18, 11489-11492&lt;/a&gt;</string>
+        <string>&lt;a href=&quot;https://dx.doi.org/10.1021/acs.analchem.9b02802&quot; style=&quot;text-decoration: underline; color: palette(midlight);&quot;&gt;Anal. Chem. 2019, 91, 18, 11489-11492&lt;/a&gt;</string>
        </property>
        <property name="textFormat">
         <enum>Qt::RichText</enum>
@@ -433,8 +464,15 @@
        <property name="statusTip">
         <string>https://github.com/metgem/metgem</string>
        </property>
+       <property name="styleSheet">
+        <string notr="true">QToolTip
+{
+	color: palette(tooltiptext);
+	background-color: palette(tooltip);
+}</string>
+       </property>
        <property name="text">
-        <string>&lt;a href=&quot;https://github.com/metgem/metgem&quot; style=&quot;text-decoration: underline; color: palette(base);&quot;&gt;Source Code&lt;/a&gt;</string>
+        <string>&lt;a href=&quot;https://github.com/metgem/metgem&quot; style=&quot;text-decoration: underline; color: palette(midlight);&quot;&gt;Source Code&lt;/a&gt;</string>
        </property>
        <property name="textFormat">
         <enum>Qt::RichText</enum>
@@ -502,8 +540,15 @@
        <property name="statusTip">
         <string>https://metgem.readthedocs.io</string>
        </property>
+       <property name="styleSheet">
+        <string notr="true">QToolTip
+{
+	color: palette(tooltiptext);
+	background-color: palette(tooltip);
+}</string>
+       </property>
        <property name="text">
-        <string>&lt;a href=&quot;https://metgem.readthedocs.io&quot; style=&quot;text-decoration: underline; color: palette(base);&quot;&gt;User Manual&lt;/a&gt;</string>
+        <string>&lt;a href=&quot;https://metgem.readthedocs.io&quot; style=&quot;text-decoration: underline; color: palette(midlight);&quot;&gt;User Manual&lt;/a&gt;</string>
        </property>
        <property name="textFormat">
         <enum>Qt::RichText</enum>
@@ -531,8 +576,15 @@
        <property name="statusTip">
         <string>https://metgem.readthedocs.io/getting_started.html</string>
        </property>
+       <property name="styleSheet">
+        <string notr="true">QToolTip
+{
+	color: palette(tooltiptext);
+	background-color: palette(tooltip);
+}</string>
+       </property>
        <property name="text">
-        <string>&lt;a href=&quot;https://metgem.readthedocs.io/getting_started.html&quot; style=&quot;text-decoration: underline; color: palette(base);&quot;&gt;Getting Started&lt;/a&gt;</string>
+        <string>&lt;a href=&quot;https://metgem.readthedocs.io/getting_started.html&quot; style=&quot;text-decoration: underline; color: palette(midlight);&quot;&gt;Getting Started&lt;/a&gt;</string>
        </property>
        <property name="textFormat">
         <enum>Qt::RichText</enum>
@@ -547,8 +599,15 @@
        <property name="statusTip">
         <string>https://metgem.github.io</string>
        </property>
+       <property name="styleSheet">
+        <string notr="true">QToolTip
+{
+	color: palette(tooltiptext);
+	background-color: palette(tooltip);
+}</string>
+       </property>
        <property name="text">
-        <string>&lt;a href=&quot;https://metgem.github.io&quot; style=&quot;text-decoration: underline; color: palette(base);&quot;&gt;MetGem Website&lt;/a&gt;</string>
+        <string>&lt;a href=&quot;https://metgem.github.io&quot; style=&quot;text-decoration: underline; color: palette(midlight);&quot;&gt;MetGem Website&lt;/a&gt;</string>
        </property>
        <property name="textFormat">
         <enum>Qt::RichText</enum>
@@ -573,8 +632,15 @@
        <property name="statusTip">
         <string>https://dx.doi.org/10.1021/acs.analchem.8b03099</string>
        </property>
+       <property name="styleSheet">
+        <string notr="true">QToolTip
+{
+	color: palette(tooltiptext);
+	background-color: palette(tooltip);
+}</string>
+       </property>
        <property name="text">
-        <string>&lt;a href=&quot;https://dx.doi.org/10.1021/acs.analchem.8b03099&quot;style=&quot;text-decoration: underline; color: palette(base);&quot;&gt;Anal. Chem. 2018, 90, 23, 13900-13908&lt;/a&gt;</string>
+        <string>&lt;a href=&quot;https://dx.doi.org/10.1021/acs.analchem.8b03099&quot;style=&quot;text-decoration: underline; color: palette(midlight);&quot;&gt;Anal. Chem. 2018, 90, 23, 13900-13908&lt;/a&gt;</string>
        </property>
        <property name="textFormat">
         <enum>Qt::RichText</enum>
@@ -629,7 +695,7 @@
      <item row="7" column="0" colspan="3">
       <widget class="QLabel" name="label_13">
        <property name="styleSheet">
-        <string notr="true">color: palette(base);</string>
+        <string notr="true">color: palette(midlight);</string>
        </property>
        <property name="text">
         <string>If you use MetGem for your research, please cite</string>
@@ -662,7 +728,16 @@
         <string>Show news about MetGem: this needs internet to retrieve information from MetGem's website</string>
        </property>
        <property name="styleSheet">
-        <string notr="true">color: palette(base);</string>
+        <string notr="true">QCheckBox
+{
+	color: palette(base);
+}
+
+QToolTip
+{
+	color: palette(tooltiptext);
+	background-color: palette(tooltip);
+}</string>
        </property>
        <property name="text">
         <string>Enabled</string>
@@ -693,16 +768,19 @@
        <property name="styleSheet">
         <string notr="true">QListWidget
 {
-	color: palette(base);
-	background-color: palette(text);
-	selection-background-color: palette(text);
+	color: palette(midlight);
+	background-color: palette(mid);
+	selection-background-color: palette(mid);
+}
+
+QToolTip
+{
+	color: palette(tooltiptext);
+	background-color: palette(tooltip);
 }</string>
        </property>
        <property name="frameShape">
-        <enum>QFrame::StyledPanel</enum>
-       </property>
-       <property name="frameShadow">
-        <enum>QFrame::Plain</enum>
+        <enum>QFrame::Box</enum>
        </property>
        <property name="horizontalScrollBarPolicy">
         <enum>Qt::ScrollBarAlwaysOff</enum>
