@@ -528,7 +528,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
     @debug
     def reset_project(self):
         self.fname = None
-        self.has_unsaved_changes = False
         try:
             self.network.spectra.close()
         except AttributeError:
@@ -549,6 +548,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.spectra_widget.set_spectrum1(None)
         self.spectra_widget.set_spectrum2(None)
         self.update_search_menu()
+        self.has_unsaved_changes = False
 
     @debug
     def update_search_menu(self, table: QTableView = None):
