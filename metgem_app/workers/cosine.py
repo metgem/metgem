@@ -1,4 +1,4 @@
-from libmetgem.cosine import compute_distance_matrix
+from libmetgem.cosine import compute_similarity_matrix
 
 from .base import BaseWorker
 from ..utils import AttrDict
@@ -57,7 +57,7 @@ class ComputeScoresWorker(BaseWorker):
             return False
 
         try:
-            scores_matrix = compute_distance_matrix(self._mzs, self._spectra,
+            scores_matrix = compute_similarity_matrix(self._mzs, self._spectra,
                                                     self.options.mz_tolerance, self.options.min_matched_peaks,
                                                     callback=callback)
         except MemoryError as e:
