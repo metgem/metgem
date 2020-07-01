@@ -1336,6 +1336,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             QMessageBox.information(self, None,
                                     ('hdbscan is required for this action '
                                      '(https://hdbscan.readthedocs.io).'))
+            return
         elif getattr(self.network, 'scores') is None:
             QMessageBox.warning(self, None, 'Please import spectra first.')
             return
