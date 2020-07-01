@@ -107,15 +107,15 @@ class RangeInputDialog(QDialog):
         if high is not None:
             self.sbHighValue.setValue(high)
 
-        buttonBox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel, self)
+        button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel, self)
 
         layout = QFormLayout(self)
         layout.addRow("Low value", self.sbLowValue)
         layout.addRow("High value", self.sbHighValue)
-        layout.addWidget(buttonBox)
+        layout.addWidget(button_box)
 
-        buttonBox.accepted.connect(self.accept)
-        buttonBox.rejected.connect(self.reject)
+        button_box.accepted.connect(self.accept)
+        button_box.rejected.connect(self.reject)
 
     def getRange(self):
         return self.sbLowValue.value(), self.sbHighValue.value()
@@ -179,7 +179,7 @@ class RangeListWidgetItem(ColorMixin, WidgetItem):
 
 
 class ColumnListWidgetItem(ColorMixin, WidgetItem):
-    def __init__(self, *args, column: int=None, **kwargs):
+    def __init__(self, *args, column: int = None, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.setData(ColumnRole, column)
@@ -235,7 +235,7 @@ class BaseColorMappingDialog(ColorMappingDialogUI, ColorMappingDialogBase):
         self.btLoadColorList.clicked.connect(self.load_color_list)
         self.btSaveColorList.clicked.connect(self.save_color_list)
 
-    def get_color(self, item: ColorListWidgetItem=None):
+    def get_color(self, item: ColorListWidgetItem = None):
         current_color = item.data(Qt.BackgroundRole).color() \
             if item is not None and item.data(Qt.BackgroundRole) is not None else QColor()
         color = QColorDialog.getColor(initial=current_color, parent=self, options=QColorDialog.ShowAlphaChannel)
@@ -264,7 +264,7 @@ class BaseColorMappingDialog(ColorMappingDialogUI, ColorMappingDialogBase):
                 item.setBackground(color)
                 self.lstColors.addItem(item)
 
-    def generate_new_colors(self, cmap: str='auto'):
+    def generate_new_colors(self, cmap: str = 'auto'):
         self.set_colors(get_colors(self.lstUsedColumns.count(), cmap=cmap))
 
     def auto_assign_colors(self):
@@ -655,6 +655,7 @@ class ColorMappingDialog(BaseColorMappingDialog):
                     colors.append(QColor(Qt.transparent))
 
             try:
+                # noinspection PyUnboundLocalVariable
                 bins.append(high)
             except UnboundLocalError:
                 pass

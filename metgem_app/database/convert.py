@@ -147,6 +147,7 @@ class DataBaseBuilder:
                 raise NotImplementedError
 
             # Read mgf file by batch of 1000 spectra
+            # noinspection PyPep8,PyPep8
             for batch in chunk_read_data(path, read_func=read, chunk_size=1000):
                 spectra = []
 
@@ -166,6 +167,7 @@ class DataBaseBuilder:
                         inchiaux = params.get('inchikey', None)
                     else:
                         pepmass = None
+                        inchiaux = ''
                     charge = params.get('charge', 1)
                     positive = convert_polarity(params.get('ionmode', 'Positive').lower())
                     name = params.get('name', None)

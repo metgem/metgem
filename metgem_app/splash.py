@@ -22,7 +22,7 @@ class SplashScreen(QSplashScreen):
 
         self.pbar = QProgressBar(self)
         self.pbar.setMaximum(100)
-        self.pbar.setGeometry(100, splash_pix.height()-130, splash_pix.width()-200, 20)
+        self.pbar.setGeometry(100, splash_pix.height() - 130, splash_pix.width() - 200, 20)
         self.pbar.setAlignment(Qt.AlignCenter)
         self.pbar.setStyleSheet("""
             QProgressBar {
@@ -49,7 +49,7 @@ class SplashScreen(QSplashScreen):
         v = f"Version: {FULLVERSION}"
         self.version = QLabel(self)
         self.version.setText(v)
-        self.version.move(splash_pix.width()-self.fontMetrics().width(v)-125, splash_pix.height()-180)
+        self.version.move(splash_pix.width() - self.fontMetrics().width(v) - 125, splash_pix.height() - 180)
 
     def setValue(self, value):
         self.pbar.setValue(value)
@@ -58,7 +58,7 @@ class SplashScreen(QSplashScreen):
         super().show()
         qApp.processEvents()
 
-    def showMessage(self, message: str, alignment: int=Qt.AlignBottom | Qt.AlignCenter, color=Qt.black):
+    def showMessage(self, message: str, alignment: int = Qt.AlignBottom | Qt.AlignCenter, color=Qt.black):
         self.__message = message
         self.__alignment = alignment
         self.__color = color

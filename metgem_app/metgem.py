@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 
+# noinspection PyUnresolvedReferences
 def run():
     import os
     import sys
@@ -138,7 +139,8 @@ def run():
     # Support for file association
     if args.fname is not None:
         fname = args.fname
-        if os.path.exists(fname) and os.path.splitext(fname)[1] == config.FILE_EXTENSION:
+        from .config import FILE_EXTENSION
+        if os.path.exists(fname) and os.path.splitext(fname)[1] == FILE_EXTENSION:
             window.load_project(fname)
 
     sys.exit(app.exec_())

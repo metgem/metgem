@@ -47,9 +47,9 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
         self.btDownload.setEnabled(False)
 
         # Set Close button as default
-        btClose = self.buttonBox.button(QDialogButtonBox.Close)
-        if btClose is not None:
-            btClose.setDefault(True)
+        bt_close = self.buttonBox.button(QDialogButtonBox.Close)
+        if bt_close is not None:
+            bt_close.setDefault(True)
 
         # Connect events
         self.btSelectAll.clicked.connect(lambda: self.select('all'))
@@ -177,6 +177,7 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
                         break
             self.btDownload.setEnabled(enabled)
 
+    # noinspection PyUnusedLocal
     def update_description(self, current, previous):
         if current is not None:
             desc = current.data(0, DownloadDatabasesDialog.DescRole)
@@ -223,6 +224,7 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
                                 'Please select at least one database first.')
             return False
 
+        # noinspection PyShadowingNames
         def create_convert_databases_worker(worker: DownloadDatabasesWorker, ids):
             self.update_badges()
             downloaded, unreachable = worker.result()
@@ -247,6 +249,7 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
 
         worker = self.prepare_download_databases_worker(ids)
         self._workers.append(worker)
+        # noinspection PyShadowingNames
         self._workers.append(lambda worker, ids=ids: create_convert_databases_worker(worker, ids))
         self._workers.start()
 
@@ -272,6 +275,7 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
 
             clean_up()
 
+            # noinspection PyShadowingNames
             num_converted = sum(len(ids) for origin, ids in converted_ids.items())
             if num_converted > 0:
                 QMessageBox.information(self, None,

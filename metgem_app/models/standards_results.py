@@ -24,7 +24,7 @@ class SpectraModel(QAbstractTableModel):
             for key in self._data:
                 if key in selection:
                     for res in selection[key]:
-                        query = lib.query(Spectrum).options(joinedload('*'))\
+                        query = lib.query(Spectrum).options(joinedload('*')) \
                             .filter(Spectrum.id == res.id)
                         self._data[key].append(query.first())
 
@@ -39,14 +39,14 @@ class SpectraModel(QAbstractTableModel):
         return len(self._columns) + 1
 
     def headerData(self, section, orientation=Qt.Horizontal, role=Qt.DisplayRole):
-        if (orientation == Qt.Horizontal and section > self.columnCount())\
+        if (orientation == Qt.Horizontal and section > self.columnCount()) \
                 or (orientation == Qt.Vertical and section > self.rowCount()):
             return
 
         if role == Qt.DisplayRole and orientation == Qt.Horizontal:
             if section == 0:
                 return 'Score'
-            col = self._columns[section-1]
+            col = self._columns[section - 1]
             return col.comment if col.comment is not None else col.name.split('_id')[0]
         else:
             return super().headerData(section, orientation, role)
@@ -81,7 +81,7 @@ class SpectraModel(QAbstractTableModel):
             return
 
         if role in (Qt.DisplayRole, Qt.EditRole):
-            attr = self._columns[column-1].name.split('_id')[0]
+            attr = self._columns[column - 1].name.split('_id')[0]
             attr = 'polarity' if attr == 'positive' else attr
             value = getattr(obj, attr, None)
             if isinstance(value, Base):

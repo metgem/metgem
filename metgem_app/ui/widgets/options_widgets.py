@@ -31,7 +31,7 @@ class NetworkOptionsWidget(QGroupBox):
         """Modify Network visualization options
 
         Args: 
-            network_visualization_options (NetworkVisualizationOptions): Modifies the Widget's 
+            options (NetworkVisualizationOptions): Modifies the Widget's
             spinBoxes to match the Network visualization options.  
         """
         

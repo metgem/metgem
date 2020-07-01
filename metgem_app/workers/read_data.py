@@ -48,6 +48,7 @@ class ReadDataWorker(BaseWorker):
                 return
 
             if not is_ms1_data:
+                mz_parent = 0
                 for key in mz_keys:
                     try:
                         mz_parent = params[key]
@@ -58,6 +59,7 @@ class ReadDataWorker(BaseWorker):
                 mzs.append(0)
 
             try:
+                # noinspection PyUnboundLocalVariable
                 self.error.emit(e)
                 return
             except UnboundLocalError:

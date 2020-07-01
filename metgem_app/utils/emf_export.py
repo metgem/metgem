@@ -40,21 +40,22 @@ if HAS_EMF_EXPORT:
         return (obj & 0x80000000) != 0
 
 
+    # noinspection PyProtectedMember
     class _EXTCREATEPEN(pyemf.emr._EXTCREATEPEN):
         """Extended pen creation record with custom line style."""
 
         typedef = [
-            ('i','handle',0),
-            ('i','offBmi',0),
-            ('i','cbBmi',0),
-            ('i','offBits',0),
-            ('i','cbBits',0),
-            ('i','style'),
-            ('i','penwidth'),
-            ('i','brushstyle'),
-            ('i','color'),
-            ('i','brushhatch',0),
-            ('i','numstyleentries')]
+            ('i', 'handle', 0),
+            ('i', 'offBmi', 0),
+            ('i', 'cbBmi', 0),
+            ('i', 'offBits', 0),
+            ('i', 'cbBits', 0),
+            ('i', 'style'),
+            ('i', 'penwidth'),
+            ('i', 'brushstyle'),
+            ('i', 'color'),
+            ('i', 'brushhatch', 0),
+            ('i', 'numstyleentries')]
 
         def __init__(self, style=pyemf.PS_SOLID, width=1, color=0,
                      styleentries=[]):
@@ -73,7 +74,7 @@ if HAS_EMF_EXPORT:
             self.numstyleentries = len(styleentries)
             if styleentries:
                 self.unhandleddata = struct.pack(
-                    "i"*self.numstyleentries, *styleentries)
+                    "i" * self.numstyleentries, *styleentries)
 
         def hasHandle(self):
             return True
@@ -84,16 +85,16 @@ if HAS_EMF_EXPORT:
 
         def __init__(self, rect: QRectF, dpi=75):
             QPaintEngine.__init__(self,
-                                      QPaintEngine.Antialiasing |
-                                      QPaintEngine.PainterPaths |
-                                      QPaintEngine.PrimitiveTransform |
-                                      QPaintEngine.PaintOutsidePaintEvent |
-                                      QPaintEngine.PatternBrush )
+                                  QPaintEngine.Antialiasing |
+                                  QPaintEngine.PainterPaths |
+                                  QPaintEngine.PrimitiveTransform |
+                                  QPaintEngine.PaintOutsidePaintEvent |
+                                  QPaintEngine.PatternBrush)
             self.rect = rect
             self.dpi = dpi
 
         def begin(self, paintdevice):
-            self.emf = pyemf.EMF(self.rect.width(), self.rect.height(), int(self.dpi*scale))
+            self.emf = pyemf.EMF(self.rect.width(), self.rect.height(), int(self.dpi * scale))
             self.emf.dc.setPixelSize([[int(self.rect.x() * self.dpi), int(self.rect.y() * self.dpi)],
                                       [int(self.rect.width() * self.dpi), int(self.rect.height() * self.dpi)]])
             self.pen = self.emf.GetStockObject(pyemf.BLACK_PEN)
@@ -108,30 +109,30 @@ if HAS_EMF_EXPORT:
 
             for line in lines:
                 self.emf.Polyline(
-                     [(int(line.x1()*scale), int(line.y1()*scale)),
-                      (int(line.x2()*scale), int(line.y2()*scale))])
+                    [(int(line.x1() * scale), int(line.y1() * scale)),
+                     (int(line.x2() * scale), int(line.y2() * scale))])
 
         def drawPolygon(self, points, mode):
             """Draw polygon on output."""
-            pts = [(int(p.x()*scale), int(p.y()*scale)) for p in points]
+            pts = [(int(p.x() * scale), int(p.y() * scale)) for p in points]
 
             if mode == QPaintEngine.PolylineMode:
                 self.emf.Polyline(pts)
             else:
                 self.emf.SetPolyFillMode({QPaintEngine.WindingMode:
-                                                pyemf.WINDING,
-                                           QPaintEngine.OddEvenMode:
-                                                pyemf.ALTERNATE,
-                                           QPaintEngine.ConvexMode:
-                                                pyemf.WINDING})
+                                              pyemf.WINDING,
+                                          QPaintEngine.OddEvenMode:
+                                              pyemf.ALTERNATE,
+                                          QPaintEngine.ConvexMode:
+                                              pyemf.WINDING})
                 self.emf.Polygon(pts)
 
         def drawEllipse(self, rect):
             """Draw an ellipse."""
-            args = (int(rect.left()*scale),  int(rect.top()*scale),
-                     int(rect.right()*scale), int(rect.bottom()*scale),
-                     int(rect.left()*scale),  int(rect.top()*scale),
-                     int(rect.left()*scale),  int(rect.top()*scale))
+            args = (int(rect.left() * scale), int(rect.top() * scale),
+                    int(rect.right() * scale), int(rect.bottom() * scale),
+                    int(rect.left() * scale), int(rect.top() * scale),
+                    int(rect.left() * scale), int(rect.top() * scale))
             self.emf.Pie(*args)
             self.emf.Arc(*args)
 
@@ -139,11 +140,12 @@ if HAS_EMF_EXPORT:
             """Draw points."""
 
             for pt in points:
-                x, y = (pt.x()-0.5)*scale, (pt.y()-0.5)*scale
-                self.emf.Pie( int(x), int(y),
-                              int((pt.x()+0.5)*scale), int((pt.y()+0.5)*scale),
-                              int(x), int(y), int(x), int(y) )
+                x, y = (pt.x() - 0.5) * scale, (pt.y() - 0.5) * scale
+                self.emf.Pie(int(x), int(y),
+                             int((pt.x() + 0.5) * scale), int((pt.y() + 0.5) * scale),
+                             int(x), int(y), int(x), int(y))
 
+        # noinspection PyProtectedMember
         def drawPixmap(self, r, pixmap, sr):
             """Draw pixmap to display."""
 
@@ -161,14 +163,14 @@ if HAS_EMF_EXPORT:
             datasize, = struct.unpack('<i', bmp[0x22:0x26])
 
             epix = pyemf.emr._STRETCHDIBITS()
-            epix.rclBounds_left = int(r.left()*scale)
-            epix.rclBounds_top = int(r.top()*scale)
-            epix.rclBounds_right = int(r.right()*scale)
-            epix.rclBounds_bottom = int(r.bottom()*scale)
-            epix.xDest = int(r.left()*scale)
-            epix.yDest = int(r.top()*scale)
-            epix.cxDest = int(r.width()*scale)
-            epix.cyDest = int(r.height()*scale)
+            epix.rclBounds_left = int(r.left() * scale)
+            epix.rclBounds_top = int(r.top() * scale)
+            epix.rclBounds_right = int(r.right() * scale)
+            epix.rclBounds_bottom = int(r.bottom() * scale)
+            epix.xDest = int(r.left() * scale)
+            epix.yDest = int(r.top() * scale)
+            epix.cxDest = int(r.width() * scale)
+            epix.cyDest = int(r.height() * scale)
             epix.xSrc = int(sr.left())
             epix.ySrc = int(sr.top())
             epix.cxSrc = int(sr.width())
@@ -195,15 +197,15 @@ if HAS_EMF_EXPORT:
             while i < count:
                 e = path.elementAt(i)
                 if e.type == QPainterPath.MoveToElement:
-                    self.emf.MoveTo( int(e.x*scale), int(e.y*scale) )
+                    self.emf.MoveTo(int(e.x * scale), int(e.y * scale))
                 elif e.type == QPainterPath.LineToElement:
-                    self.emf.LineTo( int(e.x*scale), int(e.y*scale) )
+                    self.emf.LineTo(int(e.x * scale), int(e.y * scale))
                 elif e.type == QPainterPath.CurveToElement:
-                    e1 = path.elementAt(i+1)
-                    e2 = path.elementAt(i+2)
-                    params = ((int(e.x*scale), int(e.y*scale)),
-                               (int(e1.x*scale), int(e1.y*scale)),
-                               (int(e2.x*scale), int(e2.y*scale)))
+                    e1 = path.elementAt(i + 1)
+                    e2 = path.elementAt(i + 2)
+                    params = ((int(e.x * scale), int(e.y * scale)),
+                              (int(e1.x * scale), int(e1.y * scale)),
+                              (int(e2.x * scale), int(e2.y * scale)))
                     self.emf.PolyBezierTo(params)
 
                     i += 2
@@ -213,7 +215,7 @@ if HAS_EMF_EXPORT:
                 i += 1
 
             ef = path.elementAt(0)
-            el = path.elementAt(count-1)
+            el = path.elementAt(count - 1)
             if ef.x == el.x and ef.y == el.y:
                 self.emf.CloseFigure()
 
@@ -245,6 +247,7 @@ if HAS_EMF_EXPORT:
         def saveFile(self, filename):
             self.emf.save(filename)
 
+        # noinspection PyProtectedMember
         def _updatePen(self, pen):
             """Update the pen to the currently selected one."""
 
@@ -272,18 +275,18 @@ if HAS_EMF_EXPORT:
                 # use proper widths of lines
                 style |= pyemf.PS_GEOMETRIC
 
-            width = int(pen.widthF()*scale)
+            width = int(pen.widthF() * scale)
             qc = pen.color()
             color = (qc.red(), qc.green(), qc.blue())
             self.pencolor = color
 
             if pen.style() == Qt.CustomDashLine:
                 # make an extended pen if we need a custom dash pattern
-                dash = [int(pen.widthF()*scale*f) for f in pen.dashPattern()]
+                dash = [int(pen.widthF() * scale * f) for f in pen.dashPattern()]
                 newpen = self.emf._appendHandle(
-                     _EXTCREATEPEN(style,
-                                   width=width, color=color,
-                                   styleentries=dash))
+                    _EXTCREATEPEN(style,
+                                  width=width, color=color,
+                                  styleentries=dash))
             else:
                 # use a standard create pen
                 newpen = self.emf.CreatePen(style, width, color)
@@ -313,7 +316,7 @@ if HAS_EMF_EXPORT:
                              Qt.BDiagPattern: pyemf.HS_BDIAGONAL,
                              Qt.FDiagPattern: pyemf.HS_FDIAGONAL,
                              Qt.DiagCrossPattern:
-                                  pyemf.HS_DIAGCROSS}[brush.style()]
+                                 pyemf.HS_DIAGCROSS}[brush.style()]
                 except KeyError:
                     newbrush = self.emf.CreateSolidBrush(color)
                 else:
@@ -330,15 +333,15 @@ if HAS_EMF_EXPORT:
             if operation != Qt.NoClip:
                 self._createPath(path)
                 clipmode = {
-                     Qt.ReplaceClip: pyemf.RGN_COPY,
-                     Qt.IntersectClip: pyemf.RGN_AND,
+                    Qt.ReplaceClip: pyemf.RGN_COPY,
+                    Qt.IntersectClip: pyemf.RGN_AND,
                 }[operation]
             else:
                 # is this the only wave to get rid of clipping?
                 self.emf.BeginPath()
-                self.emf.MoveTo(0,0)
-                w = int(self.rect.width()*self.dpi*scale)
-                h = int(self.rect.height()*self.dpi*scale)
+                self.emf.MoveTo(0, 0)
+                w = int(self.rect.width() * self.dpi * scale)
+                h = int(self.rect.height() * self.dpi * scale)
                 self.emf.LineTo(w, 0)
                 self.emf.LineTo(w, h)
                 self.emf.LineTo(0, h)
@@ -352,7 +355,7 @@ if HAS_EMF_EXPORT:
             """Update transformation."""
             self.emf.SetWorldTransform(m.m11(), m.m12(),
                                        m.m21(), m.m22(),
-                                       m.dx()*scale, m.dy()*scale)
+                                       m.dx() * scale, m.dy() * scale)
 
         def updateState(self, state):
             """Examine what has changed in state and call apropriate function."""

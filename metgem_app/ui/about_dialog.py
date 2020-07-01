@@ -48,6 +48,7 @@ class AboutDialog(AboutDialogDialogBase, AboutDialogUI):
             Morgane Barthélémy, Téo Hebra</p>"""
         self.setAuthors(authors)
 
+        # noinspection PyPep8
         self.setData(
             """<p><b>Icons</b></p>
             <p>MetGem Logo can be used freely under the terms of the <a href=\"http://creativecommons.org/publicdomain/zero/1.0/\">CC0 1.0 Universal</a> license.</p>
@@ -61,6 +62,7 @@ class AboutDialog(AboutDialogDialogBase, AboutDialogUI):
             <a href=\"http://creativecommons.org/publicdomain/zero/1.0/\">CC0 1.0 Universal</a> license.</p>
             """)
         self.setLicenseAgreement(LICENSE_TEXT)
+        # noinspection PyPep8
         self.setLibraries(
             f"<p><b>Third-party libraries used by {appname}</b></p>"
             f"<p>{appname} is built on the following free software libraries:</p>"

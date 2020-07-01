@@ -32,7 +32,7 @@ class GraphMLParser:
                 return 0.
         elif t == 'string':
             if len(value) == 7 and value[0] == "#":
-                    return QColor(str(value))
+                return QColor(str(value))
             return str(value)
 
     def parse(self, fname):
@@ -61,6 +61,7 @@ class GraphMLParser:
                       for key in root.findall('key', namespaces=root.nsmap)}
 
         # Find graph object
+        # noinspection PyShadowingNames
         g = root.find('graph', namespaces=root.nsmap)
 
         # Create graph
@@ -190,6 +191,7 @@ class GraphMLWriter:
 
         # Graph element
         directed = 'directed' if graph.is_directed() else 'undirected'
+        # noinspection PyShadowingNames
         g = etree.Element('graph', attrib={'id': 'G', 'edgedefault': directed})
         root.append(g)
 

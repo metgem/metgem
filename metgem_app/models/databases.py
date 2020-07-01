@@ -1,3 +1,5 @@
+from typing import Any
+
 from PyQt5.QtCore import QAbstractListModel, Qt, QModelIndex, QAbstractTableModel
 
 from ..database import Bank, Spectrum, Base
@@ -22,7 +24,7 @@ class BanksModel(QAbstractListModel):
     def rowCount(self, parent=QModelIndex()):
         return len(self._data)
 
-    def data(self, index, role):
+    def data(self, index: QModelIndex, role: int = ...) -> Any:
         if not index.isValid():
             return None
 
@@ -73,7 +75,7 @@ class SpectraModel(QAbstractTableModel):
         return len(self._columns)
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
-        if (orientation == Qt.Horizontal and section > self.columnCount())\
+        if (orientation == Qt.Horizontal and section > self.columnCount()) \
                 or (orientation == Qt.Vertical and section > self.rowCount()):
             return None
 
@@ -83,7 +85,7 @@ class SpectraModel(QAbstractTableModel):
         else:
             return super().headerData(section, orientation, role)
 
-    def data(self, index, role):
+    def data(self, index: QModelIndex, role: int = ...) -> Any:
         if not index.isValid():
             return None
 

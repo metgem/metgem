@@ -48,7 +48,8 @@ class TSNEWorker(EmbeddingWorker):
     def init(self):
         method = 'barnes_hut' if self.options.barnes_hut else 'exact'
         random_state = None if self.options.random else 0
-        n_iter = self.options.n_iter if self.options.n_iter >= 250 else 250  # Number of iterations should be at least 250
+        # Number of iterations should be at least 250
+        n_iter = self.options.n_iter if self.options.n_iter >= 250 else 250
         self._estimator = TSNE(learning_rate=self.options.learning_rate,
                                early_exaggeration=self.options.early_exaggeration,
                                perplexity=self.options.perplexity, verbose=2, n_iter=n_iter,
@@ -60,6 +61,7 @@ class TSNEWorker(EmbeddingWorker):
         self.iterative_update = False
         self.desc = 't-SNE: Iteration {value:d} of {max:d}'
 
+    # noinspection PyGlobalUndefined, PyUnresolvedReferences
     @staticmethod
     def import_modules():
         global TSNE

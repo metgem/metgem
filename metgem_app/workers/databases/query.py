@@ -47,7 +47,7 @@ class QueryDatabasesWorker(BaseWorker):
     def run(self):
         def callback(value):
             if value > 0 and self.max == 0:
-                 self.max = 100
+                self.max = 100
             self.updated.emit(value)
             return not self.isStopped()
 

@@ -7,6 +7,7 @@ from sqlalchemy.orm import relationship
 Base = declarative_base()
 
 
+# noinspection PyAbstractClass
 class NumpySpectrumArray(TypeDecorator):
 
     impl = Binary
@@ -115,6 +116,7 @@ class Spectrum(Base):
                 setattr(self, key, value)
 
     def __repr__(self):
+        # noinspection PyPropertyAccess
         return (f"Spectrum(bank='{self.bank.name}', pepmass={self.pepmass}, polarity={repr(self.polarity)}, "
                 f"charge={self.charge}, mslevel={self.mslevel})")
 

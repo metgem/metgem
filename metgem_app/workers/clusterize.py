@@ -24,10 +24,10 @@ class ClusterizeWorker(BaseWorker):
         self.iterative_update = True
         self.desc = 'Clusterizing data (HDBSCAN)...'
 
+    # noinspection PyGlobalUndefined, PyUnresolvedReferences
     @staticmethod
     def import_modules():
         global HDBSCAN
-        # noinspection PyUnresolvedReferences
         from hdbscan import HDBSCAN
 
     def run(self):

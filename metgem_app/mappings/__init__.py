@@ -8,6 +8,7 @@ MODE_LOG = 1
 class SizeMappingFunc(dict):
 
     def __init__(self, xs, ys, ymin, ymax, mode=MODE_LINEAR):
+        super().__init__()
         if mode == MODE_LOG:
             xsarr = np.array(xs)
             with np.errstate(divide='ignore'):

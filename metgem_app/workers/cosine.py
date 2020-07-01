@@ -58,8 +58,8 @@ class ComputeScoresWorker(BaseWorker):
 
         try:
             scores_matrix = compute_similarity_matrix(self._mzs, self._spectra,
-                                                    self.options.mz_tolerance, self.options.min_matched_peaks,
-                                                    callback=callback)
+                                                      self.options.mz_tolerance, self.options.min_matched_peaks,
+                                                      callback=callback)
         except MemoryError as e:
             self.error.emit(e)
             return

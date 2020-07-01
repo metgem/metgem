@@ -47,6 +47,7 @@ class SpectrumNavigationToolbar(NavigationToolbar):
         # Initialize picked state
         self._xaxis_picked = False
 
+    # noinspection PyCallByClass
     def sizeHint(self):
         return QToolBar.sizeHint(self)
 
@@ -129,8 +130,10 @@ class SpectrumNavigationToolbar(NavigationToolbar):
 
     def on_button_press(self, event):
         # If X axis is pressed, start panning
-        if self.canvas.axes.get_xaxis().contains(event)[0]:  # can't use pick event because, in pan/zoom mode, canvas is locked
-            if (hasattr(self, '_views') and self._views.empty()) or (hasattr(self, '_nav_stack') and self._nav_stack.empty()):
+        # can't use pick event because, in pan/zoom mode, canvas is locked
+        if self.canvas.axes.get_xaxis().contains(event)[0]:
+            if (hasattr(self, '_views') and self._views.empty())\
+                    or (hasattr(self, '_nav_stack') and self._nav_stack.empty()):
                 self.push_current()
             self.canvas.axes.start_pan(event.x, event.y, event.button)
             self._xaxis_picked = True
@@ -151,6 +154,7 @@ class SpectrumNavigationToolbar(NavigationToolbar):
             elif self._active == 'ZOOM':
                 self.step_zoom(event, keypress=False)
 
+    # noinspection PyUnusedLocal,PyProtectedMember
     def on_resize(self, event):
         cwidth = self.canvas.width()
         lheight = self.locLabel.sizeHint().height()
@@ -161,6 +165,7 @@ class SpectrumNavigationToolbar(NavigationToolbar):
         y = self.canvas.figure.bbox.height / dpi_ratio - bbox.ymax - lheight
         self.locLabel.move(x*dpi_ratio, y*dpi_ratio)
 
+    # noinspection PyProtectedMember
     def _icon(self, name, *args, **kwargs):
         icon = super()._icon(name, *args, **kwargs)
         if icon.isNull():
@@ -175,7 +180,8 @@ class SpectrumNavigationToolbar(NavigationToolbar):
     def step_pan(self, event, keypress=False):
         """pan X axis with arrow keys or mouse wheel"""
 
-        if (hasattr(self, '_views') and self._views.empty()) or (hasattr(self, '_nav_stack') and self._nav_stack.empty()):
+        if (hasattr(self, '_views') and self._views.empty())\
+                or (hasattr(self, '_nav_stack') and self._nav_stack.empty()):
             self.push_current()
 
         xlim = self.canvas.axes.get_xlim()
@@ -208,7 +214,8 @@ class SpectrumNavigationToolbar(NavigationToolbar):
     def step_zoom(self, event, keypress=False):
         """zoom on X axis with arrow keys or mouse wheel"""
 
-        if (hasattr(self, '_views') and self._views.empty()) or (hasattr(self, '_nav_stack') and self._nav_stack.empty()):
+        if (hasattr(self, '_views') and self._views.empty())\
+                or (hasattr(self, '_nav_stack') and self._nav_stack.empty()):
             self.push_current()
 
         xlim = self.canvas.axes.get_xlim()

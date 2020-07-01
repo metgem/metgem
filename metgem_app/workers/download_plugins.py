@@ -24,6 +24,7 @@ class DownloadPluginsWorker(BaseWorker):
             if not url:
                 continue
 
+            # noinspection PyUnusedLocal
             try:
                 with BytesIO() as bytes_io:
                     try:

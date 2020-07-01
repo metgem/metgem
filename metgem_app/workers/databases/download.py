@@ -226,6 +226,7 @@ class DownloadDatabasesWorker(BaseWorker):
                             path = os.path.join(self.path, f'{id_}')
 
                             with open(path, 'wb') as f:
+                                # noinspection PyShadowingNames
                                 def write_callback(chunk):
                                     f.write(chunk)
                                     self.updated.emit(len(chunk))

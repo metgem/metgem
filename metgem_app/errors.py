@@ -47,9 +47,9 @@ def exceptionHandler(exctype, value, trace):
                  "You should restart the application now.").format(QCoreApplication.applicationName()))
     msg.setInformativeText(str(value))
     msg.setDetailedText(''.join(traceback.format_exception(exctype, value, trace)))
-    btRestart = msg.addButton("Restart now", QMessageBox.ResetRole)
+    bt_restart = msg.addButton("Restart now", QMessageBox.ResetRole)
     msg.addButton(QMessageBox.Ignore)
     msg.raise_()
     msg.exec_()
-    if msg.clickedButton() == btRestart:  # Restart application
+    if msg.clickedButton() == bt_restart:  # Restart application
         os.execv(sys.executable, [sys.executable] + sys.argv)

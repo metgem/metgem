@@ -16,6 +16,7 @@ AddColumnsByFormulaeDialogUI, AddColumnsByFormulaeDialogBase = uic.loadUiType(UI
                                                                               import_from='metgem_app.ui')
 
 
+# noinspection PyShadowingBuiltins
 class AliasValidator(QValidator):
 
     def validate(self, input: str, pos: int) -> Tuple[QValidator.State, str, int]:
@@ -36,9 +37,10 @@ class AliasDelegate(QStyledItemDelegate):
         return editor
 
 
+# noinspection PyShadowingBuiltins
 class ColumnNameValidator(QValidator):
 
-    def __init__(self, columns: List[str] = [], *args, **kwargs):
+    def __init__(self, columns=List[str], *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self._columns = columns

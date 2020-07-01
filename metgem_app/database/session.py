@@ -18,6 +18,7 @@ def create_session(filename=None, echo=False, drop_all=False, read_only=False):
         Base.metadata.drop_all(engine)
         Base.metadata.create_all(engine)
 
+    # noinspection PyPep8Naming
     DBSession = sessionmaker(bind=engine)
 
     return DBSession()

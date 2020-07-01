@@ -9,6 +9,7 @@ PACKAGING_DIR = os.path.dirname(__file__)
 DIST = os.path.join(PACKAGING_DIR, 'dist')
 BUILD = os.path.join(PACKAGING_DIR, 'build')
 NAME = 'MetGem'
+APPIMAGE_TOOL_URL = "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
 
 
 @task
@@ -27,12 +28,14 @@ def clean(ctx, dist=False, bytecode=False, extra=''):
             ctx.run("rm -rf {}".format(pattern))
 
 
+# noinspection PyShadowingNames
 @task
 def build(ctx, clean=False, validate_appstream=True):
     exe(ctx, clean)
     installer(ctx, validate_appstream)
 
 
+# noinspection PyShadowingNames,PyUnusedLocal
 @task
 def rc(ctx):
     qrcs = [os.path.join(PACKAGING_DIR, '..', 'metgem_app', 'ui', 'ui.qrc')]
@@ -48,6 +51,7 @@ def rc(ctx):
         processResourceFile(qrcs, rc, False)
 
 
+# noinspection PyShadowingNames
 @task
 def exe(ctx, clean=False, debug=False):
     rc(ctx)
@@ -55,7 +59,8 @@ def exe(ctx, clean=False, debug=False):
     switchs = ["--clean"] if clean else []
     if debug:
         switchs.append("--debug all")
-    result = ctx.run("pyinstaller {0} --noconfirm {1} --distpath {2} --workpath {3}".format(os.path.join(PACKAGING_DIR, 'MetGem.spec'), " ".join(switchs), DIST, BUILD))
+    result = ctx.run("pyinstaller {0} --noconfirm {1} --distpath {2} --workpath {3}"
+                     .format(os.path.join(PACKAGING_DIR, 'MetGem.spec'), " ".join(switchs), DIST, BUILD))
     if result and sys.platform.startswith('win'):
         from PyInstaller.utils.win32 import winmanifest
         exe = "{0}\{1}\{1}.exe".format(DIST, NAME)
@@ -75,7 +80,7 @@ def installer(ctx, validate_appstream=True):
         ctx.run("dmgbuild -s {} '' XXX.dmg -Dpackaging_dir={}".format(settings, PACKAGING_DIR))
     elif sys.platform.startswith('linux'):
         if not os.path.exists('{}/appimagetool-x86_64.AppImage'.format(PACKAGING_DIR)):
-            ctx.run('wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -P {}'.format(PACKAGING_DIR))
+            ctx.run('wget {} -P {}'.format(APPIMAGE_TOOL_URL, PACKAGING_DIR))
             ctx.run('chmod u+x {}/appimagetool-x86_64.AppImage'.format(PACKAGING_DIR))
         ctx.run('cp -r {0}/{1}/* {2}/AppDir/usr/lib/'.format(DIST, NAME, PACKAGING_DIR))
         switch = '-n' if not validate_appstream else ''

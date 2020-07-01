@@ -57,6 +57,7 @@ class MDSWorker(EmbeddingWorker):
         self.desc = 'MDS: Iteration {value:d} of {max:d}'
         self._io_wrapper = ProgressStringIO(self, n_init)
 
+    # noinspection PyGlobalUndefined, PyUnresolvedReferences
     @staticmethod
     def import_modules():
         global MDS

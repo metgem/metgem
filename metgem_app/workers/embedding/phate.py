@@ -49,6 +49,7 @@ class PHATEWorker(EmbeddingWorker):
         self.desc = 'PHATE: Step {value:d} of {max:d}'
         self._io_wrapper = ProgressStringIO(self)
 
+    # noinspection PyGlobalUndefined, PyUnresolvedReferences
     @staticmethod
     def import_modules():
         global PHATE

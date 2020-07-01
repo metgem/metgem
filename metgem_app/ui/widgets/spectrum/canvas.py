@@ -1,5 +1,6 @@
 from enum import Enum
 
+# noinspection PyUnresolvedReferences
 from PyQt5.QtCore import pyqtProperty, QVariant, QSettings
 
 from matplotlib.ticker import FuncFormatter, AutoMinorLocator
@@ -228,6 +229,7 @@ class SpectrumCanvas(BaseCanvas):
     def get_default_filetype(self):
         return 'mgf'
 
+    # noinspection PyPropertyAccess
     def get_default_filename(self):
         if self.spectrum1 is not None and self.spectrum2 is not None:
             if self.spectrum1_index is not None and self.spectrum2_index is not None:
@@ -242,7 +244,9 @@ class SpectrumCanvas(BaseCanvas):
 
         return "spectrum.mgf"
 
+    # noinspection PyUnusedLocal
     def print_mgf(self, fname, **kwargs):
+        # noinspection PyShadowingNames
         def save_mgf(f, pepmass, data):
             if data is not None:
                 f.write("BEGIN IONS\n")
@@ -258,7 +262,9 @@ class SpectrumCanvas(BaseCanvas):
                 save_mgf(f, self.spectrum1_parent, self.spectrum1)
                 save_mgf(f, self.spectrum2_parent, self.spectrum2)
 
+    # noinspection PyUnusedLocal
     def print_msp(self, fname, **kwargs):
+        # noinspection PyShadowingNames
         def save_msp(f, pepmass, data):
             if data is not None:
                 if pepmass is not None:

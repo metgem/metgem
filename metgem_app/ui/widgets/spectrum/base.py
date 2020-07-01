@@ -9,6 +9,7 @@ from libmetgem import MZ, INTENSITY
 import numpy as np
 
 try:
+    # noinspection PyUnresolvedReferences
     import mplcursors
 except ImportError:
     HAS_MPLCURSORS = False

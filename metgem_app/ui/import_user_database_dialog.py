@@ -33,9 +33,9 @@ class ImportUserDatabaseDialog(ImportUserDatabaseDialogBase, ImportUserDatabaseD
         self.btImport.setEnabled(False)
 
         # Set Close button as default
-        btClose = self.buttonBox.button(QDialogButtonBox.Close)
-        if btClose is not None:
-            btClose.setDefault(True)
+        bt_close = self.buttonBox.button(QDialogButtonBox.Close)
+        if bt_close is not None:
+            bt_close.setDefault(True)
 
         # Create palette used when validating input files
         self._error_palette = QPalette()

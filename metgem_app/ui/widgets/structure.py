@@ -1,12 +1,18 @@
-from PyQt5.QtCore import QByteArray, pyqtProperty, QSize
+# noinspection PyUnresolvedReferences
+from PyQt5.QtCore import pyqtProperty
+from PyQt5.QtCore import QByteArray, QSize
 from PyQt5.QtSvg import QSvgWidget
 from PyQt5.QtWidgets import QVBoxLayout, QPushButton, QWidget
 
 try:
+    # noinspection PyUnresolvedReferences
     from rdkit.Chem import MolFromSmiles, rdDepictor
+    # noinspection PyUnresolvedReferences
     from rdkit.Chem.Draw import rdMolDraw2D
+    # noinspection PyUnresolvedReferences
     from rdkit.Chem.inchi import INCHI_AVAILABLE
     if INCHI_AVAILABLE:
+        # noinspection PyUnresolvedReferences
         from rdkit.Chem.inchi import MolFromInchi
 except ImportError:
     RDKIT_AVAILABLE = False
@@ -16,7 +22,9 @@ else:
     RDKIT_INCHI = INCHI_AVAILABLE
 
 try:
+    # noinspection PyUnresolvedReferences
     import pybel
+    # noinspection PyUnresolvedReferences
     from lxml import etree
 except ImportError:
     OPENBABEL_AVAILABLE = False
@@ -30,6 +38,7 @@ class SecondColumnMapping(QWidget):
 
     @pyqtProperty(str)
     def smiles(self):
+        # noinspection PyPropertyAccess
         return self.parent().smiles
 
     @smiles.setter
@@ -80,18 +89,21 @@ class StructureSvgWidget(QSvgWidget):
         self.btShowStructure.setVisible(bool(self._inchi or self._smiles))
         self.load(QByteArray(b''))
 
+    # noinspection PyAttributeOutsideInit
     def setMaximumWidth(self, width):
         super().setMaximumWidth(width)
         self._base_width = width
 
+    # noinspection PyAttributeOutsideInit
     def setMaximumHeight(self, height):
         super().setMaximumHeight(height)
         self._base_height = height
 
-    def setMaximumSize(self, size):
-        super().setMaximumSize(size)
-        self._base_width = size.width()
-        self._base_height = size.height()
+    # noinspection PyAttributeOutsideInit
+    def setMaximumSize(self, maxw: int, maxh: int) -> None:
+        super().setMaximumSize(maxw, maxh)
+        self._base_width = maxw
+        self._base_height = maxh
 
     def render_structure(self):
         # Try to render structure from InChI or SMILES

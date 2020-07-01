@@ -19,7 +19,8 @@ ViewStandardsResultsDialogUI, ViewStandardsResultsDialogBase = uic.loadUiType(UI
 
 class ViewStandardsResultsDialog(ViewStandardsResultsDialogUI, ViewStandardsResultsDialogBase):
 
-    def __init__(self, *args, mz_parent=None, spectrum: np.ndarray = None, base_path=None, selection: dict = None, **kwargs):
+    def __init__(self, *args, mz_parent=None, spectrum: np.ndarray = None, base_path=None,
+                 selection: dict = None, **kwargs):
         super().__init__(*args, **kwargs)
 
         self._selected_index = QModelIndex()
@@ -59,6 +60,7 @@ class ViewStandardsResultsDialog(ViewStandardsResultsDialogUI, ViewStandardsResu
         standards_rows = 0
         for row in range(model.rowCount()):
             values = []
+            index = None
             for column in range(model.columnCount()):
                 if column in forbidden_cols:
                     continue
@@ -66,11 +68,12 @@ class ViewStandardsResultsDialog(ViewStandardsResultsDialogUI, ViewStandardsResu
                 item = QStandardItem(str(model.data(index)))
                 item.setEditable(False)
                 values.append(item)
-            if model.data(index, role=SpectraModel.TypeRole) == 'analogs':
-                analogs_item.appendRow(values)
-            else:
-                standards_item.appendRow(values)
-                standards_rows += 1
+            if index is not None:
+                if model.data(index, role=SpectraModel.TypeRole) == 'analogs':
+                    analogs_item.appendRow(values)
+                else:
+                    standards_item.appendRow(values)
+                    standards_rows += 1
         standards_item.setData(0, SpectraModel.RowRole)
         analogs_item.setData(standards_rows, SpectraModel.RowRole)
 

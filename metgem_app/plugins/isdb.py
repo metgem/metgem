@@ -8,6 +8,7 @@ __copyright__ = "Copyright 2019, CNRS/ICSN"
 __license__ = "GPLv3"
 
 
+# noinspection PyUnresolvedReferences
 class ISDB(DbSource):
 
     name = "ISDB"

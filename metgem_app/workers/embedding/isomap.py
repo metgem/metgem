@@ -24,6 +24,7 @@ class IsomapWorker(EmbeddingWorker):
         self.iterative_update = False
         self.desc = 'MDS: Iteration {value:d} of {max:d}'
 
+    # noinspection PyGlobalUndefined, PyUnresolvedReferences
     @staticmethod
     def import_modules():
         global Isomap

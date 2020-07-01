@@ -1,4 +1,6 @@
+# noinspection PyUnresolvedReferences
 from sphinx.writers.latex import LaTeXTranslator
+
 
 class CustomLaTeXTranslator(LaTeXTranslator):
     
@@ -6,6 +8,7 @@ class CustomLaTeXTranslator(LaTeXTranslator):
         # Replace ‣ by | to allow compatibility with latex menukeys extension
         # | is chosen because it is not escaped by Default LaTeX translator.
         return super().escape(s.replace(' ‣ ', '|'))
+
 
 def setup(app):
     app.set_translator('latex', CustomLaTeXTranslator)

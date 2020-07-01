@@ -98,6 +98,7 @@ class SignalGrouper(QObject):
         self.timer = None
         self.timeout = timeout
 
+    # noinspection PyUnusedLocal
     def accumulate(self, *args):
         if not self.senders:
             def emit_signal():

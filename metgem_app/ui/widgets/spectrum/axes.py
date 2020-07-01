@@ -32,6 +32,7 @@ class SpectrumAxes(Axes):
     def get_xmax(self):
         return self._xmax
 
+    # noinspection PyShadowingBuiltins
     def set_xmax(self, max):
         super().set_xlim(0, max)
         self._xmax = max

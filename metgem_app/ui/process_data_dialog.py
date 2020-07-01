@@ -117,6 +117,7 @@ class ProcessDataDialog(ProcessDataDialogBase, ProcessDataDialogUI):
             options = self._options.get(widget_class.name, {})
             dialog = widget_class.dialog_class(self, options=options)
 
+            # noinspection PyShadowingNames
             def add_view(result):
                 if result == QDialog.Accepted:
                     options = dialog.getValues()
@@ -186,8 +187,10 @@ class ProcessDataDialog(ProcessDataDialogBase, ProcessDataDialogUI):
             process_file = self.editProcessFile.text()
             metadata_file = self.editMetadataFile.text()
 
-            process_ok = len(process_file) > 0 and os.path.exists(process_file) and os.path.splitext(process_file)[1].lower() in ('.mgf', '.msp')
-            metadata_ok = not self.gbMetadata.isChecked() or (os.path.exists(metadata_file) and os.path.isfile(metadata_file))
+            process_ok = len(process_file) > 0 and os.path.exists(process_file)\
+                and os.path.splitext(process_file)[1].lower() in ('.mgf', '.msp')
+            metadata_ok = not self.gbMetadata.isChecked()\
+                or (os.path.exists(metadata_file) and os.path.isfile(metadata_file))
 
             if not process_ok:
                 self.editProcessFile.setPalette(self._error_palette)

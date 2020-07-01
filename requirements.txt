@@ -1,3 +1,12 @@
+feedparser
+pyemf
+fa2
+umap-learn
+invoke
+PyInstaller
+phate
+numba
+hdbscan
 pandas>=0.22
 lxml>=4.0
 numpy>=1.14

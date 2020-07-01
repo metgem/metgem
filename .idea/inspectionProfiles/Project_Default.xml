@@ -75,6 +75,7 @@
     </inspection_tool>
     <inspection_tool class="HtmlUnknownTarget" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="IgnoreFileDuplicateEntry" enabled="true" level="WARNING" enabled_by_default="true" />
+    <inspection_tool class="IncompleteProperty" enabled="false" level="ERROR" enabled_by_default="false" />
     <inspection_tool class="InconsistentLineSeparators" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="InjectedReferences" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="Json5StandardCompliance" enabled="true" level="ERROR" enabled_by_default="true" />
@@ -201,19 +202,16 @@
       <option name="ignoredIdentifiers">
         <list>
           <option value="sys._MEIPASS" />
-          <option value="PyQt5.QtWidgets.triggered.connect" />
-          <option value="typing.Iterable.__add__" />
-          <option value="PyQt5.QtCore.QEvent.QEvent.button" />
-          <option value="sqlalchemy.exc" />
-          <option value="PyQt5.QtCore.pyqtSignal.emit" />
-          <option value="PyQtAds.QtAds.*" />
-          <option value="PyInstaller.building.build_main.*" />
-          <option value="PyInstaller.building.api.*" />
-          <option value="packaging.MetGem.PYZ" />
+          <option value="PyQt5.QtWidgets.*" />
         </list>
       </option>
     </inspection_tool>
-    <inspection_tool class="PyUnusedLocalInspection" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
+    <inspection_tool class="PyUnusedLocalInspection" enabled="true" level="WEAK WARNING" enabled_by_default="true">
+      <option name="ignoreTupleUnpacking" value="true" />
+      <option name="ignoreLambdaParameters" value="true" />
+      <option name="ignoreLoopIterationVariables" value="true" />
+      <option name="ignoreVariablesStartingWithUnderscore" value="true" />
+    </inspection_tool>
     <inspection_tool class="RedundantSuppression" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="RegExpAnonymousGroup" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="RegExpDuplicateAlternationBranch" enabled="true" level="WARNING" enabled_by_default="true" />

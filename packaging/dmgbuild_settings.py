@@ -5,9 +5,11 @@ import os.path
 import shutil
 import tempfile
 
+# noinspection PyUnresolvedReferences
 import biplist
 
 APPNAME = "MetGem"
+# noinspection PyUnresolvedReferences
 PACKAGING_DIR = defines.get('packaging_dir', 'packaging')
 
 tmp_dir = tempfile.TemporaryDirectory()
@@ -40,6 +42,7 @@ def icon_from_app(app_path):
     return os.path.join(app_path, 'Contents', 'Resources', icon_name)
 
 
+# noinspection PyUnresolvedReferences
 application = defines.get('app', f'{PACKAGING_DIR}/dist/{APPNAME}.app')
 shutil.copytree(application, os.path.join(tmp_dir.name, APPNAME, f'{APPNAME}.app'))
 shutil.copytree(f'{PACKAGING_DIR}/../examples', os.path.join(tmp_dir.name, APPNAME, 'examples'))
@@ -53,9 +56,11 @@ filename = f'{PACKAGING_DIR}/{APPNAME}.dmg'
 volume_name = APPNAME
 
 # Volume format (see hdiutil create -help)
+# noinspection PyShadowingBuiltins,PyUnresolvedReferences
 format = defines.get('format', 'UDBZ')
 
 # Volume size
+# noinspection PyUnresolvedReferences
 size = defines.get('size', None)
 
 # Files to include
@@ -70,7 +75,7 @@ symlinks = {'Applications': '/Applications'}
 # image, *or* you can define badge_icon, in which case the icon file you specify
 # will be used to badge the system's Removable Disk icon
 #
-#icon = 'main.icns'
+# icon = 'main.icns'
 badge_icon = icon_from_app(application)
 
 # Where to put the icons

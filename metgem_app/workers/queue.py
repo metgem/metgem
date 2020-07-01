@@ -83,6 +83,7 @@ class WorkerQueue(deque):
         worker.maximumChanged.connect(self.update_maximum)
 
         if use_thread:
+            # noinspection PyUnboundLocalVariable
             thread.started.connect(worker.start)
             thread.start()
         else:
@@ -90,6 +91,7 @@ class WorkerQueue(deque):
 
     def disconnect_events(self, worker):
         try:
+            # noinspection PyProtectedMember
             self.widgetProgress.rejected.disconnect(worker._reject)
         except TypeError:
             pass

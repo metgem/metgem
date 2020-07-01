@@ -65,7 +65,7 @@ class ReadMetadataWorker(BaseWorker):
             if data is not None:
                 if type_ == "spreadsheet":
                     # Drop rows and columns full of na values
-                    data = data.dropna(how='all')  #.reset_index(drop=True)
+                    data = data.dropna(how='all')
 
                     # Make sure that columns full of integer are loaded as integer and not float
                     col_should_be_int = data.select_dtypes(include=['float']).applymap(float.is_integer).all()

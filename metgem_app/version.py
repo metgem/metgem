@@ -27,16 +27,15 @@ if os.path.exists('.git'):
             env['LANGUAGE'] = 'C'
             env['LANG'] = 'C'
             env['LC_ALL'] = 'C'
-            out = subprocess.Popen(cmd, stdout=subprocess.PIPE, env=env).communicate()[0]
-            return out
+            return subprocess.Popen(cmd, stdout=subprocess.PIPE, env=env).communicate()[0]
 
         try:
             out = _minimal_ext_cmd(['git', 'rev-parse', 'HEAD'])
-            GIT_REVISION = out.strip().decode('ascii')
+            revision = out.strip().decode('ascii')
         except OSError:
-            GIT_REVISION = "Unknown"
+            revision = "Unknown"
 
-        return GIT_REVISION
+        return revision
 
     GIT_REVISION = git_version()
     FULLVERSION += '.dev0+' + GIT_REVISION[:10]

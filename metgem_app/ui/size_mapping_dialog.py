@@ -22,6 +22,7 @@ SizeMappingDialogUI, SizeMappingDialogBase = uic.loadUiType(UI_FILE,
 ColumnRole = Qt.UserRole + 1
 
 
+# noinspection PyMethodParameters
 class IterInstances:
     """"Metaclass to keep track of instances of a class"""
 
@@ -116,8 +117,8 @@ class Link(QGraphicsPathItem):
 
 class Handle(QGraphicsEllipseItem, metaclass=IterPyQtWrapperInstances):
 
-    def __init__(self, size, llink: Link=None, rlink: Link=None,
-                 brush: Union[QBrush, QColor, Qt.GlobalColor]=Qt.white,
+    def __init__(self, size, llink: Link = None, rlink: Link = None,
+                 brush: Union[QBrush, QColor, Qt.GlobalColor] = Qt.white,
                  movable=True):
         super().__init__(QRectF(-size / 2, -size / 2, size, size))
 
@@ -187,7 +188,7 @@ class Handle(QGraphicsEllipseItem, metaclass=IterPyQtWrapperInstances):
         painter.setBrush(self.brush())
 
         if option.state & QStyle.State_Selected:
-            painter.setPen(QPen(self.pen().color(), self.pen().width()*3))
+            painter.setPen(QPen(self.pen().color(), self.pen().width() * 3))
         else:
             painter.setPen(self.pen())
 
@@ -201,7 +202,7 @@ class Scene(QGraphicsScene):
     DATA_VALUE = 0
     DATA_SIZE = 1
 
-    def __init__(self, *args, handle_size: int=10, **kwargs):
+    def __init__(self, *args, handle_size: int = 10, **kwargs):
         super().__init__(*args, **kwargs)
 
         self._xlabel = self.addText('Nodes Size')
@@ -232,7 +233,7 @@ class Scene(QGraphicsScene):
                 return item
         return
 
-    def addHandle(self, pos: QPointF=None, link: Link=None):
+    def addHandle(self, pos: QPointF = None, link: Link = None):
         if link is None and pos is not None:
             link = self.linkAt(pos.x())
 
@@ -294,7 +295,7 @@ class Scene(QGraphicsScene):
 
 
 class ColumnListWidgetItem(QListWidgetItem):
-    def __init__(self, *args, column: int=None, **kwargs):
+    def __init__(self, *args, column: int = None, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.setSizeHint(QSize(self.sizeHint().width(), 32))
@@ -412,6 +413,7 @@ class SizeMappingDialog(SizeMappingDialogUI, SizeMappingDialogBase):
         return (self.gvMapping, self.spinMinValue, self.spinMaxValue, self.spinMinSize, self.spinMaxSize,
                 self.spinHandleValue, self.spinHandleSize, self.btAddHandle, self.cbMode)
 
+    # noinspection PyUnusedLocal
     def on_column_changed(self, current: QModelIndex, previous: QModelIndex):
         column_id = current.data(ColumnRole)
         xmin = xmax = self._model.data(self._model.index(0, column_id))

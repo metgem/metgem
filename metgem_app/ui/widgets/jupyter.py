@@ -23,6 +23,7 @@ else:
 
             # Fix issue with Jupyter 5.0+, see https://github.com/ipython/ipykernel/pull/376
             if hasattr(self.kernel_manager.kernel, '_abort_queue'):
+                # noinspection PyProtectedMember
                 self.kernel_manager.kernel._abort_queues = self.kernel_manager.kernel._abort_queue
 
             self.exit_requested.connect(self.stop)

@@ -20,6 +20,7 @@ ImportMetadataDialogUI, ImportMetadataDialogBase = uic.loadUiType(UI_FILE,
 
 class ImportMetadataDialog(ImportMetadataDialogBase, ImportMetadataDialogUI):
 
+    # noinspection PyUnusedLocal
     def __init__(self, *args, filename=None, delimiter=None, **kwargs):
         super().__init__(*args, **kwargs)
 

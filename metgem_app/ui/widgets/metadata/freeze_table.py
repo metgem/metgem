@@ -112,7 +112,7 @@ class RearrangeColumnsProxymodel(QIdentityProxyModel):
 
 # https://gist.githubusercontent.com/gdementen/21a78ac56258c07dbc1072b806a5097a/raw/add074825e16086845d200509c5eaef649c237ba/frozen.py
 # https://objexx.com/labs.Efficient-Qt-Frozen-Columns-and-Rows.html
-# noinspection PyTypeChecker,PyUnresolvedReferences
+# noinspection PyTypeChecker,PyUnresolvedReferences,PyCallByClass
 class FreezeTableMixin:
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

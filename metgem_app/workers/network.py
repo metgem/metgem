@@ -36,20 +36,20 @@ class NetworkWorker(BaseWorker):
             radii = [self.radii[x] if self.radii[x] > 0 else RADIUS for x in ids]
 
             if vcount == 1:
-                l = ig.Layout([(0, 0)])
+                lyt = ig.Layout([(0, 0)])
                 border = 2 * radii[0]
             elif vcount == 2:
-                l = ig.Layout([(0, -2*radii[0]), (0, 2*radii[1])])
+                lyt = ig.Layout([(0, -2*radii[0]), (0, 2*radii[1])])
                 border = 2 * max(radii)
             else:
-                l = forceatlas2.forceatlas2_igraph_layout(graph, pos=None, sizes=radii,
-                                                          iterations=1000, weight_attr='__weight')
+                lyt = forceatlas2.forceatlas2_igraph_layout(graph, pos=None, sizes=radii,
+                                                            iterations=1000, weight_attr='__weight')
                 border = 5 * max(radii)
             
-            bb = l.bounding_box(border=border)
-            l.translate(dx-bb.left, dy-bb.top)
+            bb = lyt.bounding_box(border=border)
+            lyt.translate(dx-bb.left, dy-bb.top)
         
-            for coord, index in zip(l, ids):
+            for coord, index in zip(lyt, ids):
                 layout[index] = coord
                 
             if max_width == 0:

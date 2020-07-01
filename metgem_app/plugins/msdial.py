@@ -15,6 +15,7 @@ def get_first_xpath_result(element, xpath):
     return None
 
 
+# noinspection PyUnresolvedReferences
 class MSDial(DbSource):
 
     name = "MS-DIAL"
@@ -25,6 +26,7 @@ class MSDial(DbSource):
         items = {}
 
         for div in tree.xpath("//div[@class='boxMsp']"):
+            href = ''
             a = get_first_xpath_result(div, "div[@class='labelDownloadIcon']/a[1]")
             if a is None:
                 continue
@@ -73,6 +75,7 @@ class MSDial(DbSource):
         lipidblast_hrefs = []
         lipidblast_desc = []
         for div in tree.xpath("//div[@class='boxFork']"):
+            href = ''
             a = get_first_xpath_result(div, "div[@class='labelDownloadIcon']/a[1]")
             if a is None:
                 continue

@@ -8,6 +8,7 @@ RADIUS = 30
 FILE_EXTENSION = '.mnz'
 
 try:
+    # noinspection PyProtectedMember
     APP_PATH = sys._MEIPASS
 except AttributeError:
     APP_PATH = os.path.dirname(os.path.dirname(__file__))

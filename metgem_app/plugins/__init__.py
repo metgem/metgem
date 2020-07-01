@@ -27,7 +27,7 @@ class DbSource:
     page = None
     items_base_url = None
 
-    def get_items(self, tree: html.HtmlElement=None) -> Iterator[Tuple[str, List[str], str]]:
+    def get_items(self, tree: html.HtmlElement = None) -> Iterator[Tuple[str, List[str], str]]:
         """
 
         Args:
@@ -63,12 +63,15 @@ def register_db_source(obj):
             pass
 
 
+# noinspection PyShadowingNames
 def load_plugin(source, plugin_name):
     builtins.DbSource = DbSource
     try:
         plugin = source.load_plugin(plugin_name)
     except (IndentationError, ImportError, SyntaxError) as e:
         logger.error(str(e))
+        return
+
     # noinspection PyUnresolvedReferences
     del builtins.DbSource
 
@@ -98,7 +101,9 @@ def reload_plugins():
                                                   identifier=f"{QCoreApplication.applicationName()}_builtins")
 
     for plugin_name in builtins_source.list_plugins():
-        __loaded_plugins[plugin_name] = load_plugin(builtins_source, plugin_name)
+        plugin = load_plugin(builtins_source, plugin_name)
+        if plugin is not None:
+            __loaded_plugins[plugin_name] = plugin
 
     for plugin_name in source.list_plugins():
         plugin = load_plugin(source, plugin_name)

@@ -57,11 +57,11 @@ class ProxyModel(QSortFilterProxyModel):
         self._selection = None
 
     def lessThan(self, left: QModelIndex, right: QModelIndex):
-        l = left.data()
-        r = right.data()
+        ldata = left.data()
+        rdata = right.data()
 
-        if type(l).__module__ == type(r).__module__ == 'numpy':
-            return l.item() < r.item()
+        if type(ldata).__module__ == type(rdata).__module__ == 'numpy':
+            return ldata.item() < rdata.item()
         return super().lessThan(left, right)
 
     def filterAcceptsRow(self, source_row: int, source_parent: QModelIndex):
@@ -133,7 +133,8 @@ class NodesModel(QAbstractTableModel):
             index_mappings = {}
             first_mapping_column = infos.shape[1] + 2 if infos is not None else 2
             for index, (mapname, maplist) in enumerate(mappings.items()):
-                l = [value for key, value in header_to_column.items() for colname in maplist if str(key).startswith(colname)]
+                l = [value for key, value in header_to_column.items()
+                     for colname in maplist if str(key).startswith(colname)]
                 index_mappings[first_mapping_column+index] = l
             self.mappings = index_mappings
         else:

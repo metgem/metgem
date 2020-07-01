@@ -8,6 +8,7 @@ class AutoToolTipItemDelegateMixin:
     only if text is not fully visible
     """
 
+    # noinspection PyShadowingNames
     def helpEvent(self, event, view, option, index):
         if event is None or view is None:
             return False

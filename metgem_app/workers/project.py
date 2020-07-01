@@ -24,6 +24,7 @@ CURRENT_FORMAT_VERSION = 4
 class SpectraList(list):
 
     def __init__(self, filename):
+        super().__init__()
         self.load(filename)
 
     def __getitem__(self, index):
@@ -40,6 +41,7 @@ class SpectraList(list):
     def close(self):
         self._file.close()
 
+    # noinspection PyAttributeOutsideInit
     def load(self, filename):
         self._file = MnzFile(filename, 'r')
 

@@ -1,4 +1,6 @@
-from PyQt5.QtCore import Qt, pyqtProperty
+# noinspection PyUnresolvedReferences
+from PyQt5.QtCore import pyqtProperty
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QSizePolicy, QVBoxLayout
 
 from .toolbar import SpectrumNavigationToolbar
@@ -25,6 +27,7 @@ class SpectrumWidget(QWidget):
 
     @pyqtProperty(str)
     def spectrum1_parent(self):
+        # noinspection PyPropertyAccess
         return self.canvas.spectrum1_parent
 
     @spectrum1_parent.setter

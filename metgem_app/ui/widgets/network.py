@@ -26,6 +26,7 @@ class BaseFrame(QFrame):
     editOptionsTriggered = pyqtSignal(QWidget)
     workerReady = pyqtSignal(QObject)
 
+    # noinspection PyUnresolvedReferences
     @classmethod
     def get_subclasses(cls):
         for subclass in cls.__subclasses__():
@@ -197,10 +198,10 @@ class TSNEFrame(NetworkFrame):
         if not self._hide_isolated_nodes and self._isolated_nodes is not None:
             try:
                 scale = scene.scale()
-                l = self._layout[self._isolated_nodes]
-                x1 = l.min(axis=0)[0] - 5 * config.RADIUS
-                x2 = l.max(axis=0)[0] + 5 * config.RADIUS
-                y = l.max(axis=1)[1] - 5 * config.RADIUS
+                lyt = self._layout[self._isolated_nodes]
+                x1 = lyt.min(axis=0)[0] - 5 * config.RADIUS
+                x2 = lyt.max(axis=0)[0] + 5 * config.RADIUS
+                y = lyt.max(axis=1)[1] - 5 * config.RADIUS
                 width = 25 * scale
                 pen = QPen(scene.networkStyle().nodeBrush().color(), width, Qt.DotLine)
                 self._line = scene.addLine(x1 * scale, y * scale, x2 * scale, y * scale, pen=pen)

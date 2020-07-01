@@ -68,6 +68,7 @@ class ColorPicker(QToolButton):
         self.update_icon()
         super().showEvent(*args, **kwargs)
 
+    # noinspection PyUnusedLocal
     def on_color_selected(self, color):
         self.update_icon()
         self.save_settings()

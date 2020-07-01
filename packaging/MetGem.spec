@@ -6,12 +6,14 @@ import glob
 
 from distutils.core import run_setup
 
+# noinspection PyUnresolvedReferences
 sys.path.insert(0, os.path.join(SPECPATH, '..'))
 
 from PyInstaller.utils.hooks import qt_plugins_binaries, get_module_file_attribute
 
 # On Anaconda distributions, qt_plugins_binaries can't be found because QLibraryInfo returns wrong path
 import PyInstaller.utils.hooks.qt
+
 location = PyInstaller.utils.hooks.qt.pyqt5_library_info.location
 for k in location.keys():
     if not os.path.exists(location[k]) and "Library" in location[k]:
@@ -20,7 +22,7 @@ for k in location.keys():
 
 # if --debug flag is passed, make a debug release
 DEBUG = '--debug' in sys.argv
-        
+
 pathex = []
 binaries = []
 datas = []
@@ -30,11 +32,14 @@ hiddenimports = ['metgem_app.ui.ui_rc']
 excludes = []
 
 # Get data from setup.py
-distribution = run_setup(os.path.join(SPECPATH, "..", "setup.py"), stop_after="init") 
+# noinspection PyUnresolvedReferences
+distribution = run_setup(os.path.join(SPECPATH, "..", "setup.py"), stop_after="init")
 for f in distribution.package_data['metgem_app']:
+    # noinspection PyUnresolvedReferences
     datas.append((os.path.join(SPECPATH, "..", "metgem_app", f), os.path.join("metgem_app", os.path.dirname(f))))
 for d, files in distribution.data_files:
     for f in files:
+        # noinspection PyUnresolvedReferences
         datas.append((os.path.join(SPECPATH, "..", f), d if d else "."))
 version = distribution.get_version()
 
@@ -58,7 +63,7 @@ if sys.platform.startswith('win'):
     pathex.append(os.path.join(sys.prefix, 'Lib', 'site-packages', 'scipy', 'extra-dll'))
     pathex.append(os.path.join(sys.prefix, 'Library', 'bin'))
     pathex.append(os.path.join('C:', 'Program Files', 'OpenSSL', 'bin'))
-    
+
 # Get Qt styles dll
 binaries.extend(qt_plugins_binaries('styles', namespace='PyQt5'))
 binaries.extend(qt_plugins_binaries('platforms', namespace='PyQt5'))
@@ -69,7 +74,7 @@ binaries.extend(qt_plugins_binaries('imageformats', namespace='PyQt5'))
 hiddenimports.extend(['PyQt5.QtOpenGL'])
 if sys.platform.startswith('win'):
     binaries.extend([(os.path.join(qt_base_dir, 'bin', dll), r'PyQt5\Qt\bin')
-                      for dll in ('libEGL.dll', 'libGLESv2.dll')])
+                     for dll in ('libEGL.dll', 'libGLESv2.dll')])
 
 # Add Qt Dbus on macOS
 if sys.platform.startswith('darwin'):
@@ -77,6 +82,7 @@ if sys.platform.startswith('darwin'):
 
 # Add pybel
 try:
+    # noinspection PyPackageRequirements
     import pybel
 except ImportError:
     pass
@@ -85,6 +91,7 @@ else:
 
 # Add phate
 try:
+    # noinspection PyPackageRequirements
     import phate
 except ImportError:
     pass
@@ -93,6 +100,7 @@ else:
 
 # Add umap
 try:
+    # noinspection PyPackageRequirements
     import umap
 except ImportError:
     pass
@@ -100,11 +108,14 @@ else:
     hiddenimports.extend(['umap'])
 
 # Define path for build hooks
+# noinspection PyUnresolvedReferences
 hookspath.extend([os.path.join(SPECPATH, "hooks")])
 
 # Define path for runtime hooks
+# noinspection PyUnresolvedReferences
 runtime_hooks.extend(sorted(glob.glob(os.path.join(SPECPATH, "rthooks", "*_pyi_*.py"))))
 
+# noinspection PyUnresolvedReferences
 a = Analysis([os.path.join(SPECPATH, '..', 'MetGem')],
              pathex=pathex,
              binaries=binaries,
@@ -117,25 +128,29 @@ a = Analysis([os.path.join(SPECPATH, '..', 'MetGem')],
              win_private_assemblies=False,
              cipher=block_cipher,
              noarchive=False)
-             
+
 # Remove unused IPython data files
 a.datas = [dat for dat in a.datas if not dat[0].startswith('IPython')]
-             
+
 # Remove unused pytz data files
 a.datas = [dat for dat in a.datas if not dat[0].startswith('pytz')]
 
 # Remove matplotlib sample data
 a.datas = [dat for dat in a.datas if not ('sample_data' in dat[0] and dat[0].startswith('mpl-data'))]
-             
+
+# noinspection PyUnresolvedReferences
 pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 
 if sys.platform.startswith('win'):
+    # noinspection PyUnresolvedReferences
     icon = os.path.join(SPECPATH, 'main.ico')
 
     # Write file_version_info.txt to use it in EXE
     import re
+
     v = re.match("(\d)\.(\d)\.(\d)\w*(\d?)", version)
     v = ", ".join(a if a else '0' for a in v.groups())
+    # noinspection PyUnresolvedReferences
     version_file = os.path.join(SPECPATH, 'file_version_info.txt')
     with open(version_file, 'w') as f:
         f.write("# UTF-8\n")
@@ -183,12 +198,14 @@ if sys.platform.startswith('win'):
         f.write("    ]\n")
         f.write(")\n")
 elif sys.platform.startswith('darwin'):
+    # noinspection PyUnresolvedReferences
     icon = os.path.join(SPECPATH, 'main.icns')
     version_file = None
 else:
     icon = None
     version_file = None
 
+# noinspection PyUnresolvedReferences
 exe = EXE(pyz,
           a.scripts,
           [],
@@ -206,7 +223,8 @@ exe = EXE(pyz,
 coll_name = 'MetGem'
 if DEBUG:
     coll_name += '_debug'
-          
+
+# noinspection PyUnresolvedReferences
 coll = COLLECT(exe,
                a.binaries,
                a.zipfiles,
@@ -217,6 +235,7 @@ coll = COLLECT(exe,
                name=coll_name)
 
 if sys.platform.startswith('darwin') and not DEBUG:
+    # noinspection PyUnresolvedReferences
     app = BUNDLE(coll,
                  name='MetGem.app',
                  icon=icon,

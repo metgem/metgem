@@ -36,8 +36,8 @@ class CurrentParametersDialog(QDialog):
         self.setLayout(layout)
 
         # Set Close button as default
-        btClose = self.buttonBox.button(QDialogButtonBox.Close)
-        if btClose is not None:
-            btClose.setDefault(True)
+        bt_close = self.buttonBox.button(QDialogButtonBox.Close)
+        if bt_close is not None:
+            bt_close.setDefault(True)
 
         self.buttonBox.rejected.connect(self.reject)

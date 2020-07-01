@@ -40,8 +40,8 @@ class SettingsDialog(SettingsDialogUI, SettingsDialogBase):
         scene = NetworkScene()
         self.gvStylePreview.setScene(scene)
         nodes = scene.createNodes(range(len(POSITIONS)),
-                               labels=[f"{random.randint(100000, 900000)/1000:.4f}" for x in POSITIONS],
-                               positions=[QPointF(x, 96-y) for x, y in POSITIONS])
+                                  labels=[f"{random.randint(100000, 900000)/1000:.4f}" for _ in POSITIONS],
+                                  positions=[QPointF(x, 96-y) for x, y in POSITIONS])
         sources, dests = zip(*LINKS)
         edges = scene.createEdges(range(len(LINKS)), [nodes[x] for x in sources],
                                                      [nodes[x] for x in dests], WIDTHS)
@@ -135,4 +135,3 @@ class SettingsDialog(SettingsDialogUI, SettingsDialogBase):
             font.setPointSize(self.spinFontSize.value())
             style.setNodeFont(font)
         return style
-

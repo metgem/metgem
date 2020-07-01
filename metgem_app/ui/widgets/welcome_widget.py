@@ -8,6 +8,7 @@ from PyQt5.QtGui import QAbstractTextDocumentLayout, QPalette, QTextDocument
 from PyQt5.QtWidgets import QWidget, QListWidgetItem, QStyledItemDelegate, QStyleOptionViewItem, QApplication, QStyle
 
 try:
+    # noinspection PyUnresolvedReferences
     import feedparser
 except ImportError:
     HAS_FEEDPARSER = False

@@ -35,6 +35,7 @@ def debug(func):
     @wraps(func)
     def new_func(*args, **kwargs):
         if get_debug_flag():
+            # noinspection PyShadowingNames
             logger = logging.getLogger()
             str_args = ', '.join([repr(a) for a in args])
             str_kwargs = ', '.join([f"{k}={v}" for k, v in kwargs.items()])

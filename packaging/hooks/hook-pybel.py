@@ -1,6 +1,8 @@
+# noinspection PyUnresolvedReferences
 import openbabel
 from PyInstaller.utils.hooks import collect_data_files
 
+# noinspection PyProtectedMember
 datas = [(openbabel._openbabel.__file__, 'openbabel')]
 d = collect_data_files('openbabel')
 datas += d
