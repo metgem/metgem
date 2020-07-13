@@ -98,6 +98,19 @@
          <property name="text">
           <string>Install</string>
          </property>
+         <property name="icon">
+          <iconset resource="ui.qrc">
+           <normaloff>:/icons/images/install.svg</normaloff>:/icons/images/install.svg</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>24</width>
+           <height>24</height>
+          </size>
+         </property>
+         <property name="toolButtonStyle">
+          <enum>Qt::ToolButtonTextBesideIcon</enum>
+         </property>
         </widget>
        </item>
       </layout>
@@ -111,6 +124,19 @@
         <widget class="QToolButton" name="btUpdate">
          <property name="text">
           <string>Update</string>
+         </property>
+         <property name="icon">
+          <iconset resource="ui.qrc">
+           <normaloff>:/icons/images/update.svg</normaloff>:/icons/images/update.svg</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>24</width>
+           <height>24</height>
+          </size>
+         </property>
+         <property name="toolButtonStyle">
+          <enum>Qt::ToolButtonTextBesideIcon</enum>
          </property>
         </widget>
        </item>
@@ -188,6 +214,19 @@
         <widget class="QToolButton" name="btUninstall">
          <property name="text">
           <string>Uninstall</string>
+         </property>
+         <property name="icon">
+          <iconset resource="ui.qrc">
+           <normaloff>:/icons/images/uninstall.svg</normaloff>:/icons/images/uninstall.svg</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>24</width>
+           <height>24</height>
+          </size>
+         </property>
+         <property name="toolButtonStyle">
+          <enum>Qt::ToolButtonTextBesideIcon</enum>
          </property>
         </widget>
        </item>

@@ -1,6 +1,9 @@
 <RCC>
   <qresource prefix="icons">
     <file>images/enable_move_columns.svg</file>
+    <file>images/update.svg</file>
+    <file>images/install.svg</file>
+    <file>images/uninstall.svg</file>
     <file>images/enable_ordering.svg</file>
     <file>images/alternating_row_colors.svg</file>
     <file>images/freeze_columns.svg</file>
