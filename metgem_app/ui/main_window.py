@@ -1757,7 +1757,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
             QMessageBox.warning(self, None, "A network of this type already exists.")
             if dock is not None and dock.isClosed():
                 dock.toggleView()
-            dock.widget().gvNetwork.setFocus(Qt.ActiveWindowFocusReason)
+            widget = dock.widget()
+            widget.gvNetwork.setFocus(Qt.ActiveWindowFocusReason)
+            return widget
         except KeyError:
             widget = widget_class(self.network)
             view = widget.gvNetwork
