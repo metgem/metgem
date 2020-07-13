@@ -100,10 +100,10 @@ class StructureSvgWidget(QSvgWidget):
         self._base_height = height
 
     # noinspection PyAttributeOutsideInit
-    def setMaximumSize(self, maxw: int, maxh: int) -> None:
-        super().setMaximumSize(maxw, maxh)
-        self._base_width = maxw
-        self._base_height = maxh
+    def setMaximumSize(self, size: QSize, **kwargs):
+        super().setMaximumSize(size)
+        self._base_width = size.width()
+        self._base_height = size.height()
 
     def render_structure(self):
         # Try to render structure from InChI or SMILES
