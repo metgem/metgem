@@ -1674,8 +1674,12 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def on_view_databases_triggered(self, *args):
         path = config.SQL_PATH
         if os.path.exists(path) and os.path.isfile(path) and os.path.getsize(path) > 0:
-            dialog = ui.ViewDatabasesDialog(self, base_path=config.DATABASES_PATH)
-            dialog.open()
+            try:
+                dialog = ui.ViewDatabasesDialog(self, base_path=config.DATABASES_PATH)
+            except (sqlalchemy.exc.OperationalError, sqlalchemy.exc.DatabaseError) as e:
+                QMessageBox.warning(self, None, str(e))
+            else:
+                dialog.open()
         else:
             QMessageBox.information(self, None, "No databases found, please download one or more database first.")
 

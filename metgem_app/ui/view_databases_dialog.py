@@ -1,7 +1,7 @@
 import os
 
 from PyQt5 import uic
-from PyQt5.QtCore import (Qt)
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QAbstractItemView
 
 from ..models.databases import BanksModel, SpectraModel
@@ -110,21 +110,33 @@ class ViewDatabasesDialog(ViewDatabasesDialogUI, ViewDatabasesDialogBase):
         super().keyPressEvent(event)
 
     def update_label(self):
+        model = self.tvSpectra.model()
+        if model is None:
+            return
+
         first, last = self.visible_rows()
-        max_ = self.tvSpectra.model().rowCount()
+        max_ = model.rowCount()
         self.lblOffset.setText(f"{first+1}-{last} of {max_}")
 
     def visible_rows(self):
+        model = self.tvSpectra.model()
+        if model is not None:
+            return 0, 0
+
         first = self.tvSpectra.rowAt(0)
         last = self.tvSpectra.rowAt(self.tvSpectra.height())
         last = self.tvSpectra.rowAt(self.tvSpectra.height() - self.tvSpectra.rowHeight(last)/2)
-        max_ = self.tvSpectra.model().rowCount()
+        max_ = model.rowCount()
         last = last if last > 0 else max_
         return first, last
 
     def select_row(self, row, scroll_hint: QAbstractItemView.ScrollHint = QAbstractItemView.EnsureVisible):
-        if 0 <= row < self.tvSpectra.model().rowCount():
-            index = self.tvSpectra.model().index(row, 0)
+        model = self.tvSpectra.model()
+        if model is None:
+            return
+
+        if 0 <= row < model.rowCount():
+            index = model.index(row, 0)
             self.tvSpectra.selectRow(row)
             self.tvSpectra.scrollTo(index, scroll_hint)
 
