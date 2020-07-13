@@ -105,8 +105,12 @@ class PluginsManagerDialog(QDialog):
     def uninstall_plugins(self, plugins):
         for plugin in plugins:
             try:
-                os.remove(plugin.__file__)
-            except (FileNotFoundError, AttributeError):
+                filename = os.path.realpath(plugin.__file__)
+
+                # Remove the plugin if it's located in the user's plugins folder
+                if os.path.commonpath([PLUGINS_PATH, filename]) == PLUGINS_PATH:
+                    os.remove(filename)
+            except (FileNotFoundError, AttributeError, ValueError):
                 pass
         self.reload_plugins()
 

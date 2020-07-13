@@ -58,4 +58,4 @@ class DownloadPluginsWorker(BaseWorker):
             finally:
                 self.updated.emit(i)
 
-            return downloaded, unreachable
+        return downloaded, unreachable

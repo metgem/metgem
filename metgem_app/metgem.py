@@ -28,6 +28,11 @@ def run():
 
     app = QApplication(sys.argv)
 
+    QCoreApplication.setOrganizationDomain(DOMAIN)
+    QCoreApplication.setOrganizationName(ORGANIZATION)
+    QCoreApplication.setApplicationName(APPLICATION)
+    QCoreApplication.setApplicationVersion(FULLVERSION)
+
     from .splash import SplashScreen
     splash = SplashScreen()
     splash.show()
@@ -116,11 +121,6 @@ def run():
     splash.setValue(100)
 
     splash.showMessage("")
-
-    QCoreApplication.setOrganizationDomain(DOMAIN)
-    QCoreApplication.setOrganizationName(ORGANIZATION)
-    QCoreApplication.setApplicationName(APPLICATION)
-    QCoreApplication.setApplicationVersion(FULLVERSION)
 
     from .config import set_debug_flag, set_jupyter_flag, set_use_opengl_flag
     set_debug_flag(args.debug)

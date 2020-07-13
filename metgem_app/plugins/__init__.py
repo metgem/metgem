@@ -96,7 +96,7 @@ def reload_plugins():
                                      identifier=QCoreApplication.applicationName())
     if builtins_source is None:
         builtins_source = base.make_plugin_source(searchpath=[os.path.join(APP_PATH,
-                                                                           QCoreApplication.applicationName().lower(),
+                                                                           'metgem_app',
                                                                            'plugins')],
                                                   identifier=f"{QCoreApplication.applicationName()}_builtins")
 
@@ -108,7 +108,7 @@ def reload_plugins():
     for plugin_name in source.list_plugins():
         plugin = load_plugin(source, plugin_name)
         if plugin_name in __loaded_plugins:
-            if plugin.__version__ > __loaded_plugins[plugin_name].__version__:
+            if plugin.__version__ >= __loaded_plugins[plugin_name].__version__:
                 __loaded_plugins[plugin_name] = plugin
 
     for plugin in __loaded_plugins.values():
