@@ -73,8 +73,14 @@ class ProcessDataDialog(ProcessDataDialogBase, ProcessDataDialogUI):
         menu = QMenu()
         self.btAddView.setMenu(menu)
         set_default = True
+        extras_menu = None
         for view_class in AVAILABLE_NETWORK_WIDGETS.values():
-            action = menu.addAction('Add {} view'.format(view_class.title))
+            if view_class.extra:
+                if extras_menu is None:
+                    extras_menu = menu.addMenu("Extras")
+                action = extras_menu.addAction('Add {} view'.format(view_class.title))
+            else:
+                action = menu.addAction('Add {} view'.format(view_class.title))
             action.setIcon(self.btAddView.icon())
             action.setData(view_class)
             action.triggered.connect(self.on_add_view_triggered)

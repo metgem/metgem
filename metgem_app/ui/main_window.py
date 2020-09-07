@@ -128,8 +128,14 @@ class MainWindow(MainWindowBase, MainWindowUI):
         create_network_button = widgets.ToolBarMenu()
         create_network_button.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
         set_default = True
+        extras_menu = None
         for view_class in widgets.AVAILABLE_NETWORK_WIDGETS.values():
-            action = create_network_button.addAction('Add {} view'.format(view_class.title))
+            if view_class.extra:
+                if extras_menu is None:
+                    extras_menu = create_network_button.addMenu("Extras")
+                action = extras_menu.addAction('Add {} view'.format(view_class.title))
+            else:
+                action = create_network_button.addAction('Add {} view'.format(view_class.title))
             action.setIcon(self.actionAddNetworkView.icon())
             action.setData(view_class)
             action.triggered.connect(self.on_add_view_triggered)
