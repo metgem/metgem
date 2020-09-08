@@ -20,6 +20,7 @@ class BaseFrame(QFrame):
     name = None
     title = None
     unlockable = False
+    extra = False
     dialog_class = None
     worker_class = None
     use_edges = True
@@ -139,6 +140,7 @@ class BaseFrame(QFrame):
 class NetworkFrame(BaseFrame):
     name = 'network'
     title = 'Network'
+    extra = False
     unlockable = True
     dialog_class = EditNetworkOptionsDialog
     worker_class = workers.NetworkWorker
@@ -158,6 +160,7 @@ class NetworkFrame(BaseFrame):
 class TSNEFrame(NetworkFrame):
     name = 'tsne'
     title = 't-SNE'
+    extra = False
     unlockable = False
     dialog_class = EditTSNEOptionsDialog
     worker_class = workers.TSNEWorker
@@ -223,6 +226,7 @@ class TSNEFrame(NetworkFrame):
 class MDSFrame(TSNEFrame):
     name = 'mds'
     title = 'MDS'
+    extra = True
     unlockable = False
     dialog_class = EditMDSOptionsDialog
     worker_class = workers.MDSWorker
@@ -235,6 +239,7 @@ class MDSFrame(TSNEFrame):
 class UMAPFrame(TSNEFrame):
     name = 'umap'
     title = 'UMAP'
+    extra = True
     unlockable = False
     dialog_class = EditUMAPOptionsDialog
     worker_class = workers.UMAPWorker
@@ -247,6 +252,7 @@ class UMAPFrame(TSNEFrame):
 class IsomapFrame(TSNEFrame):
     name = 'isomap'
     title = 'Isomap'
+    extra = True
     unlockable = False
     dialog_class = EditIsomapOptionsDialog
     worker_class = workers.IsomapWorker
@@ -259,6 +265,7 @@ class IsomapFrame(TSNEFrame):
 class PHATEFrame(TSNEFrame):
     name = 'phate'
     title = 'PHATE'
+    extra = True
     unlockable = False
     dialog_class = EditPHATEOptionsDialog
     worker_class = workers.PHATEWorker
