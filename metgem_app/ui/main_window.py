@@ -3,6 +3,7 @@ import csv
 import io
 import json
 import os
+import time
 import zipfile
 from typing import List, Callable, Dict, Union, Tuple
 
@@ -498,25 +499,26 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.dock_nodes.toggleView(True)
 
             workers = []
-            for name, value in layouts.items():
-                try:
-                    widget_class = widgets.AVAILABLE_NETWORK_WIDGETS[name]
-                except KeyError:
-                    pass
-                else:
-                    widget = self.add_network_widget(widget_class)
-                    if widget is not None:
-                        layout = value.get('layout')
-                        self.apply_layout(widget, layout, value.get('isolated_nodes'))
-                        if layout is not None:
-                            colors = value.get('colors', {})
-                            colors = [QColor(colors.get(str(i), '')) for i in range(layout.shape[0])]
-                        else:
-                            colors = []
-                        worker = widget.create_draw_worker(compute_layouts=False,
-                                                           colors=colors,
-                                                           radii=value.get('radii', []))
-                        workers.append(worker)
+            for name, val in layouts.items():
+                for id_, value in val.items():
+                    try:
+                        widget_class = widgets.AVAILABLE_NETWORK_WIDGETS[name]
+                    except KeyError:
+                        pass
+                    else:
+                        widget = self.add_network_widget(widget_class, id_)
+                        if widget is not None:
+                            layout = value.get('layout')
+                            self.apply_layout(widget, layout, value.get('isolated_nodes'))
+                            if layout is not None:
+                                colors = value.get('colors', {})
+                                colors = [QColor(colors.get(str(i), '')) for i in range(layout.shape[0])]
+                            else:
+                                colors = []
+                            worker = widget.create_draw_worker(compute_layouts=False,
+                                                               colors=colors,
+                                                               radii=value.get('radii', []))
+                            workers.append(worker)
 
             if workers:
                 return workers
@@ -1555,18 +1557,24 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 if use_metadata:
                     self._workers.append(self.prepare_read_metadata_worker(metadata_file, metadata_options))
                 if 'network' in views:
-                    self._workers.append(lambda _: self.prepare_generate_network_worker())
+                    # TODO: options.network is a set but we support only one network for now
+                    network_options = list(options.network.values())[0]
+                    self._workers.append(lambda _: self.prepare_generate_network_worker(network_options))
 
                 for name in views:
-                    try:
-                        widget_class = widgets.AVAILABLE_NETWORK_WIDGETS[name]
-                    except KeyError:
-                        pass
-                    else:
-                        if widget_class is not None:
-                            widget = self.add_network_widget(widget_class)
-                            if widget is not None:
-                                self._workers.append(lambda _, w=widget: w.create_draw_worker())
+                    if name not in options:
+                        continue
+
+                    for id_, opts in options[name].items():
+                        try:
+                            widget_class = widgets.AVAILABLE_NETWORK_WIDGETS[name]
+                        except KeyError:
+                            pass
+                        else:
+                            if widget_class is not None:
+                                widget = self.add_network_widget(widget_class, id_)
+                                if widget is not None:
+                                    self._workers.append(lambda _, w=widget, opt=opts: w.create_draw_worker(options=opt))
 
                 self._workers.append(self.update_status_widgets)
 
@@ -1617,6 +1625,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
             widget_class = action.data()
             if widget_class is not None:
                 options = self.network.options.get(widget_class.name, {})
+                if options:
+                    newest_key = sorted(options.keys())[-1]
+                    options = options[newest_key]
                 dialog = widget_class.dialog_class(self, options=options)
 
                 def add_view(result):
@@ -1624,13 +1635,15 @@ class MainWindow(MainWindowBase, MainWindowUI):
                         # noinspection PyShadowingNames
                         options = dialog.getValues()
                         widget = self.add_network_widget(widget_class)
-                        self.network.options[widget.name] = options
+                        if widget.name not in self.network.options:
+                            self.network.options[widget.name] = {}
+                        self.network.options[widget.name][widget.id] = options
                         self.has_unsaved_changes = True
 
                         if widget is not None:
                             if widget.name == 'network':
-                                self._workers.append(lambda _: self.prepare_generate_network_worker())
-                            self._workers.append(widget.create_draw_worker)
+                                self._workers.append(lambda _: self.prepare_generate_network_worker(options))
+                            self._workers.append(lambda _, w=widget: w.create_draw_worker(options=options))
                             self._workers.start()
 
                 dialog.finished.connect(add_view)
@@ -1640,21 +1653,26 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def on_edit_options_triggered(self, widget):
         if hasattr(self.network, 'scores'):
             options = self.network.options.get(widget.name, {})
+            if options is not None:
+                options = options.get(widget.id)
             dialog = widget.dialog_class(self, options=options)
 
             def do_edit(result):
                 if result == QDialog.Accepted:
                     new_options = dialog.getValues()
                     if new_options != options:
-                        self.network.options[widget.name] = new_options
+                        if widget.name not in self.network.options:
+                            self.network.options[widget.name] = {}
+                        self.network.options[widget.name][widget.id] = new_options
 
                         self.has_unsaved_changes = True
 
                         widget.reset_layout()
                         if widget.name == 'network':
                             self._network.interactions = None
-                            self._workers.append(lambda _: self.prepare_generate_network_worker(keep_vertices=True))
-                        self._workers.append(widget.create_draw_worker)
+                            self._workers.append(lambda _: self.prepare_generate_network_worker(new_options,
+                                                                                                keep_vertices=True))
+                        self._workers.append(lambda _, w=widget: w.create_draw_worker(options=new_options))
                         self._workers.start()
                         self.update_search_menu()
 
@@ -1761,41 +1779,45 @@ class MainWindow(MainWindowBase, MainWindowUI):
             with utils.SignalBlocker(scene):
                 scene.setNodesSelection(sel)
 
-    def add_network_widget(self, widget_class):
-        try:
-            dock = self.network_docks[widget_class.name]
-            QMessageBox.warning(self, None, "A network of this type already exists.")
-            if dock is not None and dock.isClosed():
-                dock.toggleView()
-            widget = dock.widget()
-            widget.gvNetwork.setFocus(Qt.ActiveWindowFocusReason)
-            return widget
-        except KeyError:
-            widget = widget_class(self.network)
-            view = widget.gvNetwork
-            scene = view.scene()
-            scene.setNetworkStyle(self.style)
-            scene.selectionChanged.connect(self.on_scene_selection_changed)
-            view.focusedIn.connect(lambda: self.on_scene_selection_changed(update_view=False))
-            view.setContextMenuPolicy(Qt.CustomContextMenu)
-            view.customContextMenuRequested.connect(self.on_view_contextmenu)
-            scene.pieChartsVisibilityChanged.connect(
-                lambda visibility: self.actionSetPieChartsVisibility.setChecked(visibility))
-            widget.btOptions.clicked.connect(lambda: self.on_edit_options_triggered(widget))
+    def add_network_widget(self, widget_class, id_=None):
+        if widget_class.name == 'network':
+            try:
+                dock = self.network_docks[widget_class.name]
+                QMessageBox.warning(self, None, "A network of this type already exists.")
+                if dock is not None and dock.isClosed():
+                    dock.toggleView()
+                widget = dock.widget()
+                widget.gvNetwork.setFocus(Qt.ActiveWindowFocusReason)
+                return widget
+            except KeyError:
+                pass
 
-            dock = CDockWidget(widget.title)
-            dock.setWidget(widget)
-            self.dock_manager.addDockWidget(LeftDockWidgetArea, dock, self.dock_placeholder.dockAreaWidget())
-            dock.toggleView(False)
-            self.dock_placeholder.toggleView(False)
-            dock.closed.connect(self._docks_closed_signals_grouper.accumulate)
-            dock.toggleView(True)
-            self.dock_manager.addToggleViewActionToMenu(dock.toggleViewAction())
-            self.network_docks[widget_class.name] = dock
-            # noinspection PyAttributeOutsideInit
-            self._default_state = self.dock_manager.saveState()
+        widget = widget_class(self.network)
+        widget.id = id_ if id_ is not None else time.time_ns()
+        view = widget.gvNetwork
+        scene = view.scene()
+        scene.setNetworkStyle(self.style)
+        scene.selectionChanged.connect(self.on_scene_selection_changed)
+        view.focusedIn.connect(lambda: self.on_scene_selection_changed(update_view=False))
+        view.setContextMenuPolicy(Qt.CustomContextMenu)
+        view.customContextMenuRequested.connect(self.on_view_contextmenu)
+        scene.pieChartsVisibilityChanged.connect(
+            lambda visibility: self.actionSetPieChartsVisibility.setChecked(visibility))
+        widget.btOptions.clicked.connect(lambda: self.on_edit_options_triggered(widget))
 
-            return widget
+        dock = CDockWidget(widget.title)
+        dock.setWidget(widget)
+        self.dock_manager.addDockWidget(LeftDockWidgetArea, dock, self.dock_placeholder.dockAreaWidget())
+        dock.toggleView(False)
+        self.dock_placeholder.toggleView(False)
+        dock.closed.connect(self._docks_closed_signals_grouper.accumulate)
+        dock.toggleView(True)
+        self.dock_manager.addToggleViewActionToMenu(dock.toggleViewAction())
+        self.network_docks[widget.id] = dock
+        # noinspection PyAttributeOutsideInit
+        self._default_state = self.dock_manager.saveState()
+
+        return widget
 
     @debug
     def on_network_widget_closed(self, docks):
@@ -1819,7 +1841,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             for dock in docks:
                 self.dock_manager.viewMenu().removeAction(dock.toggleViewAction())
                 self.dock_manager.removeDockWidget(dock)
-                self.network_docks.pop(dock.widget().name)
+                self.network_docks.pop(dock.widget().id)
             self.has_unsaved_changes = True
 
     @debug
@@ -2197,7 +2219,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         return worker
 
     @debug
-    def prepare_generate_network_worker(self, keep_vertices=False):
+    def prepare_generate_network_worker(self, options, keep_vertices=False):
         if self._network.interactions is not None:
             return
 
@@ -2206,7 +2228,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             mzs = np.zeros(self._network.scores.shape[:1], dtype=int)
 
         worker = workers.GenerateNetworkWorker(self._network.scores, mzs, self._network.graph,
-                                               self._network.options.network, keep_vertices=keep_vertices)
+                                               options, keep_vertices=keep_vertices)
 
         # noinspection PyShadowingNames
         def store_interactions(worker: workers.GenerateNetworkWorker):
@@ -2300,10 +2322,20 @@ class MainWindow(MainWindowBase, MainWindowUI):
             columns = [c for c in columns if c in df.columns]
             df = df.reindex(columns=columns)
 
+        layouts = {}
+        for d in self.network_docks.values():
+            widget = d.widget()
+            name = widget.name
+            id_ = widget.id
+            data = widget.get_layout_data()
+            if name not in layouts:
+                layouts[name] = {id_: data}
+            else:
+                layouts[name][id_] = data
+
         worker = workers.SaveProjectWorker(fname, self.network.graph, self.network,
                                            df, self.network.options,
-                                           layouts={d.widget().name: d.widget().get_layout_data() for d in
-                                                    self.network_docks.values()},
+                                           layouts=layouts,
                                            original_fname=self.fname)
         worker.finished.connect(process_finished)
         worker.error.connect(error)

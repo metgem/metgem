@@ -1,5 +1,6 @@
 import os
 import zipfile
+import time
 
 import numpy as np
 import pandas as pd
@@ -18,7 +19,15 @@ from ..workers import (NetworkVisualizationOptions, TSNEVisualizationOptions,
                        CosineComputationOptions, UMAPVisualizationOptions)
 from ..workers.databases import StandardsResult
 
-CURRENT_FORMAT_VERSION = 4
+CURRENT_FORMAT_VERSION = 5
+
+DEFAULT_OPTIONS = {
+    'cosine': CosineComputationOptions(),
+    'network': NetworkVisualizationOptions(),
+    'tsne': TSNEVisualizationOptions(),
+    'mds': MDSVisualizationOptions(),
+    'umap': UMAPVisualizationOptions(),
+}
 
 
 class SpectraList(list):
@@ -73,7 +82,7 @@ class LoadProjectWorker(BaseWorker):
                                                   + "This file format is not supported anymore.\n"
                                                   + "Please generate networks from raw data again")
 
-                elif version in (2, 3, CURRENT_FORMAT_VERSION):
+                elif version in (2, 3, 4, CURRENT_FORMAT_VERSION):
                     # Create network object
                     network = Network()
                     network.lazyloaded = True
@@ -154,18 +163,36 @@ class LoadProjectWorker(BaseWorker):
 
                     # Load options
                     network.options = AttrDict(fid['0/options.json'])
-                    for opt, key in ((CosineComputationOptions(), 'cosine'),
-                                     (NetworkVisualizationOptions(), 'network'),
-                                     (TSNEVisualizationOptions(), 'tsne'),
-                                     (MDSVisualizationOptions(), 'mds'),
-                                     (UMAPVisualizationOptions(), 'umap')):
-                        if key in network.options:
-                            opt.update(network.options[key])
-                        network.options[key] = opt
+                    if version < 5:
+                        # Prior to version 5, only one view of each type can be added
+                        # So we need to convert options keys to add creation time (unique identifier)
+                        for key in list(network.options.keys()):
+                            if key != 'cosine' and not isinstance(network.options[key], dict):
+                                network.options[key] = {time.time_ns(): network.options[key]}
+                                del network.options[key]
+
+                    # Try to fix possible missing values in options
+                    for key in network.options.keys():
+                        try:
+                            default_opt = DEFAULT_OPTIONS[key]
+                        except KeyError:
+                            continue
+                        else:
+                            if key == 'cosine':
+                                opt = default_opt.copy()
+                                opt.update(network.options[key])
+                                network.options[key] = opt
+                            else:
+                                for k, val in network.options[key].items():
+                                    if isinstance(val, dict):
+                                        opt = default_opt.copy()
+                                        opt.update(val)
+                                        network.options[key][k] = opt
+
                     # Prior to version 3, max_connected_nodes value was set 1000 but ignored
                     # Set it to 0 to keep the same behavior
                     if version < 3:
-                        network.options.network.max_connected_nodes = 0
+                        network.options.network['max_connected_nodes'] = 0
 
                     if self.isStopped():
                         self.canceled.emit()
@@ -200,29 +227,31 @@ class LoadProjectWorker(BaseWorker):
 
                     # Load layouts
                     layouts = {}
-                    if version <= 3:
+                    if version < 4:
                         colors = graph.vs['__color'] if '__color' in graph.vs.attributes() else {}
                         if isinstance(colors, list):
                             colors = {str(i): c for i, c in enumerate(colors) if c is not None}
                         radii = graph.vs['__size'] if '__size' in graph.vs.attributes() else {}
 
-                        layouts['network'] = {
-                                              'layout': fid['0/network_layout'],
-                                              # Prior to version 4, colors of nodes were stored as graph attributes
-                                              'colors': colors,
-                                              'radii': radii
-                                             }
+                        layouts['network'][time.time_ns()] = {
+                              'layout': fid['0/network_layout'],
+                              # Prior to version 4, colors of nodes were stored as graph attributes
+                              'colors': colors,
+                              'radii': radii
+                             }
 
                         if self.isStopped():
                             self.canceled.emit()
                             return
 
-                        layouts['tsne'] = {'layout': fid['0/tsne_layout'],
-                                           'colors': colors,
-                                           'radii': radii
-                                           }
+                        id_ = time.time_ns()
+                        layouts['tsne'][id_] = {
+                            'layout': fid['0/tsne_layout'],
+                            'colors': colors,
+                            'radii': radii
+                           }
                         try:
-                            layouts['tsne']['isolated_nodes'] = fid['0/tsne_isolated_nodes']
+                            layouts['tsne'][id_]['isolated_nodes'] = fid['0/tsne_isolated_nodes']
                         except KeyError:
                             pass
 
@@ -232,19 +261,27 @@ class LoadProjectWorker(BaseWorker):
                     else:
                         layouts = {}
                         names = fid['0/layouts.json']
-                        for name in names:
-                            key = '0/layouts/{name}'.format(name=name)
-                            layout = {}
-                            for k in fid.keys():
-                                if k.startswith(key):
-                                    x = k[len(key)+1:]
-                                    if x.startswith('colors'):
-                                        layout[x] = {k: QColor(v) for k, v in fid[k].items()}
-                                    elif x.startswith('radii'):
-                                        layout[x] = fid[k].tolist()
-                                    else:
-                                        layout[x] = fid[k]
-                            layouts[name] = layout
+                        if isinstance(names, list):
+                            # In version 4, layouts were stored as a list (only one layout per type).
+                            names = {n: {time.time_ns()} for n in names}
+
+                        for name, val in names.items():
+                            if name not in layouts:
+                                layouts[name] = {}
+
+                            for id_ in val:
+                                key = f'0/layouts/{name}' if version < 5 else f'0/layouts/{name}/{id_}'
+                                layout = {}
+                                for k in fid.keys():
+                                    if k.startswith(key):
+                                        x = k[len(key)+1:]
+                                        if x.startswith('colors'):
+                                            layout[x] = {k: QColor(v) for k, v in fid[k].items()}
+                                        elif x.startswith('radii'):
+                                            layout[x] = fid[k].tolist()
+                                        else:
+                                            layout[x] = fid[k]
+                                layouts[name][id_] = layout
 
                     return network, layouts
                 else:
@@ -282,17 +319,20 @@ class SaveProjectWorker(BaseWorker):
         gxl = writer.tostring(self.graph).decode()
 
         # Create dict for saving
-        d = {'0/scores': getattr(self.network, 'scores', np.array([])),
-             '0/interactions': getattr(self.network, 'interactions', np.array([])),
-             '0/infos': self.infos,
-             '0/graph.graphml': gxl,
-             '0/options.json': self.options,
-             '0/layouts.json': list(self.layouts.keys())}
+        d = {
+            '0/scores': getattr(self.network, 'scores', np.array([])),
+            '0/interactions': getattr(self.network, 'interactions', np.array([])),
+            '0/infos': self.infos,
+            '0/graph.graphml': gxl,
+            '0/options.json': self.options,
+            '0/layouts.json': {k: list(v.keys()) for k, v in self.layouts.items()}
+            }
 
-        for name, layout in self.layouts.items():
-            key = '0/layouts/{name}'.format(name=name)
-            for k, v in layout.items():
-                d['{key}/{k}'.format(key=key, k=k)] = v
+        for name, val in self.layouts.items():
+            for id_, layout in val.items():
+                key = f'0/layouts/{name}/{id_}'
+                for k, v in layout.items():
+                    d['{key}/{k}'.format(key=key, k=k)] = v
 
         db_results = getattr(self.network, 'db_results', None)
         if db_results is not None:

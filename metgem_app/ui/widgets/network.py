@@ -18,7 +18,9 @@ from ..edit_options_dialog import EditPHATEOptionsDialog
 
 class BaseFrame(QFrame):
     name = None
+    id = None
     title = None
+    extra = False
     unlockable = False
     dialog_class = None
     worker_class = None
@@ -95,13 +97,13 @@ class BaseFrame(QFrame):
                 'radii': np.array(scene.nodesRadii(), dtype=np.uint8)
                }
 
-    def create_worker(self):
+    def create_worker(self, options=None):
         raise NotImplementedError
 
     def set_style(self, style):
         self.gvNetwork.scene().setNetworkStyle(style)
 
-    def create_draw_worker(self, compute_layouts=True, colors=[], radii=[]):
+    def create_draw_worker(self, compute_layouts=True, colors=[], radii=[], options=None):
         scene = self.gvNetwork.scene()
         if self.use_edges:
             scene.removeAllEdges()
@@ -127,7 +129,7 @@ class BaseFrame(QFrame):
                 if computed_layout is not None:
                     self.apply_layout(computed_layout, self._isolated_nodes, self._hide_isolated_nodes)
 
-            worker = self.create_worker()
+            worker = self.create_worker(options)
             worker.finished.connect(process_finished)
         else:
             worker = workers.GenericWorker(self.apply_layout, self._layout, self._isolated_nodes,
@@ -139,6 +141,7 @@ class BaseFrame(QFrame):
 class NetworkFrame(BaseFrame):
     name = 'network'
     title = 'Network'
+    extra = False
     unlockable = True
     dialog_class = EditNetworkOptionsDialog
     worker_class = workers.NetworkWorker
@@ -151,13 +154,14 @@ class NetworkFrame(BaseFrame):
                 del g.es[attr]
         return g
 
-    def create_worker(self):
+    def create_worker(self, options=None):
         return self.worker_class(self._network.graph, self.gvNetwork.scene().nodesRadii())
 
 
-class TSNEFrame(NetworkFrame):
+class TSNEFrame(BaseFrame):
     name = 'tsne'
     title = 't-SNE'
+    extra = False
     unlockable = False
     dialog_class = EditTSNEOptionsDialog
     worker_class = workers.TSNEWorker
@@ -212,8 +216,8 @@ class TSNEFrame(NetworkFrame):
         g.delete_edges(g.es)  # in a t-SNE layout, edges does not makes any sense
         return g
 
-    def create_worker(self):
-        return self.worker_class(self._network.scores, self._network.options.tsne)
+    def create_worker(self, options):
+        return self.worker_class(self._network.scores, options)
 
     def set_style(self, style):
         super().set_style(style)
@@ -223,49 +227,41 @@ class TSNEFrame(NetworkFrame):
 class MDSFrame(TSNEFrame):
     name = 'mds'
     title = 'MDS'
+    extra = True
     unlockable = False
     dialog_class = EditMDSOptionsDialog
     worker_class = workers.MDSWorker
     use_edges = False
 
-    def create_worker(self):
-        return self.worker_class(self._network.scores, self._network.options.mds)
-
 
 class UMAPFrame(TSNEFrame):
     name = 'umap'
     title = 'UMAP'
+    extra = True
     unlockable = False
     dialog_class = EditUMAPOptionsDialog
     worker_class = workers.UMAPWorker
     use_edges = False
 
-    def create_worker(self):
-        return self.worker_class(self._network.scores, self._network.options.umap)
-
 
 class IsomapFrame(TSNEFrame):
     name = 'isomap'
     title = 'Isomap'
+    extra = True
     unlockable = False
     dialog_class = EditIsomapOptionsDialog
     worker_class = workers.IsomapWorker
     use_edges = False
 
-    def create_worker(self):
-        return self.worker_class(self._network.scores, self._network.options.isomap)
-
 
 class PHATEFrame(TSNEFrame):
     name = 'phate'
     title = 'PHATE'
+    extra = True
     unlockable = False
     dialog_class = EditPHATEOptionsDialog
     worker_class = workers.PHATEWorker
     use_edges = False
-
-    def create_worker(self):
-        return self.worker_class(self._network.scores, self._network.options.phate)
 
 
 AVAILABLE_NETWORK_WIDGETS = {obj.name: obj for obj in BaseFrame.get_subclasses()}

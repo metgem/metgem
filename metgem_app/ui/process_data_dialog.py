@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 
 from PyQt5 import uic
 from PyQt5.QtCore import Qt, QDir, QSize
@@ -33,6 +34,7 @@ class ProcessDataDialog(ProcessDataDialogBase, ProcessDataDialogUI):
 
     """
     NameRole = Qt.UserRole + 1
+    IdRole = Qt.UserRole + 2
 
     def __init__(self, *args, options=None, **kwargs):
         super().__init__(*args, **kwargs)
@@ -114,24 +116,30 @@ class ProcessDataDialog(ProcessDataDialogBase, ProcessDataDialogUI):
         action = self.sender()
         widget_class = action.data()
         if widget_class is not None:
-            for row in range(self.lstViews.count()):
-                item = self.lstViews.item(row)
-                if item.data(ProcessDataDialog.NameRole) == widget_class.name:
-                    QMessageBox.warning(self, None, "A network of this type already exists.")
-                    return
+            # TODO: ALlow multiple networks
+            if widget_class.name == 'network':
+                for row in range(self.lstViews.count()):
+                    item = self.lstViews.item(row)
+                    if item.data(ProcessDataDialog.NameRole) == widget_class.name:
+                        QMessageBox.warning(self, None, "A network of this type already exists.")
+                        return
 
-            options = self._options.get(widget_class.name, {})
+            options = self._options.get(widget_class.name, {}).get(widget_class.id, {})
             dialog = widget_class.dialog_class(self, options=options)
 
             # noinspection PyShadowingNames
             def add_view(result):
                 if result == QDialog.Accepted:
                     options = dialog.getValues()
-                    self._options[widget_class.name] = options
+                    id_ = time.time_ns()
+                    if widget_class.name not in self._options:
+                        self._options[widget_class.name] = {}
+                    self._options[widget_class.name][id_] = options
                     item = QListWidgetItem(widget_class.title)
                     item.setSizeHint(QSize(0, 50))
                     item.setTextAlignment(Qt.AlignCenter)
                     item.setData(ProcessDataDialog.NameRole, widget_class.name)
+                    item.setData(ProcessDataDialog.IdRole, id_)
                     self.lstViews.addItem(item)
 
             dialog.finished.connect(add_view)
@@ -150,19 +158,20 @@ class ProcessDataDialog(ProcessDataDialogBase, ProcessDataDialogUI):
                 return
 
         name = item.data(ProcessDataDialog.NameRole)
+        id_ = item.data(ProcessDataDialog.IdRole)
         try:
             widget_class = AVAILABLE_NETWORK_WIDGETS[name]
         except KeyError:
             return
         else:
             if widget_class is not None:
-                options = self._options.get(name, {})
+                options = self._options.get(name, {}).get(id_, {})
                 dialog = widget_class.dialog_class(self, options=options)
 
                 def set_options(result):
                     if result == QDialog.Accepted:
                         options = dialog.getValues()
-                        self._options[widget_class.name] = options
+                        self._options[name][id_] = options
 
                 dialog.finished.connect(set_options)
                 dialog.open()
@@ -243,6 +252,6 @@ class ProcessDataDialog(ProcessDataDialogBase, ProcessDataDialogUI):
 
         metadata_file = self.editMetadataFile.text() if os.path.isfile(self.editMetadataFile.text()) else None
         self._options.cosine = self.cosine_widget.getValues()
-        views = [self.lstViews.item(row).data(ProcessDataDialog.NameRole) for row in range(self.lstViews.count())]
+        views = {self.lstViews.item(row).data(ProcessDataDialog.NameRole) for row in range(self.lstViews.count())}
         return (self.editProcessFile.text(), self.gbMetadata.isChecked(),  metadata_file,
                 self._metadata_options, self._options, views)
