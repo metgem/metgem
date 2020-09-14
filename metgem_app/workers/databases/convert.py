@@ -33,9 +33,9 @@ class ConvertDatabasesWorker(BaseWorker):
 
                     try:
                         db.add_bank(filenames, bank_name=origin + ' - ' + name)
-                    except OperationalError as e:
+                    except (OperationalError, NotImplementedError) as e:
                         self.error.emit(e)
-                        return False
+                        return
 
                     self.updated.emit(i)
                     converted[origin].add(name)
