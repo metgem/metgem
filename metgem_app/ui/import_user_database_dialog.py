@@ -42,17 +42,18 @@ class ImportUserDatabaseDialog(ImportUserDatabaseDialogBase, ImportUserDatabaseD
         self._error_palette.setColor(QPalette.Base, QColor(Qt.red).lighter(150))
 
         # Set completer for input files
-        completer = QCompleter(self.editInputFile)
-        if sys.platform.startswith('win'):
-            completer.setCaseSensitivity(Qt.CaseInsensitive)
-        model = QFileSystemModel(completer)
-        model.setFilter(QDir.AllDirs | QDir.Files | QDir.NoDotAndDotDot)
-        model.setNameFilterDisables(False)
-        model.setNameFilters(['*.mgf', '*.msp'])
-        model.setRootPath(QDir.currentPath())
-        completer.setModel(model)
+        # TODO: completer makes the dialog freeze for seconds on show, disable it until fixed
+        # completer = QCompleter(self.editInputFile)
+        # if sys.platform.startswith('win'):
+        #     completer.setCaseSensitivity(Qt.CaseInsensitive)
+        # model = QFileSystemModel(completer)
+        # model.setFilter(QDir.AllDirs | QDir.Files | QDir.NoDotAndDotDot)
+        # model.setNameFilterDisables(False)
+        # model.setNameFilters(['*.mgf', '*.msp'])
+        # model.setRootPath(QDir.currentPath())
+        # completer.setModel(model)
         self.editInputFile.setText(QDir.currentPath())
-        self.editInputFile.setCompleter(completer)
+        # self.editInputFile.setCompleter(completer)
 
         # Connect events
         self.btBrowseInputFile.clicked.connect(self.browse)
