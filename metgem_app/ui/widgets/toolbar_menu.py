@@ -1,3 +1,5 @@
+from typing import Union
+
 from PyQt5.QtWidgets import QToolButton, QMenu, QAction
 
 
@@ -11,5 +13,5 @@ class ToolBarMenu(QToolButton):
     def addAction(self, action: QAction) -> QAction:
         return self.menu().addAction(action)
 
-    def addMenu(self, *args, **kwargs) -> QMenu:
+    def addMenu(self, *args, **kwargs) -> Union[QAction, QMenu]:
         return self.menu().addMenu(*args, **kwargs)

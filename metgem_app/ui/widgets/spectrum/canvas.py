@@ -252,7 +252,7 @@ class SpectrumCanvas(BaseCanvas):
                 f.write("BEGIN IONS\n")
                 if pepmass is not None:
                     f.write(f"PEPMASS={pepmass}\n")
-                for row in data:
+                for row in np.sort(data, axis=0):
                     f.write(f"{row[MZ]}\t{row[INTENSITY]}\n")
                 f.write("END IONS\n")
                 f.write("\n")
@@ -272,7 +272,7 @@ class SpectrumCanvas(BaseCanvas):
                 num_peaks = len(data)
                 if num_peaks > 0:
                     f.write(f"Num Peaks: {num_peaks}\n")
-                for row in data:
+                for row in np.sort(data, axis=0):
                     f.write(f"{row[MZ]}\t{row[INTENSITY]}\n")
                 f.write("\n")
 

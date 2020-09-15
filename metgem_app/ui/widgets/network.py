@@ -22,6 +22,7 @@ class BaseFrame(QFrame):
     title = None
     extra = False
     unlockable = False
+    extra = False
     dialog_class = None
     worker_class = None
     use_edges = True
