@@ -49,18 +49,19 @@ class ProcessDataDialog(ProcessDataDialogBase, ProcessDataDialogUI):
         self._error_palette.setColor(QPalette.Base, QColor(Qt.red).lighter(150))
 
         # Set completer for input files
-        for edit in (self.editProcessFile, self.editMetadataFile):
-            completer = QCompleter(edit)
-            if sys.platform.startswith('win'):
-                completer.setCaseSensitivity(Qt.CaseInsensitive)
-            model = QFileSystemModel(completer)
-            model.setFilter(QDir.AllDirs | QDir.Files | QDir.NoDotAndDotDot)
-            if edit == self.editProcessFile:
-                model.setNameFilterDisables(False)
-                model.setNameFilters(['*.mgf', '*.msp'])
-            model.setRootPath(QDir.currentPath())
-            completer.setModel(model)
-            edit.setCompleter(completer)
+        # TODO: Completer makes the dialog freeze for seconds on show, disable it until fixed
+        # for edit in (self.editProcessFile, self.editMetadataFile):
+        #     completer = QCompleter(edit)
+        #     if sys.platform.startswith('win'):
+        #         completer.setCaseSensitivity(Qt.CaseInsensitive)
+        #     model = QFileSystemModel(completer)
+        #     model.setFilter(QDir.AllDirs | QDir.Files | QDir.NoDotAndDotDot)
+        #     if edit == self.editProcessFile:
+        #         model.setNameFilterDisables(False)
+        #         model.setNameFilters(['*.mgf', '*.msp'])
+        #     model.setRootPath(QDir.currentPath())
+        #     completer.setModel(model)
+        #     edit.setCompleter(completer)
 
         # Add cosine options widget
         self.cosine_widget = CosineOptionsWidget()
