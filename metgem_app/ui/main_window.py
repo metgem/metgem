@@ -1631,6 +1631,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
                             if widget.name == 'network':
                                 self._workers.append(lambda _: self.prepare_generate_network_worker())
                             self._workers.append(widget.create_draw_worker)
+                            if widget.name == 'network':
+                                self._workers.append(lambda _: self.update_status_widgets())
                             self._workers.start()
 
                 dialog.finished.connect(add_view)
