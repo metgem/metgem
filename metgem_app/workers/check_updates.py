@@ -20,7 +20,7 @@ class CheckUpdatesWorker(BaseWorker):
             return False
 
         try:
-            r = requests.get(CheckUpdatesWorker.URL, timeout=.1)
+            r = requests.get(CheckUpdatesWorker.URL, timeout=.5)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
             return False
 
