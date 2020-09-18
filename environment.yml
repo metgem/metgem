@@ -12,7 +12,7 @@ dependencies:
     - scikit-learn>=0.19
     - scipy>=1.0.0
     - qtconsole>=4.3
-    - matplotlib>=2.2
+    - matplotlib>=2.2,<=3.2
     - requests>=2.18
     - sqlalchemy>=1.2
     - pyarrow>=0.15.1
