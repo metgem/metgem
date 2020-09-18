@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+DOMAIN = "CNRS"
+ORGANIZATION = "ICSN"
+APPLICATION = "MetGem"
+
 
 # noinspection PyUnresolvedReferences
 def run():
@@ -11,7 +15,8 @@ def run():
     # Make sure decimal separator is dot
     os.environ['LC_NUMERIC'] = 'C'
 
-    from .version import DOMAIN, ORGANIZATION, APPLICATION, FULLVERSION
+    from ._version import get_versions
+    VERSION = get_versions()['version']
 
     parser = argparse.ArgumentParser(description=f'Launch {APPLICATION}.')
     parser.add_argument('fname', type=str, nargs='?', help="A project to open")
@@ -31,10 +36,11 @@ def run():
     QCoreApplication.setOrganizationDomain(DOMAIN)
     QCoreApplication.setOrganizationName(ORGANIZATION)
     QCoreApplication.setApplicationName(APPLICATION)
-    QCoreApplication.setApplicationVersion(FULLVERSION)
+    QCoreApplication.setApplicationVersion(VERSION)
 
     from .splash import SplashScreen
     splash = SplashScreen()
+    splash.setVersion(VERSION)
     splash.show()
 
     splash.showMessage("Loading numpy library...")

@@ -1,0 +1,20 @@
+include versioneer.py
+include metgem_app/_version.py
+
+graft metgem_app
+graft docs
+graft packaging
+graft plugins
+graft recipe
+graft tests
+
+include examples *.mgf *.csv *.txt
+include environment.yml
+include tasks.py
+
+global-exclude __pycache__
+global-exclude *_rc.py
+global-exclude *.exe *.dmg *.AppImage
+
+prune packaging/dist
+prune packaging/build

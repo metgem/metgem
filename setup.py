@@ -5,7 +5,8 @@ from setuptools import setup, find_packages
 from setuptools.command.build_py import build_py
 from distutils import cmd
 from PyQt5.pyrcc_main import processResourceFile
-from metgem_app import version
+
+import versioneer
 
 # Gather data files
 package_data = {'metgem_app': ['splash.png',
@@ -51,8 +52,8 @@ class BuildPyCommand(build_py):
 
 
 setup(
-    name=version.APPLICATION.lower(),
-    version=version.VERSION.lower(),
+    name='metgem',
+    version=versioneer.get_version(),
     author="Nicolas Elie",
     author_email="nicolas.elie@cnrs.fr",
     url="https://github.com/metgem/metgem",
@@ -77,8 +78,8 @@ setup(
     package_dir={'metgem': 'metgem'},
     package_data=package_data,
     include_package_data=True,
-    cmdclass={'process_resource': ProcessResourceCommand,
-              'build_py': BuildPyCommand},
+    cmdclass=versioneer.get_cmdclass({'process_resource': ProcessResourceCommand,
+                                      'build_py': BuildPyCommand}),
     install_requires=['pandas >=0.22',
                       'lxml >=4.0',
                       'pyqt',
@@ -86,7 +87,7 @@ setup(
                       'scikit-learn >=0.19',
                       'scipy >=1.0.0',
                       'qtconsole >=4.3',
-                      'matplotlib >=2.2',
+                      'matplotlib >=2.2,<3.2',
                       'requests >=2.18',
                       'sqlalchemy >=1.2',
                       'pyarrow >=0.9.0',

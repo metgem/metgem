@@ -4,15 +4,13 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap, QPainter
 from PyQt5.QtWidgets import QSplashScreen, QProgressBar, QLabel, qApp
 
-from .version import FULLVERSION
-
 
 class SplashScreen(QSplashScreen):
     def __init__(self):
-        splash_pix = QPixmap(os.path.join(os.path.dirname(__file__), 'splash.png'))
-        super().__init__(splash_pix, Qt.WindowStaysOnTopHint | Qt.SplashScreen)
+        self.splash_pix = QPixmap(os.path.join(os.path.dirname(__file__), 'splash.png'))
+        super().__init__(self.splash_pix, Qt.WindowStaysOnTopHint | Qt.SplashScreen)
 
-        self.setMask(splash_pix.mask())
+        self.setMask(self.splash_pix.mask())
         self.setAttribute(Qt.WA_TranslucentBackground)
 
         self.__message = ""
@@ -22,7 +20,7 @@ class SplashScreen(QSplashScreen):
 
         self.pbar = QProgressBar(self)
         self.pbar.setMaximum(100)
-        self.pbar.setGeometry(100, splash_pix.height() - 130, splash_pix.width() - 200, 20)
+        self.pbar.setGeometry(100, self.splash_pix.height() - 130, self.splash_pix.width() - 200, 20)
         self.pbar.setAlignment(Qt.AlignCenter)
         self.pbar.setStyleSheet("""
             QProgressBar {
@@ -46,13 +44,15 @@ class SplashScreen(QSplashScreen):
                 border: 1px solid black;
             }""")
 
-        v = f"Version: {FULLVERSION}"
         self.version = QLabel(self)
-        self.version.setText(v)
-        self.version.move(splash_pix.width() - self.fontMetrics().width(v) - 125, splash_pix.height() - 180)
 
     def setValue(self, value):
         self.pbar.setValue(value)
+
+    def setVersion(self, version):
+        self.version.setText(f"Version {version}")
+        self.version.move(self.splash_pix.width() - self.fontMetrics().width(version) - 125,
+                          self.splash_pix.height() - 180)
 
     def show(self):
         super().show()
