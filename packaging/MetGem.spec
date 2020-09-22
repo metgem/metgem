@@ -8,6 +8,8 @@ from distutils.core import run_setup
 
 # noinspection PyUnresolvedReferences
 sys.path.insert(0, os.path.join(SPECPATH, '..'))
+# noinspection PyUnresolvedReferences
+sys.path.insert(0, os.path.join(SPECPATH, 'build', 'lib'))
 
 from PyInstaller.utils.hooks import qt_plugins_binaries, get_module_file_attribute
 
@@ -36,11 +38,20 @@ excludes = []
 distribution = run_setup(os.path.join(SPECPATH, "..", "setup.py"), stop_after="init")
 for f in distribution.package_data['metgem_app']:
     # noinspection PyUnresolvedReferences
-    datas.append((os.path.join(SPECPATH, "..", "metgem_app", f), os.path.join("metgem_app", os.path.dirname(f))))
+    path = os.path.join(SPECPATH, "build", "lib", "metgem_app", f)
+    alt_path = os.path.join(SPECPATH, "..", "metgem_app", f)
+    dest_path = os.path.join("metgem_app", os.path.dirname(f))
+    print(f)
+    if os.path.exists(path):
+        datas.append((path, dest_path))
+    else:
+        datas.append((alt_path, dest_path))
+        
 for d, files in distribution.data_files:
     for f in files:
         # noinspection PyUnresolvedReferences
         datas.append((os.path.join(SPECPATH, "..", f), d if d else "."))
+            
 version = distribution.get_version()
 
 # Encrypt files?
@@ -116,7 +127,7 @@ hookspath.extend([os.path.join(SPECPATH, "hooks")])
 runtime_hooks.extend(sorted(glob.glob(os.path.join(SPECPATH, "rthooks", "*_pyi_*.py"))))
 
 # noinspection PyUnresolvedReferences
-a = Analysis([os.path.join(SPECPATH, '..', 'MetGem')],
+a = Analysis([os.path.join(SPECPATH, 'build', 'scripts', 'MetGem')],
              pathex=pathex,
              binaries=binaries,
              datas=datas,

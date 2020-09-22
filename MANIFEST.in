@@ -8,7 +8,7 @@ graft plugins
 graft recipe
 graft tests
 
-include examples *.mgf *.csv *.txt
+include examples/*.mgf examples/*.csv examples/*.txt
 include environment.yml
 include tasks.py
 

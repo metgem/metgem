@@ -34,6 +34,10 @@ def build(ctx, clean=False, validate_appstream=True):
     exe(ctx, clean)
     installer(ctx, validate_appstream)
 
+# noinspection PyShadowingNames
+@task
+def buildpy(ctx):
+    ctx.run("cd {0}/.. && python setup.py build -b {0}/build --build-scripts {0}/build/scripts".format(PACKAGING_DIR))
 
 # noinspection PyShadowingNames,PyUnusedLocal
 @task
@@ -52,10 +56,8 @@ def rc(ctx):
 
 
 # noinspection PyShadowingNames
-@task
+@task(rc, buildpy)
 def exe(ctx, clean=False, debug=False):
-    rc(ctx)
-
     switchs = ["--clean"] if clean else []
     if debug:
         switchs.append("--debug all")
