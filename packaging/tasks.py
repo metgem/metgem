@@ -56,8 +56,11 @@ def rc(ctx):
 
 
 # noinspection PyShadowingNames
-@task(rc, buildpy)
+@task
 def exe(ctx, clean=False, debug=False):
+    rc(ctx)
+    buildpy(ctx)
+
     switchs = ["--clean"] if clean else []
     if debug:
         switchs.append("--debug all")

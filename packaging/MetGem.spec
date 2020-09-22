@@ -41,7 +41,6 @@ for f in distribution.package_data['metgem_app']:
     path = os.path.join(SPECPATH, "build", "lib", "metgem_app", f)
     alt_path = os.path.join(SPECPATH, "..", "metgem_app", f)
     dest_path = os.path.join("metgem_app", os.path.dirname(f))
-    print(f)
     if os.path.exists(path):
         datas.append((path, dest_path))
     else:
