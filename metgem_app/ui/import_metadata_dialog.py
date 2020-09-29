@@ -169,7 +169,7 @@ class ImportMetadataDialog(ImportMetadataDialogBase, ImportMetadataDialogUI):
                         witem = QTableWidgetItem(str(data))
                         self.twMetadata.setItem(row, column, witem)
                 self.cbIndexColumn.addItem("")
-                for col in df.select_dtypes(include=['int']).columns.astype(str):
+                for col in df.select_dtypes(include=['int', 'int64']).columns.astype(str):
                     self.cbIndexColumn.addItem(col, userData=df.columns.get_loc(col))
             except KeyError:
                 self.twMetadata.clear()
