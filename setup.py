@@ -39,9 +39,15 @@ class ProcessResourceCommand(cmd.Command):
         return
 
     def run(self):
-        processResourceFile([os.path.join('metgem_app', 'ui', 'ui.qrc')],
-                            os.path.join('metgem_app', 'ui', 'ui_rc.py'), False)
+        qrcs = [os.path.join('metgem_app', 'ui', 'ui.qrc')]
+        rc = os.path.join('metgem_app', 'ui', 'ui_rc.py')
+        skip = False
+        if os.path.exists(rc):
+            rc_mtime = os.path.getmtime(rc)
+            skip = not any([os.path.getmtime(qrc) > rc_mtime for qrc in qrcs])
 
+        if not skip:
+            processResourceFile(qrcs, rc, False)
 
 class BuildPyCommand(build_py):
     """Custom build command to include ProcessResource command"""

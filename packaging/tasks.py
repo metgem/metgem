@@ -58,7 +58,6 @@ def rc(ctx):
 # noinspection PyShadowingNames
 @task
 def exe(ctx, clean=False, debug=False):
-    rc(ctx)
     buildpy(ctx)
 
     switchs = ["--clean"] if clean else []
@@ -68,7 +67,8 @@ def exe(ctx, clean=False, debug=False):
                      .format(os.path.join(PACKAGING_DIR, 'MetGem.spec'), " ".join(switchs), DIST, BUILD))
     if result and sys.platform.startswith('win'):
         from PyInstaller.utils.win32 import winmanifest
-        exe = "{0}\{1}\{1}.exe".format(DIST, NAME)
+        folder = NAME + "_debug" if debug else NAME
+        exe = "{0}\{1}\{2}.exe".format(DIST, folder, NAME)
         manifest = exe + '.manifest'
         winmanifest.UpdateManifestResourcesFromXMLFile(exe, manifest)
         os.remove(manifest)

@@ -27,11 +27,16 @@ DEBUG = '--debug' in sys.argv
 
 pathex = []
 binaries = []
-datas = []
+binaries = []
+datas = [(f, os.path.join("metgem_app", "plugins")) for f in glob.glob(os.path.join(SPECPATH, '..', 'metgem_app', 'plugins', '*.py')) if os.path.basename(f) != '__init__.py']
 hookspath = []
 runtime_hooks = []
 hiddenimports = ['metgem_app.ui.ui_rc']
 excludes = []
+
+coll_name = 'MetGem'
+if DEBUG:
+    coll_name += '_debug'
 
 # Get data from setup.py
 # noinspection PyUnresolvedReferences
@@ -52,6 +57,10 @@ for d, files in distribution.data_files:
         datas.append((os.path.join(SPECPATH, "..", f), d if d else "."))
             
 version = distribution.get_version()
+
+with open(os.path.join(SPECPATH, '.stub'), 'w') as fp: 
+    pass
+datas.append((os.path.join(SPECPATH, '.stub'), "Library/bin"))
 
 # Encrypt files?
 block_cipher = None
@@ -89,6 +98,9 @@ if sys.platform.startswith('win'):
 # Add Qt Dbus on macOS
 if sys.platform.startswith('darwin'):
     hiddenimports.extend(['PyQt5.QtDBus'])
+    
+# Add sqlachemy.ext.baked
+hiddenimports.extend(['sqlalchemy.ext.baked'])
 
 # Add pybel
 try:
@@ -229,10 +241,6 @@ exe = EXE(pyz,
           console=DEBUG,
           version=version_file,
           icon=icon)
-
-coll_name = 'MetGem'
-if DEBUG:
-    coll_name += '_debug'
 
 # noinspection PyUnresolvedReferences
 coll = COLLECT(exe,
