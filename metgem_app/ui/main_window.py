@@ -2170,7 +2170,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         def error(e):
             if isinstance(e, OSError):
                 QMessageBox.warning(self, None, str(e))
-            if isinstance(e, MemoryError):
+            elif isinstance(e, MemoryError):
                 QMessageBox.critical(self, None, "Not enough memory was available to compute scores matrix.")
             else:
                 raise e
@@ -2188,6 +2188,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
                                                 "m/z defined.")
             elif isinstance(e, NotImplementedError):
                 QMessageBox.warning(self, None, "File format is not supported.")
+            elif isinstance(e, workers.FileEmptyError):
+                QMessageBox.warning(self, None, "Datafile is empty!")
+            elif isinstance(e, workers.NoSpectraError):
+                QMessageBox.warning(self, None, "No more spectra left after filtering.")
             elif hasattr(e, 'message'):
                 QMessageBox.warning(self, None, e.message)
             else:

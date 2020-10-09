@@ -19,6 +19,6 @@ from .network import NetworkWorker
 from .network_generation import NetworkVisualizationOptions, GenerateNetworkWorker
 from .project import LoadProjectWorker, SaveProjectWorker
 from .queue import WorkerQueue
-from .read_data import ReadDataWorker
+from .read_data import ReadDataWorker, NoSpectraError, FileEmptyError
 from .read_group_mapping import ReadGroupMappingWorker
 from .read_metadata import ReadMetadataOptions, ReadMetadataWorker
