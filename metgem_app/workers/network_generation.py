@@ -32,7 +32,7 @@ class GenerateNetworkWorker(BaseWorker):
         self._keep_vertices = keep_vertices
         self.options = options
         self.max = len(mzs)
-        self.iterative_update = False
+        self.iterative_update = True
         self.desc = 'Generating Network...'
 
     def run(self):
