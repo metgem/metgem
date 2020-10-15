@@ -120,21 +120,18 @@ class BaseFrame(QFrame):
                 scene.createEdges(*zip(*edges_attr))
 
         # Create apply layout worker
-        worker = None
         if compute_layouts or self._layout is None:
             # Compute layout
-            def process_finished():
+            def process_finished(worker):
                 computed_layout, self._isolated_nodes = worker.result()
                 if computed_layout is not None:
                     self.apply_layout(computed_layout, self._isolated_nodes, self._hide_isolated_nodes)
 
-            worker = self.create_worker()
-            worker.finished.connect(process_finished)
+            return [self.create_worker(), process_finished]
         else:
-            worker = workers.GenericWorker(self.apply_layout, self._layout, self._isolated_nodes,
-                                           self._hide_isolated_nodes)
+            return workers.GenericWorker(self.apply_layout, self._layout, self._isolated_nodes,
+                                         self._hide_isolated_nodes)
 
-        return worker
 
 
 class NetworkFrame(BaseFrame):
