@@ -1382,6 +1382,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
         if self.tvNodes.model().columnCount() <= 1:
             return
 
+        df = self._network.infos
+        if not df:
+            return
+
         selected_columns_indexes = self.tvNodes.selectionModel().selectedColumns(0)
         len_ = len(selected_columns_indexes)
 
@@ -1396,7 +1400,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
         model = self.tvNodes.model().sourceModel()
         num_columns = model.columnCount()
         model.beginResetModel()
-        df = self._network.infos
         column_names = set([model.headerData(index.column(), Qt.Horizontal, metadata.KeyRole)
                             for index in selected_columns_indexes])
 
