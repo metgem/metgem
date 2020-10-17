@@ -1122,7 +1122,12 @@ class MainWindow(MainWindowBase, MainWindowUI):
                         node = view.scene().selectedNodes()[0]
                     node_idx = node.index()
 
-                data = human_readable_data(self.network.spectra[node_idx])
+                data = self.network.spectra[node_idx]
+                if data.size == 0:
+                    QMessageBox.warning(self, None, 'Selected spectrum is empty.')
+                    return
+
+                data = human_readable_data(data)
 
                 if self.network.mzs:
                     mz_parent = self.network.mzs[node_idx]
