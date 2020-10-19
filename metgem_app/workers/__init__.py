@@ -17,6 +17,7 @@ from .export_metadata import ExportMetadataWorker
 from .generic import GenericWorker
 from .network import NetworkWorker
 from .network_generation import NetworkVisualizationOptions, GenerateNetworkWorker
+from .max_connected_components import MaxConnectedComponentsWorker
 from .project import LoadProjectWorker, SaveProjectWorker
 from .queue import WorkerQueue
 from .read_data import ReadDataWorker, NoSpectraError, FileEmptyError

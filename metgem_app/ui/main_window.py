@@ -2219,16 +2219,30 @@ class MainWindow(MainWindowBase, MainWindowUI):
         if not mzs:
             mzs = np.zeros(self._network.scores.shape[:1], dtype=int)
 
+        options = self._network.options.network
         worker = workers.GenerateNetworkWorker(self._network.scores, mzs, self._network.graph,
-                                               self._network.options.network, keep_vertices=keep_vertices)
+                                               options, keep_vertices=keep_vertices)
 
-        # noinspection PyShadowingNames
-        def store_interactions(worker: workers.GenerateNetworkWorker):
-            interactions, graph = worker.result()
-            self._network.interactions = interactions
-            self._network.graph = graph
+        if options.max_connected_nodes > 0:
+            # noinspection PyShadowingNames
+            def create_max_connected_components_worker(worker: workers.GenerateNetworkWorker):
+                interactions, graph = worker.result()
+                self._network.interactions = interactions
+                return workers.MaxConnectedComponentsWorker(graph, options)
 
-        return [worker, store_interactions]
+            # noinspection PyShadowingNames
+            def store_interactions(worker: workers.MaxConnectedComponentsWorker):
+                graph = worker.result()
+                self._network.graph = graph
+
+            return [worker, create_max_connected_components_worker, store_interactions]
+        else:
+            # noinspection PyShadowingNames
+            def store_interactions(worker: workers.GenerateNetworkWorker):
+                interactions, graph = worker.result()
+                self._network.interactions = interactions
+                self._network.graph = graph
+            return [worker, store_interactions]
 
     @debug
     def prepare_read_metadata_worker(self, filename, options):
