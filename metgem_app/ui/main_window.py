@@ -1664,7 +1664,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                         if widget.name == 'network':
                             self._network.interactions = None
                             self._workers.append(lambda _: self.prepare_generate_network_worker(keep_vertices=True))
-                        self._workers.append(lambda _: widget.create_draw_worker)
+                        self._workers.append(lambda _: widget.create_draw_worker())
                         self._workers.start()
                         self.update_search_menu()
 
