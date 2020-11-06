@@ -1,15 +1,25 @@
-name: Release
+name: Release/Nightly
 
 on:
   release:
     types: [ published ]
     branches: [ master ]
+  schedule:
+    - cron: "0 2 * * *" # run at 2 AM UTC
+  repository_dispatch:
+    types: nightly-build
+    
+defaults:
+  run:
+    shell: bash -l {0}
     
 env:
   GITHUB_TOKEN: ${{ github.token }}
 
 jobs:
   build:
+    needs: check
+    if: needs.check.outputs.needs_build
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -19,52 +29,109 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: Cache conda
+      uses: actions/cache@v1
+      env:
+        # Increase this value to reset cache if environment.yml has not changed
+        CACHE_NUMBER: 0
+      with:
+        path: ~/conda_pkgs_dir
+        key: ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-${{ hashFiles('environment.yml') }}
     - name: Set up Python ${{ matrix.python-version }} (Miniconda)
-      uses: goanpeca/setup-miniconda@v1
+      uses: conda-incubator/setup-miniconda@v1
       with:
         auto-update-conda: true
         activate-environment: metgem
         python-version: ${{ matrix.python-version }}
         environment-file: environment.yml
+        use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!
     - name: Conda info
-      shell: bash -l {0}
       run: |
         conda info
         conda list
         conda config --show-sources
         conda config --show
     - name: Install build dependencies
-      shell: bash -l {0}
       run: conda install invoke pyinstaller
     - name: Test invoke command
-      shell: bash -l {0}
       run: inv -l
     - name: Install build dependencies (macOS)
-      shell: bash -l {0}
       run: pip install dmgbuild biplist
       if: runner.os == 'macOS'
     - name: Install build dependencies (Windows)
-      shell: bash -l {0}
       run: conda install pywin32
       if: runner.os == 'Windows'
     - name: Build
       id: build
-      shell: bash -l {0}
       run: |
         python -m invoke packaging.build
         shopt -s extglob
         echo "::set-output name=asset_name::`find packaging -maxdepth 1 \( -name "setup_MetGem*" -or -name "MetGem*.dmg" -or -name "MetGem*.AppImage" \) -print0 | xargs -0 ls -t | head -n 1 | xargs -n 1 basename`"
-    - name: Check Asset Path
-      shell: bash -l {0}
-      run: echo "${{ steps.build.outputs.asset_path }}"
+    - name: Check Asset Name
+      run: echo "${{ steps.build.outputs.asset_name }}"
+    - name: Get Mime Type
+      id: mimetype
+      run: echo "::set-output name=asset_mimetype::`file -b --mime-type packaging/${{steps.build.outputs.asset_name }}`"
+    - name: Split Asset Name Extension
+      id: splitext
+      uses: rishabhgupta/split-by@v1
+      with:
+        string: ${{ steps.build.outputs.asset_name }}
+        split-by: '.'
     - name: Get Release
       id: get_release
+      if: github.event_name == 'release'
       uses: bruceadams/get-release@v1.2.0
     - name: Upload Release Asset
-      id: upload-release-asset 
+      id: upload-release-asset
+      if: github.event_name == 'release'
       uses: actions/upload-release-asset@v1
       with:
         upload_url: ${{ steps.get_release.outputs.upload_url }} 
         asset_path: packaging/${{ steps.build.outputs.asset_name }}
-        asset_name: ${{ steps.build.outputs.asset_name }}
-        asset_content_type: application/octet-stream
+        asset_name: ${{ steps.splitext.outputs._0 }}-${{ github.event.release.tag_name }}.${{ steps.splitext.outputs._1 }}
+        asset_content_type: ${{ steps.mimetype.outputs.asset_mimetype }}
+    - name: Deploy Nightly
+      if: github.event_name == 'schedule' || github.event_name == 'repository_dispatch'
+      uses: WebFreak001/deploy-nightly@v1.1.0
+      with:
+        upload_url: https://uploads.github.com/repos/metgem/metgem/releases/33563969/assets{?name,label}
+        release_id: 33563969
+        asset_path: packaging/${{ steps.build.outputs.asset_name }}
+        asset_name: ${{ steps.splitext.outputs._0 }}-$$.${{ steps.splitext.outputs._1 }}
+        asset_content_type: ${{ steps.mimetype.outputs.asset_mimetype }}
+        max_releases: 18
+        
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      needs_build: ${{ steps.activity.outputs.alive }}
+    steps:
+      - name:  Activity check
+        id: activity
+        run: |
+          if [ "${{ github.event_name }}" == "schedule" ] || [ "${{ github.event_name }}" == "repository_dispatch" ]; then
+            curl -sL https://api.github.com/repos/${{ github.repository }}/commits  | jq -r '[.[]][0]' > $HOME/commit.json
+            date="$(jq -r '.commit.author.date' $HOME/commit.json)"
+            timestamp=$(date --utc -d "$date" +%s)
+            author="$(jq -r '.commit.author.name' $HOME/commit.json)"
+            url="$(jq -r '.html_url' $HOME/commit.json)"
+            hours=$(( ( $(date --utc +%s) - $timestamp ) / 3600 ))
+            rm -f $HOME/commit.json
+            echo "Repository activity: date=$date author=$author URL=$url"
+            alive=0
+            if [ "${{ github.event_name }}" == "repository_dispatch" ]; then
+              echo "[WARNING] Ignoring activity limits : workflow triggered manually"
+              alive=1
+            else
+              if [ $hours -lt 24 ]; then
+                echo "Repository active : $hours hours"
+                alive=1
+              else
+                echo "[WARNING] Repository not updated : event<${{ github.event_name }}> not allowed to modify stale repository"
+              fi
+            fi
+          else
+            alive=1
+          fi
+          echo "::set-output name=alive::$alive"

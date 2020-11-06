@@ -24,7 +24,6 @@ DefaultDirName={autopf}\{#AppName}
 DefaultGroupName={#AppName}
 AllowNoIcons=yes
 OutputBaseFilename=setup_{#AppName}
-Compression=lzma
 SolidCompression=no
 OutputDir=.
 SetupIconFile=main.ico
@@ -34,6 +33,7 @@ ArchitecturesInstallIn64BitMode=x64
 ArchitecturesAllowed=x64
 ChangesAssociations=True
 LicenseFile=dist\{#AppName}\LICENSE
+Compression=lzma2/fast
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"

@@ -175,3 +175,4 @@ packaging/file_version_info.txt
 examples/*.ods
 examples/*.xls
 examples/*.txt
+packaging/AppDir/
