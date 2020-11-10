@@ -19,7 +19,7 @@ env:
 jobs:
   build:
     needs: check
-    if: needs.check.outputs.needs_build
+    if: github.event_name == 'release' || ((github.event_name == 'schedule' || github.event_name == 'repository_dispatch') && needs.check.outputs.needs_build == 'true')
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -30,6 +30,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Cache conda
+      id: cache
       uses: actions/cache@v1
       env:
         # Increase this value to reset cache if environment.yml has not changed
@@ -39,6 +40,7 @@ jobs:
         key: ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-${{ hashFiles('environment.yml') }}
     - name: Set up Python ${{ matrix.python-version }} (Miniconda)
       uses: conda-incubator/setup-miniconda@v1
+      if: steps.cache.outputs.cache-hit != 'true'
       with:
         auto-update-conda: true
         activate-environment: metgem
@@ -66,18 +68,17 @@ jobs:
       run: |
         python -m invoke packaging.build
         shopt -s extglob
-        echo "::set-output name=asset_name::`find packaging -maxdepth 1 \( -name "setup_MetGem*" -or -name "MetGem*.dmg" -or -name "MetGem*.AppImage" \) -print0 | xargs -0 ls -t | head -n 1 | xargs -n 1 basename`"
+        asset_name=`find packaging -maxdepth 1 \( -name "setup_MetGem*" -or -name "MetGem*.dmg" -or -name "MetGem*.AppImage" \) -print0 | xargs -0 ls -t | head -n 1 | xargs -n 1 basename`
+        echo "::set-output name=asset_name::$asset_name"
+        echo "::set-output name=asset_mimetype::`file -b --mime-type packaging/$asset_name`"
+        echo "::set-output name=asset_ext::${asset_name#*.}"
+        echo "::set-output name=asset_basename::${asset_name%.*}"
     - name: Check Asset Name
-      run: echo "${{ steps.build.outputs.asset_name }}"
-    - name: Get Mime Type
-      id: mimetype
-      run: echo "::set-output name=asset_mimetype::`file -b --mime-type packaging/${{steps.build.outputs.asset_name }}`"
-    - name: Split Asset Name Extension
-      id: splitext
-      uses: rishabhgupta/split-by@v1
-      with:
-        string: ${{ steps.build.outputs.asset_name }}
-        split-by: '.'
+      run: |
+        echo "Asset Name: ${{ steps.build.outputs.asset_name }}"
+        echo "Asset MimeType: ${{ steps.build.outputs.asset_mimetype }}"
+        echo "Asset Extension: ${{ steps.build.outputs.asset_ext }}"
+        echo "Asset BaseName: ${{ steps.build.outputs.asset_basename }}"
     - name: Get Release
       id: get_release
       if: github.event_name == 'release'
@@ -89,49 +90,49 @@ jobs:
       with:
         upload_url: ${{ steps.get_release.outputs.upload_url }} 
         asset_path: packaging/${{ steps.build.outputs.asset_name }}
-        asset_name: ${{ steps.splitext.outputs._0 }}-${{ github.event.release.tag_name }}.${{ steps.splitext.outputs._1 }}
-        asset_content_type: ${{ steps.mimetype.outputs.asset_mimetype }}
+        asset_name: ${{ steps.build.outputs.asset_basename }}-${{ github.event.release.tag_name }}.${{ steps.build.outputs.asset_ext }}
+        asset_content_type: ${{ steps.build.outputs.asset_mimetype }}
     - name: Deploy Nightly
       if: github.event_name == 'schedule' || github.event_name == 'repository_dispatch'
       uses: WebFreak001/deploy-nightly@v1.1.0
       with:
-        upload_url: https://uploads.github.com/repos/metgem/metgem/releases/33563969/assets{?name,label}
+        upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/33563969/assets{?name,label}
         release_id: 33563969
         asset_path: packaging/${{ steps.build.outputs.asset_name }}
-        asset_name: ${{ steps.splitext.outputs._0 }}-$$.${{ steps.splitext.outputs._1 }}
-        asset_content_type: ${{ steps.mimetype.outputs.asset_mimetype }}
+        asset_name: ${{ steps.build.outputs.asset_basename }}-$$.${{ steps.build.outputs.asset_ext }}
+        asset_content_type: ${{ steps.build.outputs.asset_mimetype }}
         max_releases: 18
+    - name: Update Nightly tag
+      if: github.event_name == 'schedule' || github.event_name == 'repository_dispatch'
+      uses: richardsimko/update-tag@v1
+      with:
+        tag_name: nightly
         
+  # Check that current commit does not have a nightly build asset uploaded yet
   check:
     runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'repository_dispatch'
     outputs:
-      needs_build: ${{ steps.activity.outputs.alive }}
+      needs_build: ${{ steps.assets.outputs.needs_build }}
     steps:
-      - name:  Activity check
-        id: activity
+      - name:  Check existing assets
+        id: assets
         run: |
-          if [ "${{ github.event_name }}" == "schedule" ] || [ "${{ github.event_name }}" == "repository_dispatch" ]; then
-            curl -sL https://api.github.com/repos/${{ github.repository }}/commits  | jq -r '[.[]][0]' > $HOME/commit.json
-            date="$(jq -r '.commit.author.date' $HOME/commit.json)"
-            timestamp=$(date --utc -d "$date" +%s)
-            author="$(jq -r '.commit.author.name' $HOME/commit.json)"
-            url="$(jq -r '.html_url' $HOME/commit.json)"
-            hours=$(( ( $(date --utc +%s) - $timestamp ) / 3600 ))
-            rm -f $HOME/commit.json
-            echo "Repository activity: date=$date author=$author URL=$url"
-            alive=0
-            if [ "${{ github.event_name }}" == "repository_dispatch" ]; then
-              echo "[WARNING] Ignoring activity limits : workflow triggered manually"
-              alive=1
-            else
-              if [ $hours -lt 24 ]; then
-                echo "Repository active : $hours hours"
-                alive=1
-              else
-                echo "[WARNING] Repository not updated : event<${{ github.event_name }}> not allowed to modify stale repository"
-              fi
-            fi
+          hash=${{ github.sha }}
+          hash=${hash::6}
+          names=( $(curl -sL https://api.github.com/repos/${{ github.repository }}/releases/33563969/assets | jq -r '.[].name') )
+          needs_build='true'
+          if [ "${{ github.event_name}}" == "repository_dispatch" ]; then
+            echo "[WARNING] Nightly workflow triggered manually"
           else
-            alive=1
+            for name in "${names[@]}"
+            do
+              basename=${name##*-};
+              if [ "${basename%.*}" == "$hash" ]; then
+                echo "[WARNING] Commit already built, skipping build"
+                needs_build='false'
+                break
+              fi
+            done
           fi
-          echo "::set-output name=alive::$alive"
+          echo "::set-output name=needs_build::$needs_build"
