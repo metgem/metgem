@@ -1,32 +1,36 @@
-# Build instructions for Windows (Python 3.6, 64 bits)
-Some useful tools are downloaded automatically when running build scripts.
-Wheel packages for igraph can be found on [Christoph Gohlke's website](https://www.lfd.uci.edu/~gohlke/pythonlibs/#python-igraph)
-Use of [Anaconda](https://anaconda.org/) distribution is recommended.
+# Build instructions
 
+1. Install [Miniconda](https://docs.conda.io/en/latest/miniconda.html).
+
+2. Clone the repository:
 ```
-> conda create --name tsne-network
-> cd packaging
-> activate.bat tsne-network
-> conda install pip
-> pip install invoke>=1.0
-> invoke check-dependencies
-> pip install python_igraph-*.whl
-> pip install -r ..\requirements.txt
-> conda install -c rdkit rdkit
-> pip install pyinstaller pypiwin32
-> invoke build
-> deactivate.bat
+git clone https://github.com/metgem/metgem.git
+cd metgem
 ```
 
-# Build instructions for Mac OS (Python 3.6, 64 bits)
-First install brew and Python 3, using [these instructions](http://docs.python-guide.org/en/latest/starting/install3/osx/)
-
-```bash
-$ python3 -m venv packaging
-$ cd packaging
-$ source bin/activate
-$ pip3 install -r ../requirements.txt
-$ pip3 install pyinstaller dmgbuild invoke==0.22.1
-$ invoke build
-$ deactivate
+3. Create a new virtual environment
 ```
+conda env create -f environment.yml
+```
+
+4. Activate the virtual environment
+```
+conda activate metgem
+```
+
+5. Install build dependencies:
+```
+conda install invoke
+```
+
+6. Build the resource file:
+```
+invoke packaging.rc
+```
+
+7. Launch MetGem
+```
+python MetGem
+```
+
+For later use, you just need to activate the environment before launching MetGem
