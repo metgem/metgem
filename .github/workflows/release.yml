@@ -1,13 +1,9 @@
-name: Release/Nightly
+name: Release
 
 on:
   release:
     types: [ published ]
     branches: [ master ]
-  schedule:
-    - cron: "0 2 * * *" # run at 2 AM UTC
-  repository_dispatch:
-    types: nightly-build
     
 defaults:
   run:
@@ -19,7 +15,6 @@ env:
 jobs:
   build:
     needs: check
-    if: github.event_name == 'release' || ((github.event_name == 'schedule' || github.event_name == 'repository_dispatch') && needs.check.outputs.needs_build == 'true')
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -46,92 +41,17 @@ jobs:
         python-version: ${{ matrix.python-version }}
         environment-file: environment.yml
         use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!
-    - name: Conda info
-      run: |
-        conda info
-        conda list
-        conda config --show-sources
-        conda config --show
-    - name: Install build dependencies
-      run: conda install invoke pyinstaller
-    - name: Test invoke command
-      run: inv -l
-    - name: Install build dependencies (macOS)
-      run: pip install dmgbuild biplist
-      if: runner.os == 'macOS'
-    - name: Install build dependencies (Windows)
-      run: conda install pywin32
-      if: runner.os == 'Windows'
     - name: Build
       id: build
-      run: |
-        python -m invoke packaging.build
-        shopt -s extglob
-        asset_name=`find packaging -maxdepth 1 \( -name "setup_MetGem*" -or -name "MetGem*.dmg" -or -name "MetGem*.AppImage" \) -print0 | xargs -0 ls -t | head -n 1 | xargs -n 1 basename`
-        echo "::set-output name=asset_name::$asset_name"
-        echo "::set-output name=asset_mimetype::`file -b --mime-type packaging/$asset_name`"
-        echo "::set-output name=asset_ext::${asset_name#*.}"
-        echo "::set-output name=asset_basename::${asset_name%.*}"
-    - name: Check Asset Name
-      run: |
-        echo "Asset Name: ${{ steps.build.outputs.asset_name }}"
-        echo "Asset MimeType: ${{ steps.build.outputs.asset_mimetype }}"
-        echo "Asset Extension: ${{ steps.build.outputs.asset_ext }}"
-        echo "Asset BaseName: ${{ steps.build.outputs.asset_basename }}"
+      uses: ./.github/actions/build
     - name: Get Release
-      id: get_release
-      if: github.event_name == 'release'
+      id: get-release
       uses: bruceadams/get-release@v1.2.0
     - name: Upload Release Asset
       id: upload-release-asset
-      if: github.event_name == 'release'
       uses: actions/upload-release-asset@v1
       with:
-        upload_url: ${{ steps.get_release.outputs.upload_url }} 
-        asset_path: packaging/${{ steps.build.outputs.asset_name }}
-        asset_name: ${{ steps.build.outputs.asset_basename }}-${{ github.event.release.tag_name }}.${{ steps.build.outputs.asset_ext }}
-        asset_content_type: ${{ steps.build.outputs.asset_mimetype }}
-    - name: Deploy Nightly
-      if: github.event_name == 'schedule' || github.event_name == 'repository_dispatch'
-      uses: WebFreak001/deploy-nightly@v1.1.0
-      with:
-        upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/33563969/assets{?name,label}
-        release_id: 33563969
-        asset_path: packaging/${{ steps.build.outputs.asset_name }}
-        asset_name: ${{ steps.build.outputs.asset_basename }}-$$.${{ steps.build.outputs.asset_ext }}
-        asset_content_type: ${{ steps.build.outputs.asset_mimetype }}
-        max_releases: 18
-    - name: Update Nightly tag
-      if: github.event_name == 'schedule' || github.event_name == 'repository_dispatch'
-      uses: richardsimko/update-tag@v1
-      with:
-        tag_name: nightly
-        
-  # Check that current commit does not have a nightly build asset uploaded yet
-  check:
-    runs-on: ubuntu-latest
-    if: github.event_name == 'schedule' || github.event_name == 'repository_dispatch'
-    outputs:
-      needs_build: ${{ steps.assets.outputs.needs_build }}
-    steps:
-      - name:  Check existing assets
-        id: assets
-        run: |
-          hash=${{ github.sha }}
-          hash=${hash::6}
-          names=( $(curl -sL https://api.github.com/repos/${{ github.repository }}/releases/33563969/assets | jq -r '.[].name') )
-          needs_build='true'
-          if [ "${{ github.event_name}}" == "repository_dispatch" ]; then
-            echo "[WARNING] Nightly workflow triggered manually"
-          else
-            for name in "${names[@]}"
-            do
-              basename=${name##*-};
-              if [ "${basename%.*}" == "$hash" ]; then
-                echo "[WARNING] Commit already built, skipping build"
-                needs_build='false'
-                break
-              fi
-            done
-          fi
-          echo "::set-output name=needs_build::$needs_build"
+        upload_url: ${{ steps.get-release.outputs.upload_url }} 
+        asset_path: packaging/${{ steps.build.outputs.asset-name }}
+        asset_name: ${{ steps.build.outputs.asset-basename }}-${{ github.event.release.tag_name }}.${{ steps.build.outputs.asset-ext }}
+        asset_content_type: ${{ steps.build.outputs.asset-mimetype }}

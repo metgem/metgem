@@ -1,0 +1,89 @@
+name: Nightly
+
+on:
+  schedule:
+    - cron: "0 2 * * *" # run at 2 AM UTC
+  repository_dispatch:
+    types: nightly-build
+    
+defaults:
+  run:
+    shell: bash -l {0}
+    
+env:
+  GITHUB_TOKEN: ${{ github.token }}
+
+jobs:
+  build:
+    needs: check-assets
+    if: needs.check-assets.outputs.needs-build == 'true'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        python-version: [3.7]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+      fail-fast: false
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Cache conda
+      id: cache
+      uses: actions/cache@v2
+      env:
+        # Increase this value to reset cache if environment.yml has not changed
+        CACHE_NUMBER: 0
+      with:
+        path: ~/conda_pkgs_dir
+        key: ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-${{ hashFiles('environment.yml') }}
+    - name: Set up Python ${{ matrix.python-version }} (Miniconda)
+      uses: conda-incubator/setup-miniconda@v1
+      with:
+        auto-update-conda: true
+        activate-environment: metgem
+        python-version: ${{ matrix.python-version }}
+        environment-file: environment.yml
+        use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!
+    - name: Build
+      id: build
+      uses: ./.github/actions/build
+    - name: Deploy Nightly
+      uses: WebFreak001/deploy-nightly@v1.1.0
+      with:
+        upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/33563969/assets{?name,label}
+        release_id: 33563969
+        asset_path: packaging/${{ steps.build.outputs.asset-name }}
+        asset_name: ${{ steps.build.outputs.asset-basename }}-$$.${{ steps.build.outputs.asset-ext }}
+        asset_content_type: ${{ steps.build.outputs.asset-mimetype }}
+        max_releases: 18
+    - name: Update Nightly tag
+      uses: richardsimko/update-tag@v1
+      with:
+        tag_name: nightly
+        
+  # Check that current commit does not have a nightly build asset uploaded yet
+  check-assets:
+    runs-on: ubuntu-latest
+    outputs:
+      needs-build: ${{ steps.assets.outputs.needs-build }}
+    steps:
+      - name: Check existing assets
+        id: assets
+        run: |
+          hash=${{ github.sha }}
+          hash=${hash::6}
+          names=( $(curl -sL https://api.github.com/repos/${{ github.repository }}/releases/33563969/assets | jq -r '.[].name') )
+          needs_build='true'
+          if [ "${{ github.event_name }}" == "repository_dispatch" ]; then
+            echo "[WARNING] Nightly workflow triggered manually"
+          else
+            for name in "${names[@]}"
+            do
+              basename=${name##*-};
+              if [ "${basename%.*}" == "$hash" ]; then
+                echo "[WARNING] Commit already built, skipping build"
+                needs_build='false'
+                break
+              fi
+            done
+          fi
+          echo "::set-output name=needs-build::$needs_build"

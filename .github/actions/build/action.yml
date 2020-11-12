@@ -1,0 +1,38 @@
+name: 'Build'
+description: 'Build MetGem and returns produced asset name and mimetype'
+outputs:
+  asset-name: 
+    description: "Name of produced asset"
+    value: ${{ steps.build.outputs.asset-name }}
+  asset-mimetype:
+    description: "MimeType of produced asset"
+    value: ${{ steps.build.outputs.asset-mimetype }}
+  asset-ext:
+    description: "Extension of produced asset"
+    value: ${{ steps.build.outputs.asset-ext }}
+  asset-basename:
+    description: "Name of produced asset without extension"
+    value: ${{ steps.build.outputs.asset-basename }}
+runs:
+  using: "composite"
+  steps:
+    - name: Install build dependencies
+      shell: bash -l {0}
+      run: |
+        conda install invoke pyinstaller
+        if [ "${{ runner.os }}" == "macOS" ]; then
+          pip install dmgbuild biplist
+        elif [ "${{ runner.os }}" == "Windows" ]; then
+          conda install pywin32
+        fi
+    - name: Build
+      shell: bash -l {0}
+      id: build
+      run: |
+        python -m invoke packaging.build
+        shopt -s extglob
+        asset_name=`find packaging -maxdepth 1 \( -name "setup_MetGem*" -or -name "MetGem*.dmg" -or -name "MetGem*.AppImage" \) -print0 | xargs -0 ls -t | head -n 1 | xargs -n 1 basename`
+        echo "::set-output name=asset-name::$asset_name"
+        echo "::set-output name=asset-mimetype::`file -b --mime-type packaging/$asset_name`"
+        echo "::set-output name=asset-ext::${asset_name#*.}"
+        echo "::set-output name=asset-basename::${asset_name%.*}"
