@@ -31,7 +31,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: Cache conda
       id: cache
-      uses: actions/cache@v1
+      uses: actions/cache@v2
       env:
         # Increase this value to reset cache if environment.yml has not changed
         CACHE_NUMBER: 0
@@ -40,7 +40,6 @@ jobs:
         key: ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-${{ hashFiles('environment.yml') }}
     - name: Set up Python ${{ matrix.python-version }} (Miniconda)
       uses: conda-incubator/setup-miniconda@v1
-      if: steps.cache.outputs.cache-hit != 'true'
       with:
         auto-update-conda: true
         activate-environment: metgem
