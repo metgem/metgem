@@ -28,15 +28,24 @@ DEBUG = '--debug' in sys.argv
 pathex = []
 binaries = []
 binaries = []
-datas = [(f, os.path.join("metgem_app", "plugins")) for f in glob.glob(os.path.join(SPECPATH, '..', 'metgem_app', 'plugins', '*.py')) if os.path.basename(f) != '__init__.py']
+datas = []
 hookspath = []
 runtime_hooks = []
-hiddenimports = ['metgem_app.ui.ui_rc']
+hiddenimports = ['metgem_app.ui.ui_rc', 'pytest', 'pytestqt', 'pytest_mock']
 excludes = []
 
 coll_name = 'MetGem'
 if DEBUG:
     coll_name += '_debug'
+
+# Add plugins in datas
+datas += [(f, os.path.join("metgem_app", "plugins"))
+          for f in glob.glob(os.path.join(SPECPATH, '..', 'metgem_app', 'plugins', '*.py'))
+          if os.path.basename(f) != '__init__.py']
+
+# Add tests in datas
+datas += [(f, "tests") for f in glob.glob(os.path.join(SPECPATH, '..', 'tests', '**', '*.py'))]
+datas += [(os.path.join(SPECPATH, '..', 'pytest.ini'), '.')]
 
 # Get data from setup.py
 # noinspection PyUnresolvedReferences

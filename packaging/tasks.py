@@ -55,23 +55,61 @@ def rc(ctx):
         processResourceFile(qrcs, rc, False)
 
 
-# noinspection PyShadowingNames
+# noinspection PyShadowingNames,PyUnusedLocal
 @task
-def exe(ctx, clean=False, debug=False):
-    buildpy(ctx)
+def exe(ctx, clean=False, debug=False, build_py=True):
+    if build_py:
+        buildpy(ctx)
 
     switchs = ["--clean"] if clean else []
     if debug:
         switchs.append("--debug all")
     result = ctx.run("pyinstaller {0} --noconfirm {1} --distpath {2} --workpath {3}"
                      .format(os.path.join(PACKAGING_DIR, 'MetGem.spec'), " ".join(switchs), DIST, BUILD))
+
     if result and sys.platform.startswith('win'):
-        from PyInstaller.utils.win32 import winmanifest
-        folder = NAME + "_debug" if debug else NAME
-        exe = "{0}\{1}\{2}.exe".format(DIST, folder, NAME)
-        manifest = exe + '.manifest'
-        winmanifest.UpdateManifestResourcesFromXMLFile(exe, manifest)
-        os.remove(manifest)
+        embed_manifest(ctx, debug)
+        if not debug:
+            com(ctx)
+
+
+# noinspection PyShadowingNames,PyUnusedLocal
+@task
+def embed_manifest(ctx, debug):
+    from PyInstaller.utils.win32 import winmanifest
+    folder = NAME + "_debug" if debug else NAME
+    exe = "{0}\{1}\{2}.exe".format(DIST, folder, NAME)
+
+    # Embed manifest in exe
+    manifest = exe + '.manifest'
+    winmanifest.UpdateManifestResourcesFromXMLFile(exe, manifest)
+    os.remove(manifest)
+
+
+# noinspection PyShadowingNames,PyUnusedLocal
+@task
+def com(ctx):
+    # Copy generated exe to .com and change it to a console application
+    # See https://www.nirsoft.net/vb/appmodechange.html
+    import struct
+    import winnt
+
+    exe = "{0}\{1}\{2}.exe".format(DIST, NAME, NAME)
+    com = exe.replace('.exe', '.com')
+    exe = "{0}\{1}\{2}.exe".format(DIST, NAME, NAME)
+    shutil.copy2(exe, com)
+
+    with open(com, 'r+b') as f:
+        assert f.read(2) == b'MZ'
+        f.seek(0x3C)
+        pe_location = struct.unpack('L', f.read(4))[0]
+        f.seek(pe_location)
+        assert f.read(2) == b'PE'
+        f.seek(pe_location + 0x5C)
+        subsystem = struct.unpack('B', f.read(1))[0]
+        assert subsystem == winnt.IMAGE_SUBSYSTEM_WINDOWS_GUI
+        f.seek(pe_location + 0x5C)
+        f.write(struct.pack('B', winnt.IMAGE_SUBSYSTEM_WINDOWS_CUI))
 
 
 @task

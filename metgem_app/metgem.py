@@ -7,8 +7,18 @@ APPLICATION = "MetGem"
 
 # noinspection PyUnresolvedReferences
 def run():
-    import os
     import sys
+    import os
+
+    # pytest switch: pass next arguments to pytest
+    # https://docs.pytest.org/en/stable/example/simple.html?highlight=pyinstaller#freezing-pytest
+    if len(sys.argv) > 1 and sys.argv[1] == "--pytest":
+        import pytest
+        import pytestqt
+        import pytest_mock
+
+        sys.exit(pytest.main(sys.argv[2:], plugins=[pytestqt, pytest_mock]))
+
     import argparse
     import importlib
 
