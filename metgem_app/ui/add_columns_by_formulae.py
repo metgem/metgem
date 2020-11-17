@@ -185,30 +185,32 @@ class AddColumnsByFormulaeDialog(AddColumnsByFormulaeDialogUI, AddColumnsByFormu
             try:
                 with open(filename, 'r') as f:
                     ml = yaml.load(f, Loader=yaml.FullLoader)
-                    alias = ml['alias']
-                    mappings = ml['mappings']
+                    alias = ml.get('alias', None)
+                    mappings = ml.get('mappings', None)
             except FileNotFoundError:
                 QMessageBox.warning(self, None, "Selected file does not exists.")
             except IOError:
                 QMessageBox.warning(self, None, "Load failed (I/O Error).")
             else:
-                for i in range(self.tblAlias.rowCount()):
-                    item = self.tblAlias.item(i, AddColumnsByFormulaeDialog.COLUMN_TITLE)
-                    if item:
-                        for name, title in alias.items():
-                            if title == item.data(Qt.DisplayRole):
-                                alias_item = QTableWidgetItem(name)
-                                self.tblAlias.setItem(i, AddColumnsByFormulaeDialog.COLUMN_ALIAS, alias_item)
+                if alias is not None:
+                    for i in range(self.tblAlias.rowCount()):
+                        item = self.tblAlias.item(i, AddColumnsByFormulaeDialog.COLUMN_TITLE)
+                        if item:
+                            for name, title in alias.items():
+                                if title == item.data(Qt.DisplayRole):
+                                    alias_item = QTableWidgetItem(name)
+                                    self.tblAlias.setItem(i, AddColumnsByFormulaeDialog.COLUMN_ALIAS, alias_item)
 
-                self.tblMappings.setRowCount(len(mappings))
-                columns = [self.tblAlias.item(i, AddColumnsByFormulaeDialog.COLUMN_TITLE).data(Qt.DisplayRole)
-                           for i in range(self.tblAlias.rowCount())]
-                self.tblMappings.setItemDelegateForColumn(0, ColumnNameDelegate(columns))
-                for i, (name, formula) in enumerate(mappings.items()):
-                    item = QTableWidgetItem(name)
-                    self.tblMappings.setItem(i, AddColumnsByFormulaeDialog.COLUMN_NAME, item)
-                    item = QTableWidgetItem(formula)
-                    self.tblMappings.setItem(i, AddColumnsByFormulaeDialog.COLUMN_FORMULA, item)
+                if mappings is not None:
+                    self.tblMappings.setRowCount(len(mappings))
+                    columns = [self.tblAlias.item(i, AddColumnsByFormulaeDialog.COLUMN_TITLE).data(Qt.DisplayRole)
+                               for i in range(self.tblAlias.rowCount())]
+                    self.tblMappings.setItemDelegateForColumn(0, ColumnNameDelegate(columns))
+                    for i, (name, formula) in enumerate(mappings.items()):
+                        item = QTableWidgetItem(name)
+                        self.tblMappings.setItem(i, AddColumnsByFormulaeDialog.COLUMN_NAME, item)
+                        item = QTableWidgetItem(formula)
+                        self.tblMappings.setItem(i, AddColumnsByFormulaeDialog.COLUMN_FORMULA, item)
 
     def on_save_mappings(self):
         filter_ = ["Group mappings files (*.yaml)", "All files (*)"]
