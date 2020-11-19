@@ -76,7 +76,7 @@ jobs:
           hash=${hash::6}
           names=( $(curl -sL https://api.github.com/repos/${{ github.repository }}/releases/33563969/assets | jq -r '.[].name') )
           needs_build='true'
-          if [ "${{ github.event_name }}" == "repository_dispatch" ]; then
+          if [ "${{ github.event_name }}" == "repository_dispatch" || "${{ github.event_name }}" == "workflow_dispatch" ]; then
             echo "[WARNING] Nightly workflow triggered manually"
           else
             for name in "${names[@]}"
