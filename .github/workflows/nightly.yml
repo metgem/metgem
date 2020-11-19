@@ -50,10 +50,10 @@ jobs:
       id: build
       uses: ./.github/actions/build
     - name: Upload Tests Artifacts
-      if: failure()
+      if: always()
       uses: actions/upload-artifact@v2
       with:
-        name: tests-${{ runner.os }}
+        name: tests
         path: ${{ steps.build.outputs.tests-log }}
     - name: Deploy Nightly
       uses: WebFreak001/deploy-nightly@v1.1.0
