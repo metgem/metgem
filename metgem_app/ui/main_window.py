@@ -1388,7 +1388,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             return
 
         df = self._network.infos
-        if not df:
+        if df is None:
             return
 
         selected_columns_indexes = self.tvNodes.selectionModel().selectedColumns(0)
@@ -1867,7 +1867,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.has_unsaved_changes = True
 
     @debug
-    def set_nodes_pie_chart_values(self, column_ids: List[int] = None, colors: List[QColor] = [],
+    def set_nodes_pie_chart_values(self, column_ids: List[int] = None, colors: List[Union[QColor, str]] = [],
                                    column_keys: List[Union[int, str]] = None):
         model = self.tvNodes.model().sourceModel()
 
@@ -1882,9 +1882,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
             for column in range(model.columnCount()):
                 model.setHeaderData(column, Qt.Horizontal, None, role=metadata.ColorMarkRole)
 
+            # Make sure that colors is a list of QColor
+            colors = [QColor(color) for color in colors]
+
             save_colors = []
             for column, color in zip(column_ids, colors):
-                color = QColor(color)
                 save_colors.append(color)
                 model.setHeaderData(column, Qt.Horizontal, color, role=metadata.ColorMarkRole)
 
