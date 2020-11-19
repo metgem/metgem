@@ -45,7 +45,7 @@ jobs:
         environment-file: environment.yml
         use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!
     - name: Fetch tags
-      run: git fetch --depth=200 # This is important to get version from versioneer
+      run: git fetch --prune --unshallow # This is important to get version from versioneer
     - name: Build
       id: build
       uses: ./.github/actions/build
