@@ -45,6 +45,7 @@ jobs:
       id: build
       uses: ./.github/actions/build
     - name: Upload Tests Artifacts
+      if: failure()
       uses: actions/upload-artifact@v2
       with:
         name: tests-${{ runner.os }}

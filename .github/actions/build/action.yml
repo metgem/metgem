@@ -44,5 +44,5 @@ runs:
       shell: bash -l {0}
       run: |
         log=tests-${{ runner.os }}-${{ github.sha }}.log
-        packaging\dist\MetGem\MetGem --pytest 2>&1 1>$log
+        packaging/dist/MetGem/MetGem --pytest 2>&1 1>$log
         echo "::set-output name=tests-log::$log"
