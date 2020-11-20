@@ -32,29 +32,26 @@ jobs:
       with:
         path: |
             ~/conda_pkgs_dir
-            ~/conda-env-explicit.txt
+            conda-env-explicit.txt
         key: ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-${{ hashFiles('environment*.yml') }}
     - name: Check Cache
       id: check-cache
-      run: |
-        environment="environment.yml"
-        if [ "${{ steps.cache.outputs.cache-hit }}" == "true" ]; then
-          if [ -f "~/conda-env-explicit.txt" ]; then
-            environment="~/conda-env-explicit.txt"
-            echo "Use cached explicit environment"
-          fi
-        fi
-        echo "::set-output name=environment::$environment"
-    - name: Set up Python ${{ matrix.python-version }} (Miniconda)
+      uses: ./.github/actions/get_environment
+      with:
+        cache-hit: ${{ steps.cache.outputs.cache-hit }}
+        python-version: ${{ matrix.python-version }}
+    - name: Set up Python
       uses: conda-incubator/setup-miniconda@v2
       with:
-        auto-update-conda: true
         activate-environment: metgem
-        python-version: ${{ matrix.python-version }}
+        channel-priority: strict
+        python-version: ${{ steps.check-cache.outputs.python-version }}
         environment-file: ${{ steps.check-cache.outputs.environment }}
         use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!
     - name: Install Build Dependencies
       uses: ./.github/actions/install_build_dependencies
+      with:
+        pip-only: ${{ steps.check-cache.outputs.explicit }}
     - name: Build
       id: build
       uses: ./.github/actions/build

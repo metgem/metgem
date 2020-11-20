@@ -1,14 +1,26 @@
 name: 'Install Build Dependencies'
 description: 'Update environment with build dependencies'
+inputs:
+  pip-only: 
+    description: "Install only pip dependencies"
+    required: false
+    default: 'false'
 runs:
   using: "composite"
   steps:
     - name: Install build dependencies
       shell: bash -l {0}
       run: |
-        conda env update -n metgem -f environment.dev.yml
+        if [ "${{ inputs.pip-only }}" != "true" ]; then
+          conda env update -n metgem -f environment.dev.yml
+          if [ "${{ runner.os }}" == "Windows" ]; then
+            conda install pywin32
+          fi
+        fi
+    - name: Install pip build dependencies
+      shell: bash -l {0}
+      run: |
         if [ "${{ runner.os }}" == "macOS" ]; then
           pip install dmgbuild biplist
-        elif [ "${{ runner.os }}" == "Windows" ]; then
-          conda install pywin32
         fi
+      

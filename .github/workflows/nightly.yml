@@ -40,30 +40,22 @@ jobs:
         key: ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-${{ hashFiles('environment*.yml') }}
     - name: Check Cache
       id: check-cache
-      run: |
-        environment="environment.yml"
-        if [ "${{ steps.cache.outputs.cache-hit }}" == "true" ]; then
-          if [ -f "conda-env-explicit.txt" ]; then
-            environment="conda-env-explicit.txt"
-            echo "Use cached explicit environment"
-          else
-            echo "[WARNING] Cached explicit environment not found."
-          fi
-        else
-          echo "[WARNING] Cached explicit environment not used because cache was not restored."
-        fi
-        echo "::set-output name=environment::$environment"
-    - name: Set up Python ${{ matrix.python-version }} (Miniconda)
+      uses: ./.github/actions/get_environment
+      with:
+        cache-hit: ${{ steps.cache.outputs.cache-hit }}
+        python-version: ${{ matrix.python-version }}
+    - name: Set up Python
       uses: conda-incubator/setup-miniconda@v2
       with:
-        auto-update-conda: true
         activate-environment: metgem
-        python-version: ${{ matrix.python-version }}
+        channel-priority: strict
+        python-version: ${{ steps.check-cache.outputs.python-version }}
         environment-file: ${{ steps.check-cache.outputs.environment }}
         use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!
     - name: Install Build Dependencies
-      if: steps.check-cache.outputs.environment == 'environment.yml'
       uses: ./.github/actions/install_build_dependencies
+      with:
+        pip-only: ${{ steps.check-cache.outputs.explicit }}
     - name: Fetch tags
       run: git fetch --prune --unshallow # This is important to get version from versioneer
     - name: Build
@@ -77,7 +69,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: tests
-        path: ${{ steps.tests.outputs.tests-log }}
+        path: ${{ steps.tests.outputs.log }}
     - name: Deploy Nightly
       uses: WebFreak001/deploy-nightly@v1.1.0
       with:
