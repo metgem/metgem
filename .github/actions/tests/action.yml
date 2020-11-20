@@ -1,0 +1,18 @@
+name: 'Run tests'
+description: 'Run tests and output log file'
+outputs:
+  log:
+    description: "Name of tests log file"
+    value: ${{ steps.tests.outputs.log }}
+runs:
+  using: "composite"
+  steps:
+    - name: Run tests
+      id: tests
+      shell: bash -l {0}
+      run: |
+        hash=${{ github.sha }}
+        hash=${hash::6}
+        log=tests-${{ runner.os }}-$hash.log
+        packaging/dist/MetGem/MetGem --pytest 2>&1 1>$log
+        echo "::set-output name=log::$log"

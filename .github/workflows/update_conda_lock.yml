@@ -1,0 +1,46 @@
+name: Update Conda Lock
+
+on:
+  schedule:
+    - cron: "0 0 1 * *" # run at 00:00 AM UTC every first day of month
+  workflow_dispatch:
+  repository_dispatch:
+    types: update-conda-lock
+defaults:
+  run:
+    shell: bash -l {0}
+    
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        python-version: [3.7]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+      fail-fast: false
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Cache conda
+      id: cache
+      uses: actions/cache@v2
+      env:
+        # Increase this value to reset cache if environment.yml has not changed
+        CACHE_NUMBER: 0
+      with:
+        path: |
+            ~/conda_pkgs_dir
+            ~/conda-env-explicit.txt
+        key: ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-${{ hashFiles('environment*.yml') }}
+    - name: Set up Python ${{ matrix.python-version }} (Miniconda)
+      uses: conda-incubator/setup-miniconda@v2
+      with:
+        auto-update-conda: true
+        activate-environment: metgem
+        python-version: ${{ matrix.python-version }}
+        environment-file: environment.yml
+        use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!
+    - name: Install Build Dependencies
+      uses: ./.github/actions/install_build_dependencies
+    - name: Create conda lock file
+      run: conda list --explicit > ~/conda-env-explicit.txt

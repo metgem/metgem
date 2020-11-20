@@ -1,0 +1,14 @@
+name: 'Install Build Dependencies'
+description: 'Update environment with build dependencies'
+runs:
+  using: "composite"
+  steps:
+    - name: Install build dependencies
+      shell: bash -l {0}
+      run: |
+        conda env update -n metgem -f environment.dev.yml
+        if [ "${{ runner.os }}" == "macOS" ]; then
+          pip install dmgbuild biplist
+        elif [ "${{ runner.os }}" == "Windows" ]; then
+          conda install pywin32
+        fi

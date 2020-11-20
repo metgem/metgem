@@ -13,21 +13,9 @@ outputs:
   asset-basename:
     description: "Name of produced asset without extension"
     value: ${{ steps.build.outputs.asset-basename }}
-  tests-log:
-    description: "Name of tests log file"
-    value: ${{ steps.tests.outputs.tests-log }}
 runs:
   using: "composite"
   steps:
-    - name: Install build dependencies
-      shell: bash -l {0}
-      run: |
-        conda install invoke pyinstaller pytest pytest-qt pytest-mock
-        if [ "${{ runner.os }}" == "macOS" ]; then
-          pip install dmgbuild biplist
-        elif [ "${{ runner.os }}" == "Windows" ]; then
-          conda install pywin32
-        fi
     - name: Build
       shell: bash -l {0}
       id: build
@@ -39,12 +27,3 @@ runs:
         echo "::set-output name=asset-mimetype::`file -b --mime-type packaging/$asset_name`"
         echo "::set-output name=asset-ext::${asset_name#*.}"
         echo "::set-output name=asset-basename::${asset_name%.*}"
-    - name: Run tests
-      id: tests
-      shell: bash -l {0}
-      run: |
-        hash=${{ github.sha }}
-        hash=${hash::6}
-        log=tests-${{ runner.os }}-$hash.log
-        packaging/dist/MetGem/MetGem --pytest 2>&1 1>$log
-        echo "::set-output name=tests-log::$log"

@@ -34,27 +34,43 @@ jobs:
         # Increase this value to reset cache if environment.yml has not changed
         CACHE_NUMBER: 0
       with:
-        path: ~/conda_pkgs_dir
-        key: ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-${{ hashFiles('environment.yml') }}
+        path: |
+            ~/conda_pkgs_dir
+            ~/conda-env-explicit.txt
+        key: ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-${{ hashFiles('environment*.yml') }}
+    - name: Check Cache
+      id: check-cache
+      run: |
+        environment="environment.yml"
+        if [ "${{ steps.cache.outputs.cache-hit }}" == "true" ]; then
+          if [ -f "~/conda-env-explicit.txt" ]; then
+            environment="~/conda-env-explicit.txt"
+          fi
+        fi
+        echo "::set-output name=environment::$environment"
     - name: Set up Python ${{ matrix.python-version }} (Miniconda)
       uses: conda-incubator/setup-miniconda@v2
       with:
         auto-update-conda: true
         activate-environment: metgem
         python-version: ${{ matrix.python-version }}
-        environment-file: environment.yml
+        environment-file: ${{ steps.check-cache.outputs.environment }}
         use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!
     - name: Fetch tags
       run: git fetch --prune --unshallow # This is important to get version from versioneer
+    - name: Install Build Dependencies
+      uses: ./.github/actions/install_build_dependencies
     - name: Build
       id: build
       uses: ./.github/actions/build
+    - name: Run Tests
+      uses: ./.github/actions/tests
     - name: Upload Tests Artifacts
       if: always()
       uses: actions/upload-artifact@v2
       with:
         name: tests
-        path: ${{ steps.build.outputs.tests-log }}
+        path: ${{ steps.tests.outputs.tests-log }}
     - name: Deploy Nightly
       uses: WebFreak001/deploy-nightly@v1.1.0
       with:
