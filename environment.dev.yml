@@ -1,0 +1,9 @@
+name: metgem
+channels:
+    - conda-forge
+dependencies:
+    - invoke
+    - pyinstaller
+    - pytest
+    - pytest-qt
+    - pytest-mock
