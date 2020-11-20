@@ -36,16 +36,21 @@ jobs:
       with:
         path: |
             ~/conda_pkgs_dir
-            ~/conda-env-explicit.txt
+            conda-env-explicit.txt
         key: ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-${{ hashFiles('environment*.yml') }}
     - name: Check Cache
       id: check-cache
       run: |
         environment="environment.yml"
         if [ "${{ steps.cache.outputs.cache-hit }}" == "true" ]; then
-          if [ -f "~/conda-env-explicit.txt" ]; then
-            environment="~/conda-env-explicit.txt"
+          if [ -f "conda-env-explicit.txt" ]; then
+            environment="conda-env-explicit.txt"
+            echo "Use cached explicit environment"
+          else
+            echo "[WARNING] Cached explicit environment not found."
           fi
+        else
+          echo "[WARNING] Cached explicit environment not used because cache was not restored."
         fi
         echo "::set-output name=environment::$environment"
     - name: Set up Python ${{ matrix.python-version }} (Miniconda)
@@ -56,14 +61,16 @@ jobs:
         python-version: ${{ matrix.python-version }}
         environment-file: ${{ steps.check-cache.outputs.environment }}
         use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!
+    - name: Install Build Dependencies
+      if: steps.check-cache.outputs.environment == "environment.yml"
+      uses: ./.github/actions/install_build_dependencies
     - name: Fetch tags
       run: git fetch --prune --unshallow # This is important to get version from versioneer
-    - name: Install Build Dependencies
-      uses: ./.github/actions/install_build_dependencies
     - name: Build
       id: build
       uses: ./.github/actions/build
     - name: Run Tests
+      id: tests
       uses: ./.github/actions/tests
     - name: Upload Tests Artifacts
       if: always()

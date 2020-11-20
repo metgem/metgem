@@ -30,7 +30,7 @@ jobs:
       with:
         path: |
             ~/conda_pkgs_dir
-            ~/conda-env-explicit.txt
+            conda-env-explicit.txt
         key: ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-${{ hashFiles('environment*.yml') }}
     - name: Set up Python ${{ matrix.python-version }} (Miniconda)
       uses: conda-incubator/setup-miniconda@v2
@@ -43,10 +43,10 @@ jobs:
     - name: Install Build Dependencies
       uses: ./.github/actions/install_build_dependencies
     - name: Create conda lock file
-      run: conda list --explicit > ~/conda-env-explicit.txt
+      run: conda list --explicit > conda-env-explicit.txt
     - name: Upload Tests Artifacts
       if: always()
       uses: actions/upload-artifact@v2
       with:
         name: conda-env-explicit-${{ runner.os }}
-        path: ~/conda-env-explicit.txt
+        path: conda-env-explicit.txt
