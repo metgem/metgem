@@ -44,3 +44,9 @@ jobs:
       uses: ./.github/actions/install_build_dependencies
     - name: Create conda lock file
       run: conda list --explicit > ~/conda-env-explicit.txt
+    - name: Upload Tests Artifacts
+      if: always()
+      uses: actions/upload-artifact@v2
+      with:
+        name: conda-env-explicit-${{ runner.os }}
+        path: ~/conda-env-explicit.txt
