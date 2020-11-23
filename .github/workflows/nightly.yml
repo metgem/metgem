@@ -78,7 +78,7 @@ jobs:
         asset_path: packaging/${{ steps.build.outputs.asset-name }}
         asset_name: ${{ steps.build.outputs.asset-basename }}-$$.${{ steps.build.outputs.asset-ext }}
         asset_content_type: ${{ steps.build.outputs.asset-mimetype }}
-        max_releases: 18
+        max_releases: 6
     - name: Update Nightly tag
       uses: richardsimko/update-tag@v1
       with:
