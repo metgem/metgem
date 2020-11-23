@@ -2448,7 +2448,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         worker = workers.ExportMetadataWorker(filename, model, sep, selected_rows if selected_rows else None)
 
         def finished():
-            nnodes = len(selected_rows) if selected_rows else self.tVNodes.model().rowCount()
+            nnodes = len(selected_rows) if selected_rows else self.tvNodes.model().rowCount()
             QMessageBox.information(self, None,
                                     f"Metadata of {nnodes} nodes were successfully exported to \"{filename}\".")
 
