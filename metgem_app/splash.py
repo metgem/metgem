@@ -14,18 +14,19 @@ class SplashScreen(QSplashScreen):
         self.setAttribute(Qt.WA_TranslucentBackground)
 
         self.__message = ""
-        self.__color = Qt.black
-        self.__alignment = Qt.AlignBottom | Qt.AlignCenter
-        self.__msgrect = self.rect().adjusted(5, 5, -5, -85)
+        self.__color = Qt.white
+        self.__alignment = Qt.AlignBottom | Qt.AlignLeft
+        self.__msgrect = self.rect().adjusted(355, 5, -270, -270)
 
         self.pbar = QProgressBar(self)
         self.pbar.setMaximum(100)
-        self.pbar.setGeometry(100, self.splash_pix.height() - 130, self.splash_pix.width() - 200, 20)
+        self.pbar.setGeometry(350, self.splash_pix.height() - 265, self.splash_pix.width() - 680, 15)
         self.pbar.setAlignment(Qt.AlignCenter)
         self.pbar.setStyleSheet("""
             QProgressBar {
                 border: 1px solid black;
                 text-align: center;
+                font-size: 10px;
                 padding: 1px;
                 border-radius: 5px;
                 background: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1,
@@ -45,20 +46,29 @@ class SplashScreen(QSplashScreen):
             }""")
 
         self.version = QLabel(self)
+        self.version.setAlignment(Qt.AlignLeft)
+        self.version.setStyleSheet("""
+            QLabel {
+                color : white;
+            }""")
 
     def setValue(self, value):
         self.pbar.setValue(value)
 
     def setVersion(self, version):
-        self.version.setText(f"Version {version}")
-        self.version.move(self.splash_pix.width() - self.fontMetrics().width(version) - 125,
-                          self.splash_pix.height() - 180)
+        text = f"Version {version}"
+        self.version.setText(text)
+        self.version.move(self.splash_pix.width() - self.fontMetrics().width(text) - 332,
+                          self.splash_pix.height() - 265)
+        geom = self.pbar.geometry()
+        geom.setWidth(geom.width() - self.fontMetrics().width(text) - 10)
+        self.pbar.setGeometry(geom)
 
     def show(self):
         super().show()
         qApp.processEvents()
 
-    def showMessage(self, message: str, alignment: int = Qt.AlignBottom | Qt.AlignCenter, color=Qt.black):
+    def showMessage(self, message: str, alignment: int = Qt.AlignBottom | Qt.AlignLeft, color=Qt.white):
         self.__message = message
         self.__alignment = alignment
         self.__color = color
