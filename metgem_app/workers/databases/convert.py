@@ -27,9 +27,12 @@ class ConvertDatabasesWorker(BaseWorker):
                 for i, (name, ids) in enumerate(self.ids[origin].items()):
                     filenames = []
                     for id_ in ids:
-                        path = os.path.join(self.input_path, os.path.basename(id_))
+                        path = os.path.join(self.input_path, os.path.basename(id_)) if not os.path.isabs(id_) else id_
                         if os.path.exists(path):
                             filenames.append(path)
+
+                    if not filenames:
+                        continue
 
                     try:
                         db.add_bank(filenames, bank_name=origin + ' - ' + name)
