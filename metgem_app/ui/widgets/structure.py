@@ -1,8 +1,8 @@
 # noinspection PyUnresolvedReferences
-from PyQt5.QtCore import pyqtProperty
+from PyQt5.QtCore import pyqtProperty, QPoint, Qt
 from PyQt5.QtCore import QByteArray, QSize
 from PyQt5.QtSvg import QSvgWidget
-from PyQt5.QtWidgets import QVBoxLayout, QPushButton, QWidget
+from PyQt5.QtWidgets import QVBoxLayout, QPushButton, QWidget, QMenu, QAction, QApplication
 
 try:
     # noinspection PyUnresolvedReferences
@@ -63,6 +63,21 @@ class StructureSvgWidget(QSvgWidget):
 
         self.second_mapping = SecondColumnMapping(self)
 
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.customContextMenuRequested.connect(self.show_context_menu)
+
+    def show_context_menu(self, pos: QPoint):
+        if self.has_data and not self.btShowStructure.isVisible():
+            menu = QMenu(self)
+            action = QAction("Copy to clipboard", self)
+            action.triggered.connect(QApplication.clipboard().setPixmap(self.grab()))
+            menu.addAction(action)
+            menu.exec(self.mapToGlobal(pos))
+
+    @property
+    def has_data(self):
+        return bool(self._inchi or self._smiles)
+
     @pyqtProperty(str)
     def inchi(self):
         return self._inchi
@@ -81,12 +96,12 @@ class StructureSvgWidget(QSvgWidget):
 
     def setSmiles(self, smiles):
         self._smiles = smiles
-        self.btShowStructure.setVisible(bool(self._inchi or self._smiles))
+        self.btShowStructure.setVisible(self.has_data)
         self.load(QByteArray(b''))
 
     def setInchi(self, inchi):
         self._inchi = inchi
-        self.btShowStructure.setVisible(bool(self._inchi or self._smiles))
+        self.btShowStructure.setVisible(self.has_data)
         self.load(QByteArray(b''))
 
     # noinspection PyAttributeOutsideInit
