@@ -133,7 +133,6 @@ class BaseFrame(QFrame):
                                          self._hide_isolated_nodes)
 
 
-
 class NetworkFrame(BaseFrame):
     name = 'network'
     title = 'Network'

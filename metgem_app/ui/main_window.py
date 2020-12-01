@@ -531,7 +531,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         if worker is not None:
             self._workers.append(worker)
             self._workers.append(create_draw_workers)
-            self._workers.append(lambda _: self.update_columns_mappings())
+            self._workers.append(lambda _: self.update_columns_mappings(force_reset_mapping=False))
             self._workers.append(save_filename)
             self._workers.append(lambda _: self.update_recent_projects(filename))  # Update list of recent projects
             self._workers.start()
@@ -2136,7 +2136,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 pass
 
     @debug
-    def update_columns_mappings(self):
+    def update_columns_mappings(self, force_reset_mapping=True):
         columns_mappings = getattr(self.network, 'columns_mappings', {})
 
         key = columns_mappings.get('label', None)
@@ -2158,21 +2158,23 @@ class MainWindow(MainWindowBase, MainWindowUI):
         try:
             key, func = columns_mappings.get('size', (None, None))
         except TypeError:
-            self.set_nodes_sizes_values(None)
+            if force_reset_mapping:
+                self.set_nodes_sizes_values(None)
         else:
             if key is not None and func is not None:
                 self.set_nodes_sizes_values(column_key=key, func=func)
-            else:
+            elif force_reset_mapping:
                 self.set_nodes_sizes_values(None)
 
         try:
             key, colors = columns_mappings.get('colors', (None, None))
         except TypeError:
-            self.set_nodes_colors_values(None)
+            if force_reset_mapping:
+                self.set_nodes_colors_values(None)
         else:
             if key is not None and colors is not None:
                 self.set_nodes_colors_values(column_key=key, mapping=colors)
-            else:
+            elif force_reset_mapping:
                 self.set_nodes_colors_values(None)
 
     @debug
