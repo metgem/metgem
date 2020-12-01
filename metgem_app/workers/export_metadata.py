@@ -44,7 +44,10 @@ class ExportMetadataWorker(BaseWorker):
                     data = f"{self.model.headerData(i, Qt.Vertical)}{self.sep}"
                     for j in range(ncolumns):
                         index = self.model.index(i, j)
-                        data += f"{self.model.data(index)}{self.sep}"
+                        d = str(self.model.data(index))
+                        if self.sep in d:
+                            d = '"' + d.replace('"', "'") + '"'
+                        data += f"{d}{self.sep}"
                     f.write(f"{data[:-1]}\n")
                     self.updated.emit(1)
             return True
