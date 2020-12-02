@@ -102,7 +102,7 @@ class BaseFrame(QFrame):
     def set_style(self, style):
         self.gvNetwork.scene().setNetworkStyle(style)
 
-    def create_draw_worker(self, compute_layouts=True, colors=[], radii=[]):
+    def create_draw_worker(self, compute_layouts=True, colors=[], radii=[], layout=None, isolated_nodes=None,):
         scene = self.gvNetwork.scene()
         if self.use_edges:
             scene.removeAllEdges()
@@ -118,6 +118,12 @@ class BaseFrame(QFrame):
                           for e in self._network.graph.es if not e.is_loop()]
             if edges_attr:
                 scene.createEdges(*zip(*edges_attr))
+
+        if layout is not None:
+            self._layout = layout
+
+        if isolated_nodes is not None:
+            self._isolated_nodes = isolated_nodes
 
         # Create apply layout worker
         if compute_layouts or self._layout is None:

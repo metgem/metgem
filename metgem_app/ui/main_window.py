@@ -507,7 +507,6 @@ class MainWindow(MainWindowBase, MainWindowUI):
                     widget = self.add_network_widget(widget_class)
                     if widget is not None:
                         layout = value.get('layout')
-                        self.apply_layout(widget, layout, value.get('isolated_nodes'))
                         if layout is not None:
                             colors = value.get('colors', {})
                             colors = [QColor(colors.get(str(i), '')) for i in range(layout.shape[0])]
@@ -515,9 +514,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
                             colors = []
                         worker = widget.create_draw_worker(compute_layouts=False,
                                                            colors=colors,
-                                                           radii=value.get('radii', []))
+                                                           radii=value.get('radii', []),
+                                                           layout=layout,
+                                                           isolated_nodes=value.get('isolated_nodes'))
                         workers.append(worker)
-
             if workers:
                 return workers
 
