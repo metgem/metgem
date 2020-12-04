@@ -9,8 +9,8 @@ from ..workers import ClusterizeOptions
 
 class ClusterizeDialog(QDialog):
 
-    def __init__(self, views):
-        super().__init__()
+    def __init__(self, *args, views, **kwargs):
+        super().__init__(*args, **kwargs)
         uic.loadUi(os.path.join(os.path.dirname(__file__), 'clusterize_dialog.ui'), self)
 
         self.setWindowFlags(Qt.Tool | Qt.CustomizeWindowHint | Qt.WindowCloseButtonHint)

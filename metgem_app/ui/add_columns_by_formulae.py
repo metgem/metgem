@@ -72,7 +72,7 @@ class AddColumnsByFormulaeDialog(AddColumnsByFormulaeDialogUI, AddColumnsByFormu
     COLUMN_NAME = 0
     COLUMN_FORMULA = 1
 
-    def __init__(self, model, *args, **kwargs):
+    def __init__(self, *args, model, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.setupUi(self)

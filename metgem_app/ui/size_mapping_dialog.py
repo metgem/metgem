@@ -296,7 +296,7 @@ class ColumnListWidgetItem(QListWidgetItem):
 
 class SizeMappingDialog(SizeMappingDialogUI, SizeMappingDialogBase):
 
-    def __init__(self, model: QAbstractTableModel, column_id: int, func: 'SizeMappingFunc' = None, *args, **kwargs):
+    def __init__(self, *args, model: QAbstractTableModel, column_id: int, func: 'SizeMappingFunc' = None, **kwargs):
         super().__init__(*args, **kwargs)
 
         self._model = model

@@ -13,7 +13,7 @@ class ColorPicker(QToolButton):
         self._color_group = color_group
 
         dialog_action = QWidgetAction(self)
-        self._dialog = QColorDialog()
+        self._dialog = QColorDialog(self)
 
         self.btReset = None
         button_box = self._dialog.findChild(QDialogButtonBox, "")

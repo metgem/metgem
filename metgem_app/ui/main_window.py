@@ -1193,7 +1193,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             else:
                 ids = [index.column() for index in selected_columns_indexes]
 
-            self._dialog = ui.PieColorMappingDialog(self.tvNodes.model(), ids)
+            self._dialog = ui.PieColorMappingDialog(self, model=self.tvNodes.model(), selected_columns=ids)
 
             def set_mapping(result):
                 if result == QDialog.Accepted:
@@ -1216,7 +1216,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
                     id_ = selected_columns_indexes[0].column()
                     func = None
 
-                self._dialog = ui.SizeMappingDialog(self.tvNodes.model(), id_, func)
+                self._dialog = ui.SizeMappingDialog(self, model=self.tvNodes.model(),
+                                                    column_id=id_, func=func)
 
                 def set_mapping(result):
                     if result == QDialog.Accepted:
@@ -1242,7 +1243,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
                     id_ = selected_columns_indexes[0].column()
                     mapping = None
 
-                self._dialog = ui.ColorMappingDialog(self.tvNodes.model(), id_, mapping)
+                self._dialog = ui.ColorMappingDialog(self, model=self.tvNodes.model(),
+                                                     column_id=id_, mapping=mapping)
 
                 def set_mapping(result):
                     if result == QDialog.Accepted:
@@ -1293,7 +1295,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
     # noinspection PyUnusedLocal
     @debug
     def on_add_columns_by_formulae(self, *args):
-        self._dialog = ui.AddColumnsByFormulaeDialog(self.tvNodes.model())
+        self._dialog = ui.AddColumnsByFormulaeDialog(self, model=self.tvNodes.model())
 
         def eval_fomulae(result):
             if result == QDialog.Accepted:
@@ -1360,7 +1362,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         if not docks:
             QMessageBox.warning(self, None, 'Plase add a view first.')
             return
-        self._dialog = ui.ClusterizeDialog({k: v.widget().title for k, v in docks})
+        self._dialog = ui.ClusterizeDialog(self, views={k: v.widget().title for k, v in docks})
 
         def do_clustering(result):
             if result == QDialog.Accepted:

@@ -367,8 +367,8 @@ class BaseColorMappingDialog(ColorMappingDialogUI, ColorMappingDialogBase):
 
 class PieColorMappingDialog(BaseColorMappingDialog):
 
-    def __init__(self, model: QAbstractTableModel = None, selected_columns: List[int] = None):
-        super().__init__()
+    def __init__(self, *args, model: QAbstractTableModel = None, selected_columns: List[int] = None, **kwargs):
+        super().__init__(*args, **kwargs)
 
         for i in range(self.layoutBins.count()):
             w = self.layoutBins.itemAt(i).widget()
@@ -437,11 +437,11 @@ class PieColorMappingDialog(BaseColorMappingDialog):
 
 class ColorMappingDialog(BaseColorMappingDialog):
 
-    def __init__(self, model: QAbstractTableModel = None, column_id: int = None, mapping: dict = None):
+    def __init__(self, *args, model: QAbstractTableModel = None, column_id: int = None, mapping: dict = None, **kwargs):
         self._model = model
         self._column_id = column_id
 
-        super().__init__()
+        super().__init__(*args, **kwargs)
 
         data = self._model.headerData(self._column_id, Qt.Horizontal, role=ColumnDataRole)
         if data is not None and not isinstance(data, pd.Series):
