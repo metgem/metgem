@@ -1,11 +1,10 @@
 import os
-import weakref
 from typing import Any, Optional, Union
 
 import numpy as np
 from PyQt5 import uic
-from PyQt5.QtCore import Qt, QRectF, QLineF, QPointF, QAbstractTableModel, pyqtSignal, QVariant, QObject, QSize, \
-    QModelIndex
+from PyQt5.QtCore import (Qt, QRectF, QLineF, QPointF, QAbstractTableModel, pyqtSignal,
+                          QVariant, QSize, QModelIndex)
 from PyQt5.QtGui import QPainter, QPen, QPainterPath, QShowEvent, QBrush, QColor
 from PyQt5.QtWidgets import (QGraphicsScene, QGraphicsEllipseItem, QGraphicsItem,
                              QGraphicsPathItem, QGraphicsSceneMouseEvent, QStyleOptionGraphicsItem,
@@ -20,36 +19,6 @@ SizeMappingDialogUI, SizeMappingDialogBase = uic.loadUiType(UI_FILE,
                                                             import_from='metgem_app.ui')
 
 ColumnRole = Qt.UserRole + 1
-
-
-# noinspection PyMethodParameters
-class IterInstances:
-    """"Metaclass to keep track of instances of a class"""
-
-    def __new__(cls, name, bases, dct):
-        dct['_instances'] = set()
-        return super().__new__(cls, name, bases, dct)
-
-    def __call__(cls, *args, **kwargs):
-        instance = super().__call__(*args, **kwargs)
-        cls._instances.add(weakref.ref(instance))
-        return instance
-
-    def __iter__(cls):
-        dead = set()
-        for ref in cls._instances:
-            obj = ref()
-            if obj is not None:
-                yield obj
-            else:
-                dead.add(ref)
-        cls._instances -= dead
-
-
-class IterPyQtWrapperInstances(IterInstances, type(QObject)):
-    """"Metaclass to keep track of instances of a QObject class"""
-
-    pass
 
 
 class Link(QGraphicsPathItem):
@@ -115,7 +84,7 @@ class Link(QGraphicsPathItem):
         self.setPath(path)
 
 
-class Handle(QGraphicsEllipseItem, metaclass=IterPyQtWrapperInstances):
+class Handle(QGraphicsEllipseItem):
 
     def __init__(self, size, llink: Link = None, rlink: Link = None,
                  brush: Union[QBrush, QColor, Qt.GlobalColor] = Qt.white,
@@ -151,10 +120,9 @@ class Handle(QGraphicsEllipseItem, metaclass=IterPyQtWrapperInstances):
         self._rlink = link
 
     def setSelected(self, selected: bool):
-        if selected:  # Allow only one handle to be selected at a time
-            for obj in Handle:
-                if obj != self:
-                    obj.setSelected(False)
+        scene = self.scene()
+        if scene:
+            scene.clearSelection()
         super().setSelected(selected)
 
     def itemChange(self, change: QGraphicsItem.GraphicsItemChange, value: Any):
@@ -195,6 +163,16 @@ class Handle(QGraphicsEllipseItem, metaclass=IterPyQtWrapperInstances):
         painter.drawEllipse(self.rect())
 
 
+class StartHandle(Handle):
+    def __init__(self, size):
+        super().__init__(size, brush=Qt.red, movable=False)
+
+
+class StopHandle(Handle):
+    def __init__(self, size):
+        super().__init__(size, brush=Qt.blue, movable=False)
+
+
 class Scene(QGraphicsScene):
     handleMoved = pyqtSignal(Handle)
     handleSelectionChanged = pyqtSignal(QVariant)  # Handle or None
@@ -211,14 +189,21 @@ class Scene(QGraphicsScene):
         self._area = self.addRect(self.sceneRect())
         self._tooltip = self.addText('')
 
-        self._handle1 = Handle(handle_size, brush=Qt.red)
+        self._handle1 = StartHandle(handle_size)
         self.addItem(self._handle1)
-        self._handle2 = Handle(handle_size, brush=Qt.blue)
+        self._handle2 = StopHandle(handle_size)
         self.addItem(self._handle2)
-        link = Link(self._handle1, self._handle2, handle_size / 5)
+        link = Link(self._handle1, self._handle2, handle_size / 3)
         self.addItem(link)
+        self.setFocusItem(link)
 
         self.selectionChanged.connect(self.on_selection_changed)
+
+    def startHandle(self):
+        return self._handle1
+
+    def stopHandle(self):
+        return self._handle2
 
     def linkAt(self, x: int):
         for item in self.items():
@@ -248,10 +233,13 @@ class Scene(QGraphicsScene):
 
     def removeHandle(self, handle: Handle):
         if handle and handle != self._handle1 and handle != self._handle2:
-            if handle.leftLink() and handle.rightLink():
-                handle.leftLink().setHandle2(handle.rightLink().handle2())
-                self.removeItem(handle.rightLink())
+            llink = handle.leftLink()
+            rlink = handle.rightLink()
             self.removeItem(handle)
+            if llink and rlink:
+                handle2 = rlink.handle2()
+                llink.setHandle2(handle2)
+                self.removeItem(rlink)
 
     def on_selection_changed(self):
         self.handleSelectionChanged.emit(self.selectedHandle())
@@ -285,13 +273,8 @@ class Scene(QGraphicsScene):
 
     def customHandles(self):
         for item in self.items():
-            if isinstance(item, Handle) and item != self._handle1 and item != self._handle2:
+            if type(item) is Handle:  # if item is of type Handle but not subclass
                 yield item
-
-    def removeAllHandles(self):
-        for item in self.items():
-            if isinstance(item, Handle) and item != self._handle1 and item != self._handle2:
-                self.removeHandle(item)
 
 
 class ColumnListWidgetItem(QListWidgetItem):
@@ -317,7 +300,6 @@ class SizeMappingDialog(SizeMappingDialogUI, SizeMappingDialogBase):
         super().__init__(*args, **kwargs)
 
         self._model = model
-        self._first_show = True
         self._column_id = column_id
         self._func = func
 
@@ -336,10 +318,6 @@ class SizeMappingDialog(SizeMappingDialogUI, SizeMappingDialogBase):
         self.gvMapping.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.gvMapping.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
-        scene = Scene(QRectF(0, 0, self.gvMapping.minimumWidth(), self.gvMapping.minimumHeight()),
-                      handle_size=self.gvMapping.minimumWidth() / 30)
-        self.gvMapping.setScene(scene)
-
         self.cbMode.addItems(["Linear", "Log"])
         self.cbMode.activated[int].connect(self.on_mode_changed)
         self._current_mode = MODE_LINEAR
@@ -353,18 +331,8 @@ class SizeMappingDialog(SizeMappingDialogUI, SizeMappingDialogBase):
             self.lstColumns.addItem(item)
 
     def showEvent(self, event: QShowEvent):
-        scene = self.gvMapping.scene()
-        self.gvMapping.fitInView(scene.sceneRect(), Qt.IgnoreAspectRatio)
-        scene.adjust()
-
-        if self._first_show:
-            self.setValues(self._column_id, self._func)
-            self._first_show = False
-
+        self.setValues(self._column_id, self._func)
         super().showEvent(event)
-
-        scene.handleMoved.connect(self.on_handle_moved)
-        scene.handleSelectionChanged.connect(self.on_selection_changed)
 
     def mapHandlePosToValue(self, pos: QPointF, mode=None):
         dr = self.gvMapping.scene().drawAreaRect()
@@ -436,7 +404,14 @@ class SizeMappingDialog(SizeMappingDialogUI, SizeMappingDialogBase):
             for w in self.all_controls():
                 w.setEnabled(False)
         else:
-            self.gvMapping.scene().removeAllHandles()
+            scene = Scene(QRectF(0, 0, self.gvMapping.minimumWidth(), self.gvMapping.minimumHeight()),
+                          handle_size=self.gvMapping.minimumWidth() / 30)
+            scene.handleMoved.connect(self.on_handle_moved)
+            scene.handleSelectionChanged.connect(self.on_selection_changed)
+            self.gvMapping.setScene(scene)
+            self.gvMapping.fitInView(scene.sceneRect(), Qt.IgnoreAspectRatio)
+            scene.adjust()
+
             for w in self.all_controls():
                 w.setEnabled(True)
 
