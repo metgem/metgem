@@ -25,6 +25,7 @@ class ImportUserDatabaseDialog(ImportUserDatabaseDialogBase, ImportUserDatabaseD
         self.setupUi(self)
         self.btBrowseInputFile.setFocus()
 
+        self._dialog = None
         self._workers = WorkerQueue(self, ProgressDialog(self))
 
         # Add import button
@@ -67,22 +68,22 @@ class ImportUserDatabaseDialog(ImportUserDatabaseDialogBase, ImportUserDatabaseD
     def browse(self):
         """Open a dialog to choose .mgf file"""
 
-        dialog = QFileDialog(self)
-        dialog.setFileMode(QFileDialog.ExistingFile)
-        dialog.setNameFilters(["All supported formats (*.mgf *.msp)",
+        self._dialog = QFileDialog(self)
+        self._dialog.setFileMode(QFileDialog.ExistingFile)
+        self._dialog.setNameFilters(["All supported formats (*.mgf *.msp)",
                                "Mascot Generic Format (*.mgf)",
                                "NIST Text Format of Individual Spectra (*.msp)",
                                "All files (*)"])
 
         def set_filename(result):
             if result == QDialog.Accepted:
-                filename = dialog.selectedFiles()[0]
+                filename = self._dialog.selectedFiles()[0]
                 self.editInputFile.setText(filename)
                 self.editDatabaseName.setText(os.path.splitext(os.path.basename(filename))[0])
                 self.editInputFile.setPalette(self.style().standardPalette())
 
-        dialog.finished.connect(set_filename)
-        dialog.open()
+        self._dialog.finished.connect(set_filename)
+        self._dialog.open()
 
     def import_database(self):
         input_file = self.editInputFile.text()

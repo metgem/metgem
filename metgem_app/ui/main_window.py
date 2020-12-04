@@ -52,6 +52,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        # Keep a reference to the currently opened dialog
+        self._dialog = None
+
         # Keep track of unsaved changes
         self._has_unsaved_changes = False
 
@@ -868,18 +871,18 @@ class MainWindow(MainWindowBase, MainWindowUI):
         if reply == QMessageBox.Cancel:
             return
 
-        dialog = QFileDialog(self)
-        dialog.setFileMode(QFileDialog.ExistingFile)
-        dialog.setNameFilters([f"{QCoreApplication.applicationName()} Files (*{config.FILE_EXTENSION})",
+        self._dialog = QFileDialog(self)
+        self._dialog.setFileMode(QFileDialog.ExistingFile)
+        self._dialog.setNameFilters([f"{QCoreApplication.applicationName()} Files (*{config.FILE_EXTENSION})",
                                "All files (*)"])
 
         def open_file(result):
             if result == QDialog.Accepted:
-                filename = dialog.selectedFiles()[0]
+                filename = self._dialog.selectedFiles()[0]
                 self.load_project(filename)
 
-        dialog.finished.connect(open_file)
-        dialog.open()
+        self._dialog.finished.connect(open_file)
+        self._dialog.open()
 
     # noinspection PyUnusedLocal
     @debug
@@ -892,19 +895,19 @@ class MainWindow(MainWindowBase, MainWindowUI):
     # noinspection PyUnusedLocal
     @debug
     def on_save_project_as_triggered(self, *args):
-        dialog = QFileDialog(self)
-        dialog.setAcceptMode(QFileDialog.AcceptSave)
-        dialog.setDefaultSuffix(config.FILE_EXTENSION)
-        dialog.setNameFilters([f"{QCoreApplication.applicationName()} Files (*{config.FILE_EXTENSION})",
+        self._dialog = QFileDialog(self)
+        self._dialog.setAcceptMode(QFileDialog.AcceptSave)
+        self._dialog.setDefaultSuffix(config.FILE_EXTENSION)
+        self._dialog.setNameFilters([f"{QCoreApplication.applicationName()} Files (*{config.FILE_EXTENSION})",
                                "All files (*)"])
 
         def save_file(result):
             if result == QDialog.Accepted:
-                filename = dialog.selectedFiles()[0]
+                filename = self._dialog.selectedFiles()[0]
                 self.save_project(filename)
 
-        dialog.finished.connect(save_file)
-        dialog.open()
+        self._dialog.finished.connect(save_file)
+        self._dialog.open()
 
     @debug
     def on_set_pie_charts_visibility_toggled(self, visibility):
@@ -1190,15 +1193,15 @@ class MainWindow(MainWindowBase, MainWindowUI):
             else:
                 ids = [index.column() for index in selected_columns_indexes]
 
-            dialog = ui.PieColorMappingDialog(self.tvNodes.model(), ids)
+            self._dialog = ui.PieColorMappingDialog(self.tvNodes.model(), ids)
 
             def set_mapping(result):
                 if result == QDialog.Accepted:
-                    columns, colors = dialog.getValues()
+                    columns, colors = self._dialog.getValues()
                     self.set_nodes_pie_chart_values(columns, colors)
                     self.has_unsaved_changes = True
-            dialog.finished.connect(set_mapping)
-            dialog.open()
+            self._dialog.finished.connect(set_mapping)
+            self._dialog.open()
         elif type_ == COLUMN_MAPPING_NODES_SIZES:
             if len_ > 1:
                 QMessageBox.information(self, None, "Please select only one column.")
@@ -1213,17 +1216,18 @@ class MainWindow(MainWindowBase, MainWindowUI):
                     id_ = selected_columns_indexes[0].column()
                     func = None
 
-                dialog = ui.SizeMappingDialog(self.tvNodes.model(), id_, func)
+                self._dialog = ui.SizeMappingDialog(self.tvNodes.model(), id_, func)
 
                 def set_mapping(result):
                     if result == QDialog.Accepted:
                         # noinspection PyShadowingNames
-                        id_, func = dialog.getValues()
+                        id_, func = self._dialog.getValues()
                         if id_ >= 0:
                             self.set_nodes_sizes_values(id_, func)
                         self.has_unsaved_changes = True
-                dialog.finished.connect(set_mapping)
-                dialog.open()
+
+                self._dialog.finished.connect(set_mapping)
+                self._dialog.open()
         elif type_ == COLUMN_MAPPING_NODES_COLORS:
             if len_ > 1:
                 QMessageBox.information(self, None, "Please select only one column.")
@@ -1238,18 +1242,18 @@ class MainWindow(MainWindowBase, MainWindowUI):
                     id_ = selected_columns_indexes[0].column()
                     mapping = None
 
-                dialog = ui.ColorMappingDialog(self.tvNodes.model(), id_, mapping)
+                self._dialog = ui.ColorMappingDialog(self.tvNodes.model(), id_, mapping)
 
                 def set_mapping(result):
                     if result == QDialog.Accepted:
                         # noinspection PyShadowingNames
-                        id_, mapping = dialog.getValues()
+                        id_, mapping = self._dialog.getValues()
                         if id_ >= 0:
                             self.set_nodes_colors_values(id_, mapping)
                         self.has_unsaved_changes = True
 
-                dialog.finished.connect(set_mapping)
-                dialog.open()
+                self._dialog.finished.connect(set_mapping)
+                self._dialog.open()
 
     @debug
     def on_nodes_table_contextmenu(self, event):
@@ -1289,11 +1293,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
     # noinspection PyUnusedLocal
     @debug
     def on_add_columns_by_formulae(self, *args):
-        dialog = ui.AddColumnsByFormulaeDialog(self.tvNodes.model())
+        self._dialog = ui.AddColumnsByFormulaeDialog(self.tvNodes.model())
 
         def eval_fomulae(result):
             if result == QDialog.Accepted:
-                alias, mappings = dialog.getValues()
+                alias, mappings = self._dialog.getValues()
                 df = self._network.infos
                 df_resolver = {k: df[v] for k, v in alias.items() if v in df.columns}
 
@@ -1337,8 +1341,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
                 self.has_unsaved_changes = True
 
-        dialog.finished.connect(eval_fomulae)
-        dialog.open()
+        self._dialog.finished.connect(eval_fomulae)
+        self._dialog.open()
 
     # noinspection PyUnusedLocal
     @debug
@@ -1356,7 +1360,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         if not docks:
             QMessageBox.warning(self, None, 'Plase add a view first.')
             return
-        dialog = ui.ClusterizeDialog({k: v.widget().title for k, v in docks})
+        self._dialog = ui.ClusterizeDialog({k: v.widget().title for k, v in docks})
 
         def do_clustering(result):
             if result == QDialog.Accepted:
@@ -1370,7 +1374,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                     self.tvNodes.setColumnBlinking(column_index + 2, True)
                     QMessageBox.information(self, None, f"Found {len(set(data)) - 1} clusters.")
 
-                name, options = dialog.getValues()
+                name, options = self._dialog.getValues()
                 view = self.network_docks[name].widget()
                 worker = workers.ClusterizeWorker(view, options)
                 if worker is not None:
@@ -1378,8 +1382,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
                     self._workers.append(update_dataframe)
                     self._workers.start()
 
-        dialog.finished.connect(do_clustering)
-        dialog.open()
+        self._dialog.finished.connect(do_clustering)
+        self._dialog.open()
 
     # noinspection PyUnusedLocal
     @debug
@@ -1459,19 +1463,19 @@ class MainWindow(MainWindowBase, MainWindowUI):
         options.analog_search = (type_ == 'analogs')
 
         try:
-            dialog = ui.QueryDatabasesDialog(self, options=options)
+            self._dialog = ui.QueryDatabasesDialog(self, options=options)
 
             def do_query(result):
                 if result == QDialog.Accepted:
                     # noinspection PyShadowingNames
-                    options = dialog.getValues()
+                    options = self._dialog.getValues()
                     worker = self.prepare_query_database_worker(selected_idx, options)
                     if worker is not None:
                         self._workers.append(worker)
                         self._workers.start()
 
-            dialog.finished.connect(do_query)
-            dialog.open()
+            self._dialog.finished.connect(do_query)
+            self._dialog.open()
         except FileNotFoundError:
             QMessageBox.warning(self, None, "No database found. Please download at least one database.")
 
@@ -1479,20 +1483,20 @@ class MainWindow(MainWindowBase, MainWindowUI):
     @debug
     def on_current_parameters_triggered(self, *args):
         if hasattr(self._network.options, 'cosine'):
-            dialog = ui.CurrentParametersDialog(self, options=self.network.options)
-            dialog.open()
+            self._dialog = ui.CurrentParametersDialog(self, options=self.network.options)
+            self._dialog.open()
 
     # noinspection PyUnusedLocal
     @debug
     def on_preferences_triggered(self, *args):
-        dialog = ui.SettingsDialog(self)
+        self._dialog = ui.SettingsDialog(self)
 
         def set_preferences(result):
             if result == QDialog.Accepted:
-                self.style = dialog.getValues()
+                self.style = self._dialog.getValues()
 
-        dialog.finished.connect(set_preferences)
-        dialog.open()
+        self._dialog.finished.connect(set_preferences)
+        self._dialog.open()
 
     # noinspection PyUnusedLocal
     @debug
@@ -1507,8 +1511,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
     # noinspection PyUnusedLocal
     @debug
     def on_show_plugins_manager_triggered(self, *args):
-        dialog = ui.PluginsManagerDialog(self)
-        dialog.open()
+        self._dialog = ui.PluginsManagerDialog(self)
+        self._dialog.open()
 
     # noinspection PyUnusedLocal
     @debug
@@ -1517,7 +1521,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         if reply == QMessageBox.Cancel:
             return
 
-        dialog = ui.ProcessDataDialog(self, options=self.network.options)
+        self._dialog = ui.ProcessDataDialog(self, options=self.network.options)
 
         def do_process(result):
             if result == QDialog.Accepted:
@@ -1553,7 +1557,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
                 self.reset_project()
 
-                process_file, use_metadata, metadata_file, metadata_options, options, views = dialog.getValues()
+                process_file, use_metadata, metadata_file, metadata_options, options, views = self._dialog.getValues()
 
                 self._network.options = options
                 self._workers.append(self.prepare_read_data_worker(process_file))
@@ -1580,42 +1584,42 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
                 self._workers.start()
 
-        dialog.finished.connect(do_process)
-        dialog.open()
+        self._dialog.finished.connect(do_process)
+        self._dialog.open()
 
     # noinspection PyUnusedLocal
     @debug
     def on_import_metadata_triggered(self, *args):
-        dialog = ui.ImportMetadataDialog(self)
+        self._dialog = ui.ImportMetadataDialog(self)
 
         def do_import(result):
             if result == QDialog.Accepted:
-                metadata_filename, options = dialog.getValues()
+                metadata_filename, options = self._dialog.getValues()
                 worker = self.prepare_read_metadata_worker(metadata_filename, options)
                 if worker is not None:
                     self._workers.append(worker)
                     self._workers.start()
 
-        dialog.finished.connect(do_import)
-        dialog.open()
+        self._dialog.finished.connect(do_import)
+        self._dialog.open()
 
     # noinspection PyUnusedLocal
     @debug
     def on_import_group_mapping_triggered(self, *args):
-        dialog = QFileDialog(self)
-        dialog.setFileMode(QFileDialog.ExistingFile)
-        dialog.setNameFilters(["Text Files (*.txt *.csv *.tsv)", "All files (*)"])
+        self._dialog = QFileDialog(self)
+        self._dialog.setFileMode(QFileDialog.ExistingFile)
+        self._dialog.setNameFilters(["Text Files (*.txt *.csv *.tsv)", "All files (*)"])
 
         def do_import(result):
             if result == QDialog.Accepted:
-                filename = dialog.selectedFiles()[0]
+                filename = self._dialog.selectedFiles()[0]
                 worker = self.prepare_read_group_mapping_worker(filename)
                 if worker is not None:
                     self._workers.append(worker)
                     self._workers.start()
 
-        dialog.finished.connect(do_import)
-        dialog.open()
+        self._dialog.finished.connect(do_import)
+        self._dialog.open()
 
     # noinspection PyUnusedLocal
     @debug
@@ -1625,12 +1629,12 @@ class MainWindow(MainWindowBase, MainWindowUI):
             widget_class = action.data()
             if widget_class is not None:
                 options = self.network.options.get(widget_class.name, {})
-                dialog = widget_class.dialog_class(self, options=options)
+                self._dialog = widget_class.dialog_class(self, options=options)
 
                 def add_view(result):
                     if result == QDialog.Accepted:
                         # noinspection PyShadowingNames
-                        options = dialog.getValues()
+                        options = self._dialog.getValues()
                         widget = self.add_network_widget(widget_class)
                         self.network.options[widget.name] = options
                         self.has_unsaved_changes = True
@@ -1643,18 +1647,18 @@ class MainWindow(MainWindowBase, MainWindowUI):
                                 self._workers.append(lambda _: self.update_status_widgets())
                             self._workers.start()
 
-                dialog.finished.connect(add_view)
-                dialog.open()
+                self._dialog.finished.connect(add_view)
+                self._dialog.open()
 
     @debug
     def on_edit_options_triggered(self, widget):
         if hasattr(self.network, 'scores'):
             options = self.network.options.get(widget.name, {})
-            dialog = widget.dialog_class(self, options=options)
+            self._dialog = widget.dialog_class(self, options=options)
 
             def do_edit(result):
                 if result == QDialog.Accepted:
-                    new_options = dialog.getValues()
+                    new_options = self._dialog.getValues()
                     if new_options != options:
                         self.network.options[widget.name] = new_options
 
@@ -1668,22 +1672,22 @@ class MainWindow(MainWindowBase, MainWindowUI):
                         self._workers.start()
                         self.update_search_menu()
 
-            dialog.finished.connect(do_edit)
-            dialog.open()
+            self._dialog.finished.connect(do_edit)
+            self._dialog.open()
         else:
             QMessageBox.information(self, None, "No network found, please open a file first.")
 
     # noinspection PyUnusedLocal
     @debug
     def on_download_databases_triggered(self, *args):
-        dialog = ui.DownloadDatabasesDialog(self, base_path=config.DATABASES_PATH)
-        dialog.open()
+        self._dialog = ui.DownloadDatabasesDialog(self, base_path=config.DATABASES_PATH)
+        self._dialog.open()
 
     # noinspection PyUnusedLocal
     @debug
     def on_import_user_database_triggered(self, *args):
-        dialog = ui.ImportUserDatabaseDialog(self, base_path=config.DATABASES_PATH)
-        dialog.open()
+        self._dialog = ui.ImportUserDatabaseDialog(self, base_path=config.DATABASES_PATH)
+        self._dialog.open()
 
     # noinspection PyUnusedLocal
     @debug
@@ -1691,11 +1695,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
         path = config.SQL_PATH
         if os.path.exists(path) and os.path.isfile(path) and os.path.getsize(path) > 0:
             try:
-                dialog = ui.ViewDatabasesDialog(self, base_path=config.DATABASES_PATH)
+                self._dialog = ui.ViewDatabasesDialog(self, base_path=config.DATABASES_PATH)
             except (sqlalchemy.exc.OperationalError, sqlalchemy.exc.DatabaseError) as e:
                 QMessageBox.warning(self, None, str(e))
             else:
-                dialog.open()
+                self._dialog.open()
         else:
             QMessageBox.information(self, None, "No databases found, please download one or more database first.")
 
@@ -1705,18 +1709,18 @@ class MainWindow(MainWindowBase, MainWindowUI):
             path = config.SQL_PATH
             if os.path.exists(path) and os.path.isfile(path) and os.path.getsize(path) > 0:
                 spectrum = human_readable_data(self.network.spectra[row])
-                dialog = ui.ViewStandardsResultsDialog(self, mz_parent=self.network.mzs[row], spectrum=spectrum,
+                self._dialog = ui.ViewStandardsResultsDialog(self, mz_parent=self.network.mzs[row], spectrum=spectrum,
                                                        selection=selection, base_path=config.DATABASES_PATH)
 
                 def view_details(result):
                     if result == QDialog.Accepted:
-                        current = dialog.getValues()
+                        current = self._dialog.getValues()
                         if current is not None:
                             self.network.db_results[row]['current'] = current
                             self.has_unsaved_changes = True
 
-                dialog.finished.connect(view_details)
-                dialog.open()
+                self._dialog.finished.connect(view_details)
+                self._dialog.open()
             else:
                 QMessageBox.information(self, None, "No databases found, please download one or more database first.")
 
@@ -2065,8 +2069,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
                     if version == version_to_ignore:
                         return
 
-                dialog = ui.UpdatesDialog(self, version, release_notes, url)
-                dialog.exec_()
+                self._dialog = ui.UpdatesDialog(self, version, release_notes, url)
+                self._dialog.open()
             elif notify_if_no_update:
                 QMessageBox.information(self, None,
                                         f"Your version of {QCoreApplication.applicationName()} is already up-to-date.")

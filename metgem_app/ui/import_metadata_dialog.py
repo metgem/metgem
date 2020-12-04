@@ -26,6 +26,7 @@ class ImportMetadataDialog(ImportMetadataDialogBase, ImportMetadataDialogUI):
 
         self.setupUi(self)
 
+        self._dialog = None
         self._workers = WorkerQueue(self, ProgressDialog(self))
         self._column_index = -1
 
@@ -76,23 +77,23 @@ class ImportMetadataDialog(ImportMetadataDialogBase, ImportMetadataDialogUI):
             super().done(r)
 
     def browse(self):
-        dialog = QFileDialog(self)
-        dialog.setFileMode(QFileDialog.ExistingFile)
-        dialog.setNameFilters(["Metadata File (*.csv *.tsv *.txt *.xls *.xlsx *.xlsm *.xlsb *.ods)",
+        self._dialog = QFileDialog(self)
+        self._dialog.setFileMode(QFileDialog.ExistingFile)
+        self._dialog.setNameFilters(["Metadata File (*.csv *.tsv *.txt *.xls *.xlsx *.xlsm *.xlsb *.ods)",
                                "Microsoft Excel spreadsheets (*.xls *.xlsx, *.xlsm *.xlsb)",
                                "OpenDocument spreadsheets (*.ods)",
                                "All files (*)"])
 
         def set_filename(result):
             if result == QDialog.Accepted:
-                filename = dialog.selectedFiles()[0]
+                filename = self._dialog.selectedFiles()[0]
                 with SignalBlocker(self.editMetadataFile):
                     self.editMetadataFile.setText(filename)
                 self.editMetadataFile.setPalette(self.style().standardPalette())
                 self.on_metadata_file_changed(filename)
 
-        dialog.finished.connect(set_filename)
-        dialog.open()
+        self._dialog.finished.connect(set_filename)
+        self._dialog.open()
 
     def selection(self):
         model = self.twMetadata.model()

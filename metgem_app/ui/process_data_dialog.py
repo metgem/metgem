@@ -39,6 +39,7 @@ class ProcessDataDialog(ProcessDataDialogBase, ProcessDataDialogUI):
 
         self._metadata_options = ReadMetadataOptions()
         self._options = options
+        self._dialog = None
 
         self.setupUi(self)
         self.btBrowseProcessFile.setFocus()
@@ -122,12 +123,12 @@ class ProcessDataDialog(ProcessDataDialogBase, ProcessDataDialogUI):
                     return
 
             options = self._options.get(widget_class.name, {})
-            dialog = widget_class.dialog_class(self, options=options)
+            self._dialog = widget_class.dialog_class(self, options=options)
 
             # noinspection PyShadowingNames
             def add_view(result):
                 if result == QDialog.Accepted:
-                    options = dialog.getValues()
+                    options = self._dialog.getValues()
                     self._options[widget_class.name] = options
                     item = QListWidgetItem(widget_class.title)
                     item.setSizeHint(QSize(0, 50))
@@ -135,8 +136,8 @@ class ProcessDataDialog(ProcessDataDialogBase, ProcessDataDialogUI):
                     item.setData(ProcessDataDialog.NameRole, widget_class.name)
                     self.lstViews.addItem(item)
 
-            dialog.finished.connect(add_view)
-            dialog.open()
+            self._dialog.finished.connect(add_view)
+            self._dialog.open()
 
     def on_remove_views(self):
         for item in self.lstViews.selectedItems():
