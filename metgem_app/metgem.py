@@ -12,12 +12,17 @@ def run():
 
     # pytest switch: pass next arguments to pytest
     # https://docs.pytest.org/en/stable/example/simple.html?highlight=pyinstaller#freezing-pytest
-    if len(sys.argv) > 1 and sys.argv[1] == "--pytest":
-        import pytest
-        import pytestqt
-        import pytest_mock
+    if len(sys.argv) > 1:
+        if sys.argv[1] == "--pytest":
+            import pytest
+            import pytestqt
+            import pytest_mock
 
-        sys.exit(pytest.main(sys.argv[2:], plugins=[pytestqt, pytest_mock]))
+            sys.exit(pytest.main(sys.argv[2:], plugins=[pytestqt, pytest_mock]))
+        elif sys.argv[1] == "--python-console":
+            from IPython import embed
+
+            sys.exit(embed())
 
     import argparse
     import importlib
