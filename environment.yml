@@ -6,7 +6,7 @@ channels:
 dependencies:
     - pandas>=0.22
     - lxml>=4.0
-    - numpy>=1.14
+    - numpy>=1.14, <=1.19.2
     - pyqt>=5.9
     - python-igraph>=0.7.1
     - scikit-learn>=0.19
