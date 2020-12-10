@@ -79,10 +79,6 @@ jobs:
         asset_name: ${{ steps.build.outputs.asset-basename }}-$$.${{ steps.build.outputs.asset-ext }}
         asset_content_type: ${{ steps.build.outputs.asset-mimetype }}
         max_releases: 6
-    - name: Update Nightly tag
-      uses: richardsimko/update-tag@v1
-      with:
-        tag_name: nightly
         
   # Check that current commit does not have a nightly build asset uploaded yet
   check-assets:
@@ -111,3 +107,12 @@ jobs:
             done
           fi
           echo "::set-output name=needs-build::$needs_build"
+          
+  update-nightly-tag:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update Nightly tag
+        uses: richardsimko/update-tag@v1
+        with:
+          tag_name: nightly
