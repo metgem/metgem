@@ -4,16 +4,14 @@ import numpy as np
 from PyQt5 import uic
 from PyQt5.QtCore import pyqtSignal, Qt, QObject
 from PyQt5.QtGui import QPen
-from PyQt5.QtWidgets import QFrame, QMenu, QWidgetAction, QWidget, QGraphicsLineItem
+from PyQt5.QtWidgets import QFrame, QMenu, QWidgetAction, QWidget, QGraphicsLineItem, QMessageBox
 from PyQtNetworkView import NetworkScene
 
 from ..edit_options_dialog import (EditNetworkOptionsDialog, EditTSNEOptionsDialog,
-                                   EditMDSOptionsDialog, EditIsomapOptionsDialog)
+                                   EditMDSOptionsDialog, EditIsomapOptionsDialog,
+                                   EditUMAPOptionsDialog, EditPHATEOptionsDialog)
 from ... import config
 from ... import workers
-
-from ..edit_options_dialog import EditUMAPOptionsDialog
-from ..edit_options_dialog import EditPHATEOptionsDialog
 
 
 class BaseFrame(QFrame):
@@ -95,6 +93,12 @@ class BaseFrame(QFrame):
                 'colors': {i: c.name() for i, c in enumerate(scene.nodesColors()) if c.isValid()},
                 'radii': np.array(scene.nodesRadii(), dtype=np.uint8)
                }
+
+    def get_annotations_data(self) -> bytes:
+        return self.gvNetwork.saveAnnotations()
+
+    def set_annotations_data(self, buffer: bytes) -> None:
+        self.gvNetwork.loadAnnotations(buffer)
 
     def create_worker(self):
         raise NotImplementedError

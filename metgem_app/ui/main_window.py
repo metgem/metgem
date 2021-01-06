@@ -16,7 +16,7 @@ from PyQt5.QtCore import QSettings, Qt, QCoreApplication, QRectF
 from PyQt5.QtGui import QPainter, QImage, QColor, QKeyEvent, QIcon, QFontMetrics, QFont, QKeySequence, QCursor
 from PyQt5.QtWidgets import (QDialog, QFileDialog, QMessageBox, QWidget, QMenu, QActionGroup, QMainWindow,
                              QAction, qApp, QTableView, QComboBox, QToolBar,
-                             QApplication, QGraphicsView, QLineEdit, QListWidget, QLabel)
+                             QApplication, QGraphicsView, QLineEdit, QListWidget, QLabel, QToolButton)
 from PyQtAds.QtAds import (CDockManager, CDockWidget,
                            BottomDockWidgetArea, CenterDockWidgetArea,
                            TopDockWidgetArea, LeftDockWidgetArea)
@@ -244,7 +244,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             {node.index() for node in self.current_view.scene().selectedNodes()}))
         # noinspection PyPep8
         self.actionFindAnalogs.triggered.connect(lambda: self.on_query_databases('compare',
-           {node.index() for node in self.current_view.scene().selectedNodes()}))
+            {node.index() for node in self.current_view.scene().selectedNodes()}))
 
         self.actionFullScreen.triggered.connect(self.on_full_screen_triggered)
         self.actionHideSelected.triggered.connect(lambda: self.current_view.scene().hideSelectedItems()
@@ -270,6 +270,35 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.actionDownloadDatabases.triggered.connect(self.on_download_databases_triggered)
         self.actionImportUserDatabase.triggered.connect(self.on_import_user_database_triggered)
         self.actionViewDatabases.triggered.connect(self.on_view_databases_triggered)
+
+        group_tool = QActionGroup(self)
+        group_tool.addAction(self.actionSelectItems)
+        group_tool.addAction(self.actionAddAnnotationLine)
+        group_tool.addAction(self.actionAddAnnotationArrow)
+        group_tool.addAction(self.actionAddAnnotationRect)
+        group_tool.addAction(self.actionAddAnnotationEllipse)
+        group_tool.addAction(self.actionAddAnnotationText)
+        group_tool.setExclusive(True)
+        self.actionSelectItems.triggered.connect(lambda: self.on_set_annotations_mode(None))
+        self.actionAddAnnotationLine.triggered.connect(
+            lambda x: self.on_set_annotations_mode(widgets.MODE_LINE if x else None))
+        self.actionAddAnnotationArrow.triggered.connect(
+            lambda x: self.on_set_annotations_mode(widgets.MODE_ARROW if x else None))
+        self.actionAddAnnotationRect.triggered.connect(
+            lambda x: self.on_set_annotations_mode(widgets.MODE_RECT if x else None))
+        self.actionAddAnnotationEllipse.triggered.connect(
+            lambda x: self.on_set_annotations_mode(widgets.MODE_ELLIPSE if x else None))
+        self.actionAddAnnotationText.triggered.connect(
+            lambda x: self.on_set_annotations_mode(widgets.MODE_TEXT if x else None))
+        self.actionDeleteAnnotations.triggered.connect(self.on_delete_selected_annotations)
+        self.actionClearAnnotations.triggered.connect(self.on_clear_annotations)
+        self.actionUndoAnnotations.triggered.connect(self.on_undo_annotations)
+        self.actionRedoAnnotations.triggered.connect(self.on_redo_annotations)
+        self.btUndoAnnotations = widgets.ToolBarMenu()
+        self.btUndoAnnotations.setIcon(self.actionUndoAnnotations.icon())
+        self.btUndoAnnotations.setPopupMode(QToolButton.DelayedPopup)
+        self.tbAnnotations.insertWidget(self.actionUndoAnnotations, self.btUndoAnnotations)
+        self.tbAnnotations.removeAction(self.actionUndoAnnotations)
 
         self.dock_nodes.visibilityChanged.connect(lambda v: self.update_search_menu(self.tvNodes) if v else None)
         self.dock_edges.visibilityChanged.connect(lambda v: self.update_search_menu(self.tvEdges) if v else None)
@@ -491,7 +520,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.tvEdges.model().setSelection([])
             self.tvNodes.model().sourceModel().beginResetModel()
             self.tvEdges.model().sourceModel().beginResetModel()
-            self.network, layouts = worker.result()
+            self.network, layouts, annotations = worker.result()
             self.tvNodes.model().sourceModel().endResetModel()
             self.tvEdges.model().sourceModel().endResetModel()
 
@@ -515,11 +544,15 @@ class MainWindow(MainWindowBase, MainWindowUI):
                             colors = [QColor(colors.get(str(i), '')) for i in range(layout.shape[0])]
                         else:
                             colors = []
+
                         worker = widget.create_draw_worker(compute_layouts=False,
                                                            colors=colors,
                                                            radii=value.get('radii', []),
                                                            layout=layout,
                                                            isolated_nodes=value.get('isolated_nodes'))
+                        ann = annotations.get(name)
+                        if ann:
+                            worker.finished.connect(lambda ann=ann, w=widget: w.gvNetwork.loadAnnotations(ann))
                         workers.append(worker)
             if workers:
                 return workers
@@ -779,10 +812,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
     # noinspection PyUnusedLocal
     @debug
     def on_focus_changed(self, old: QWidget, now: QWidget):
-        if hasattr(now, 'name') and now in self.network_docks.values():
-            current_view = self.current_view
-            if current_view is not None:
-                self.actionViewMiniMap.setChecked(self.current_view.minimap.isVisible())
+        if isinstance(now, widgets.NetworkView):
+            self.actionViewMiniMap.setChecked(now.minimap.isVisible())
+            self.btUndoAnnotations.setMenu(now.undoMenu())
 
     # noinspection PyUnusedLocal
     @debug
@@ -1727,6 +1759,50 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 QMessageBox.information(self, None, "No databases found, please download one or more database first.")
 
     @debug
+    def on_set_annotations_mode(self, mode: int):
+        for dock in self.network_docks.values():
+            view = dock.widget().gvNetwork
+            view.setDrawMode(mode)
+
+    @debug
+    def on_delete_selected_annotations(self, *args):
+        view = self.current_view
+        if view is not None:
+            view.deleteSelectedAnnotations()
+            self.has_unsaved_changes = True
+
+    @debug
+    def on_clear_annotations(self, *args):
+        view = self.current_view
+        if view is not None and QMessageBox.question(self, "Clear annotations?",
+                "Are you sure you want to clear annotations? This action cannot be undone.",
+                QMessageBox.Yes | QMessageBox.No) == QMessageBox.Yes:
+            view.clearAnnotations()
+            self.has_unsaved_changes = True
+
+    @debug
+    def on_undo_annotations(self, *args):
+        view = self.current_view
+        if view is not None:
+            view.undoStack().undo()
+            self.has_unsaved_changes = True
+
+    @debug
+    def on_redo_annotations(self, *args):
+        view = self.current_view
+        if view is not None:
+            view.undoStack().redo()
+            self.has_unsaved_changes = True
+
+    @debug
+    def on_annotations_added(self, *args):
+        self.has_unsaved_changes = True
+
+    @debug
+    def on_undo_stack_changed(self, clean: bool):
+        self.has_unsaved_changes = not clean
+
+    @debug
     def confirm_save_changes(self):
         reply = QMessageBox.Yes
         if self.has_unsaved_changes:
@@ -1793,6 +1869,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
             scene.setNetworkStyle(self.style)
             scene.selectionChanged.connect(self.on_scene_selection_changed)
             view.focusedIn.connect(lambda: self.on_scene_selection_changed(update_view=False))
+            view.annotationAdded.connect(self.on_annotations_added)
+            view.undoStack().cleanChanged.connect(self.on_undo_stack_changed)
             view.setContextMenuPolicy(Qt.CustomContextMenu)
             view.customContextMenuRequested.connect(self.on_view_contextmenu)
             scene.pieChartsVisibilityChanged.connect(
@@ -1810,6 +1888,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.network_docks[widget_class.name] = dock
             # noinspection PyAttributeOutsideInit
             self._default_state = self.dock_manager.saveState()
+            self.btUndoAnnotations.setMenu(widget.gvNetwork.undoMenu())
 
             return widget
 
@@ -2319,6 +2398,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
             # Save filename and set window title
             self.fname = fname
             self.has_unsaved_changes = False
+            for widget in self.network_docks.values():
+                widget.gvNetwork.undoStack().setClean()
 
             # Update list of recent projects
             self.update_recent_projects(fname)
@@ -2341,6 +2422,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
         worker = workers.SaveProjectWorker(fname, self.network.graph, self.network,
                                            df, self.network.options,
                                            layouts={d.widget().name: d.widget().get_layout_data() for d in
+                                                    self.network_docks.values()},
+                                           annotations={d.widget().name: d.widget().get_annotations_data() for d in
                                                     self.network_docks.values()},
                                            original_fname=self.fname)
         worker.finished.connect(process_finished)

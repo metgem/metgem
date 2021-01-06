@@ -53,7 +53,7 @@ class MnzFile(NpzFile):
         if isinstance(val, bytes):
             try:
                 return json.loads(val)
-            except json.JSONDecodeError:
+            except (json.JSONDecodeError, UnicodeDecodeError):
                 return val
         else:
             return val
@@ -102,7 +102,7 @@ def savez(file, version, *args, compress=True, **kwargs):
         
         # Write directly to a ZIP file
         for key, val in namedict.items():
-            if isinstance(val, str):
+            if isinstance(val, (str, bytes)):
                 zipf.writestr(key, val)
             else:
                 try:

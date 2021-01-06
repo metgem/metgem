@@ -233,7 +233,7 @@ class LoadProjectWorker(BaseWorker):
                         layouts = {}
                         names = fid['0/layouts.json']
                         for name in names:
-                            key = '0/layouts/{name}'.format(name=name)
+                            key = f'0/layouts/{name}'
                             layout = {}
                             for k in fid.keys():
                                 if k.startswith(key):
@@ -246,7 +246,14 @@ class LoadProjectWorker(BaseWorker):
                                         layout[x] = fid[k]
                             layouts[name] = layout
 
-                    return network, layouts
+                    # Load annotations
+                    annotations = {}
+                    names = fid['0/annotations.json']
+                    for name in names:
+                        key = f'0/annotations/{name}'
+                        annotations[name] = fid[key]
+
+                    return network, layouts, annotations
                 else:
                     raise UnsupportedVersionError(f"Unrecognized file format version (version={version}).")
         except (FileNotFoundError, KeyError, zipfile.BadZipFile, UnsupportedVersionError) as e:
@@ -257,7 +264,7 @@ class LoadProjectWorker(BaseWorker):
 class SaveProjectWorker(BaseWorker):
     """Save current project to a file for future access"""
 
-    def __init__(self, filename, graph, network, infos, options, layouts, original_fname=None):
+    def __init__(self, filename, graph, network, infos, options, layouts, annotations=None, original_fname=None):
         super().__init__()
 
         if not filename.endswith(FILE_EXTENSION):
@@ -273,6 +280,7 @@ class SaveProjectWorker(BaseWorker):
         self.layouts = layouts
         self.options = options
         self.layouts = layouts
+        self.annotations = annotations
         self.max = 0
         self.desc = 'Saving project...'
 
@@ -290,9 +298,15 @@ class SaveProjectWorker(BaseWorker):
              '0/layouts.json': list(self.layouts.keys())}
 
         for name, layout in self.layouts.items():
-            key = '0/layouts/{name}'.format(name=name)
+            key = f'0/layouts/{name}'
             for k, v in layout.items():
                 d['{key}/{k}'.format(key=key, k=k)] = v
+
+        if self.annotations is not None:
+            d['0/annotations.json'] = list(self.annotations.keys())
+            for name, buffer in self.annotations.items():
+                key = f'0/annotations/{name}'
+                d[key] = buffer
 
         db_results = getattr(self.network, 'db_results', None)
         if db_results is not None:

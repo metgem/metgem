@@ -101,6 +101,15 @@
     <file>images/main.svg</file>
     <file>images/reset-layout.svg</file>
     <file>images/user-home.svg</file>
+	<file>images/add-line.svg</file>
+	<file>images/add-arrow.svg</file>
+	<file>images/add-rect.svg</file>
+	<file>images/add-ellipse.svg</file>
+	<file>images/add-text.svg</file>
+	<file>images/move-items.svg</file>
+	<file>images/edit-undo.svg</file>
+	<file>images/edit-redo.svg</file>
+	<file>images/edit-delete.svg</file>
   </qresource>
   <qresource prefix="logo">
     <file>images/main-wide.svg</file>

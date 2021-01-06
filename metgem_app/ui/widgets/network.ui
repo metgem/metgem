@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>423</width>
+    <height>411</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -137,7 +137,7 @@
   <customwidget>
    <class>NetworkView</class>
    <extends>QGraphicsView</extends>
-   <header>PyQtNetworkView.h</header>
+   <header>metgem_app/ui/widgets.h</header>
   </customwidget>
   <customwidget>
    <class>Slider</class>
@@ -149,4 +149,7 @@
   <include location="../ui.qrc"/>
  </resources>
  <connections/>
+ <buttongroups>
+  <buttongroup name="groupAnnotations"/>
+ </buttongroups>
 </ui>
