@@ -2,10 +2,10 @@ import struct
 from typing import Union
 
 from PyQt5.QtCore import Qt, QLineF, QRectF, QPointF, pyqtSignal
-from PyQt5.QtGui import QKeyEvent, QFont, QMouseEvent, QIcon
+from PyQt5.QtGui import QFont, QMouseEvent, QIcon, QPen
 from PyQt5.QtWidgets import (QGraphicsView, QGraphicsLineItem, QGraphicsSceneMouseEvent, QLineEdit,
                              QGraphicsEllipseItem, QDialog, QFormLayout, QSpinBox, QDialogButtonBox,
-                             QUndoStack, QUndoView, QMenu, QWidgetAction, QGraphicsScene)
+                             QUndoStack, QUndoView, QMenu, QWidgetAction, QGraphicsScene, QGraphicsItem)
 from PyQtNetworkView import NetworkView as BaseNetworkView
 from PyQtNetworkView.graphicsitem import GraphicsItemLayer
 
@@ -30,7 +30,7 @@ class TextItemInputDialog(QDialog):
         layout.addRow("Text", self.leText)
         self.spinFontSize = QSpinBox()
         self.spinFontSize.setMinimum(8)
-        self.spinFontSize.setMaximum(5096)
+        self.spinFontSize.setMaximum(1e6)
         self.spinFontSize.setValue(18)
         layout.addRow("Font Size", self.spinFontSize)
 
@@ -194,101 +194,90 @@ class NetworkView(BaseNetworkView):
 
         return buffer
 
+    def getDefaultFontSizeFromSceneRect(self):
+        scene = self.scene()
+        return max(scene.height(), scene.width()) / 25 / self.scene().scale()
+
+    def getDefaultPenSizeFromSceneRect(self):
+        return self.getDefaultFontSizeFromSceneRect() / 16
+
+    def addItem(self, item: QGraphicsItem, pos: QPointF):
+        scene = self.scene()
+        if not scene:
+            return
+
+        if isinstance(item, (ArrowItem, RectItem, EllipseItem)):
+            item.setPen(QPen(Qt.black, self.getDefaultPenSizeFromSceneRect(), Qt.SolidLine))
+
+        self._undo_stack.push(AddCommand(item, scene))
+        item.setPos(pos)
+        self.annotationAdded.emit()
+        return item
+
     def addLineItem(self, line: QLineF, pos: QPointF) -> Union[ArrowItem, None]:
         return self.addArrowItem(line, pos, False, False)
 
     def addArrowItem(self, line: QLineF, pos: QPointF, has_head=True, has_tail=False) -> Union[ArrowItem, None]:
-        scene = self.scene()
-        if not scene:
-            return
-
         item = ArrowItem(line, has_head=has_head, has_tail=has_tail)
-        self._undo_stack.push(AddCommand(item, scene))
-        item.setPos(pos)
-        self.annotationAdded.emit()
-        return item
+        return self.addItem(item, pos)
 
     def addRectItem(self, rect: QRectF, pos: QPointF) -> Union[RectItem, None]:
-        scene = self.scene()
-        if not scene:
-            return
-
-        item = RectItem(rect)
-        self._undo_stack.push(AddCommand(item, scene))
-        item.setPos(pos)
-        self.annotationAdded.emit()
-        return item
+        return self.addItem(RectItem(rect), pos)
 
     def addEllipseItem(self, rect: QRectF, pos: QPointF) -> Union[QGraphicsEllipseItem, None]:
-        scene = self.scene()
-        if not scene:
-            return
-
-        item = EllipseItem(rect)
-        self._undo_stack.push(AddCommand(item, scene))
-        item.setPos(pos)
-        self.annotationAdded.emit()
-        return item
+        return self.addItem(EllipseItem(rect), pos)
 
     def addTextItem(self, text: str, font: QFont, pos: QPointF) -> Union[TextItem, None]:
-        scene = self.scene()
-        if not scene:
-            return
-
         item = TextItem(text)
         item.setFont(font)
-        self._undo_stack.push(AddCommand(item, scene))
-        item.setPos(pos)
-        self.annotationAdded.emit()
-        return item
+        return self.addItem(item, pos)
 
     def mouseDoubleClickEvent(self, event: QMouseEvent) -> None:
         scene = self.scene()
-        if scene and self._mode is None:
-            item = self.itemAt(event.pos())
+        if scene:
+            if self._mode is None or self._mode == MODE_TEXT:
+                item = self.itemAt(event.pos())
 
-            # Edit text item
-            if isinstance(item, TextItem):
-                def edit_text_item(result):
-                    if result == QDialog.Accepted:
-                        old_text = item.text()
-                        old_font = item.font()
-                        text, font_size = self._dialog.getValues()
-                        font = QFont()
-                        font.setPointSize(font_size)
-                        item.setText(text)
-                        item.setFont(font)
-                        self._undo_stack.push(EditTextCommand(item, old_text, old_font.pointSize(), self.scene()))
+                # Edit text item
+                if isinstance(item, TextItem):
+                    def edit_text_item(result):
+                        if result == QDialog.Accepted:
+                            old_text = item.text()
+                            old_font = item.font()
+                            text, font_size = self._dialog.getValues()
+                            font = QFont()
+                            font.setPointSize(font_size)
+                            item.setText(text)
+                            item.setFont(font)
+                            self._undo_stack.push(EditTextCommand(item, old_text, old_font.pointSize(), self.scene()))
 
-                self._dialog = TextItemInputDialog(self)
-                self._dialog.setValues(item.text(), item.font().pointSize())
-                self._dialog.finished.connect(edit_text_item)
-                self._dialog.open()
+                    self._dialog = TextItemInputDialog(self)
+                    self._dialog.setValues(item.text(), item.font().pointSize())
+                    self._dialog.finished.connect(edit_text_item)
+                    self._dialog.open()
+
+                # Add a text item at mouse position
+                elif self._mode == MODE_TEXT:
+                    def add_text_item(result):
+                        if result == QDialog.Accepted:
+                            text, font_size = self._dialog.getValues()
+                            font = QFont()
+                            font.setPointSize(font_size)
+                            self.addTextItem(text, font, pos)
+
+                    pos = self.mapToScene(event.pos())
+                    self._dialog = TextItemInputDialog(self)
+                    self._dialog.setValues("", self.getDefaultFontSizeFromSceneRect())
+                    self._dialog.finished.connect(add_text_item)
+                    self._dialog.open()
         else:
             super().mouseDoubleClickEvent(event)
 
     def mousePressEvent(self, event: QMouseEvent) -> None:
         scene = self.scene()
         if scene:
-            # Add a text item at mouse position
-            if self._mode == MODE_TEXT:
-                def add_text_item(result):
-                    if result == QDialog.Accepted:
-                        text, font_size = self._dialog.getValues()
-                        font = QFont()
-                        font.setPointSize(font_size)
-                        self.addTextItem(text, font, self.mapToScene(event.pos()))
-
-                self._dialog = TextItemInputDialog(self)
-                self._dialog.finished.connect(add_text_item)
-                self._dialog.open()
-
-            # Define starting point of item (line, rect, ellipse, etc)
-            elif self._mode is not None:
-                self._orig_point = self.mapToScene(event.pos())
-
             # Edit item (line, rect, ellipse, etc)
-            elif self._mode is None:
+            if self._mode is None:
                 self._item_to_draw = item = self.itemAt(event.pos())
                 if item:
                     self._item_old_pos = item.pos()
@@ -296,7 +285,7 @@ class NetworkView(BaseNetworkView):
 
                     # Edit Arrows head and tails
                     if isinstance(item, ArrowItem) and event.modifiers() & Qt.ShiftModifier == Qt.ShiftModifier:
-                        tol = item.pen().width() * 5.
+                        tol = item.pen().width() * 2.
                         if (event_pos - item.line().p1()).manhattanLength() < tol:
                             has_tail = item.hasTail()
                             item.setTail(not has_tail)
@@ -308,23 +297,29 @@ class NetworkView(BaseNetworkView):
 
                     # Resize Line and Arrow
                     if isinstance(item, ArrowItem):
+                        tol = item.pen().width() * 2.
                         self._item_old_line_or_rect = item.line()
-                        if (event_pos - item.line().p1()).manhattanLength() < 10.:
+                        if (event_pos - item.line().p1()).manhattanLength() < tol:
                             self._orig_point = item.line().p2() + item.pos()
-                        elif (event_pos - item.line().p2()).manhattanLength() < 10.:
+                        elif (event_pos - item.line().p2()).manhattanLength() < tol:
                             self._orig_point = item.line().p1() + item.pos()
 
                     # Resize Rect and Ellipse
                     elif isinstance(item, (EllipseItem, RectItem)):
                         self._item_old_line_or_rect = item.rect()
-                        if (event_pos - item.rect().topLeft()).manhattanLength() < 10.:
+                        tol = item.pen().width()
+                        if (event_pos - item.rect().topLeft()).manhattanLength() < tol:
                             self._orig_point = item.rect().bottomRight() + item.pos()
-                        elif (event_pos - item.rect().bottomRight()).manhattanLength() < 10.:
+                        elif (event_pos - item.rect().bottomRight()).manhattanLength() < tol:
                             self._orig_point = item.rect().topLeft() + item.pos()
-                        elif (event_pos - item.rect().topRight()).manhattanLength() < 10.:
+                        elif (event_pos - item.rect().topRight()).manhattanLength() < tol:
                             self._orig_point = item.rect().bottomLeft() + item.pos()
-                        elif (event_pos - item.rect().bottomLeft()).manhattanLength() < 10.:
+                        elif (event_pos - item.rect().bottomLeft()).manhattanLength() < tol:
                             self._orig_point = item.rect().topRight() + item.pos()
+
+            # Define starting point of item (line, rect, ellipse, etc)
+            elif self._mode != MODE_TEXT:
+                self._orig_point = self.mapToScene(event.pos())
 
         super().mousePressEvent(event)
 
