@@ -232,29 +232,33 @@ class NetworkView(BaseNetworkView):
         item.setFont(font)
         return self.addItem(item, pos)
 
+    def editItem(self, item: QGraphicsItem):
+        # Edit text item
+        if isinstance(item, TextItem):
+            def edit_text_item(result):
+                if result == QDialog.Accepted:
+                    old_text = item.text()
+                    old_font = item.font()
+                    text, font_size = self._dialog.getValues()
+                    font = QFont()
+                    font.setPointSize(font_size)
+                    item.setText(text)
+                    item.setFont(font)
+                    self._undo_stack.push(EditTextCommand(item, old_text, old_font.pointSize(), self.scene()))
+
+            self._dialog = TextItemInputDialog(self)
+            self._dialog.setValues(item.text(), item.font().pointSize())
+            self._dialog.finished.connect(edit_text_item)
+            self._dialog.open()
+
     def mouseDoubleClickEvent(self, event: QMouseEvent) -> None:
         scene = self.scene()
         if scene:
             if self._mode is None or self._mode == MODE_TEXT:
                 item = self.itemAt(event.pos())
 
-                # Edit text item
-                if isinstance(item, TextItem):
-                    def edit_text_item(result):
-                        if result == QDialog.Accepted:
-                            old_text = item.text()
-                            old_font = item.font()
-                            text, font_size = self._dialog.getValues()
-                            font = QFont()
-                            font.setPointSize(font_size)
-                            item.setText(text)
-                            item.setFont(font)
-                            self._undo_stack.push(EditTextCommand(item, old_text, old_font.pointSize(), self.scene()))
-
-                    self._dialog = TextItemInputDialog(self)
-                    self._dialog.setValues(item.text(), item.font().pointSize())
-                    self._dialog.finished.connect(edit_text_item)
-                    self._dialog.open()
+                if self._mode is None:
+                    self.editItem(item)
 
                 # Add a text item at mouse position
                 elif self._mode == MODE_TEXT:

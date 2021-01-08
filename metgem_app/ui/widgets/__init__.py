@@ -2,6 +2,7 @@
 from .metadata import (CsvDelimiterCombo,
                        NodeTableView, EdgeTableView, NodesWidget, EdgesWidget)
 from ...models.metadata import LabelRole, NodesProxyModel, EdgesProxyModel, NodesModel, EdgesModel
+from .annotations import AnnotationsWidget, AnnotationsModel
 from .options_widgets import (TSNEOptionsWidget, NetworkOptionsWidget, MDSOptionsWidget,
                               UMAPOptionsWidget, IsomapOptionsWidget, PHATEOptionsWidget,
                               CosineOptionsWidget, QueryDatabasesOptionsWidget)

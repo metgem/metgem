@@ -201,4 +201,4 @@ class TextItem(QGraphicsSimpleTextItem):
         painter.drawText(self.boundingRect(), Qt.AlignCenter, self.text())
 
     def __str__(self):
-        return 'Text'
+        return f'Text <{self.text()}>'

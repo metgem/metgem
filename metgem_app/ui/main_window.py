@@ -396,6 +396,15 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.dock_manager.addToggleViewActionToMenu(self.dock_spectra.toggleViewAction())
         self.dock_spectra.toggleView(False)
 
+        self.dock_annotations = CDockWidget("Annotations")
+        self.dock_annotations.setObjectName("3annotations")
+        self.dock_annotations.setIcon(QIcon(":/icons/images/add-text.svg"))
+        self.annotations_widget = widgets.AnnotationsWidget()
+        self.dock_annotations.setWidget(self.annotations_widget)
+        self.dock_manager.addDockWidget(CenterDockWidgetArea, self.dock_annotations, dock_area)
+        self.dock_manager.addToggleViewActionToMenu(self.dock_annotations.toggleViewAction())
+        self.dock_annotations.toggleView(False)
+
         self.dock_manager.viewMenu().addSeparator()
         self.menuView.addMenu(self.dock_manager.viewMenu())
         dock_area.setCurrentIndex(0)
@@ -815,6 +824,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         if isinstance(now, widgets.NetworkView):
             self.actionViewMiniMap.setChecked(now.minimap.isVisible())
             self.btUndoAnnotations.setMenu(now.undoMenu())
+            self.annotations_widget.setModel(widgets.AnnotationsModel(now.scene()))
 
     # noinspection PyUnusedLocal
     @debug
@@ -1768,7 +1778,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def on_delete_selected_annotations(self, *args):
         view = self.current_view
         if view is not None:
+            self.annotations_widget.beginResetModel()
             view.deleteSelectedAnnotations()
+            self.annotations_widget.endResetModel()
             self.has_unsaved_changes = True
 
     @debug
@@ -1777,29 +1789,37 @@ class MainWindow(MainWindowBase, MainWindowUI):
         if view is not None and QMessageBox.question(self, "Clear annotations?",
                 "Are you sure you want to clear annotations? This action cannot be undone.",
                 QMessageBox.Yes | QMessageBox.No) == QMessageBox.Yes:
+            self.annotations_widget.beginResetModel()
             view.clearAnnotations()
+            self.annotations_widget.endResetModel()
             self.has_unsaved_changes = True
 
     @debug
     def on_undo_annotations(self, *args):
         view = self.current_view
         if view is not None:
+            self.annotations_widget.beginResetModel()
             view.undoStack().undo()
+            self.annotations_widget.endResetModel()
             self.has_unsaved_changes = True
 
     @debug
     def on_redo_annotations(self, *args):
         view = self.current_view
         if view is not None:
+            self.annotations_widget.beginResetModel()
             view.undoStack().redo()
+            self.annotations_widget.endResetModel()
             self.has_unsaved_changes = True
 
     @debug
     def on_annotations_added(self, *args):
-        self.has_unsaved_changes = True
+        self.dock_annotations.toggleView(True)
+        self.annotations_widget.beginResetModel()
+        self.annotations_widget.endResetModel()
 
     @debug
-    def on_undo_stack_changed(self, clean: bool):
+    def on_undo_stack_clean_changed(self, clean: bool):
         self.has_unsaved_changes = not clean
 
     @debug
@@ -1870,7 +1890,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             scene.selectionChanged.connect(self.on_scene_selection_changed)
             view.focusedIn.connect(lambda: self.on_scene_selection_changed(update_view=False))
             view.annotationAdded.connect(self.on_annotations_added)
-            view.undoStack().cleanChanged.connect(self.on_undo_stack_changed)
+            view.undoStack().cleanChanged.connect(self.on_undo_stack_clean_changed)
             view.setContextMenuPolicy(Qt.CustomContextMenu)
             view.customContextMenuRequested.connect(self.on_view_contextmenu)
             scene.pieChartsVisibilityChanged.connect(
@@ -2399,7 +2419,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.fname = fname
             self.has_unsaved_changes = False
             for widget in self.network_docks.values():
-                widget.gvNetwork.undoStack().setClean()
+                if hasattr(widget, 'gvNetwork'):
+                    widget.gvNetwork.undoStack().setClean()
 
             # Update list of recent projects
             self.update_recent_projects(fname)
