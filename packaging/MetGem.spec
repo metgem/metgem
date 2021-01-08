@@ -106,7 +106,7 @@ if sys.platform.startswith('win'):
                      for dll in ('libEGL.dll', 'libGLESv2.dll')])
                      
 # Remove QtWebEngine
-excludes.extend(['PyQt5.QtWebEngine'])
+excludes.extend(['PyQt5.QtWebEngine', 'PyQt5.QtWebEngineWidgets', 'PyQt5.QtWebEngineCore'])
 
 # Add Qt Dbus on macOS
 if sys.platform.startswith('darwin'):
