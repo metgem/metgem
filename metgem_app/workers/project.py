@@ -248,10 +248,13 @@ class LoadProjectWorker(BaseWorker):
 
                     # Load annotations
                     annotations = {}
-                    names = fid['0/annotations.json']
-                    for name in names:
-                        key = f'0/annotations/{name}'
-                        annotations[name] = fid[key]
+                    try:
+                        names = fid['0/annotations.json']
+                        for name in names:
+                            key = f'0/annotations/{name}'
+                            annotations[name] = fid[key]
+                    except KeyError:
+                        pass
 
                     return network, layouts, annotations
                 else:

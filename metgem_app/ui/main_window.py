@@ -561,7 +561,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                                                            isolated_nodes=value.get('isolated_nodes'))
                         ann = annotations.get(name)
                         if ann:
-                            worker.finished.connect(lambda ann=ann, w=widget: w.gvNetwork.loadAnnotations(ann))
+                            worker.finished.connect(lambda ann=ann, w=widget: w.set_annotations_data(ann))
                         workers.append(worker)
             if workers:
                 return workers
