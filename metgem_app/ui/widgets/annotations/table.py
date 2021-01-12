@@ -44,7 +44,7 @@ class AnnotationsWidget(QWidget):
     def __init__(self):
         super().__init__()
 
-        uic.loadUi(os.path.join(os.path.dirname(__file__), 'annotations.ui'), self)
+        uic.loadUi(os.path.join(os.path.dirname(__file__), 'table.ui'), self)
         self.tvAnnotations.doubleClicked.connect(self.on_double_clicked)
 
     def on_selection_changed(self, selected: QItemSelection, deselected: QItemSelection):
@@ -59,10 +59,7 @@ class AnnotationsWidget(QWidget):
     def on_double_clicked(self, index: QModelIndex):
         item = index.data(AnnotationsModel.ItemRole)
         scene = item.scene()
-        views = scene.views()
-        if not views:
-            return
-        views[0].editItem(item)
+        scene.requestEditAnnotationItem(item)
 
     def model(self) -> QAbstractTableModel:
         return self.tvAnnotations.model()

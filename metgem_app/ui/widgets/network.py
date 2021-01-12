@@ -4,9 +4,10 @@ import numpy as np
 from PyQt5 import uic
 from PyQt5.QtCore import pyqtSignal, Qt, QObject
 from PyQt5.QtGui import QPen
-from PyQt5.QtWidgets import QFrame, QMenu, QWidgetAction, QWidget, QGraphicsLineItem, QMessageBox
+from PyQt5.QtWidgets import QFrame, QMenu, QWidgetAction, QWidget, QGraphicsLineItem
 from PyQtNetworkView import NetworkScene
 
+from .annotations import AnnotationsNetworkScene
 from ..edit_options_dialog import (EditNetworkOptionsDialog, EditTSNEOptionsDialog,
                                    EditMDSOptionsDialog, EditIsomapOptionsDialog,
                                    EditUMAPOptionsDialog, EditPHATEOptionsDialog)
@@ -49,7 +50,7 @@ class BaseFrame(QFrame):
         menu.addAction(action)
         self.btRuler.setMenu(menu)
 
-        self.gvNetwork.setScene(NetworkScene())
+        self.gvNetwork.setScene(AnnotationsNetworkScene())
 
         if self.unlockable:
             self.btLock.toggled.connect(lambda x: self.gvNetwork.scene().lock(x))

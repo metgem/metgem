@@ -295,6 +295,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.actionUndoAnnotations.triggered.connect(self.on_undo_annotations)
         self.actionRedoAnnotations.triggered.connect(self.on_redo_annotations)
         self.btUndoAnnotations = widgets.ToolBarMenu()
+        self.btUndoAnnotations.setDefaultAction(self.actionUndoAnnotations)
         self.btUndoAnnotations.setIcon(self.actionUndoAnnotations.icon())
         self.btUndoAnnotations.setPopupMode(QToolButton.DelayedPopup)
         self.tbAnnotations.insertWidget(self.actionUndoAnnotations, self.btUndoAnnotations)
@@ -821,7 +822,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
     # noinspection PyUnusedLocal
     @debug
     def on_focus_changed(self, old: QWidget, now: QWidget):
-        if isinstance(now, widgets.NetworkView):
+        if isinstance(now, widgets.AnnotationsNetworkView):
             self.actionViewMiniMap.setChecked(now.minimap.isVisible())
             self.btUndoAnnotations.setMenu(now.undoMenu())
             self.annotations_widget.setModel(widgets.AnnotationsModel(now.scene()))
@@ -1790,7 +1791,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 "Are you sure you want to clear annotations? This action cannot be undone.",
                 QMessageBox.Yes | QMessageBox.No) == QMessageBox.Yes:
             self.annotations_widget.beginResetModel()
-            view.clearAnnotations()
+            view.scene().clearAnnotations()
             self.annotations_widget.endResetModel()
             self.has_unsaved_changes = True
 
@@ -1888,8 +1889,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
             scene = view.scene()
             scene.setNetworkStyle(self.style)
             scene.selectionChanged.connect(self.on_scene_selection_changed)
+            scene.annotationAdded.connect(self.on_annotations_added)
             view.focusedIn.connect(lambda: self.on_scene_selection_changed(update_view=False))
-            view.annotationAdded.connect(self.on_annotations_added)
             view.undoStack().cleanChanged.connect(self.on_undo_stack_clean_changed)
             view.setContextMenuPolicy(Qt.CustomContextMenu)
             view.customContextMenuRequested.connect(self.on_view_contextmenu)

@@ -3,14 +3,14 @@ from typing import Union
 
 from PyQt5.QtCore import Qt, QLineF, QRectF, QPointF, pyqtSignal
 from PyQt5.QtGui import QFont, QMouseEvent, QIcon, QPen
-from PyQt5.QtWidgets import (QGraphicsView, QGraphicsLineItem, QGraphicsSceneMouseEvent, QLineEdit,
-                             QGraphicsEllipseItem, QDialog, QFormLayout, QSpinBox, QDialogButtonBox,
-                             QUndoStack, QUndoView, QMenu, QWidgetAction, QGraphicsScene, QGraphicsItem)
-from PyQtNetworkView import NetworkView as BaseNetworkView
-from PyQtNetworkView.graphicsitem import GraphicsItemLayer
+from PyQt5.QtWidgets import (QGraphicsView, QGraphicsLineItem, QGraphicsSceneMouseEvent,
+                             QDialog, QUndoStack, QUndoView, QMenu, QWidgetAction, QGraphicsItem, QGraphicsEllipseItem)
+from PyQtNetworkView import NetworkView
 
-from .commands import AddCommand, DeleteCommand, EditTextCommand, EditArrowCommand, MoveCommand, ResizeCommand
+from .scene import AnnotationsNetworkScene
+from .commands import EditTextCommand, EditArrowCommand, MoveCommand, ResizeCommand, DeleteCommand, AddCommand
 from .annotations import ArrowItem, RectItem, TextItem, EllipseItem
+from .dialogs import TextItemInputDialog
 
 MODE_LINE = 0
 MODE_RECT = 1
@@ -19,39 +19,7 @@ MODE_ELLIPSE = 3
 MODE_ARROW = 4
 
 
-class TextItemInputDialog(QDialog):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self.setWindowTitle("Add/Edit Text Item")
-
-        layout = QFormLayout()
-        self.leText = QLineEdit()
-        layout.addRow("Text", self.leText)
-        self.spinFontSize = QSpinBox()
-        self.spinFontSize.setMinimum(8)
-        self.spinFontSize.setMaximum(1e6)
-        self.spinFontSize.setValue(18)
-        layout.addRow("Font Size", self.spinFontSize)
-
-        self.buttonBox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        self.buttonBox.accepted.connect(self.accept)
-        self.buttonBox.rejected.connect(self.reject)
-        layout.addWidget(self.buttonBox)
-
-        self.setLayout(layout)
-
-    def getValues(self):
-        return self.leText.text(), self.spinFontSize.value()
-
-    def setValues(self, text, font_size):
-        self.leText.setText(text)
-        self.spinFontSize.setValue(font_size)
-
-
-class NetworkView(BaseNetworkView):
-    annotationAdded = pyqtSignal()
-
+class AnnotationsNetworkView(NetworkView):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -71,9 +39,42 @@ class NetworkView(BaseNetworkView):
         self._dialog = None
         self.setDragMode(QGraphicsView.RubberBandDrag)
 
-    def setScene(self, scene: QGraphicsScene):
+    def setScene(self, scene: AnnotationsNetworkScene):
+        scene.editAnnotationItemRequested.connect(self.on_edit_annotation_item_requested)
+        self._undo_stack.clear()
         super().setScene(scene)
-        self.clearAnnotations()
+
+    def addAnnotationItem(self, item: QGraphicsItem, pos: QPointF):
+        scene = self.scene()
+        if scene is None:
+            return
+
+        if isinstance(item, (ArrowItem, RectItem, EllipseItem)):
+            item.setPen(QPen(Qt.black, scene.getDefaultPenSizeFromRect(), Qt.SolidLine))
+
+        self._undo_stack.push(AddCommand(item, scene))
+        item.setPos(pos)
+        scene.annotationAdded.emit(item)
+
+        return item
+
+    def addAnnotationLine(self, line: QLineF, pos: QPointF) -> Union[ArrowItem, None]:
+        return self.addAnnotationArrow(line, pos, False, False)
+
+    def addAnnotationArrow(self, line: QLineF, pos: QPointF, has_head=True, has_tail=False) -> Union[ArrowItem, None]:
+        item = ArrowItem(line, has_head=has_head, has_tail=has_tail)
+        return self.addAnnotationItem(item, pos)
+
+    def addAnnotationRect(self, rect: QRectF, pos: QPointF) -> Union[RectItem, None]:
+        return self.addAnnotationItem(RectItem(rect), pos)
+
+    def addAnnotationEllipse(self, rect: QRectF, pos: QPointF) -> Union[QGraphicsEllipseItem, None]:
+        return self.addAnnotationItem(EllipseItem(rect), pos)
+
+    def addAnnotationText(self, text: str, font: QFont, pos: QPointF) -> Union[TextItem, None]:
+        item = TextItem(text)
+        item.setFont(font)
+        return self.addAnnotationItem(item, pos)
 
     def setDrawMode(self, mode):
         self._mode = mode
@@ -95,29 +96,12 @@ class NetworkView(BaseNetworkView):
     def undoMenu(self):
         return self._undo_menu
 
-    def deleteSelectedAnnotations(self):
-        scene = self.scene()
-        for item in scene.annotationsLayer.childItems():
-            if item.isSelected():
-                self._undo_stack.push(DeleteCommand(item, scene))
-
-    def clearAnnotations(self):
-        scene = self.scene()
-
-        if hasattr(scene, 'annotationsLayer'):
-            scene.removeItem(scene.annotationsLayer)
-
-        scene.annotationsLayer = GraphicsItemLayer()
-        scene.addItem(scene.annotationsLayer)
-        scene.annotationsLayer.setZValue(-1)
-        self._undo_stack.clear()
-
     def loadAnnotations(self, buffer: bytes) -> None:
         if not buffer:
             return
 
         scene = self.scene()
-        if not scene:
+        if scene is None:
             return
 
         def read(len):
@@ -134,26 +118,26 @@ class NetworkView(BaseNetworkView):
                 x1, y1, x2, y2 = struct.unpack("ffff", read(16))
                 line = QLineF(0., 0., x2, y2)
                 if data == b'L':
-                    self.addLineItem(line, QPointF(x1, y1))
+                    self.addAnnotationLine(line, QPointF(x1, y1))
                 elif data == b'A':
                     data, = struct.unpack("B", read(1))
                     has_head = (data >> 0) & 1
                     has_tail = (data >> 1) & 1
-                    self.addArrowItem(line, QPointF(x1, y1), has_head, has_tail)
+                    self.addAnnotationArrow(line, QPointF(x1, y1), has_head, has_tail)
             elif data in (b'R', b'C'):
                 x, y, w, h = struct.unpack("ffff", read(16))
                 rect = QRectF(0., 0., w, h)
                 if data == b'R':
-                    self.addRectItem(rect, QPointF(x, y))
+                    self.addAnnotationRect(rect, QPointF(x, y))
                 elif data == b'C':
-                    self.addEllipseItem(rect, QPointF(x, y))
+                    self.addAnnotationEllipse(rect, QPointF(x, y))
             elif data == b'T':
                 x, y, len = struct.unpack("ffH", read(10))
                 text = read(len).decode()
                 font_size, = struct.unpack("H", read(2))
                 font = QFont()
                 font.setPointSize(font_size)
-                self.addTextItem(text, font, QPointF(x, y))
+                self.addAnnotationText(text, font, QPointF(x, y))
 
             data = read(1)
 
@@ -161,7 +145,7 @@ class NetworkView(BaseNetworkView):
 
     def saveAnnotations(self) -> bytes:
         scene = self.scene()
-        if not scene:
+        if scene is None:
             return b''
 
         buffer = b''
@@ -194,45 +178,16 @@ class NetworkView(BaseNetworkView):
 
         return buffer
 
-    def getDefaultFontSizeFromSceneRect(self):
+    def deleteSelectedAnnotations(self):
         scene = self.scene()
-        return max(scene.height(), scene.width()) / 25 / self.scene().scale()
-
-    def getDefaultPenSizeFromSceneRect(self):
-        return self.getDefaultFontSizeFromSceneRect() / 16
-
-    def addItem(self, item: QGraphicsItem, pos: QPointF):
-        scene = self.scene()
-        if not scene:
+        if scene is None:
             return
 
-        if isinstance(item, (ArrowItem, RectItem, EllipseItem)):
-            item.setPen(QPen(Qt.black, self.getDefaultPenSizeFromSceneRect(), Qt.SolidLine))
+        for item in scene.annotationsLayer.childItems():
+            if item.isSelected():
+                self._undo_stack.push(DeleteCommand(item, self))
 
-        self._undo_stack.push(AddCommand(item, scene))
-        item.setPos(pos)
-        self.annotationAdded.emit()
-        return item
-
-    def addLineItem(self, line: QLineF, pos: QPointF) -> Union[ArrowItem, None]:
-        return self.addArrowItem(line, pos, False, False)
-
-    def addArrowItem(self, line: QLineF, pos: QPointF, has_head=True, has_tail=False) -> Union[ArrowItem, None]:
-        item = ArrowItem(line, has_head=has_head, has_tail=has_tail)
-        return self.addItem(item, pos)
-
-    def addRectItem(self, rect: QRectF, pos: QPointF) -> Union[RectItem, None]:
-        return self.addItem(RectItem(rect), pos)
-
-    def addEllipseItem(self, rect: QRectF, pos: QPointF) -> Union[QGraphicsEllipseItem, None]:
-        return self.addItem(EllipseItem(rect), pos)
-
-    def addTextItem(self, text: str, font: QFont, pos: QPointF) -> Union[TextItem, None]:
-        item = TextItem(text)
-        item.setFont(font)
-        return self.addItem(item, pos)
-
-    def editItem(self, item: QGraphicsItem):
+    def on_edit_annotation_item_requested(self, item: QGraphicsItem):
         # Edit text item
         if isinstance(item, TextItem):
             def edit_text_item(result):
@@ -258,7 +213,7 @@ class NetworkView(BaseNetworkView):
                 item = self.itemAt(event.pos())
 
                 if self._mode is None:
-                    self.editItem(item)
+                    self.on_edit_annotation_item_requested(item)
 
                 # Add a text item at mouse position
                 elif self._mode == MODE_TEXT:
@@ -267,11 +222,11 @@ class NetworkView(BaseNetworkView):
                             text, font_size = self._dialog.getValues()
                             font = QFont()
                             font.setPointSize(font_size)
-                            self.addTextItem(text, font, pos)
+                            self.addAnnotationText(text, font, pos)
 
                     pos = self.mapToScene(event.pos())
                     self._dialog = TextItemInputDialog(self)
-                    self._dialog.setValues("", self.getDefaultFontSizeFromSceneRect())
+                    self._dialog.setValues("", scene.getDefaultFontSizeFromRect())
                     self._dialog.finished.connect(add_text_item)
                     self._dialog.open()
         else:
@@ -346,9 +301,9 @@ class NetworkView(BaseNetworkView):
 
                 if self._item_to_draw is None:
                     if self._mode == MODE_LINE:
-                        self._item_to_draw = self.addLineItem(line, self._orig_point)
+                        self._item_to_draw = self.addAnnotationLine(line, self._orig_point)
                     elif self._mode == MODE_ARROW:
-                        self._item_to_draw = self.addArrowItem(line, self._orig_point)
+                        self._item_to_draw = self.addAnnotationArrow(line, self._orig_point)
                 else:
                     self._item_to_draw.setLine(line)
                     if point is not None:
@@ -367,9 +322,9 @@ class NetworkView(BaseNetworkView):
                 point = self._orig_point + QPointF(dx, dy)
                 if self._item_to_draw is None:
                     if self._mode == MODE_RECT:
-                        self._item_to_draw = self.addRectItem(rect, point)
+                        self._item_to_draw = self.addAnnotationRect(rect, point)
                     elif self._mode == MODE_ELLIPSE:
-                        self._item_to_draw = self.addEllipseItem(rect, point)
+                        self._item_to_draw = self.addAnnotationEllipse(rect, point)
                 else:
                     self._item_to_draw.setRect(rect)
                     self._item_to_draw.setPos(point)

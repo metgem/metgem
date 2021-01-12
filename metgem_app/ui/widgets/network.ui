@@ -92,7 +92,7 @@
     </layout>
    </item>
    <item>
-    <widget class="NetworkView" name="gvNetwork"/>
+    <widget class="AnnotationsNetworkView" name="gvNetwork"/>
    </item>
    <item>
     <widget class="Slider" name="sliderScale">
@@ -135,7 +135,7 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>NetworkView</class>
+   <class>AnnotationsNetworkView</class>
    <extends>QGraphicsView</extends>
    <header>metgem_app/ui/widgets.h</header>
   </customwidget>
@@ -149,7 +149,4 @@
   <include location="../ui.qrc"/>
  </resources>
  <connections/>
- <buttongroups>
-  <buttongroup name="groupAnnotations"/>
- </buttongroups>
 </ui>

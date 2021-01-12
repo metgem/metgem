@@ -1,8 +1,7 @@
 # These two imports SHOULD be left on top of the file
 from .metadata import (CsvDelimiterCombo,
                        NodeTableView, EdgeTableView, NodesWidget, EdgesWidget)
-from ...models.metadata import LabelRole, NodesProxyModel, EdgesProxyModel, NodesModel, EdgesModel
-from .annotations import AnnotationsWidget, AnnotationsModel
+from metgem_app.ui.widgets.annotations.table import AnnotationsWidget, AnnotationsModel
 from .options_widgets import (TSNEOptionsWidget, NetworkOptionsWidget, MDSOptionsWidget,
                               UMAPOptionsWidget, IsomapOptionsWidget, PHATEOptionsWidget,
                               CosineOptionsWidget, QueryDatabasesOptionsWidget)
@@ -20,7 +19,7 @@ from .spectrum import (SpectrumCanvas, SpectrumNavigationToolbar, SpectrumWidget
 from .structure import StructureSvgWidget
 from .toolbar_menu import ToolBarMenu
 from .welcome_widget import WelcomeWidget
-from .network_view import NetworkView, MODE_LINE, MODE_ARROW, MODE_RECT, MODE_ELLIPSE, MODE_TEXT
+from .annotations import AnnotationsNetworkView, MODE_LINE, MODE_ARROW, MODE_RECT, MODE_ELLIPSE, MODE_TEXT
 
 try:
     from .jupyter import JupyterWidget
