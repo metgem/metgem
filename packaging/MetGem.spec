@@ -115,6 +115,9 @@ if sys.platform.startswith('darwin'):
 # Add sqlachemy.ext.baked
 hiddenimports.extend(['sqlalchemy.ext.baked'])
 
+# Add scipy.spatial.transform._rotation_groups
+hiddenimports.extend(['scipy.spatial.transform._rotation_groups'])
+
 # Add pybel
 try:
     # noinspection PyPackageRequirements
