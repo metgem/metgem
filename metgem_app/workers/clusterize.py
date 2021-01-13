@@ -16,9 +16,9 @@ class ClusterizeOptions(AttrDict):
 
 class ClusterizeWorker(BaseWorker):
 
-    def __init__(self, view, options):
+    def __init__(self, widget: 'NetworkFrame', options):
         super().__init__()
-        self._view = view
+        self._widget = widget
         self.options = options
         self.max = 0
         self.iterative_update = True
@@ -40,7 +40,7 @@ class ClusterizeWorker(BaseWorker):
                             min_samples=options.min_samples,
                             cluster_selection_epsilon=options.cluster_selection_epsilon,
                             cluster_selection_method=options.cluster_selection_method)
-        layout_data = self._view.get_layout_data()
+        layout_data = self._widget.get_layout_data()
         isolated_nodes = layout_data['isolated_nodes']
         layout = layout_data['layout']
         mask = np.ones_like(layout, dtype=bool)
@@ -50,7 +50,7 @@ class ClusterizeWorker(BaseWorker):
 
         i = 0
         result = []
-        for n in self._view.gvNetwork.scene().nodes():
+        for n in self._widget.scene().nodes():
             if n.index() in isolated_nodes:
                 result.append("Noise")
             else:

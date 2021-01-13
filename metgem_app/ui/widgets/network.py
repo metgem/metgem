@@ -50,18 +50,24 @@ class BaseFrame(QFrame):
         menu.addAction(action)
         self.btRuler.setMenu(menu)
 
-        self.gvNetwork.setScene(AnnotationsNetworkScene())
+        self.view().setScene(AnnotationsNetworkScene())
 
         if self.unlockable:
-            self.btLock.toggled.connect(lambda x: self.gvNetwork.scene().lock(x))
+            self.btLock.toggled.connect(lambda x: self.scene().lock(x))
         else:
             self.btLock.hide()
         self.btOptions.clicked.connect(lambda: self.editOptionsTriggered.emit(self))
         self.sliderScale.valueChanged.connect(self.on_scale_changed)
+
+    def view(self):
+        return self.gvNetwork
+
+    def scene(self):
+        return self.gvNetwork.scene()
         
     def apply_layout(self, layout, isolated_nodes=None, hide_isolated_nodes=False):
         self._hide_isolated_nodes = hide_isolated_nodes
-        scene = self.gvNetwork.scene()
+        scene = self.scene()
         if layout is not None:
             scene.setLayout(layout, isolated_nodes=isolated_nodes if hide_isolated_nodes else None)
         self._layout = layout
@@ -81,13 +87,13 @@ class BaseFrame(QFrame):
         self.show_isolated_nodes(False)
 
     def on_scale_changed(self, scale):
-        self.gvNetwork.scene().setScale(scale / self.sliderScale.defaultValue())
+        self.scene().setScale(scale / self.sliderScale.defaultValue())
 
     def process_graph_before_export(self, g):
         return g
 
     def get_layout_data(self):
-        scene = self.gvNetwork.scene()
+        scene = self.scene()
         return {
                 'layout': self._layout,
                 'isolated_nodes': self._isolated_nodes,
@@ -96,19 +102,19 @@ class BaseFrame(QFrame):
                }
 
     def get_annotations_data(self) -> bytes:
-        return self.gvNetwork.saveAnnotations()
+        return self.view().saveAnnotations()
 
     def set_annotations_data(self, buffer: bytes) -> None:
-        self.gvNetwork.loadAnnotations(buffer)
+        self.view().loadAnnotations(buffer)
 
     def create_worker(self):
         raise NotImplementedError
 
     def set_style(self, style):
-        self.gvNetwork.scene().setNetworkStyle(style)
+        self.scene().setNetworkStyle(style)
 
     def create_draw_worker(self, compute_layouts=True, colors=[], radii=[], layout=None, isolated_nodes=None,):
-        scene = self.gvNetwork.scene()
+        scene = self.scene()
         if self.use_edges:
             scene.removeAllEdges()
 
@@ -161,7 +167,7 @@ class NetworkFrame(BaseFrame):
         return g
 
     def create_worker(self):
-        return self.worker_class(self._network.graph, self.gvNetwork.scene().nodesRadii())
+        return self.worker_class(self._network.graph, self.scene().nodesRadii())
 
 
 class TSNEFrame(NetworkFrame):
@@ -197,7 +203,7 @@ class TSNEFrame(NetworkFrame):
         self.draw_horizontal_line()
 
     def draw_horizontal_line(self):
-        scene = self.gvNetwork.scene()
+        scene = self.scene()
 
         # Remove line separating isolated nodes from others
         line = self._line

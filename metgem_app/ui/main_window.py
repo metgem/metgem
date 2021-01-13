@@ -453,9 +453,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def current_network_widget(self):
         docks = list(self.network_docks.values())
         for dock in docks:
-            view = dock.widget()
-            if view.gvNetwork.hasFocus():
-                return view
+            widget = dock.widget()
+            if widget.view().hasFocus():
+                return widget
 
         try:
             return docks[0].widget()
@@ -465,7 +465,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
     @property
     def current_view(self):
         widget = self.current_network_widget
-        return widget.gvNetwork if widget is not None else None
+        return widget.view() if widget is not None else None
 
     @property
     def network(self):
@@ -707,21 +707,21 @@ class MainWindow(MainWindowBase, MainWindowUI):
             docks = list(self.network_docks.values())
             current_index = -1
             for i, dock in enumerate(docks):
-                view = dock.widget().gvNetwork
+                view = dock.widget().view()
                 if view.hasFocus():
                     current_index = i
                 elif current_index >= 0:
                     try:
                         next_dock = docks[current_index + 1]
                         if next_dock.isVisible():
-                            next_dock.widget().gvNetwork.setFocus(Qt.TabFocusReason)
+                            next_dock.widget().view().setFocus(Qt.TabFocusReason)
                             break
                     except IndexError:
                         pass
 
             if current_index == -1 or current_index == len(docks) - 1:
                 try:
-                    docks[0].widget().gvNetwork.setFocus(Qt.TabFocusReason)
+                    docks[0].widget().view().setFocus(Qt.TabFocusReason)
                 except IndexError:
                     pass
 
@@ -849,7 +849,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         if update_view and self.actionLinkViews.isChecked():
             for dock in self.network_docks.values():
-                scene = dock.widget().gvNetwork.scene()
+                scene = dock.widget().scene()
                 if scene != sender:
                     with utils.SignalBlocker(scene):
                         scene.setNodesSelection(nodes_idx)
@@ -857,14 +857,14 @@ class MainWindow(MainWindowBase, MainWindowUI):
     @debug
     def on_set_selected_nodes_color(self, color: QColor):
         for dock in self.network_docks.values():
-            dock.widget().gvNetwork.scene().setSelectedNodesColor(color)
+            dock.widget().scene().setSelectedNodesColor(color)
 
         self.has_unsaved_changes = True
 
     @debug
     def on_reset_selected_nodes_color(self):
         for dock in self.network_docks.values():
-            scene = dock.widget().gvNetwork.scene()
+            scene = dock.widget().scene()
             scene.setSelectedNodesColor(scene.networkStyle().nodeBrush().color())
 
         self.has_unsaved_changes = True
@@ -877,7 +877,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             return
 
         for dock in self.network_docks.values():
-            dock.widget().gvNetwork.scene().setSelectedNodesRadius(size)
+            dock.widget().scene().setSelectedNodesRadius(size)
 
         self.has_unsaved_changes = True
 
@@ -955,7 +955,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
     @debug
     def on_set_pie_charts_visibility_toggled(self, visibility):
         for dock in self.network_docks.values():
-            view = dock.widget().gvNetwork
+            view = dock.widget().view()
             scene = view.scene()
             scene.setPieChartsVisibility(visibility)
             view.updateVisibleItems()
@@ -970,7 +970,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             widget = self.current_network_widget
             if widget is None:
                 return
-            view = widget.gvNetwork
+            view = widget.view()
 
             cy = CyRestClient()
 
@@ -1420,8 +1420,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
                     QMessageBox.information(self, None, f"Found {len(set(data)) - 1} clusters.")
 
                 name, options = self._dialog.getValues()
-                view = self.network_docks[name].widget()
-                worker = workers.ClusterizeWorker(view, options)
+                widget = self.network_docks[name].widget()
+                worker = workers.ClusterizeWorker(widget, options)
                 if worker is not None:
                     self._workers.append(worker)
                     self._workers.append(update_dataframe)
@@ -1772,7 +1772,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
     @debug
     def on_set_annotations_mode(self, mode: int):
         for dock in self.network_docks.values():
-            view = dock.widget().gvNetwork
+            view = dock.widget().view()
             view.setDrawMode(mode)
 
     @debug
@@ -1844,7 +1844,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def highlight_selected_nodes(self, *args):
         selected = self.nodes_selection()
         for dock in self.network_docks.values():
-            scene = dock.widget().gvNetwork.scene()
+            scene = dock.widget().scene()
             with utils.SignalBlocker(scene):
                 scene.setNodesSelection(selected)
 
@@ -1853,7 +1853,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def highlight_selected_edges(self, *args):
         selected = self.edges_selection()
         for dock in self.network_docks.values():
-            scene = dock.widget().gvNetwork.scene()
+            scene = dock.widget().scene()
             with utils.SignalBlocker(scene):
                 scene.setEdgesSelection(selected)
 
@@ -1870,7 +1870,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             sel.add(dest)
 
         for dock in self.network_docks.values():
-            scene = dock.widget().gvNetwork.scene()
+            scene = dock.widget().scene()
             with utils.SignalBlocker(scene):
                 scene.setNodesSelection(sel)
 
@@ -1881,12 +1881,12 @@ class MainWindow(MainWindowBase, MainWindowUI):
             if dock is not None and dock.isClosed():
                 dock.toggleView()
             widget = dock.widget()
-            widget.gvNetwork.setFocus(Qt.ActiveWindowFocusReason)
+            widget.view().setFocus(Qt.ActiveWindowFocusReason)
             return widget
         except KeyError:
             widget = widget_class(self.network)
-            view = widget.gvNetwork
-            scene = view.scene()
+            view = widget.view()
+            scene = widget.scene()
             scene.setNetworkStyle(self.style)
             scene.selectionChanged.connect(self.on_scene_selection_changed)
             scene.annotationAdded.connect(self.on_annotations_added)
@@ -1909,7 +1909,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.network_docks[widget_class.name] = dock
             # noinspection PyAttributeOutsideInit
             self._default_state = self.dock_manager.saveState()
-            self.btUndoAnnotations.setMenu(widget.gvNetwork.undoMenu())
+            self.btUndoAnnotations.setMenu(widget.view().undoMenu())
 
             return widget
 
@@ -1957,13 +1957,13 @@ class MainWindow(MainWindowBase, MainWindowUI):
             model.setHeaderData(column_id, Qt.Horizontal, font, role=Qt.FontRole)
 
             for dock in self.network_docks.values():
-                scene = dock.widget().gvNetwork.scene()
+                scene = dock.widget().scene()
                 scene.setLabelsFromModel(model, column_id, metadata.LabelRole)
             self.network.columns_mappings['label'] = model.headerData(column_id, Qt.Horizontal,
                                                                       role=metadata.KeyRole)
         else:
             for dock in self.network_docks.values():
-                dock.widget().gvNetwork.scene().resetLabels()
+                dock.widget().scene().resetLabels()
 
             try:
                 del self.network.columns_mappings['label']
@@ -1997,7 +1997,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 model.setHeaderData(column, Qt.Horizontal, color, role=metadata.ColorMarkRole)
 
             for dock in self.network_docks.values():
-                scene = dock.widget().gvNetwork.scene()
+                scene = dock.widget().scene()
                 scene.setPieColors(colors)
                 scene.setPieChartsFromModel(model, column_ids)
                 scene.setPieChartsVisibility(True)
@@ -2009,7 +2009,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 model.setHeaderData(column, Qt.Horizontal, None, role=metadata.ColorMarkRole)
 
             for dock in self.network_docks.values():
-                dock.widget().gvNetwork.scene().resetPieCharts()
+                dock.widget().scene().resetPieCharts()
 
             try:
                 del self.network.columns_mappings['pies']
@@ -2039,13 +2039,13 @@ class MainWindow(MainWindowBase, MainWindowUI):
             model.setHeaderData(column_id, Qt.Horizontal, font, role=Qt.FontRole)
 
             for dock in self.network_docks.values():
-                dock.widget().gvNetwork.scene().setNodesRadiiFromModel(model, column_id, Qt.DisplayRole, func)
+                dock.widget().scene().setNodesRadiiFromModel(model, column_id, Qt.DisplayRole, func)
 
             key = model.headerData(column_id, Qt.Horizontal, role=metadata.KeyRole)
             self.network.columns_mappings['size'] = (key, func)
         else:
             for dock in self.network_docks.values():
-                dock.widget().gvNetwork.scene().resetNodesRadii()
+                dock.widget().scene().resetNodesRadii()
 
             try:
                 del self.network.columns_mappings['size']
@@ -2105,12 +2105,12 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 return
 
             for dock in self.network_docks.values():
-                dock.widget().gvNetwork.scene().setNodesColors(color_list)
+                dock.widget().scene().setNodesColors(color_list)
 
             self.network.columns_mappings['colors'] = (key, mapping)
         else:
             for dock in self.network_docks.values():
-                scene = dock.widget().gvNetwork.scene()
+                scene = dock.widget().scene()
                 color = scene.networkStyle().nodeBrush().color()
                 scene.setNodesColors([color for _ in scene.nodes()])
 
@@ -2193,7 +2193,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 pass
             elif dock.objectName() == 'jupyter':
                 self.dock_manager.addDockWidget(TopDockWidgetArea, dock)
-            elif hasattr(dock.widget(), 'gvNetwork'):
+            elif hasattr(dock.widget(), 'view'):
                 self.dock_manager.addDockWidget(LeftDockWidgetArea, dock, self.dock_placeholder.dockAreaWidget())
             else:
                 if dock_area is None:
@@ -2420,8 +2420,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.fname = fname
             self.has_unsaved_changes = False
             for widget in self.network_docks.values():
-                if hasattr(widget, 'gvNetwork'):
-                    widget.gvNetwork.undoStack().setClean()
+                if hasattr(widget, 'view'):
+                    widget.view().undoStack().setClean()
 
             # Update list of recent projects
             self.update_recent_projects(fname)
