@@ -2114,7 +2114,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
             if isinstance(mapping, dict):
                 color_list = [mapping.get(key, QColor()) for key in data]
-            elif isinstance(mapping, tuple):
+            elif isinstance(mapping, (tuple, list)):
                 try:
                     bins, colors = mapping
                 except TypeError:
@@ -2182,7 +2182,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 scene.setPixmapsFromModel(model, column_id, Qt.DisplayRole, type_)
             self.network.columns_mappings['pixmap'] = (model.headerData(column_id, Qt.Horizontal,
                                                                         role=metadata.KeyRole),
-                                                        type)
+                                                        type_)
         else:
             for dock in self.network_docks.values():
                 dock.widget().scene().resetPixmaps()
@@ -2318,16 +2318,22 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def update_columns_mappings(self, force_reset_mapping=True):
         columns_mappings = getattr(self.network, 'columns_mappings', {})
 
-        key = columns_mappings.get('label', None)
-        if key is not None:
-            self.set_nodes_label(column_key=key)
+        try:
+            key = columns_mappings.get('label', None)
+        except TypeError:
+            if force_reset_mapping:
+                self.set_nodes_label(None)
         else:
-            self.set_nodes_label(None)
+            if key is not None:
+                self.set_nodes_label(column_key=key)
+            else:
+                self.set_nodes_label(None)
 
         try:
             keys, colors = columns_mappings.get('pies', (None, None))
         except TypeError:
-            self.set_nodes_pie_chart_values(None)
+            if force_reset_mapping:
+                self.set_nodes_pie_chart_values(None)
         else:
             if keys is not None and colors is not None:
                 self.set_nodes_pie_chart_values(column_keys=keys, colors=colors)
@@ -2356,11 +2362,16 @@ class MainWindow(MainWindowBase, MainWindowUI):
             elif force_reset_mapping:
                 self.set_nodes_colors_values(None)
 
-        key, type_ = columns_mappings.get('pixmap', (None, None))
-        if key is not None and type_ is not None:
-            self.set_nodes_pixmaps_values(column_key=key, type=type_)
+        try:
+            key, type_ = columns_mappings.get('pixmap', (None, None))
+        except TypeError:
+            if force_reset_mapping:
+                self.set_nodes_pixmaps_values(None)
         else:
-            self.set_nodes_pixmaps_values(None)
+            if key is not None and type_ is not None:
+                self.set_nodes_pixmaps_values(column_key=key, type_=type_)
+            else:
+                self.set_nodes_pixmaps_values(None)
 
     @debug
     def prepare_compute_scores_worker(self, spectra, use_multiprocessing):

@@ -141,14 +141,14 @@ class LoadProjectWorker(BaseWorker):
                             pass
                         else:
                             if id_ is not None and mapping is not None:
-                                if isinstance(mapping, tuple):
+                                if isinstance(mapping, (tuple, list)):
                                     try:
                                         bins, colors = mapping
                                     except TypeError:
                                         pass
                                     else:
                                         colors = [QColor(color) for color in colors]
-                                        mapping = (id_, (bins, colors))
+                                        mapping = (bins, colors)
                                 elif isinstance(mapping, dict):
                                     mapping = {k: QColor(color) for k, color in mapping.items()}
                                 columns_mappings['colors'] = (id_, mapping)
@@ -378,7 +378,7 @@ class SaveProjectWorker(BaseWorker):
                 pass
             else:
                 if mapping is not None:
-                    if isinstance(mapping, tuple):
+                    if isinstance(mapping, (tuple, list)):
                         try:
                             bins, colors = mapping
                         except TypeError:
