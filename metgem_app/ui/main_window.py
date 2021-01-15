@@ -603,6 +603,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.dock_nodes.toggleView(False)
         self.dock_edges.toggleView(False)
         self.dock_spectra.toggleView(False)
+        self.dock_annotations.toggleView(False)
 
         self.tvNodes.model().sourceModel().beginResetModel()
         self.tvEdges.model().sourceModel().beginResetModel()
