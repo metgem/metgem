@@ -6,6 +6,7 @@ from PyQtNetworkView.graphicsitem import GraphicsItemLayer
 
 class AnnotationsNetworkScene(NetworkScene):
     annotationAdded = pyqtSignal(QGraphicsItem)
+    arrowEdited = pyqtSignal(QGraphicsItem)
     editAnnotationItemRequested = pyqtSignal(QGraphicsItem)
     
     def __init__(self, *args, **kwargs):

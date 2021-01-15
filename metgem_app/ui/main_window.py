@@ -1815,6 +1815,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.has_unsaved_changes = True
 
     @debug
+    def on_arrow_edited(self, *args):
+        self.annotations_widget.beginResetModel()
+        self.annotations_widget.endResetModel()
+
+    @debug
     def on_annotations_added(self, *args):
         self.dock_annotations.toggleView(True)
         self.annotations_widget.beginResetModel()
@@ -1891,6 +1896,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             scene.setNetworkStyle(self.style)
             scene.selectionChanged.connect(self.on_scene_selection_changed)
             scene.annotationAdded.connect(self.on_annotations_added)
+            scene.arrowEdited.connect(self.on_arrow_edited)
             view.focusedIn.connect(lambda: self.on_scene_selection_changed(update_view=False))
             view.undoStack().cleanChanged.connect(self.on_undo_stack_clean_changed)
             view.setContextMenuPolicy(Qt.CustomContextMenu)

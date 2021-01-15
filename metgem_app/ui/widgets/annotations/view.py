@@ -249,10 +249,12 @@ class AnnotationsNetworkView(NetworkView):
                             has_tail = item.hasTail()
                             item.setTail(not has_tail)
                             self._undo_stack.push(EditArrowCommand(item, has_tail, item.hasHead(), self.scene()))
+                            scene.arrowEdited.emit(item)
                         elif (event_pos - item.line().p2()).manhattanLength() < tol:
                             has_head = item.hasHead()
                             item.setHead(not has_head)
                             self._undo_stack.push(EditArrowCommand(item, item.hasTail(), has_head, self.scene()))
+                            scene.arrowEdited.emit(item)
 
                     # Resize Line and Arrow
                     if isinstance(item, ArrowItem):
