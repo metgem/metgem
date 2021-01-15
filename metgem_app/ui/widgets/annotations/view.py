@@ -1,7 +1,7 @@
 import struct
 from typing import Union
 
-from PyQt5.QtCore import Qt, QLineF, QRectF, QPointF, pyqtSignal
+from PyQt5.QtCore import Qt, QLineF, QRectF, QPointF
 from PyQt5.QtGui import QFont, QMouseEvent, QIcon, QPen
 from PyQt5.QtWidgets import (QGraphicsView, QGraphicsLineItem, QGraphicsSceneMouseEvent,
                              QDialog, QUndoStack, QUndoView, QMenu, QWidgetAction, QGraphicsItem, QGraphicsEllipseItem)

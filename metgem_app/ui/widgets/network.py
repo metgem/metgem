@@ -5,7 +5,6 @@ from PyQt5 import uic
 from PyQt5.QtCore import pyqtSignal, Qt, QObject
 from PyQt5.QtGui import QPen
 from PyQt5.QtWidgets import QFrame, QMenu, QWidgetAction, QWidget, QGraphicsLineItem
-from PyQtNetworkView import NetworkScene
 
 from .annotations import AnnotationsNetworkScene
 from ..edit_options_dialog import (EditNetworkOptionsDialog, EditTSNEOptionsDialog,
