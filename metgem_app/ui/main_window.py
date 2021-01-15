@@ -1966,9 +1966,12 @@ class MainWindow(MainWindowBase, MainWindowUI):
             if font is not None and font.overline():
                 model.setHeaderData(column, Qt.Horizontal, None, role=Qt.FontRole)
 
-        if column_key is not None and isinstance(column_key, str):
-            column_id = model.headerKeysToIndices([column_key])
-            column_id = column_id[0] if column_id else None
+        if column_key is not None:
+            if isinstance(column_key, str):
+                column_id = model.headerKeysToIndices([column_key])
+                column_id = column_id[0] if column_id else None
+            else:
+                column_id = column_key
 
         if column_id is not None:
             font = model.headerData(column_id, Qt.Horizontal, role=Qt.FontRole)
@@ -1997,8 +2000,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
                                    column_keys: List[Union[int, str]] = None):
         model = self.tvNodes.model().sourceModel()
 
-        if column_keys is not None and len(column_keys) > 0 and isinstance(column_keys[0], str):
-            column_ids = model.headerKeysToIndices(column_keys)
+        if column_keys is not None and len(column_keys) > 0:
+            if isinstance(column_keys[0], str):
+                column_ids = model.headerKeysToIndices(column_keys)
+            else:
+                column_ids = column_keys
 
         if column_ids is not None:
             if len(colors) < len(column_ids):
@@ -2048,9 +2054,12 @@ class MainWindow(MainWindowBase, MainWindowUI):
             if font is not None and font.underline():
                 model.setHeaderData(column, Qt.Horizontal, None, role=Qt.FontRole)
 
-        if column_key is not None and isinstance(column_key, str):
-            column_id = model.headerKeysToIndices([column_key])
-            column_id = column_id[0] if column_id else None
+        if column_key is not None:
+            if isinstance(column_key, str):
+                column_id = model.headerKeysToIndices([column_key])
+                column_id = column_id[0] if column_id else None
+            else:
+                column_id = column_key
 
         if column_id is not None:
             font = model.headerData(column_id, Qt.Horizontal, role=Qt.FontRole)
@@ -2084,9 +2093,12 @@ class MainWindow(MainWindowBase, MainWindowUI):
             if font is not None and font.italic():
                 model.setHeaderData(column, Qt.Horizontal, None, role=Qt.FontRole)
 
-        if column_key is not None and isinstance(column_key, str):
-            column_id = model.headerKeysToIndices([column_key])
-            column_id = column_id[0] if column_id else None
+        if column_key is not None:
+            if isinstance(column_key, str):
+                column_id = model.headerKeysToIndices([column_key])
+                column_id = column_id[0] if column_id else None
+            else:
+                column_id = column_key
 
         if column_id is not None:
             font = model.headerData(column_id, Qt.Horizontal, role=Qt.FontRole)
