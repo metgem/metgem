@@ -534,7 +534,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.tvEdges.model().setSelection([])
             self.tvNodes.model().sourceModel().beginResetModel()
             self.tvEdges.model().sourceModel().beginResetModel()
-            self.network, layouts, annotations = worker.result()
+            network, layouts, annotations = worker.result()
+            self.network = network
             self.tvNodes.model().sourceModel().endResetModel()
             self.tvEdges.model().sourceModel().endResetModel()
 
@@ -1983,7 +1984,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 scene = dock.widget().scene()
                 scene.setLabelsFromModel(model, column_id, metadata.LabelRole)
             self.network.columns_mappings['label'] = model.headerData(column_id, Qt.Horizontal,
-                                                                      role=metadata.KeyRole)
+                                                                       role=metadata.KeyRole)
         else:
             for dock in self.network_docks.values():
                 dock.widget().scene().resetLabels()
