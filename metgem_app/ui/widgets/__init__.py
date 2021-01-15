@@ -19,7 +19,8 @@ from .spectrum import (SpectrumCanvas, SpectrumNavigationToolbar, SpectrumWidget
 from .structure import StructureSvgWidget
 from .toolbar_menu import ToolBarMenu
 from .welcome_widget import WelcomeWidget
-from .annotations import AnnotationsNetworkView, MODE_LINE, MODE_ARROW, MODE_RECT, MODE_ELLIPSE, MODE_TEXT
+from .annotations import (AnnotationsNetworkView, AnnotationsNetworkScene,
+                          MODE_LINE, MODE_ARROW, MODE_RECT, MODE_ELLIPSE, MODE_TEXT)
 
 try:
     from .jupyter import JupyterWidget

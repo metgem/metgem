@@ -119,6 +119,14 @@ class LoadProjectWorker(BaseWorker):
                         network.columns_mappings = {}
                     else:
                         try:
+                            id_ = columns_mappings.get('label', None)
+                        except TypeError:
+                            pass
+                        else:
+                            if id_ is not None:
+                                columns_mappings['label'] = id_
+
+                        try:
                             ids, colors = columns_mappings.get('pies', (None, None))
                         except TypeError:
                             pass
@@ -126,6 +134,24 @@ class LoadProjectWorker(BaseWorker):
                             if ids is not None and colors is not None:
                                 colors = [QColor(color) for color in colors]
                                 columns_mappings['pies'] = (ids, colors)
+
+                        try:
+                            id_, mapping = columns_mappings.get('colors', (None, None))
+                        except TypeError:
+                            pass
+                        else:
+                            if id_ is not None and mapping is not None:
+                                if isinstance(mapping, tuple):
+                                    try:
+                                        bins, colors = mapping
+                                    except TypeError:
+                                        pass
+                                    else:
+                                        colors = [QColor(color) for color in colors]
+                                        mapping = (id_, (bins, colors))
+                                elif isinstance(mapping, dict):
+                                    mapping = {k: QColor(color) for k, color in mapping.items()}
+                                columns_mappings['colors'] = (id_, mapping)
 
                         try:
                             id_, func = columns_mappings.get('size', (None, None))
@@ -139,6 +165,14 @@ class LoadProjectWorker(BaseWorker):
                                                        func.get('ymax', 100),
                                                        func.get('mode', MODE_LINEAR))
                                 columns_mappings['size'] = (id_, func)
+
+                        try:
+                            id_, type_ = columns_mappings.get('pixmap', None)
+                        except TypeError:
+                            pass
+                        else:
+                            if id_ is not None and type_ is not None:
+                                columns_mappings['pixmap'] = (id_, type_)
 
                         network.columns_mappings = columns_mappings
 
@@ -322,6 +356,14 @@ class SaveProjectWorker(BaseWorker):
         columns_mappings = getattr(self.network, 'columns_mappings', None)
         if columns_mappings:
             try:
+                key = columns_mappings.get('label', None)
+            except TypeError:
+                pass
+            else:
+                if key is not None:
+                    columns_mappings['label'] = key
+
+            try:
                 keys, colors = columns_mappings.get('pies', (None, None))
             except TypeError:
                 pass
@@ -348,6 +390,14 @@ class SaveProjectWorker(BaseWorker):
                         columns_mappings['colors'] = (key,
                                                       {k: v.name() if isinstance(v, QColor)
                                                        else v for k, v in mapping.items()})
+
+            try:
+                key, type_ = columns_mappings.get('pixmap', None)
+            except TypeError:
+                pass
+            else:
+                if key is not None:
+                    columns_mappings['pixmap'] = (key, type_)
 
             d['0/columns_mappings.json'] = columns_mappings
 

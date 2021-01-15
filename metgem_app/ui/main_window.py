@@ -44,6 +44,7 @@ COLUMN_MAPPING_PIE_CHARTS = 0
 COLUMN_MAPPING_LABELS = 1
 COLUMN_MAPPING_NODES_SIZES = 2
 COLUMN_MAPPING_NODES_COLORS = 3
+COLUMN_MAPPING_NODES_PIXMAPS = 4
 
 
 # noinspection PyCallByClass,PyArgumentList
@@ -189,6 +190,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.nodes_widget.actionUseColumnForNodesColors.triggered.connect(
             lambda: self.on_use_columns_for(COLUMN_MAPPING_NODES_COLORS))
         self.nodes_widget.actionResetColorMapping.triggered.connect(lambda: self.set_nodes_colors_values(None))
+        self.nodes_widget.actionUseColumnForNodesPixmaps.triggered.connect(
+            lambda: self.on_use_columns_for(COLUMN_MAPPING_NODES_PIXMAPS))
+        self.nodes_widget.actionResetPixmapMapping.triggered.connect(lambda: self.set_nodes_pixmaps_values(None))
         self.nodes_widget.actionHighlightSelectedNodes.triggered.connect(self.highlight_selected_nodes)
         self.nodes_widget.actionViewSpectrum.triggered.connect(
             lambda: self.on_show_spectrum_from_table_triggered('show'))
@@ -1300,6 +1304,15 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
                 self._dialog.finished.connect(set_mapping)
                 self._dialog.open()
+        elif type_ == COLUMN_MAPPING_NODES_PIXMAPS:
+            if len_ == 0:
+                return
+            elif len_ > 1:
+                QMessageBox.information(self, None, "Please select only one column.")
+            else:
+                id_ = selected_columns_indexes[0].column()
+                self.set_nodes_pixmaps_values(id_)
+                self.has_unsaved_changes = True
 
     @debug
     def on_nodes_table_contextmenu(self, event):
@@ -2129,6 +2142,46 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.has_unsaved_changes = True
 
     @debug
+    def set_nodes_pixmaps_values(self, column_id: int = None,
+                                column_key: Union[int, str] = None,
+                                type_: int = widgets.AnnotationsNetworkScene.PixmapsSmiles):
+        model = self.tvNodes.model().sourceModel()
+        for column in range(model.columnCount()):
+            font = model.headerData(column, Qt.Horizontal, role=Qt.FontRole)
+            if font is not None and font.bold():
+                model.setHeaderData(column, Qt.Horizontal, None, role=Qt.FontRole)
+
+        if column_key is not None:
+            if isinstance(column_key, str):
+                column_id = model.headerKeysToIndices([column_key])
+                column_id = column_id[0] if column_id else None
+            else:
+                column_id = column_key
+
+        if column_id is not None:
+            font = model.headerData(column_id, Qt.Horizontal, role=Qt.FontRole)
+            font = font if font is not None else QFont()
+            font.setBold(True)
+            model.setHeaderData(column_id, Qt.Horizontal, font, role=Qt.FontRole)
+
+            for dock in self.network_docks.values():
+                scene = dock.widget().scene()
+                scene.setPixmapsFromModel(model, column_id, Qt.DisplayRole, type_)
+            self.network.columns_mappings['pixmap'] = (model.headerData(column_id, Qt.Horizontal,
+                                                                        role=metadata.KeyRole),
+                                                        type)
+        else:
+            for dock in self.network_docks.values():
+                dock.widget().scene().resetPixmaps()
+
+            try:
+                del self.network.columns_mappings['pixmap']
+            except KeyError:
+                pass
+
+        self.has_unsaved_changes = True
+
+    @debug
     def save_settings(self):
         settings = QSettings()
 
@@ -2289,6 +2342,12 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 self.set_nodes_colors_values(column_key=key, mapping=colors)
             elif force_reset_mapping:
                 self.set_nodes_colors_values(None)
+
+        key, type_ = columns_mappings.get('pixmap', (None, None))
+        if key is not None and type_ is not None:
+            self.set_nodes_pixmaps_values(column_key=key, type=type_)
+        else:
+            self.set_nodes_pixmaps_values(None)
 
     @debug
     def prepare_compute_scores_worker(self, spectra, use_multiprocessing):

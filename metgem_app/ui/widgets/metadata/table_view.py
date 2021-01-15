@@ -157,6 +157,12 @@ class NodesWidget(QWidget):
         self.btUseColumnForNodesColors.setMenu(menu)
         self.btUseColumnForNodesColors.setDefaultAction(self.actionUseColumnForNodesColors)
 
+        menu = QMenu()
+        menu.addAction(self.actionUseColumnForNodesPixmaps)
+        menu.addAction(self.actionResetPixmapMapping)
+        self.btUseColumnForNodesPixmaps.setMenu(menu)
+        self.btUseColumnForNodesPixmaps.setDefaultAction(self.actionUseColumnForNodesPixmaps)
+
         self.btHighlightSelectedNodes.setDefaultAction(self.actionHighlightSelectedNodes)
         self.btAddColumnsByFormulae.setDefaultAction(self.actionAddColumnsByFormulae)
         self.btClusterize.setDefaultAction(self.actionClusterize)

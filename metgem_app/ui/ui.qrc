@@ -48,6 +48,7 @@
     <file>images/node-pie.svg</file>
     <file>images/node-color.svg</file>
     <file>images/node-label.svg</file>
+    <file>images/node-structure.svg</file>
     <file>images/mapping.svg</file>
     <file>images/import-mapping.svg</file>
     <file>images/library-more.svg</file>
@@ -101,15 +102,15 @@
     <file>images/main.svg</file>
     <file>images/reset-layout.svg</file>
     <file>images/user-home.svg</file>
-	<file>images/add-line.svg</file>
-	<file>images/add-arrow.svg</file>
-	<file>images/add-rect.svg</file>
-	<file>images/add-ellipse.svg</file>
-	<file>images/add-text.svg</file>
-	<file>images/move-items.svg</file>
-	<file>images/edit-undo.svg</file>
-	<file>images/edit-redo.svg</file>
-	<file>images/edit-delete.svg</file>
+    <file>images/add-line.svg</file>
+    <file>images/add-arrow.svg</file>
+    <file>images/add-rect.svg</file>
+    <file>images/add-ellipse.svg</file>
+    <file>images/add-text.svg</file>
+    <file>images/move-items.svg</file>
+    <file>images/edit-undo.svg</file>
+    <file>images/edit-redo.svg</file>
+    <file>images/edit-delete.svg</file>
   </qresource>
   <qresource prefix="logo">
     <file>images/main-wide.svg</file>

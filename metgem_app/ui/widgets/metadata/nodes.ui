@@ -121,6 +121,32 @@
       </widget>
      </item>
      <item>
+      <widget class="QToolButton" name="btUseColumnForNodesPixmaps">
+       <property name="toolTip">
+        <string>Use selected columns as source for nodes' colors</string>
+       </property>
+       <property name="statusTip">
+        <string>Use selected columns as source for nodes' colors</string>
+       </property>
+       <property name="text">
+        <string>...</string>
+       </property>
+       <property name="icon">
+        <iconset resource="../../ui.qrc">
+         <normaloff>:/icons/images/node-structure.svg</normaloff>:/icons/images/node-structure.svg</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>24</width>
+         <height>24</height>
+        </size>
+       </property>
+       <property name="popupMode">
+        <enum>QToolButton::MenuButtonPopup</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="Line" name="line">
        <property name="orientation">
         <enum>Qt::Vertical</enum>
@@ -724,6 +750,36 @@
    </property>
    <property name="statusTip">
     <string>Allow to change order of columns</string>
+   </property>
+  </action>
+  <action name="actionUseColumnForNodesPixmaps">
+   <property name="icon">
+    <iconset resource="../../ui.qrc">
+     <normaloff>:/icons/images/node-structure.svg</normaloff>:/icons/images/node-structure.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Use Column for Nodes Pixmaps</string>
+   </property>
+   <property name="toolTip">
+    <string>Use selected column as source for nodes' pixmap</string>
+   </property>
+   <property name="statusTip">
+    <string>Use selected column as source for nodes' colors</string>
+   </property>
+  </action>
+  <action name="actionResetPixmapMapping">
+   <property name="icon">
+    <iconset resource="../../ui.qrc">
+     <normaloff>:/icons/images/node-structure.svg</normaloff>:/icons/images/node-structure.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Reset pixmap mapping</string>
+   </property>
+   <property name="toolTip">
+    <string>Remove nodes' pixmaps</string>
+   </property>
+   <property name="statusTip">
+    <string>Restore default nodes' colors</string>
    </property>
   </action>
  </widget>
