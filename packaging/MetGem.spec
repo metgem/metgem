@@ -115,8 +115,9 @@ if sys.platform.startswith('darwin'):
 # Add sqlachemy.ext.baked
 hiddenimports.extend(['sqlalchemy.ext.baked'])
 
-# Add scipy.spatial.transform._rotation_groups
-hiddenimports.extend(['scipy.spatial.transform._rotation_groups'])
+# Add missing modules
+hiddenimports.extend(['scipy.spatial.transform._rotation_groups',
+                      'sklearn.utils._weight_vector'])
 
 # Add pybel
 try:
