@@ -112,12 +112,8 @@ excludes.extend(['PyQt5.QtWebEngine', 'PyQt5.QtWebEngineWidgets', 'PyQt5.QtWebEn
 if sys.platform.startswith('darwin'):
     hiddenimports.extend(['PyQt5.QtDBus'])
     
-# Add sqlachemy.ext.baked
-hiddenimports.extend(['sqlalchemy.ext.baked'])
-
 # Add missing modules
-hiddenimports.extend(['scipy.spatial.transform._rotation_groups',
-                      'sklearn.utils._weight_vector'])
+hiddenimports.extend(['sqlalchemy.ext.baked', 'scipy.spatial.transform._rotation_groups'])
 
 # Add pybel
 try:
@@ -144,7 +140,7 @@ try:
 except ImportError:
     pass
 else:
-    hiddenimports.extend(['umap'])
+    hiddenimports.extend(['umap', 'pynndescent'])
 
 # Define path for build hooks
 # noinspection PyUnresolvedReferences
