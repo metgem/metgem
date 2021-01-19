@@ -29,8 +29,7 @@ class ListDatabasesWorker(BaseWorker):
             r = requests.get(GNPS_LIB_URL, timeout=1)
             r.raise_for_status()
         except (requests.ConnectionError, requests.HTTPError, requests.Timeout) as e:
-            self.error.emit(e)
-            return False
+            pass
         else:
             if r.status_code == 200:
                 tree = html.fromstring(r.content)
@@ -64,8 +63,7 @@ class ListDatabasesWorker(BaseWorker):
                     r.raise_for_status()
             except (requests.ConnectionError, requests.HTTPError,
                     requests.exceptions.MissingSchema, requests.exceptions.Timeout) as e:
-                self.error.emit(e)
-                return False
+                pass
             else:
                 if url is None or r.status_code == 200:
                     if url is not None:
