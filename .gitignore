@@ -160,6 +160,7 @@ bin/
 *.parquet
 *.npy
 *.zarr
+*.pkg
 /clusterinfosummarygroup_attributes*
 /networkedges_*
 /test_*.py
