@@ -2157,7 +2157,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
     @debug
     def set_nodes_pixmaps_values(self, column_id: int = None,
                                 column_key: Union[int, str] = None,
-                                type_: int = widgets.AnnotationsNetworkScene.PixmapsSmiles):
+                                type_: int = widgets.AnnotationsNetworkScene.PixmapsAuto):
         model = self.tvNodes.model().sourceModel()
         for column in range(model.columnCount()):
             font = model.headerData(column, Qt.Horizontal, role=Qt.FontRole)
