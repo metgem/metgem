@@ -2,7 +2,7 @@
 
 # Download pre-built packages
 
-You can download the latest stable version from [here](https://github.com/metgem/metgem/releases/latest) or latest developmment version from [here](https://github.com/metgem/metgem/releases/nightly).
+You can download the latest stable version from [here](https://github.com/metgem/metgem/releases/latest) or latest development version from [here](https://github.com/metgem/metgem/releases/nightly).
 
 # Build instructions
 
