@@ -4,7 +4,7 @@ import io
 import json
 import os
 import zipfile
-from typing import List, Callable, Dict, Union, Tuple
+from typing import List, Callable, Dict, Union, Tuple, Set
 
 import igraph as ig
 import numpy as np
@@ -12,7 +12,7 @@ import pandas as pd
 import requests
 import sqlalchemy
 from PyQt5 import uic
-from PyQt5.QtCore import QSettings, Qt, QCoreApplication, QRectF
+from PyQt5.QtCore import QSettings, Qt, QCoreApplication, QRectF, QAbstractTableModel
 from PyQt5.QtGui import QPainter, QImage, QColor, QKeyEvent, QIcon, QFontMetrics, QFont, QKeySequence, QCursor
 from PyQt5.QtWidgets import (QDialog, QFileDialog, QMessageBox, QWidget, QMenu, QActionGroup, QMainWindow,
                              QAction, qApp, QTableView, QComboBox, QToolBar,
@@ -1132,18 +1132,21 @@ class MainWindow(MainWindowBase, MainWindowUI):
     # noinspection PyUnusedLocal
     @debug
     def on_export_db_results(self, *args):
-        filter_ = ["YAML - YAML Ain't Markup Language (*.yaml)",
-                   "JSON - JavaScript Notation Object (*.json)"]
+        self._dialog = ui.ExportDBResultsDialog(self)
 
-        filename, filter_ = QFileDialog.getSaveFileName(self, "Export Database Results",
-                                                        filter=";;".join(filter_))
+        def export_db_results(result):
+            if result == QDialog.Accepted:
+                filename, *values = self._dialog.getValues()
+                if not filename:
+                    return
+                worker = self.prepare_export_db_results_worker(filename, values,
+                                                               self.tvNodes.model().sourceModel())
+                if worker is not None:
+                    self._workers.append(worker)
+                    self._workers.start()
 
-        if filename:
-            fmt = 'json' if filter_.endswith("(*.json)") else 'yaml'
-            worker = self.prepare_export_db_results_worker(filename, self.tvNodes.model().sourceModel(), fmt=fmt)
-            if worker is not None:
-                self._workers.append(worker)
-                self._workers.start()
+        self._dialog.finished.connect(export_db_results)
+        self._dialog.open()
 
     @debug
     def on_show_spectrum_from_table_triggered(self, type_):
@@ -2668,8 +2671,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
         return worker
 
     @debug
-    def prepare_export_db_results_worker(self, filename, model, fmt):
-        worker = workers.ExportDbResultsWorker(filename, model, fmt)
+    def prepare_export_db_results_worker(self, filename: str, values,
+                                         model: QAbstractTableModel) -> workers.ExportDbResultsWorker:
+        worker = workers.ExportDbResultsWorker(filename, *values, config.DATABASES_PATH, model)
 
         def finished():
             QMessageBox.information(self, None, f"Database results were successfully exported to \"{filename}\".")
