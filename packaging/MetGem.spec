@@ -113,7 +113,8 @@ if sys.platform.startswith('darwin'):
     hiddenimports.extend(['PyQt5.QtDBus'])
     
 # Add missing modules
-hiddenimports.extend(['sqlalchemy.ext.baked', 'scipy.spatial.transform._rotation_groups'])
+hiddenimports.extend(['sqlalchemy.ext.baked', 'sqlalchemy.sql.default_comparator',
+                      'scipy.spatial.transform._rotation_groups'])
 
 # Add pybel
 try:
