@@ -30,6 +30,11 @@ def run():
     # Make sure decimal separator is dot
     os.environ['LC_NUMERIC'] = 'C'
 
+    # Fix no window shown on Mac OS Big Sur
+    # http://www.tiger-222.fr/?d=2020/11/16/11/06/36-macos-big-sur-et-pyqt
+    if sys.platform.startswith('darwin'):
+        os.environ["QT_MAC_WANTS_LAYER"] = '1'
+
     from ._version import get_versions
     VERSION = get_versions()['version']
 
