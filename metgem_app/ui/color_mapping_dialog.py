@@ -251,7 +251,7 @@ class BaseColorMappingDialog(ColorMappingDialogUI, ColorMappingDialogBase):
 
     def remove_selected_colors(self):
         for item in self.lstColors.selectedItems():
-            self.lstColors.takeItem(item)
+            self.lstColors.takeItem(self.lstColors.row(item))
 
     def set_colors(self, colors: List[Union[str, QColor]]):
         self.lstColors.clear()

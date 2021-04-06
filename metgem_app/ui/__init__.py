@@ -19,3 +19,4 @@ from .clusterize_dialog import ClusterizeDialog
 from .updates_dialog import UpdatesDialog
 from .plugins_manager_dialog import PluginsManagerDialog
 from .pen_parameters_dialog import PenParametersDialog
+from .export_db_results_dialog import ExportDBResultsDialog
