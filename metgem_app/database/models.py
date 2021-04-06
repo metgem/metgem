@@ -1,5 +1,5 @@
 import numpy as np
-from sqlalchemy import (Column, ForeignKey, Integer, Float, String, Boolean, Binary, TypeDecorator)
+from sqlalchemy import (Column, ForeignKey, Integer, Float, String, Boolean, LargeBinary, TypeDecorator)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
@@ -10,7 +10,7 @@ Base = declarative_base()
 # noinspection PyAbstractClass
 class NumpySpectrumArray(TypeDecorator):
 
-    impl = Binary
+    impl = LargeBinary
 
     def process_bind_param(self, value, dialect):
         return value.tobytes(order='C')
