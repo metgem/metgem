@@ -1,7 +1,6 @@
 from typing import Union
 
 from PyQt5.QtWidgets import QToolButton, QMenu, QAction
-from ...utils import enumerateMenu
 
 
 class ToolBarMenu(QToolButton):
