@@ -101,38 +101,27 @@ def run():
 
     splash.showMessage("Loading Configuration module...")
     importlib.import_module('.config', 'metgem_app')
-    splash.setValue(46)
+    splash.setValue(50)
 
     splash.showMessage("Loading Errors modules...")
     importlib.import_module('.errors', 'metgem_app')
-    splash.setValue(47)
+    splash.setValue(55)
 
     splash.showMessage("Loading Logger module...")
     importlib.import_module('.logger', 'metgem_app')
-    splash.setValue(48)
+    splash.setValue(60)
 
     splash.showMessage("Loading GraphML parser module...")
     importlib.import_module('.graphml', 'metgem_app')
-    splash.setValue(49)
+    splash.setValue(65)
 
     splash.showMessage("Loading Databases module...")
     importlib.import_module('.database', 'metgem_app')
-    splash.setValue(50)
+    splash.setValue(70)
 
     splash.showMessage("Loading Workers...")
-    workers = importlib.import_module('.workers', 'metgem_app')
-    splash.setValue(55)
-    workers_to_load = list(workers.base.BaseWorker.get_subclasses())
-    step = 35 // len(workers_to_load)
-    for i, worker_class in enumerate(workers_to_load):
-        splash.showMessage(f"Loading Workers ({worker_class.__name__})")
-        try:
-            worker_class.import_modules()
-        except ImportError:
-            worker_class.disable()
-        else:
-            worker_class.enable()
-        splash.setValue(50+i*step)
+    importlib.import_module('.workers', 'metgem_app')
+    splash.setValue(75)
 
     splash.showMessage("Loading User interface...")
     importlib.import_module('.ui', 'metgem_app')

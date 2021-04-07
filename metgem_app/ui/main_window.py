@@ -129,24 +129,24 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.tbExport.removeAction(self.actionExportDatabaseResults)
 
         # Create actions to add new views
-        create_network_button = widgets.ToolBarMenu()
-        create_network_button.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        self._create_network_button = widgets.ToolBarMenu()
+        self._create_network_button.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
         set_default = True
         extras_menu = None
         for view_class in widgets.AVAILABLE_NETWORK_WIDGETS.values():
             if view_class.extra:
                 if extras_menu is None:
-                    extras_menu = create_network_button.addMenu("Extras")
+                    extras_menu = self._create_network_button.addMenu("Extras")
                 action = extras_menu.addAction('Add {} view'.format(view_class.title))
             else:
-                action = create_network_button.addAction('Add {} view'.format(view_class.title))
+                action = self._create_network_button.addAction('Add {} view'.format(view_class.title))
             action.setIcon(self.actionAddNetworkView.icon())
             action.setData(view_class)
             action.triggered.connect(self.on_add_view_triggered)
             if set_default:
-                create_network_button.setDefaultAction(action)
+                self._create_network_button.setDefaultAction(action)
                 set_default = False
-        self.tbFile.insertWidget(self.actionAddNetworkView, create_network_button)
+        self.tbFile.insertWidget(self.actionAddNetworkView, self._create_network_button)
         self.tbFile.removeAction(self.actionAddNetworkView)
 
         color_button = widgets.ColorPicker(self.actionSetNodesColor, color_group='Node', default_color=Qt.blue)
@@ -1710,8 +1710,29 @@ class MainWindow(MainWindowBase, MainWindowUI):
                                 self._workers.append(lambda _: self.update_status_widgets())
                             self._workers.start()
 
+                def error_import_modules(e):
+                    if isinstance(e, ImportError):
+                        # One or more dependencies could not be loaded, disable action associated with the view
+                        actions = list(self._create_network_button.enumerateMenu())
+                        for action in actions:
+                            if action.data() == widget_class:
+                                action.setEnabled(False)  # Disable action
+
+                                # Set a new default action
+                                index = actions.index(action)
+                                default = actions[(index+1) % len(actions)]
+                                self._create_network_button.setDefaultAction(default)
+                                break
+
+                        QMessageBox.warning(self, None,
+                            f"{widget_class.title} view can't be added because a requested module can't be loaded.")
+
                 self._dialog.finished.connect(add_view)
-                self._dialog.open()
+                worker = workers.ImportModulesWorker(widget_class.worker_class, widget_class.title)
+                worker.error.connect(error_import_modules)
+                worker.finished.connect(self._dialog.open)
+                self._workers.append(worker)
+                self._workers.start()
 
     @debug
     def on_edit_options_triggered(self, widget):

@@ -23,3 +23,4 @@ from .queue import WorkerQueue
 from .read_data import ReadDataWorker, NoSpectraError, FileEmptyError
 from .read_group_mapping import ReadGroupMappingWorker
 from .read_metadata import ReadMetadataOptions, ReadMetadataWorker
+from .import_modules import ImportModulesWorker
