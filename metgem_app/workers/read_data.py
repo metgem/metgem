@@ -45,7 +45,7 @@ class ReadDataWorker(BaseWorker):
             mz_keys = ['pepmass']
         elif self.ext == '.msp':
             read = read_msp
-            mz_keys = ['precursormz', 'exactmass']
+            mz_keys = ['precursormz', 'exactmass', 'mw']
         else:
             self.error.emit(NotImplementedError())
             return
