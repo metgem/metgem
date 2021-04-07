@@ -29,7 +29,7 @@ dependencies:
     - pyqtnetworkview>=0.5.5
     - forceatlas2>=0.2
     - pyemf>=2.1.2alpha
-    - pyqtads>=3.3.0
+    - pyqtads>=3.6.3
     - numba>=0.46.0
     - umap-learn>=0.5.0
     - pynndescent>=0.5.0

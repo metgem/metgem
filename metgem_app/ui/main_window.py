@@ -4,7 +4,7 @@ import io
 import json
 import os
 import zipfile
-from typing import List, Callable, Dict, Union, Tuple, Set
+from typing import List, Callable, Dict, Union, Tuple
 
 import igraph as ig
 import numpy as np
@@ -19,7 +19,7 @@ from PyQt5.QtWidgets import (QDialog, QFileDialog, QMessageBox, QWidget, QMenu, 
                              QApplication, QGraphicsView, QLineEdit, QListWidget, QLabel, QToolButton)
 from PyQtAds.QtAds import (CDockManager, CDockWidget,
                            BottomDockWidgetArea, CenterDockWidgetArea,
-                           TopDockWidgetArea, LeftDockWidgetArea)
+                           TopDockWidgetArea, LeftDockWidgetArea, CDockAreaWidget, CDockContainerWidget)
 from PyQtNetworkView import style_from_css, style_to_cytoscape, disable_opengl
 from libmetgem import human_readable_data
 
@@ -1945,11 +1945,14 @@ class MainWindow(MainWindowBase, MainWindowUI):
             widget.btOptions.clicked.connect(lambda: self.on_edit_options_triggered(widget))
 
             dock = CDockWidget(widget.title)
+            dock.setFeature(CDockWidget.CustomCloseHandling, True)
+            dock.setFeature(CDockWidget.DockWidgetDeleteOnClose, True)
+            dock.setFeature(CDockWidget.DockWidgetForceCloseWithArea, True)
             dock.setWidget(widget)
             self.dock_manager.addDockWidget(LeftDockWidgetArea, dock, self.dock_placeholder.dockAreaWidget())
             dock.toggleView(False)
             self.dock_placeholder.toggleView(False)
-            dock.closed.connect(self._docks_closed_signals_grouper.accumulate)
+            dock.closeRequested.connect(self._docks_closed_signals_grouper.accumulate)
             dock.toggleView(True)
             self.dock_manager.addToggleViewActionToMenu(dock.toggleViewAction())
             self.network_docks[widget_class.name] = dock
@@ -1973,16 +1976,19 @@ class MainWindow(MainWindowBase, MainWindowUI):
         msgbox = QMessageBox(QMessageBox.Question,
                              QCoreApplication.applicationName(),
                              message,
-                             QMessageBox.Yes)
-
+                             QMessageBox.Yes | QMessageBox.Cancel,
+                             self)
         msgbox.addButton(f"No, just hide {'it' if num_docks==1 else 'them'}", QMessageBox.NoRole)
-
-        if msgbox.exec_() == QMessageBox.Yes:
+        result = msgbox.exec_()
+        if result == QMessageBox.Yes:
             for dock in docks:
                 self.dock_manager.viewMenu().removeAction(dock.toggleViewAction())
                 self.dock_manager.removeDockWidget(dock)
                 self.network_docks.pop(dock.widget().name)
             self.has_unsaved_changes = True
+        elif result != QMessageBox.Cancel:
+            for dock in docks:
+                dock.toggleView(False)
 
     @debug
     def set_nodes_label(self, column_id: int = None, column_key: Union[int, str] = None):
