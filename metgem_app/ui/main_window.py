@@ -1584,7 +1584,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
         if reply == QMessageBox.Cancel:
             return
 
-        self._dialog = ui.ProcessDataDialog(self, options=self.network.options)
+        self._dialog = ui.ProcessDataDialog(self._create_network_button.menu(), self,
+                                            options=self.network.options)
 
         def do_process(result):
             if result == QDialog.Accepted:
@@ -1713,7 +1714,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 def error_import_modules(e):
                     if isinstance(e, ImportError):
                         # One or more dependencies could not be loaded, disable action associated with the view
-                        actions = list(self._create_network_button.enumerateMenu())
+                        actions = list(utils.enumerateMenu(self._create_network_button.menu()))
                         for action in actions:
                             if action.data() == widget_class:
                                 action.setEnabled(False)  # Disable action

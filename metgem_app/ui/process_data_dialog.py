@@ -1,13 +1,12 @@
 import os
-import sys
 
 from PyQt5 import uic
-from PyQt5.QtCore import Qt, QDir, QSize
+from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QPalette, QColor
-from PyQt5.QtWidgets import QFileDialog, QDialog, QCompleter, QFileSystemModel, QMenu, \
-    QListWidgetItem, QMessageBox
+from PyQt5.QtWidgets import QFileDialog, QDialog, QMenu, QListWidgetItem, QMessageBox
 
 from .widgets import CosineOptionsWidget, AVAILABLE_NETWORK_WIDGETS
+from .. import workers, ui, utils
 from .import_metadata_dialog import ImportMetadataDialog
 from ..workers.read_metadata import ReadMetadataOptions
 
@@ -34,12 +33,14 @@ class ProcessDataDialog(ProcessDataDialogBase, ProcessDataDialogUI):
     """
     NameRole = Qt.UserRole + 1
 
-    def __init__(self, *args, options=None, **kwargs):
+    def __init__(self, create_network_menu, *args, options=None, **kwargs):
         super().__init__(*args, **kwargs)
 
         self._metadata_options = ReadMetadataOptions()
         self._options = options
         self._dialog = None
+        self._workers = workers.WorkerQueue(self, ui.ProgressDialog(self))
+        self._create_network_menu = create_network_menu
 
         self.setupUi(self)
         self.btBrowseProcessFile.setFocus()
@@ -83,6 +84,8 @@ class ProcessDataDialog(ProcessDataDialogBase, ProcessDataDialogUI):
                 action = extras_menu.addAction('Add {} view'.format(view_class.title))
             else:
                 action = menu.addAction('Add {} view'.format(view_class.title))
+            if not view_class.worker_class.enabled():
+                action.setEnabled(False)
             action.setIcon(self.btAddView.icon())
             action.setData(view_class)
             action.triggered.connect(self.on_add_view_triggered)
@@ -136,8 +139,30 @@ class ProcessDataDialog(ProcessDataDialogBase, ProcessDataDialogUI):
                     item.setData(ProcessDataDialog.NameRole, widget_class.name)
                     self.lstViews.addItem(item)
 
+            def error_import_modules(e):
+                if isinstance(e, ImportError):
+                    # One or more dependencies could not be loaded, disable action associated with the view
+                    for menu in (self.btAddView.menu(), self._create_network_menu):
+                        actions = list(utils.enumerateMenu(menu))
+                        for action in actions:
+                            if action.data() == widget_class:
+                                action.setEnabled(False)  # Disable action
+
+                                # Set a new default action
+                                index = actions.index(action)
+                                default = actions[(index + 1) % len(actions)]
+                                menu.setDefaultAction(default)
+                                break
+
+                    QMessageBox.warning(self, None,
+                            f"{widget_class.title} view can't be added because a requested module can't be loaded.")
+
             self._dialog.finished.connect(add_view)
-            self._dialog.open()
+            worker = workers.ImportModulesWorker(widget_class.worker_class, widget_class.title)
+            worker.error.connect(error_import_modules)
+            worker.finished.connect(self._dialog.open)
+            self._workers.append(worker)
+            self._workers.start()
 
     def on_remove_views(self):
         for item in self.lstViews.selectedItems():

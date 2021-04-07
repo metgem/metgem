@@ -131,3 +131,11 @@ def open_folder(path: str):
         subprocess.Popen(["open", path])
     else:
         subprocess.Popen(["xdg-open", path])
+
+
+def enumerateMenu(menu: 'QMenu'):
+    for action in menu.actions():
+        if action.menu() is not None:
+            yield from enumerateMenu(action.menu())
+        elif not action.isSeparator():
+            yield action
