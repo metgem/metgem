@@ -3,7 +3,6 @@ import os
 from matplotlib import rcParams
 rcParams["toolbar"] = "toolmanager"
 
-from matplotlib.backend_bases import key_press_handler
 from matplotlib.backend_tools import ToolBase
 from matplotlib.backends.backend_qt5agg import FigureManagerQT as FigureManager
 
@@ -164,7 +163,6 @@ class SpectrumWidget(QWidget):
 
     def step_pan(self, event, keypress=False):
         """pan X axis with arrow keys or mouse wheel"""
-
         if (hasattr(self, '_views') and self._views.empty())\
                 or (hasattr(self, '_nav_stack') and self._nav_stack.empty()):
             self.push_current()
@@ -185,7 +183,6 @@ class SpectrumWidget(QWidget):
 
     def step_zoom(self, event, keypress=False):
         """zoom on X axis with arrow keys or mouse wheel"""
-
         if (hasattr(self, '_views') and self._views.empty())\
                 or (hasattr(self, '_nav_stack') and self._nav_stack.empty()):
             self.push_current()
