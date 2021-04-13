@@ -14,8 +14,7 @@ from .loading_views import (LoadingListView, LoadingListWidget,
                             LoadingTreeView, LoadingTreeWidget)
 from .network import NetworkFrame, TSNEFrame, AVAILABLE_NETWORK_WIDGETS
 from .slider import Slider
-from .spectrum import (SpectrumCanvas, SpectrumNavigationToolbar, SpectrumWidget,
-                       SpectraComparisonWidget)
+from .spectrum import (SpectrumCanvas, SpectrumWidget, SpectraComparisonWidget)
 from .structure import StructureSvgWidget
 from .toolbar_menu import ToolBarMenu
 from .welcome_widget import WelcomeWidget
