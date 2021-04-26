@@ -3,7 +3,7 @@ channels:
     - conda-forge
 dependencies:
     - invoke
-    - pyinstaller
+    - pyinstaller>=4.3
     - pytest
     - pytest-qt
     - pytest-mock
