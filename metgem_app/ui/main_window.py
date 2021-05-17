@@ -2660,7 +2660,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
             nonlocal worker
             result = worker.result()
             self.tvNodes.model().sourceModel().beginResetModel()
-            self.network.mappings.update(result)
+            if hasattr(self._network, 'mappings'):
+                self._network.mappings.update(result)
+            else:
+                self._network.mappings = result
             self.has_unsaved_changes = True
             self.tvNodes.model().sourceModel().endResetModel()
 
