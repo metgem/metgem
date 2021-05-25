@@ -79,7 +79,7 @@ setup(
                  "Programming Language :: Python :: 3.6",
                  "Programming Language :: Python :: 3.7",
                  "Programming Language :: Python :: 3.8"],
-    packages=find_packages(exclude=("packaging", "tests",)),
+    packages=find_packages(exclude=("metgem_packaging", "tests",)),
     scripts=['MetGem'],
     data_files=data_files,
     package_dir={'metgem': 'metgem'},

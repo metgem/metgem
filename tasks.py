@@ -1,7 +1,7 @@
 from invoke import Collection
 
-import packaging.tasks
+import metgem_packaging.tasks
 
 ns = Collection()
-ns.add_collection(packaging.tasks, 'packaging')
-ns.add_task(packaging.tasks.rc)
+ns.add_collection(metgem_packaging.tasks, 'packaging')
+ns.add_task(metgem_packaging.tasks.rc)

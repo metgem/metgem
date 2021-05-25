@@ -7,7 +7,7 @@ __pycache__/
 # C extensions
 *.so
 
-# Distribution / packaging
+# Distribution / metgem_packaging
 .Python
 env/
 build/
@@ -167,13 +167,13 @@ bin/
 /metgem_app/ui/ui_rc.py
 /metgem_app/ui/images/main.ico
 /log/
-packaging/share/
-packaging/sip/
-packaging/*.AppImage
-packaging/*.exe
-packaging/*.dmg
-packaging/file_version_info.txt
+metgem_packaging/share/
+metgem_packaging/sip/
+metgem_packaging/*.AppImage
+metgem_packaging/*.exe
+metgem_packaging/*.dmg
+metgem_packaging/file_version_info.txt
+metgem_packaging/AppDir/
 examples/*.ods
 examples/*.xls
 examples/*.txt
-packaging/AppDir/

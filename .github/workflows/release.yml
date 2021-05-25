@@ -72,6 +72,6 @@ jobs:
       uses: actions/upload-release-asset@v1
       with:
         upload_url: ${{ steps.get-release.outputs.upload_url }} 
-        asset_path: packaging/${{ steps.build.outputs.asset-name }}
+        asset_path: metgem_packaging/${{ steps.build.outputs.asset-name }}
         asset_name: ${{ steps.build.outputs.asset-basename }}-${{ github.event.release.tag_name }}.${{ steps.build.outputs.asset-ext }}
         asset_content_type: ${{ steps.build.outputs.asset-mimetype }}

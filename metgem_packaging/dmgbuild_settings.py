@@ -10,7 +10,7 @@ import biplist
 
 APPNAME = "MetGem"
 # noinspection PyUnresolvedReferences
-PACKAGING_DIR = defines.get('packaging_dir', 'packaging')
+PACKAGING_DIR = defines.get('packaging_dir', 'metgem_packaging')
 
 tmp_dir = tempfile.TemporaryDirectory()
 os.makedirs(os.path.join(tmp_dir.name, APPNAME))
