@@ -15,4 +15,4 @@ runs:
         hash=${hash::6}
         log=tests-${{ runner.os }}-$hash.log
         echo "::set-output name=log::$log"
-        packaging/dist/MetGem/MetGem --pytest 1>$log 2>&1
+        metgem_packaging/dist/MetGem/MetGem --pytest 1>$log 2>&1

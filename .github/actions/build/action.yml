@@ -22,8 +22,8 @@ runs:
       run: |
         python -m invoke packaging.build
         shopt -s extglob
-        asset_name=`find packaging -maxdepth 1 \( -name "setup_MetGem*" -or -name "MetGem*.dmg" -or -name "MetGem*.AppImage" \) -print0 | xargs -0 ls -t | head -n 1 | xargs -n 1 basename`
+        asset_name=`find metgem_packaging -maxdepth 1 \( -name "setup_MetGem*" -or -name "MetGem*.dmg" -or -name "MetGem*.AppImage" \) -print0 | xargs -0 ls -t | head -n 1 | xargs -n 1 basename`
         echo "::set-output name=asset-name::$asset_name"
-        echo "::set-output name=asset-mimetype::`file -b --mime-type packaging/$asset_name`"
+        echo "::set-output name=asset-mimetype::`file -b --mime-type metgem_packaging/$asset_name`"
         echo "::set-output name=asset-ext::${asset_name#*.}"
         echo "::set-output name=asset-basename::${asset_name%.*}"
