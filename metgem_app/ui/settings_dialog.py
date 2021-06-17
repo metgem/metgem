@@ -54,7 +54,8 @@ class SettingsDialog(SettingsDialogUI, SettingsDialogBase):
         edges[5].setSelected(True)
 
         styles = [None] + glob.glob(os.path.join(STYLES_PATH, '*.css'))
-        app_style_path = os.path.realpath(os.path.join(APP_PATH, QCoreApplication.applicationName().lower(), 'styles'))
+        app_style_path = os.path.realpath(os.path.join(APP_PATH, QCoreApplication.applicationName().lower() + '_app',
+                                                       'styles'))
         if STYLES_PATH != app_style_path:
             styles += glob.glob(os.path.join(app_style_path, '*.css'))
 
