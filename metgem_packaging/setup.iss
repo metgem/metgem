@@ -3,7 +3,7 @@
 
 #define AppName "MetGem"
 #define AppId "{15225AA3-EFDB-4261-A26D-138260F4B3D2}"
-#define AppVersion GetFileVersion("dist/MetGem/MetGem.exe")
+#define AppVersion GetVersionNumbersString("dist/MetGem/MetGem.exe")
 #define AppPublisher "CNRS/ICSN"
 #define AppURL "https://metgem.github.io"
 #define AppExeName "MetGem.exe"
@@ -27,8 +27,8 @@ OutputBaseFilename=setup_{#AppName}
 SolidCompression=no
 OutputDir=.
 SetupIconFile=main.ico
-WizardImageFile=compiler:WizModernImage-IS.bmp
-WizardSmallImageFile=compiler:WizModernSmallImage-IS.bmp
+WizardImageFile=compiler:WizClassicImage-IS.bmp
+WizardSmallImageFile=compiler:WizClassicSmallImage-IS.bmp
 ArchitecturesInstallIn64BitMode=x64
 ArchitecturesAllowed=x64
 ChangesAssociations=True
