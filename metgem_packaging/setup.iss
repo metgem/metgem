@@ -27,13 +27,15 @@ OutputBaseFilename=setup_{#AppName}
 SolidCompression=no
 OutputDir=.
 SetupIconFile=main.ico
-WizardImageFile=compiler:WizClassicImage-IS.bmp
-WizardSmallImageFile=compiler:WizClassicSmallImage-IS.bmp
+WizardImageFile=wiz-image.bmp
+WizardSmallImageFile=wiz-small-image.bmp
+WizardImageAlphaFormat=defined
 ArchitecturesInstallIn64BitMode=x64
 ArchitecturesAllowed=x64
 ChangesAssociations=True
 LicenseFile=dist\{#AppName}\LICENSE
 Compression=lzma2/fast
+WizardStyle=modern
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
