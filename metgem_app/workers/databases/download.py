@@ -92,35 +92,6 @@ class ListDatabasesWorker(BaseWorker):
         self.finished.emit()
 
 
-class GetGNPSDatabasesMtimeWorker(BaseWorker):
-
-    def __init__(self, ids):
-        super().__init__(track_progress=False)
-        self.ids = ids
-
-    def run(self):
-        mtimes = {}
-        try:
-            with ftplib.FTP(GNPS_FTP_URL) as ftp:
-                ftp.login()
-                ftp.cwd('Spectral_Libraries')
-
-                # Then try to download files
-                for i, id_ in enumerate(self.ids):
-                    if self.isStopped():
-                        self.canceled.emit()
-                        return False
-
-                    rd = ftp.sendcmd(f'MDTM {id_}')
-                    mtimes[id_] = datetime.strptime(rd[4:], '%Y%m%d%H%M%S')
-        except ftplib.all_errors as e:
-            self.error.emit(e)
-            return False
-        else:
-            self._result = mtimes
-            self.finished.emit()
-
-
 class DownloadDatabasesWorker(BaseWorker):
 
     def __init__(self, ids, path):

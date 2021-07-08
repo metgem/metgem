@@ -4,7 +4,7 @@ import os
 from typing import Iterator, List, Tuple
 
 from PyQt5.QtCore import QCoreApplication
-from lxml import html
+from lxml import html, etree
 from pluginbase import PluginBase
 
 from ..config import PLUGINS_PATH, APP_PATH

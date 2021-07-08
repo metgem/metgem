@@ -1,6 +1,5 @@
 import ftplib
 import os
-from datetime import datetime
 
 from PyQt5 import uic
 from PyQt5.QtCore import Qt, QSize
@@ -10,8 +9,7 @@ from requests.exceptions import ConnectionError, RequestException
 
 from .progress_dialog import ProgressDialog
 from .widgets import AutoToolTipItemDelegate
-from ..workers import (ListDatabasesWorker, DownloadDatabasesWorker,
-                       GetGNPSDatabasesMtimeWorker, ConvertDatabasesWorker)
+from ..workers import (ListDatabasesWorker, DownloadDatabasesWorker, ConvertDatabasesWorker)
 from ..workers import WorkerQueue
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'download_databases_dialog.ui')
@@ -39,7 +37,6 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
         self.treeDatabases.setItemDelegate(AutoToolTipItemDelegate())
 
         self._workers = WorkerQueue(self, ProgressDialog(self))
-        self._mtimes = {}
 
         # Add download button
         self.btDownload = self.buttonBox.addButton("&Download", QDialogButtonBox.ActionRole)
@@ -69,13 +66,7 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
         self.treeDatabases.clear()
         self.treeDatabases.setLoading(True)
 
-        def create_get_mtimes_worker(_):
-            self.treeDatabases.setLoading(False)
-            self.btRefresh.setEnabled(True)
-            return self.prepare_get_mtimes_worker()
-
         self._workers.append(self.prepare_populate_list_worker())
-        self._workers.append(create_get_mtimes_worker)
 
         self._workers.start()
 
@@ -97,20 +88,15 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
             item.setData(0, DownloadDatabasesDialog.OriginRole, dict_item['origin'])
             self.treeDatabases.addTopLevelItem(item)
 
+        def clean_up():
+            self.treeDatabases.setLoading(False)
+            self.btRefresh.setEnabled(True)
+
         worker = ListDatabasesWorker()
         worker.itemReady.connect(update_list)
+        worker.error.connect(clean_up)
         worker.error.connect(self.on_error)
-
-        return worker
-
-    def prepare_get_mtimes_worker(self):
-        def process_finished():
-            self._mtimes = worker.result()
-            self.update_badges()
-
-        ids = [id_ for id_ in self.get_ids(origin=['GNPS']).get('GNPS', [])]
-        worker = GetGNPSDatabasesMtimeWorker(ids)
-        worker.finished.connect(process_finished)
+        worker.finished.connect(clean_up)
 
         return worker
 
@@ -183,28 +169,6 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
             desc = current.data(0, DownloadDatabasesDialog.DescRole)
             self.labelDesc.setText(desc)
 
-    def update_badges(self):
-        if not self._mtimes:
-            return False
-
-        for i in range(self.treeDatabases.topLevelItemCount()):
-            parent = self.treeDatabases.topLevelItem(i)
-            for j in range(parent.childCount()):
-                child = parent.child(j)
-                ids = child.data(0, DownloadDatabasesDialog.IdsRole)
-                if ids is None:
-                    continue
-                for id_ in ids:
-                    if id_ in self._mtimes:
-                        path = os.path.join(self.base_path, f'{id_}.mgf')
-                        if os.path.exists(path):
-                            if datetime.fromtimestamp(os.path.getmtime(path)) < self._mtimes[id_]:
-                                child.setIcon(QIcon(":/icons/images/update-available.svg"))
-                            else:
-                                child.setIcon(QIcon())
-                        else:
-                            child.setIcon(QIcon(":/icons/images/new.svg"))
-
     def setEnabled(self, enabled):
         self.treeDatabases.setEnabled(enabled)
         self.btDownload.setEnabled(enabled)
@@ -226,7 +190,6 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
 
         # noinspection PyShadowingNames
         def create_convert_databases_worker(worker: DownloadDatabasesWorker, ids):
-            self.update_badges()
             downloaded, unreachable = worker.result()
 
             if any(unreachable.values()):
@@ -256,7 +219,6 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
     def prepare_download_databases_worker(self, ids):
         def clean_up():
             self.setEnabled(True)
-            self.update_badges()
 
         worker = DownloadDatabasesWorker(ids, self.base_path)
         worker.error.connect(clean_up)
@@ -267,7 +229,6 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
     def prepare_convert_databases_worker(self, ids):
         def clean_up():
             self.setEnabled(True)
-            self.update_badges()
 
         def conversion_finished():
             nonlocal worker
