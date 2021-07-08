@@ -9,14 +9,6 @@ __license__ = "GPLv3"
 
 from lxml import etree
 
-
-def get_first_xpath_result(element, xpath):
-    result = element.xpath(xpath)
-    if result:
-        return result[0]
-    return None
-
-
 class GNPS(DbSource):
 
     name = "GNPS"
