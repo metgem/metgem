@@ -10,9 +10,6 @@ from lxml import html, etree
 from ..base import BaseWorker
 from ...plugins import get_db_sources
 
-GNPS_LIB_URL = "https://gnps.ucsd.edu/ProteoSAFe/libraries.jsp"
-GNPS_FTP_URL = "ccms-ftp.ucsd.edu"
-
 
 class ListDatabasesWorker(BaseWorker):
 
@@ -24,33 +21,6 @@ class ListDatabasesWorker(BaseWorker):
     def run(self):
         items = []
 
-        # Find available databases on GNPS libraries page
-        try:
-            r = requests.get(GNPS_LIB_URL, timeout=1)
-            r.raise_for_status()
-        except (requests.ConnectionError, requests.HTTPError, requests.Timeout) as e:
-            pass
-        else:
-            if r.status_code == 200:
-                tree = html.fromstring(r.content)
-                for base in tree.xpath("//table[@class='result']/tr"):
-                    tds = base.findall('td')
-                    if tds is not None and len(tds) == 3:
-                        name = tds[0].text if tds[0].text is not None else ''
-                        ids = tds[1].findall('a')
-                        if ids is None:
-                            continue
-                        ids = [id_.attrib['href'].split('=')[1].split('#')[0] + '.mgf' for id_ in ids
-                               if 'href' in id_.attrib and '=' in id_.attrib['href']]
-                        desc = tds[2].text if tds[2].text is not None else ''
-                        desc += ''.join([etree.tostring(child).decode() for child in tds[2].iterdescendants()])
-
-                        if len(ids) > 0 and not ids[0] == 'all.mgf':
-                            item = {'name': name, 'ids': ids, 'desc': desc, 'origin': 'GNPS'}
-                            items.append(item)
-                            self.itemReady.emit(item)
-
-        # Plugins
         for plugin in get_db_sources():
             origin = plugin.name
             if not isinstance(origin, str):
@@ -113,33 +83,6 @@ class DownloadDatabasesWorker(BaseWorker):
 
         # First step, get file sizes
         # ---------------------------
-
-        # GNPS
-        gnps_ids = self.ids.get('GNPS', [])
-        if gnps_ids:
-            try:
-                with ftplib.FTP(GNPS_FTP_URL) as ftp:
-                    ftp.login()
-                    ftp.cwd('Spectral_Libraries')
-
-                    for name in gnps_ids:
-                        for id_ in gnps_ids[name]:
-                            filesizes['GNPS'][name] = 0
-                            try:
-                                size = ftp.size(f'{id_}')
-                            except ftplib.error_perm:
-                                unreachable['GNPS'].add(name)
-                            else:
-                                filesizes['GNPS'][name] += size
-            except ftplib.all_errors as e:
-                try:
-                    e.name = name
-                except UnboundLocalError:
-                    pass
-                self.error.emit(e)
-                return
-
-        # Plugins
         for plugin in get_db_sources():
             origin = plugin.name
             url = plugin.page
@@ -175,47 +118,6 @@ class DownloadDatabasesWorker(BaseWorker):
 
         # Second step, download files
         # ---------------------------
-
-        # GNPS
-        if gnps_ids:
-            try:
-                with ftplib.FTP(GNPS_FTP_URL) as ftp:
-                    ftp.login()
-                    ftp.cwd('Spectral_Libraries')
-
-                    for name in gnps_ids:
-                        for i, id_ in enumerate(gnps_ids[name]):
-                            if self.isStopped():
-                                self.canceled.emit()
-                                return
-
-                            if filesizes['GNPS'][name] == 0:
-                                continue
-
-                            path = os.path.join(self.path, f'{id_}')
-
-                            with open(path, 'wb') as f:
-                                # noinspection PyShadowingNames
-                                def write_callback(chunk):
-                                    f.write(chunk)
-                                    self.updated.emit(len(chunk))
-
-                                    if self.isStopped():
-                                        ftp.abort()
-                                        self.canceled.emit()
-
-                                ftp.retrbinary(f'RETR {id_}', write_callback)
-                                downloaded['GNPS'].add(name)
-
-            except ftplib.all_errors as e:
-                try:
-                    e.name = name
-                except UnboundLocalError:
-                    pass
-                self.error.emit(e)
-                return
-
-        # Plugins
         for plugin in get_db_sources():
             origin = plugin.name
             url = plugin.page
