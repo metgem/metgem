@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
-	<id>metgem</id>
+	<id>io.github.metgem</id>
 	<metadata_license>CC0-1.0</metadata_license>
 	<project_license>GPL-3.0</project_license>
 	<name>MetGem</name>
 	<summary>Calculation and visualization of molecular networks based on t-SNE algorithm</summary>
 	<description>
-		<p>Calculation and visualization of molecular networks based on t-SNE algorithm</p>
+		<p>Software for Calculation and visualization of molecular networks based on t-SNE algorithm</p>
 	</description>
 	<launchable type="desktop-id">metgem.desktop</launchable>
 	<url type="homepage">https://metgem.github.io/</url>
@@ -16,6 +16,6 @@
 		</screenshot>
 	</screenshots>
 	<provides>
-		<id>metgem.desktop</id>
+		<id>MetGem.desktop</id>
 	</provides>
 </component>

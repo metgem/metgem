@@ -6,5 +6,5 @@ Exec=MetGem %F
 Terminal=false
 Type=Application
 Icon=metgem
-Categories=Graphics;Science;
+Categories=Science;
 StartupNotify=true
