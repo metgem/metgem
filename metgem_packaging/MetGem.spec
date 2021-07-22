@@ -11,7 +11,8 @@ sys.path.insert(0, os.path.join(SPECPATH, '..'))
 # noinspection PyUnresolvedReferences
 sys.path.insert(0, os.path.join(SPECPATH, 'build', 'lib'))
 
-from PyInstaller.utils.hooks import qt_plugins_binaries, get_module_file_attribute
+from PyInstaller.utils.hooks.qt import qt_plugins_binaries
+from PyInstaller.utils.hooks import get_module_file_attribute
 
 # On Anaconda distributions, qt_plugins_binaries can't be found because QLibraryInfo returns wrong path
 import PyInstaller.utils.hooks.qt
@@ -149,7 +150,7 @@ hookspath.extend([os.path.join(SPECPATH, "hooks")])
 
 # Define path for runtime hooks
 # noinspection PyUnresolvedReferences
-runtime_hooks.extend(sorted(glob.glob(os.path.join(SPECPATH, "rthooks", "*_pyi_*.py"))))
+runtime_hooks.extend(sorted(glob.glob(os.path.join(SPECPATH, "rthooks", "pyi_*.py"))))
 
 # noinspection PyUnresolvedReferences
 a = Analysis([os.path.join(SPECPATH, 'build', 'scripts', 'MetGem')],
