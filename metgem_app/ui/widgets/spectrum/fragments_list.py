@@ -3,13 +3,12 @@ import os
 import numpy as np
 
 from PyQt5.QtCore import Qt, QSettings
-from PyQt5.QtWidgets import QWidget, QTableWidgetItem
+from PyQt5.QtWidgets import QWidget, QTableWidgetItem, QMainWindow
 from PyQt5 import uic
+from PyQtAds import QtAds
 
 from libmetgem import MZ, square_root_and_normalize_data
 from libmetgem.cosine import compare_spectra, SpectraMatchState
-
-from ....utils import find_main_window
 
 
 class FragmentsListWidget(QWidget):
@@ -54,7 +53,8 @@ class FragmentsListWidget(QWidget):
         data1 = self._spectra_widget.spectrum1
         mz2 = self._spectra_widget.spectrum2_parent
         data2 = self._spectra_widget.spectrum2
-        main_window = find_main_window()
+        dock_widget = QtAds.internal.findParent(QtAds.CDockWidget, self)
+        main_window = dock_widget.dockManager().parent() if dock_widget else None
 
         if main_window is not None and mz1 is not None and data1 is not None and mz2 is not None and data2 is not None:
             data1 = square_root_and_normalize_data(data1)

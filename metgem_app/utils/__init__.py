@@ -2,10 +2,8 @@ import itertools
 import os
 import subprocess
 import sys
-from typing import Union
 
 from PyQt5.QtCore import QObject, pyqtSignal, QTimer
-from PyQt5.QtWidgets import QApplication, QMainWindow
 
 from .emf_export import HAS_EMF_EXPORT
 
@@ -110,16 +108,6 @@ class SignalGrouper(QObject):
             self.timer.singleShot(self.timeout, emit_signal)
 
         self.senders.add(self.sender())
-
-
-def find_main_window() -> Union[QMainWindow, None]:
-    """Global function to find the (open) QMainWindow in application"""
-
-    app = QApplication.instance()
-    for widget in app.topLevelWidgets():
-        if isinstance(widget, QMainWindow):
-            return widget
-    return None
 
 
 def open_folder(path: str):
