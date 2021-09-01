@@ -3,7 +3,7 @@ import os
 import numpy as np
 
 from PyQt5.QtCore import Qt, QSettings
-from PyQt5.QtWidgets import QWidget, QTableWidgetItem, QMainWindow
+from PyQt5.QtWidgets import QWidget, QTableWidgetItem
 from PyQt5 import uic
 from PyQtAds import QtAds
 
