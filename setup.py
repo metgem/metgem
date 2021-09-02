@@ -16,6 +16,7 @@ package_data = {'metgem_app': ['splash.png',
                                'ui/widgets/*.ui',
                                'ui/widgets/databases/*.ui',
                                'ui/widgets/spectrum/*.ui',
+                               'ui/widgets/spectrum/images/*',
                                'ui/widgets/metadata/*.ui',
                                'ui/widgets/metadata/*.csv',
                                'ui/widgets/annotations/*.ui'
