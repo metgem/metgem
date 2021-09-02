@@ -361,7 +361,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         if config.EMBED_JUPYTER:
             try:
                 self.jupyter_widget = widgets.JupyterWidget()
-            except AttributeError:
+            except (AttributeError, ImportError):
                 pass
             else:
                 dock = CDockWidget("Jupyter Console")
