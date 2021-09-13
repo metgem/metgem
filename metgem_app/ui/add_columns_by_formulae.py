@@ -214,7 +214,7 @@ class AddColumnsByFormulaeDialog(AddColumnsByFormulaeDialogUI, AddColumnsByFormu
 
     def on_save_mappings(self):
         filter_ = ["Group mappings files (*.yaml)", "All files (*)"]
-        filename, filter_ = QFileDialog.getSaveFileName(self, "Load group mappings",
+        filename, filter_ = QFileDialog.getSaveFileName(self, "Save group mappings",
                                                         filter=";;".join(filter_))
 
         if filename:
