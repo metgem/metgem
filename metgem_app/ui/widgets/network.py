@@ -71,7 +71,7 @@ class BaseFrame(QFrame):
             scene.setLayout(layout, isolated_nodes=isolated_nodes if hide_isolated_nodes else None)
         self._layout = layout
         self._isolated_nodes = isolated_nodes
-        scene.lock(self.btLock.isChecked())
+        scene.lock(self.btLock.isChecked() if self.unlockable else True)
         
     def reset_layout(self):
         self._layout = None

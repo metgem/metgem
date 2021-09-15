@@ -26,7 +26,7 @@ dependencies:
     - mplcursors
     - py2cytoscape>=0.7.0
     - libmetgem>=0.6.2
-    - pyqtnetworkview>=0.5.6
+    - pyqtnetworkview>=0.5.7
     - forceatlas2>=0.2
     - pyemf>=2.1.2alpha
     - pyqtads>=3.7.2
