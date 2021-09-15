@@ -19,7 +19,7 @@ sys.path.insert(0, os.path.abspath('_ext'))
 
 project = 'MetGem'
 # noinspection PyShadowingBuiltins
-copyright = '2020, Nicolas Elie'
+copyright = '2020-2021, Nicolas Elie'
 author = 'Nicolas Elie'
 
 # The short X.Y version

@@ -4,7 +4,7 @@ __version__ = '1.2'
 __description__ = "MetGem plugin to download databases from MS-DIAL website"
 __author__ = "Nicolas Elie"
 __email__ = "nicolas.elie@cnrs.fr"
-__copyright__ = "Copyright 2019-2020, CNRS/ICSN"
+__copyright__ = "Copyright 2019-2021, CNRS/ICSN"
 __license__ = "GPLv3"
 
 
