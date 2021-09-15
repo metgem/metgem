@@ -19,7 +19,7 @@ from PyQt5.QtWidgets import (QDialog, QFileDialog, QMessageBox, QWidget, QMenu, 
                              QApplication, QGraphicsView, QLineEdit, QListWidget, QLabel, QToolButton)
 from PyQtAds.QtAds import (CDockManager, CDockWidget,
                            BottomDockWidgetArea, CenterDockWidgetArea,
-                           TopDockWidgetArea, LeftDockWidgetArea, CDockAreaWidget, CDockContainerWidget)
+                           TopDockWidgetArea, LeftDockWidgetArea)
 from PyQtNetworkView import style_from_css, style_to_cytoscape, disable_opengl
 from libmetgem import human_readable_data
 
