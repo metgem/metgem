@@ -2,6 +2,8 @@ import os
 import sys
 
 # Network visualisation
+from PyQt5.QtCore import QSettings, QCoreApplication
+
 RADIUS = 30
 
 # File format
@@ -24,35 +26,43 @@ DEBUG = False
 EMBED_JUPYTER = False
 USE_OPENGL = True
 
-if sys.platform.startswith('win'):
-    USER_PATH = os.path.join(os.path.expandvars(r'%APPDATA%'), 'MetGem')
+# Make app portable if `application folder`/data folder exists
+IS_PORTABLE = os.path.exists(os.path.join('.', 'data'))
+
+if IS_PORTABLE:
+    USER_PATH = os.path.join(APP_PATH, 'data')
+    QSettings.setDefaultFormat(QSettings.IniFormat)
+    QSettings.setPath(QSettings.IniFormat, QSettings.UserScope, USER_PATH)
+elif sys.platform.startswith('win'):
+    USER_PATH = os.path.join(os.path.expandvars(r'%APPDATA%'), QCoreApplication.applicationName())
 elif sys.platform.startswith('darwin'):
-    USER_PATH = os.path.join(os.path.expanduser('~'), 'Library', 'Application Support', 'MetGem')
+    USER_PATH = os.path.join(os.path.expanduser('~'), 'Library', 'Application Support', QCoreApplication.applicationName())
 elif sys.platform.startswith('linux'):
-    USER_PATH = os.path.join(os.path.expanduser('~'), '.config', 'MetGem')
+    USER_PATH = os.path.join(os.path.expanduser('~'), '.config', QCoreApplication.applicationName())
 else:
     USER_PATH = os.path.realpath('.')
 
 DATABASES_PATH = os.path.join(USER_PATH, 'databases')
 SQL_PATH = os.path.join(DATABASES_PATH, 'spectra.sqlite')
 if sys.platform.startswith('darwin'):
-    LOG_PATH = os.path.join(os.path.expanduser('~'), 'Library', 'Logs', 'MetGem')
+    LOG_PATH = os.path.join(os.path.expanduser('~'), 'Library', 'Logs', QCoreApplication.applicationName())
 else:
     LOG_PATH = os.path.join(USER_PATH, 'log')
 STYLES_PATH = os.path.join(USER_PATH, 'styles')
 PLUGINS_PATH = os.path.join(USER_PATH, 'plugins')
 
-if not os.path.exists(DATABASES_PATH):
-    os.makedirs(DATABASES_PATH)
 
-if not os.path.exists(LOG_PATH):
-    os.makedirs(LOG_PATH)
+def makedirs(path):
+    try:
+        os.makedirs(path, exist_ok=True)
+    except (OSError, PermissionError):
+        pass
 
-if not os.path.exists(STYLES_PATH):
-    os.makedirs(STYLES_PATH)
 
-if not os.path.exists(PLUGINS_PATH):
-    os.makedirs(PLUGINS_PATH)
+makedirs(DATABASES_PATH)
+makedirs(LOG_PATH)
+makedirs(STYLES_PATH)
+makedirs(PLUGINS_PATH)
 
 
 def get_debug_flag() -> bool:

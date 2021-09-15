@@ -179,8 +179,12 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
     def download_databases(self):
         self.setEnabled(False)
 
-        if not os.path.exists(self.base_path):
-            os.makedirs(self.base_path)
+        try:
+            os.makedirs(self.base_path, exist_ok=True)
+        except PermissionError:
+            QMessageBox.critical(self, None,
+                                'Unable to download databases because the destination folder is not writable.')
+            return False
 
         ids = self.get_ids(selected_only=True)
         if len(ids) == 0:

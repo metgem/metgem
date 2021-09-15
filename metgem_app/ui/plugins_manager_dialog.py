@@ -79,6 +79,12 @@ class PluginsManagerDialog(QDialog):
         table.model().setFilterRegExp(str(edit.text()))
 
     def install_plugins(self, plugins):
+        try:
+            os.makedirs(PLUGINS_PATH, exist_ok=True)
+        except PermissionError:
+            QMessageBox.critical(self, None,
+                                'Unable to download plugins because the destination folder is not writable.')
+
         def plugins_installed():
             nonlocal worker
             downloaded, unreachable = worker.result()

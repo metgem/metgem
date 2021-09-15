@@ -86,6 +86,12 @@ class ImportUserDatabaseDialog(ImportUserDatabaseDialogBase, ImportUserDatabaseD
         self._dialog.open()
 
     def import_database(self):
+        try:
+            os.makedirs(self.base_path, exist_ok=True)
+        except PermissionError:
+            QMessageBox.critical(self, None,
+                                'Unable to import database because the destination folder is not writable.')
+
         input_file = self.editInputFile.text()
         if len(input_file) == 0 or not os.path.exists(input_file) \
                 or os.path.splitext(input_file)[1].lower() not in ('.mgf', '.msp'):
