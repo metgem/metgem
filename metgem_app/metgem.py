@@ -50,6 +50,8 @@ def run():
 
     from PyQt5.QtWidgets import QApplication
     from PyQt5.QtCore import QCoreApplication
+    # QtWebEngineWidgets must be imported before a QApplication is created
+    from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEnginePage, QWebEngineProfile
 
     app = QApplication(sys.argv)
 

@@ -114,6 +114,9 @@
     <addaction name="actionDownloadDatabases"/>
     <addaction name="actionImportUserDatabase"/>
     <addaction name="separator"/>
+    <addaction name="actionMetFrag"/>
+    <addaction name="actionCFMID"/>
+    <addaction name="separator"/>
     <addaction name="actionViewDatabases"/>
    </widget>
    <widget class="QMenu" name="menu_Plugins">
@@ -1268,6 +1271,27 @@
    </property>
    <property name="statusTip">
     <string>Delete Selected annotations</string>
+   </property>
+  </action>
+  <action name="actionMetFrag">
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/metfrag.png</normaloff>:/icons/images/metfrag.png</iconset>
+   </property>
+   <property name="text">
+    <string>MetFrag...</string>
+   </property>
+  </action>
+  <action name="actionCFMID">
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/cfm-id.png</normaloff>:/icons/images/cfm-id.png</iconset>
+   </property>
+   <property name="text">
+    <string>CFM-ID...</string>
+   </property>
+   <property name="toolTip">
+    <string>CFM-ID</string>
    </property>
   </action>
  </widget>

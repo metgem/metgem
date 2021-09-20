@@ -182,6 +182,9 @@ class NodesWidget(QWidget):
         menu = QMenu()
         menu.addAction(self.actionFindStandards)
         menu.addAction(self.actionFindAnalogs)
+        menu.addSeparator()
+        menu.addAction(self.actionMetFrag)
+        menu.addAction(self.actionCFMID)
         self.btFindStandards.setMenu(menu)
         self.btFindStandards.setDefaultAction(self.actionFindStandards)
 

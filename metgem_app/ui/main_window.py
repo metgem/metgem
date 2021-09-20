@@ -200,6 +200,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
             lambda: self.on_show_spectrum_from_table_triggered('compare'))
         self.nodes_widget.actionFindStandards.triggered.connect(lambda: self.on_query_databases('standards'))
         self.nodes_widget.actionFindAnalogs.triggered.connect(lambda: self.on_query_databases('analogs'))
+        self.nodes_widget.actionMetFrag.triggered.connect(lambda: self.on_query_in_silico_db('metfrag'))
+        self.nodes_widget.actionCFMID.triggered.connect(lambda: self.on_query_in_silico_db('cfm-id'))
         self.nodes_widget.actionAddColumnsByFormulae.triggered.connect(self.on_add_columns_by_formulae)
         self.nodes_widget.actionClusterize.triggered.connect(self.on_clusterize)
         self.nodes_widget.actionDeleteColumns.triggered.connect(self.on_delete_nodes_columns)
@@ -1327,8 +1329,12 @@ class MainWindow(MainWindowBase, MainWindowUI):
             menu.addAction(self.nodes_widget.actionHighlightSelectedNodes)
             menu.addAction(self.nodes_widget.actionViewSpectrum)
             menu.addAction(self.nodes_widget.actionViewCompareSpectrum)
+            menu.addSeparator()
             menu.addAction(self.nodes_widget.actionFindStandards)
             menu.addAction(self.nodes_widget.actionFindAnalogs)
+            menu.addSeparator()
+            menu.addAction(self.nodes_widget.actionMetFrag)
+            menu.addAction(self.nodes_widget.actionCFMID)
             menu.popup(QCursor.pos())
 
     @debug
@@ -1349,8 +1355,12 @@ class MainWindow(MainWindowBase, MainWindowUI):
             menu = QMenu(view)
             menu.addAction(self.actionViewSpectrum)
             menu.addAction(self.actionViewCompareSpectrum)
+            menu.addSeparator()
             menu.addAction(self.actionFindStandards)
             menu.addAction(self.actionFindAnalogs)
+            menu.addSeparator()
+            menu.addAction(self.actionMetFrag)
+            menu.addAction(self.actionCFMID)
             menu.popup(view.mapToGlobal(pos))
 
     # noinspection PyUnusedLocal
@@ -1541,6 +1551,29 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self._dialog.open()
         except FileNotFoundError:
             QMessageBox.warning(self, None, "No database found. Please download at least one database.")
+
+    # noinspection PyUnusedLocal
+    @debug
+    def on_query_in_silico_db(self, type_='metfrag', selected_idx=None):
+        dialog_class = {'metfrag': ui.MetFragDialog, 'cfm-id': ui.CFMIDDialog}.get(type_, None)
+        if dialog_class is None:
+            return
+
+        if selected_idx is None:
+            selected_idx = self.nodes_selection()
+
+        if not selected_idx:
+            return
+
+        if self.network.mzs:
+            mz = self.network.mzs[list(selected_idx)[0]]
+        else:
+            QMessageBox.warning(self, None,
+                                "Insilico Databases are only available for MS/MS spectra.")
+        spectrum = human_readable_data(self.network.spectra[list(selected_idx)[0]])
+
+        self._dialog = dialog_class(self, mz, spectrum)
+        self._dialog.show()
 
     # noinspection PyUnusedLocal
     @debug
