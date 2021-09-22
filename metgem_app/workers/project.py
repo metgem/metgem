@@ -87,7 +87,7 @@ class LoadProjectWorker(BaseWorker):
 
                     # Load interactions
                     try:
-                        network.interactions = fid['0/interactions']
+                        network.interactions = pd.DataFrame(fid['0/interactions'])
                     except KeyError:
                         network.interactions = None
 
@@ -178,9 +178,10 @@ class LoadProjectWorker(BaseWorker):
 
                     # Load table of spectra
                     network.spectra = SpectraList(self.filename)
-                    network.mzs = []
+                    mzs = []
                     for s in fid['0/spectra/index.json']:
-                        network.mzs.append(s['mz_parent'])
+                        mzs.append(s['mz_parent'])
+                    network.mzs = pd.Series(mzs)
 
                     if self.isStopped():
                         self.canceled.emit()
@@ -413,8 +414,8 @@ class SaveProjectWorker(BaseWorker):
                             zout.writestr(item, zin.read(item.filename))
         else:
             # Convert lists of parent mass and spectrum data to something that be can be saved
-            mzs = getattr(self.network, 'mzs', [])
-            spectra = getattr(self.network, 'spectra', [])
+            mzs = getattr(self.network, 'mzs', pd.Series())
+            spectra = getattr(self.network, 'spectra', pd.DataFrame())
             d['0/spectra/index.json'] = [{'id': i, 'mz_parent': mz_parent} for i, mz_parent in enumerate(mzs)]
             d.update({'0/spectra/{}'.format(i): data for i, data in enumerate(spectra)})
 

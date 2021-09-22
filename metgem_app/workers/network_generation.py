@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from libmetgem.network import generate_network
 
 from .base import BaseWorker
@@ -75,6 +76,6 @@ class GenerateNetworkWorker(BaseWorker):
         graph.es['__width'] = widths
 
         if not self.isStopped():
-            return interactions, graph
+            return pd.DataFrame(interactions), graph
         else:
             self.canceled.emit()

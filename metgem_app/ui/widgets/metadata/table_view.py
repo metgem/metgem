@@ -52,8 +52,8 @@ class MetadataTableView(QTableView):
         return False
 
     def resetSorting(self):
-        self.model().sort(-1)
         self.horizontalHeader().setSortIndicator(-1, Qt.AscendingOrder)
+        self.model().sort(-1)
 
 
 class NodeTableView(FreezeTableMixin, MetadataTableView):
@@ -299,4 +299,3 @@ class EdgesWidget(QWidget):
         else:
             self.tvEdges.setSortingEnabled(False)
             self.tvEdges.horizontalHeader().setSortIndicatorShown(True)
-

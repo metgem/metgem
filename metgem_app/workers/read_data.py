@@ -1,5 +1,6 @@
 import os
 
+import pandas as pd
 from libmetgem.filter import filter_data_multi
 from libmetgem.mgf import read as read_mgf
 from libmetgem.msp import read as read_msp
@@ -87,4 +88,4 @@ class ReadDataWorker(BaseWorker):
             self.error.emit(NoSpectraError())
             return
 
-        return mzs, spectra
+        return pd.Series(mzs), spectra

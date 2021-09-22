@@ -18,13 +18,12 @@ except (ImportError, FileNotFoundError, IOError, pd.errors.ParserError, pd.error
 # Because data is loaded from csv or spreadsheet, the loaded titles are always strings
 # It ensure that the reserved columns can't have the same key of a loaded column
 KeyRole = Qt.UserRole
-FilterRole = Qt.UserRole + 1
-LabelRole = Qt.UserRole + 2
-StandardsRole = Qt.UserRole + 3
-AnalogsRole = Qt.UserRole + 4
-DbResultsRole = Qt.UserRole + 5
-ColorMarkRole = Qt.UserRole + 6
-ColumnDataRole = Qt.UserRole + 7
+LabelRole = Qt.UserRole + 1
+StandardsRole = Qt.UserRole + 2
+AnalogsRole = Qt.UserRole + 3
+DbResultsRole = Qt.UserRole + 4
+ColorMarkRole = Qt.UserRole + 5
+ColumnDataRole = Qt.UserRole + 6
 
 
 class CsvDelimiterModel(QStringListModel):
@@ -53,16 +52,7 @@ class ProxyModel(QSortFilterProxyModel):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.setFilterRole(FilterRole)
         self._selection = None
-
-    def lessThan(self, left: QModelIndex, right: QModelIndex):
-        ldata = left.data()
-        rdata = right.data()
-
-        if type(ldata).__module__ == type(rdata).__module__ == 'numpy':
-            return ldata.item() < rdata.item()
-        return super().lessThan(left, right)
 
     def filterAcceptsRow(self, source_row: int, source_parent: QModelIndex):
         if self._selection is not None:
@@ -81,7 +71,61 @@ class ProxyModel(QSortFilterProxyModel):
         self.invalidateFilter()
 
 
-NodesProxyModel = ProxyModel
+class NodesProxyModel(ProxyModel):
+
+    def sort(self, column: int, order: Qt.SortOrder = Qt.AscendingOrder) -> None:
+        asc = (order == Qt.AscendingOrder)
+        if column == -1:  # Reset sorting
+            self.layoutAboutToBeChanged.emit()
+            self.sourceModel().mzs = self.sourceModel().mzs.reindex(
+                pd.RangeIndex(start=0, stop=self.sourceModel().mzs.shape[0], step=1))
+            self.sourceModel().parent().network.mzs = self.sourceModel().mzs
+            if self.sourceModel().infos is not None:
+                self.sourceModel().infos = self.sourceModel().infos.reindex(self.sourceModel().mzs.index)
+                self.sourceModel().parent().network.infos = self.sourceModel().infos
+            self.layoutChanged.emit()
+        elif column == 0:  # Mzs
+            self.layoutAboutToBeChanged.emit()
+            self.sourceModel().mzs.sort_values(ascending=asc, inplace=True)
+            if self.sourceModel().infos is not None:
+                self.sourceModel().infos = self.sourceModel().infos.reindex(self.sourceModel().mzs.index)
+                self.sourceModel().parent().network.infos = self.sourceModel().infos
+            self.layoutChanged.emit()
+        elif column == 1:  # DbResults
+            self.layoutAboutToBeChanged.emit()
+            db_results = self.sourceModel().db_results
+            df = pd.DataFrame.from_dict({x: db_results.get(x, {})
+                                        .get('standards', db_results.get(x, {}).get('analogs', ['N/A']))
+                                        [db_results.get(x, {}).get('current', 0)]
+                                        for x in range(self.sourceModel().infos.shape[0])}).transpose()
+            df = df.sort_values(df.columns[-1], ascending=asc)
+            self.sourceModel().mzs = self.sourceModel().mzs.reindex(df.index)
+            self.sourceModel().parent().network.mzs = self.sourceModel().mzs
+            if self.sourceModel().infos is not None:
+                self.sourceModel().infos = self.sourceModel().infos.reindex(df.index)
+                self.sourceModel().parent().network.infos = self.sourceModel().infos
+            self.layoutChanged.emit()
+        elif column >= self.sourceModel().infos.shape[1] + 2:  # Column Mappings
+            if self.sourceModel().infos is not None and self.sourceModel().mappings:
+                mapped_columns = [c-2 for c in self.sourceModel().mappings[column]]
+                df = self.sourceModel().infos[self.sourceModel().infos.columns[mapped_columns]]
+                s = df.sum(axis=1)
+                self.layoutAboutToBeChanged.emit()
+                s = s.sort_values(ascending=asc)
+
+                self.sourceModel().mzs = self.sourceModel().mzs.reindex(s.index)
+                self.sourceModel().parent().network.mzs = self.sourceModel().mzs
+                self.sourceModel().infos = self.sourceModel().infos.reindex(s.index)
+                self.sourceModel().parent().network.infos = self.sourceModel().infos
+                self.layoutChanged.emit()
+        else:
+            if self.sourceModel().infos is not None:
+                self.layoutAboutToBeChanged.emit()
+                self.sourceModel().infos.sort_values(self.sourceModel().infos.columns[column-2],
+                                                     ascending=asc, inplace=True)
+                self.sourceModel().mzs = self.sourceModel().mzs.reindex(self.sourceModel().infos.index)
+                self.sourceModel().parent().network.mzs = self.sourceModel().mzs
+                self.layoutChanged.emit()
 
 
 class EdgesProxyModel(ProxyModel):
@@ -89,8 +133,16 @@ class EdgesProxyModel(ProxyModel):
         # The last column is virtual so we don't want to sort on this column
         if column == self.columnCount() - 1:
             return
+
+        self.layoutAboutToBeChanged.emit()
+        if column == -1:  # Reset sorting
+            self.sourceModel().interactions.set_index(
+                pd.RangeIndex(start=0, stop=self.sourceModel().interactions.shape[0], step=1), inplace=True)
         else:
-            super().sort(column, order)
+            asc = (order == Qt.AscendingOrder)
+            self.sourceModel().interactions.sort_values(self.sourceModel().interactions.columns[column],
+                                                        ascending=asc, inplace=True)
+        self.layoutChanged.emit()
 
 
 class NodesModel(QAbstractTableModel):
@@ -102,7 +154,7 @@ class NodesModel(QAbstractTableModel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.infos = None
-        self.mzs = []
+        self.mzs = pd.Series()
         self.db_results = None
         self.headers = pd.Index([])
         self.headers_colors = {}
@@ -151,15 +203,16 @@ class NodesModel(QAbstractTableModel):
 
         row = index.row()
         column = index.column()
-        if role in (Qt.DisplayRole, Qt.EditRole, FilterRole, LabelRole, StandardsRole, AnalogsRole, DbResultsRole):
+        if role in (Qt.DisplayRole, Qt.EditRole, LabelRole, StandardsRole, AnalogsRole, DbResultsRole):
             if column == NodesModel.MZCol:
                 try:
-                    return round(self.mzs[row], QSettings().value('Metadata/float_precision', 4, type=int))
+                    return str(round(self.mzs.iloc[row],
+                                     QSettings().value('Metadata/float_precision', 4, type=int)))
                 except IndexError:
                     return
             elif column == NodesModel.DBResultsCol:
                 try:
-                    results = self.db_results[row]
+                    results = self.db_results[self.mzs.index[row]]
                 except KeyError:
                     if role == Qt.DisplayRole:
                         return 'N/A'
@@ -191,11 +244,11 @@ class NodesModel(QAbstractTableModel):
                     return 'N/A'
             else:
                 try:
-                    data = self.infos.loc[row, self.infos.columns[column - 2]]
+                    data = self.infos.iloc[row, column - 2]
                 except IndexError:
                     try:
                         mappped_columns = self.mappings[column]
-                        data = sum(self.infos.loc[row, self.infos.columns[c-2]] for c in mappped_columns)
+                        data = sum(self.infos.iloc[row, c-2] for c in mappped_columns)
                     except KeyError:
                         return None
                 except KeyError:
@@ -205,7 +258,7 @@ class NodesModel(QAbstractTableModel):
                     data = data.item()
                 if isinstance(data, float):
                     data = round(data, QSettings().value('Metadata/float_precision', 4, type=int))
-                return str(data) if role in (FilterRole, LabelRole) else data
+                return str(data) if role == LabelRole else data
 
     def setData(self, index: QModelIndex, value, role=Qt.EditRole):
         if not index.isValid():
@@ -215,13 +268,13 @@ class NodesModel(QAbstractTableModel):
         column = index.column()
         if role == Qt.EditRole and column == 1:
             try:
-                result = self.db_results[row]
+                result = self.db_results[self.mzs.index[row]]
             except KeyError:
                 return False
 
             if ('current' not in result and value != 0) or \
                     ('current' in result and result['current'] != value):
-                self.db_results[row]['current'] = value
+                self.db_results[self.mzs.index[row]]['current'] = value
                 self.dataChanged.emit(index, index)
                 return True
             return super().setData(index, value, role)
@@ -245,7 +298,7 @@ class NodesModel(QAbstractTableModel):
                         text += " [" + "+".join(self.headers[x] for x in self.mappings[section]) + "]"
                     return text
             elif orientation == Qt.Vertical:
-                return str(section+1)
+                return str(self.mzs.index[section]+1)
         elif role == KeyRole:
             return self.headers[section]
         elif role == ColumnDataRole:
@@ -254,7 +307,7 @@ class NodesModel(QAbstractTableModel):
             elif section == NodesModel.DBResultsCol:
                 return
             else:
-                return self.infos[self.infos.columns[section - 2]]
+                return self.infos.iloc[section - 2]
         elif role == ColorMarkRole:
             if orientation == Qt.Horizontal and self.headers_colors is not None and section in self.headers_colors:
                 return self.headers_colors[section]
@@ -304,12 +357,12 @@ class EdgesModel(QAbstractTableModel):
 
     def rowCount(self, parent=QModelIndex()):
         data = self.interactions
-        return data.size if data is not None else 0
+        return data.shape[0] if data is not None else 0
 
     def columnCount(self, parent=QModelIndex()):
         data = self.interactions
         if data is not None and data.size > 0:
-            return len(data[0]) + 1
+            return data.shape[1] + 1
         else:
             return 0
 
@@ -323,11 +376,11 @@ class EdgesModel(QAbstractTableModel):
 
         column = index.column()
         row = index.row()
-        if role in (Qt.DisplayRole, Qt.EditRole, FilterRole, LabelRole):
+        if role in (Qt.DisplayRole, Qt.EditRole, LabelRole):
             if column == self.columnCount()-1:
-                if role in (FilterRole, LabelRole):
+                if role == LabelRole:
                     return
-                d_exp = abs(self.interactions[row]['Delta MZ'])
+                d_exp = abs(self.interactions.iloc[row]['Delta MZ'])
                 interpretations = []
                 if NEUTRAL_LOSSES is not None:
                     for _, r in NEUTRAL_LOSSES.iterrows():
@@ -339,10 +392,8 @@ class EdgesModel(QAbstractTableModel):
                 else:
                     return
             else:
-                data = self.interactions[row][column]
-                if column in (NodesModel.MZCol, NodesModel.DBResultsCol):
-                    data += 1
-                if role in (FilterRole, LabelRole):
+                data = self.interactions.iloc[row, column]
+                if role == LabelRole:
                     return str(data)
                 else:
                     return data
@@ -354,6 +405,6 @@ class EdgesModel(QAbstractTableModel):
         if orientation == Qt.Horizontal:
             if section == self.columnCount() - 1:
                 return 'Possible interpretation'
-            return self.interactions.dtype.names[section]
+            return self.interactions.columns[section]
         elif orientation == Qt.Vertical:
-            return str(section+1)
+            return str(self.interactions.index[section]+1)

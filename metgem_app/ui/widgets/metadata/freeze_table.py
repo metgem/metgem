@@ -121,15 +121,17 @@ class FreezeTableMixin:
         self._frozen_table.verticalHeader().hide()
         self._frozen_table.setFocusPolicy(Qt.NoFocus)
         self._frozen_table.setStyleSheet('''
-        QTableView, QHeaderView {
+        QTableView {
             border: none;
             background-color: palette(dark);
             alternate-background-color: palette(mid);
             color: palette(base);
-        }''')
+        }
+        ''')
         self._frozen_table.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self._frozen_table.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self._frozen_table.horizontalHeader().setStretchLastSection(True)
+        self._frozen_table.horizontalHeader().setSortIndicator(-1, Qt.AscendingOrder)
 
         self.viewport().stackUnder(self._frozen_table)
 
@@ -152,11 +154,13 @@ class FreezeTableMixin:
 
     def setHorizontalHeader(self, header: QHeaderView) -> None:
         header.sectionResized.connect(self.updateFrozenSectionWidth)
+        header.setSortIndicator(-1, Qt.AscendingOrder)
         super().setHorizontalHeader(header)
         header.stackUnder(self._frozen_table)
 
     def setFrozenTableHorizontalHeader(self, header: QHeaderView) -> None:
         header.sectionResized.connect(self.updateTableSectionWidth)
+        header.setSortIndicator(-1, Qt.AscendingOrder)
         self._frozen_table.setHorizontalHeader(header)
 
     def setVerticalHeader(self, header: QHeaderView) -> None:

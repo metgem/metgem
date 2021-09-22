@@ -1179,15 +1179,15 @@ class MainWindow(MainWindowBase, MainWindowUI):
                         node = view.scene().selectedNodes()[0]
                     node_idx = node.index()
 
-                data = self.network.spectra[node_idx]
+                data = self.network.spectra[self.network.mzs.index[node_idx]]
                 if data.size == 0:
                     QMessageBox.warning(self, None, 'Selected spectrum is empty.')
                     return
 
                 data = human_readable_data(data)
 
-                if self.network.mzs:
-                    mz_parent = self.network.mzs[node_idx]
+                if self.network.mzs is not None:
+                    mz_parent = self.network.mzs.iloc[node_idx]
                 else:
                     mz_parent = None
             except IndexError:
@@ -1565,12 +1565,12 @@ class MainWindow(MainWindowBase, MainWindowUI):
         if not selected_idx:
             return
 
-        if self.network.mzs:
-            mz = self.network.mzs[list(selected_idx)[0]]
+        if self.network.mzs is not None:
+            mz = self.network.mzs.iloc[list(selected_idx)[0]]
         else:
             QMessageBox.warning(self, None,
                                 "Insilico Databases are only available for MS/MS spectra.")
-        spectrum = human_readable_data(self.network.spectra[list(selected_idx)[0]])
+        spectrum = human_readable_data(self.network.spectra[self.network.mzs.index[list(selected_idx)[0]]])
 
         self._dialog = dialog_class(self, mz, spectrum)
         self._dialog.show()
@@ -1628,7 +1628,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                     self.network.mzs, self.network.spectra = worker.result()
                     self.tvNodes.model().sourceModel().endResetModel()
                     mzs = self.network.mzs
-                    if not mzs:
+                    if mzs is not None:
                         mzs = np.zeros((len(self.network.spectra),), dtype=int)
                     return self.prepare_compute_scores_worker(mzs, self.network.spectra)
 
@@ -1826,9 +1826,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
         if selection:
             path = config.SQL_PATH
             if os.path.exists(path) and os.path.isfile(path) and os.path.getsize(path) > 0:
-                spectrum = human_readable_data(self.network.spectra[row])
-                self._dialog = ui.ViewStandardsResultsDialog(self, mz_parent=self.network.mzs[row], spectrum=spectrum,
-                                                       selection=selection, base_path=config.DATABASES_PATH)
+                spectrum = human_readable_data(self.network.spectra[self.network.mzs.index[row]])
+                self._dialog = ui.ViewStandardsResultsDialog(self, mz_parent=self.network.mzs.iloc[row],
+                                                             spectrum=spectrum, selection=selection,
+                                                             base_path=config.DATABASES_PATH)
 
                 def view_details(result):
                     if result == QDialog.Accepted:
@@ -2438,7 +2439,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 self.set_nodes_pixmaps_values(None)
 
     @debug
-    def prepare_compute_scores_worker(self, spectra, use_multiprocessing):
+    def prepare_compute_scores_worker(self, mzs, spectra):
         def error(e):
             if isinstance(e, OSError):
                 QMessageBox.warning(self, None, str(e))
@@ -2447,7 +2448,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             else:
                 raise e
 
-        worker = workers.ComputeScoresWorker(spectra, use_multiprocessing, self.network.options.cosine)
+        worker = workers.ComputeScoresWorker(mzs, spectra, self.network.options.cosine)
         worker.error.connect(error)
 
         return worker
@@ -2480,7 +2481,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             return
 
         mzs = self._network.mzs
-        if not mzs:
+        if mzs is not None:
             mzs = np.zeros(self._network.scores.shape[:1], dtype=int)
 
         options = self._network.options.network
@@ -2636,11 +2637,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 or not os.path.exists(config.SQL_PATH)):
             return
 
-        if self.network.mzs:
-            mzs = [self.network.mzs[index] for index in indices]
+        if self.network.mzs is not None:
+            mzs = [self.network.mzs.iloc[index] for index in indices]
         else:
             mzs = [0] * len(indices)
-        spectra = [self.network.spectra[index] for index in indices]
+        spectra = [self.network.spectra[self.network.mzs.index[index]] for index in indices]
         worker = workers.QueryDatabasesWorker(indices, mzs, spectra, options)
 
         def query_finished():
