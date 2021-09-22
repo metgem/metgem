@@ -202,7 +202,7 @@ class NodesWidget(QWidget):
         self.tvNodes.setAlternatingRowColors(checked)
         self.tvNodes.frozenTable().setAlternatingRowColors(checked)
 
-    def on_sort_indicator_changed(self, logical_index: int, order: int):
+    def on_sort_indicator_changed(self, logical_index: int, order: Qt.SortOrder):
         # Store sort indicator if sorting is enabled, restore the last saved if sorting is disabled
         # We need to do this because if sort indicator is shown but sorting disabled, the sort indicator
         # can still be changed

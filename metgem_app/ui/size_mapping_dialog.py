@@ -152,7 +152,7 @@ class Handle(QGraphicsEllipseItem):
             event.accept()
             self.scene().removeHandle(self)
 
-    def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: Optional[QWidget] = ...):
+    def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: Optional[QWidget] = None):
         painter.setBrush(self.brush())
 
         if option.state & QStyle.State_Selected:

@@ -19,7 +19,7 @@ class RearrangeColumnsProxymodel(QIdentityProxyModel):
             return 0
         return len(self._source_columns)
 
-    def rowCount(self, parent: QModelIndex = ...) -> int:
+    def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:
         if self.sourceModel() is None:
             return 0
 
@@ -37,7 +37,7 @@ class RearrangeColumnsProxymodel(QIdentityProxyModel):
     # We derive from QIdentityProxyModel simply to be able to use
     # its mapFromSource method which has friend access to createIndex() in the source model.
 
-    def index(self, row: int, column: int, parent: QModelIndex = ...) -> QModelIndex:
+    def index(self, row: int, column: int, parent: QModelIndex = QModelIndex()) -> QModelIndex:
         # assert row >= 0
         # assert column >= 0
 
@@ -57,7 +57,7 @@ class RearrangeColumnsProxymodel(QIdentityProxyModel):
             return QModelIndex()
         return self.createIndex(source_parent.row(), 0, source_parent.internalPointer())
 
-    def headerData(self, section: int, orientation: Qt.Orientation, role: int = ...) -> Any:
+    def headerData(self, section: int, orientation: Qt.Orientation, role: int = Qt.DisplayRole) -> Any:
         if orientation == Qt.Horizontal:
             source_col = self.sourceColumnForProxyColumn(section)
             return self.sourceModel().headerData(source_col, orientation, role)
@@ -207,7 +207,7 @@ class FreezeTableMixin:
         QTableView.resizeEvent(self, event)
         self.updateFrozenTableGeometry()
 
-    def scrollTo(self, index: QModelIndex, hint: QAbstractItemView.ScrollHint = ...) -> None:
+    def scrollTo(self, index: QModelIndex, hint: QAbstractItemView.ScrollHint = QAbstractItemView.EnsureVisible) -> None:
         if index.column() > 1:
             QTableView.scrollTo(self, index, hint)
 

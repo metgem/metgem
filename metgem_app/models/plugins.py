@@ -11,7 +11,7 @@ class PluginsModel(QAbstractTableModel):
         self._plugins = []
         self._selected_indexes = set()
 
-    def data(self, index: QModelIndex, role: int = ...) -> typing.Any:
+    def data(self, index: QModelIndex, role: int = Qt.DisplayRole) -> typing.Any:
         if not index.isValid():
             return None
 
@@ -19,7 +19,7 @@ class PluginsModel(QAbstractTableModel):
             if index.column() == 0:
                 return Qt.Checked if index.row() in self._selected_indexes else Qt.Unchecked
 
-    def setData(self, index: QModelIndex, value: typing.Any, role: int = ...) -> bool:
+    def setData(self, index: QModelIndex, value: typing.Any, role: int = Qt.DisplayRole) -> bool:
         if not index.isValid():
             return False
 
@@ -47,7 +47,7 @@ class PluginsModel(QAbstractTableModel):
                 return flags
         return flags
 
-    def headerData(self, section: int, orientation: Qt.Orientation, role: int = ...) -> typing.Any:
+    def headerData(self, section: int, orientation: Qt.Orientation, role: int = Qt.DisplayRole) -> typing.Any:
         if role == Qt.DisplayRole and orientation == Qt.Horizontal:
             if section == 0:
                 return "Plugin"
@@ -71,7 +71,7 @@ class PluginsModel(QAbstractTableModel):
 
 
 class AvailablePluginsModel(PluginsModel):
-    def data(self, index: QModelIndex, role: int = ...) -> typing.Any:
+    def data(self, index: QModelIndex, role: int = Qt.DisplayRole) -> typing.Any:
         if role == Qt.DisplayRole:
             row = index.row()
             column = index.column()
@@ -86,7 +86,7 @@ class AvailablePluginsModel(PluginsModel):
 
 
 class InstalledPluginsModel(PluginsModel):
-    def data(self, index: QModelIndex, role: int = ...) -> typing.Any:
+    def data(self, index: QModelIndex, role: int = Qt.DisplayRole) -> typing.Any:
         if role == Qt.DisplayRole:
             row = index.row()
             column = index.column()
@@ -105,7 +105,7 @@ class InstalledPluginsModel(PluginsModel):
 
 
 class UpdatesPluginsModel(PluginsModel):
-    def data(self, index: QModelIndex, role: int = ...) -> typing.Any:
+    def data(self, index: QModelIndex, role: int = Qt.DisplayRole) -> typing.Any:
         if role == Qt.DisplayRole:
             row = index.row()
             column = index.column()
@@ -120,7 +120,7 @@ class UpdatesPluginsModel(PluginsModel):
             return self._plugins[index.row()][2]
         return super().data(index, role)
 
-    def headerData(self, section: int, orientation: Qt.Orientation, role: int = ...) -> typing.Any:
+    def headerData(self, section: int, orientation: Qt.Orientation, role: int = Qt.DisplayRole) -> typing.Any:
         if role == Qt.DisplayRole and orientation == Qt.Horizontal:
             if section == 0:
                 return "Plugin"

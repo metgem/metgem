@@ -24,7 +24,7 @@ class BanksModel(QAbstractListModel):
     def rowCount(self, parent=QModelIndex()):
         return len(self._data)
 
-    def data(self, index: QModelIndex, role: int = ...) -> Any:
+    def data(self, index: QModelIndex, role: int = Qt.DisplayRole) -> Any:
         if not index.isValid():
             return None
 
@@ -85,7 +85,7 @@ class SpectraModel(QAbstractTableModel):
         else:
             return super().headerData(section, orientation, role)
 
-    def data(self, index: QModelIndex, role: int = ...) -> Any:
+    def data(self, index: QModelIndex, role: int = Qt.DisplayRole) -> Any:
         if not index.isValid():
             return None
 

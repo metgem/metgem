@@ -53,7 +53,7 @@ class ArrowItem(QGraphicsLineItem):
     def boundingRect(self) -> QRectF:
         return self.shape().boundingRect()
 
-    def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: Optional[QWidget] = ...) -> None:
+    def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: Optional[QWidget] = None) -> None:
         painter.setRenderHint(QPainter.Antialiasing)
         pen = self.pen()
         brush = QBrush()
@@ -121,7 +121,7 @@ class RectItem(QGraphicsRectItem):
         shape = stroker.createStroke(path)
         return shape
 
-    def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: Optional[QWidget] = ...) -> None:
+    def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: Optional[QWidget] = None) -> None:
         painter.setRenderHint(QPainter.Antialiasing)
         if self.isSelected():
             color = QColor(255, 0, 0)
@@ -159,7 +159,7 @@ class EllipseItem(QGraphicsEllipseItem):
             path.addRect(QRectF(rect.bottomRight() - QPointF(5., 5.), QSizeF(5., 5.)))
         return stroker.createStroke(path)
 
-    def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: Optional[QWidget] = ...) -> None:
+    def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: Optional[QWidget] = None) -> None:
         painter.setRenderHint(QPainter.Antialiasing)
         rect = self.rect()
         pen = self.pen()
@@ -190,7 +190,7 @@ class TextItem(QGraphicsSimpleTextItem):
         self.setFlag(QGraphicsItem.ItemIsMovable, True)
         self.setPen(QPen(Qt.black, 10, Qt.SolidLine))
 
-    def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: Optional[QWidget] = ...) -> None:
+    def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: Optional[QWidget] = None) -> None:
         painter.setRenderHint(QPainter.Antialiasing)
         pen = self.pen()
         if self.isSelected():

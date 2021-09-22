@@ -18,13 +18,13 @@ class AnnotationsModel(QAbstractTableModel):
         self._scene = scene
         self.endResetModel()
 
-    def rowCount(self, parent: QModelIndex = ...) -> int:
+    def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:
         return len(self._scene.annotationsLayer.childItems())
 
-    def columnCount(self, parent: QModelIndex = ...) -> int:
+    def columnCount(self, parent: QModelIndex = QModelIndex()) -> int:
         return 1
 
-    def data(self, index: QModelIndex, role: int = ...) -> Any:
+    def data(self, index: QModelIndex, role: int = Qt.DisplayRole) -> Any:
         if not index.isValid():
             return None
 
@@ -33,7 +33,7 @@ class AnnotationsModel(QAbstractTableModel):
         elif role == AnnotationsModel.ItemRole:
             return self._scene.annotationsLayer.childItems()[index.row()]
 
-    def headerData(self, section: int, orientation: Qt.Orientation, role: int = ...) -> Any:
+    def headerData(self, section: int, orientation: Qt.Orientation, role: int = Qt.DisplayRole) -> Any:
         if role == Qt.DisplayRole and orientation == Qt.Horizontal and section == 0:
             return 'Description'
 
