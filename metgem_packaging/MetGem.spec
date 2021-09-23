@@ -105,9 +105,6 @@ hiddenimports.extend(['PyQt5.QtOpenGL'])
 if sys.platform.startswith('win'):
     binaries.extend([(os.path.join(qt_base_dir, 'bin', dll), r'PyQt5\Qt\bin')
                      for dll in ('libEGL.dll', 'libGLESv2.dll')])
-                     
-# Remove QtWebEngine
-excludes.extend(['PyQt5.QtWebEngine', 'PyQt5.QtWebEngineWidgets', 'PyQt5.QtWebEngineCore'])
 
 # Add Qt Dbus on macOS
 if sys.platform.startswith('darwin'):
