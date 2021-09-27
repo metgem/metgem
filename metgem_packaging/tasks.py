@@ -67,10 +67,21 @@ def exe(ctx, clean=False, debug=False, build_py=True):
     result = ctx.run("pyinstaller {0} --noconfirm {1} --distpath {2} --workpath {3}"
                      .format(os.path.join(PACKAGING_DIR, 'MetGem.spec'), " ".join(switchs), DIST, BUILD))
 
-    if result and sys.platform.startswith('win'):
-        embed_manifest(ctx, debug)
-        if not debug:
-            com(ctx)
+    if result:
+        if sys.platform.startswith('win'):
+            embed_manifest(ctx, debug)
+            if not debug:
+                com(ctx)
+        elif sys.platform.startswith('darwin'):
+            add_rpath(ctx)
+
+
+# noinspection PyShadowingNames,PyUnusedLocal
+@task
+def add_rpath(ctx, debug):
+    folder = NAME + "_debug" if debug else NAME
+    webengine_process = "{0}\{1}\{2}.exe".format(DIST, folder, 'WebEngineProcess')
+    ctx.run('install_name_tool -add_rpath @executable_path/. {}'.format(webengine_process))
 
 
 # noinspection PyShadowingNames,PyUnusedLocal
