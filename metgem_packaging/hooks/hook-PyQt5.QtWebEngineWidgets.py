@@ -18,13 +18,13 @@ import os
 if pyqt5_library_info.version is not None:
     hiddenimports, binaries, datas = add_qt5_dependencies(__file__)
 
-    # Include helper process executable, translations, and resources.       
+    # Include helper process executable, translations, and resources.
     webengine_binaries, webengine_datas = \
         get_qt_webengine_binaries_and_data_files(pyqt5_library_info)
-        
+
     if compat.is_darwin:
-        webengine_datas += [(os.path.join(data_path, 'resources'), os.curdir)]
+        webengine_datas += [(os.path.join(pyqt5_library_info.location['DataPath'], 'resources'), os.curdir)]
         webengine_datas = [(x,y) for x,y in webengine_datas if os.path.exists(x)]
-        
+
     binaries += webengine_binaries
     datas += webengine_datas
