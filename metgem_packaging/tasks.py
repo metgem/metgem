@@ -80,7 +80,7 @@ def exe(ctx, clean=False, debug=False, build_py=True):
 @task
 def add_rpath(ctx, debug):
     folder = NAME + "_debug" if debug else NAME
-    webengine_process = "{0}\{1}\{2}.exe".format(DIST, folder, 'WebEngineProcess')
+    webengine_process = "{0}/{1}/{2}".format(DIST, folder, 'WebEngineProcess')
     ctx.run('install_name_tool -add_rpath @executable_path/. {}'.format(webengine_process))
 
 
