@@ -73,14 +73,13 @@ def exe(ctx, clean=False, debug=False, build_py=True):
             if not debug:
                 com(ctx)
         elif sys.platform.startswith('darwin'):
-            add_rpath(ctx, debug)
+            add_rpath(ctx)
 
 
 # noinspection PyShadowingNames,PyUnusedLocal
 @task
-def add_rpath(ctx, debug):
-    folder = NAME + "_debug" if debug else NAME
-    webengine_process = "{0}/{1}/{2}".format(DIST, folder, 'QtWebEngineProcess')
+def add_rpath(ctx):
+    webengine_process = "{0}/{1}.app/Contents/MacOS/QtWebEngineProcess".format(DIST, NAME)
     ctx.run('install_name_tool -add_rpath @executable_path/. {}'.format(webengine_process))
 
 
