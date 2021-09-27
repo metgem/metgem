@@ -73,7 +73,7 @@ def exe(ctx, clean=False, debug=False, build_py=True):
             if not debug:
                 com(ctx)
         elif sys.platform.startswith('darwin'):
-            add_rpath(ctx)
+            add_rpath(ctx, debug)
 
 
 # noinspection PyShadowingNames,PyUnusedLocal
