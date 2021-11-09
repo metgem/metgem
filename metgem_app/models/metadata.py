@@ -307,7 +307,16 @@ class NodesModel(QAbstractTableModel):
             elif section == NodesModel.DBResultsCol:
                 return
             else:
-                return self.infos.iloc[section - 2]
+                try:
+                    return self.infos.iloc[:, section - 2]
+                except IndexError:
+                    try:
+                        mappped_columns = self.mappings[section]
+                        return self.infos.iloc[:, [c-2 for c in mappped_columns]].sum(axis=1)
+                    except KeyError:
+                        return
+                except KeyError:
+                    return
         elif role == ColorMarkRole:
             if orientation == Qt.Horizontal and self.headers_colors is not None and section in self.headers_colors:
                 return self.headers_colors[section]
