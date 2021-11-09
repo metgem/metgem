@@ -13,7 +13,7 @@ import requests
 import sqlalchemy
 from PyQt5 import uic
 from PyQt5.QtCore import QSettings, Qt, QCoreApplication, QRectF, QAbstractTableModel
-from PyQt5.QtGui import QPainter, QImage, QColor, QKeyEvent, QIcon, QFontMetrics, QFont, QKeySequence, QCursor
+from PyQt5.QtGui import QPainter, QImage, QColor, QKeyEvent, QIcon, QFontMetrics, QFont, QKeySequence, QCursor, QBrush
 from PyQt5.QtWidgets import (QDialog, QFileDialog, QMessageBox, QWidget, QMenu, QActionGroup, QMainWindow,
                              QAction, qApp, QTableView, QComboBox, QToolBar,
                              QApplication, QGraphicsView, QLineEdit, QListWidget, QLabel, QToolButton)
@@ -37,6 +37,7 @@ from ..logger import logger, debug
 from ..utils.network import Network
 from ..config import get_python_rendering_flag
 
+from PyQtNetworkView.node import NodePolygon
 if get_python_rendering_flag():
     from PyQtNetworkView._pure import style_from_css, style_to_cytoscape, disable_opengl
 else:
@@ -2156,7 +2157,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
     @debug
     def set_nodes_colors_values(self, column_id: int = None,
-                                mapping: Union[Dict[str, QColor], Tuple[List[float], List[QColor]]] = {},
+                                mapping: Union[Dict[str, Tuple[QColor, NodePolygon]],
+                                               Tuple[List[float], List[QColor], List[NodePolygon]]] = {},
                                 column_key: Union[int, str] = None):
         model = self.tvNodes.model().sourceModel()
         for column in range(model.columnCount()):
@@ -2183,32 +2185,38 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 return
 
             if isinstance(mapping, dict):
-                color_list = [mapping.get(key, QColor()) for key in data]
+                color_list, polygon_list, brush_list = zip(mapping.get(key, (QColor(), NodePolygon.Circle, Qt.NoBrush))
+                                                           for key in data)
             elif isinstance(mapping, (tuple, list)):
                 try:
-                    bins, colors = mapping
+                    bins, colors, polygons, styles = mapping
                 except TypeError:
                     return
 
                 # noinspection PyShadowingNames
-                def r(ranges, colors, val):
+                def r(ranges, colors, polygons, styles, val):
                     if val == ranges[-1]:
-                        return colors[-1]
+                        return colors[-1], polygons[-1], styles[-1]
 
                     b = bisect.bisect_left(ranges, val)
                     try:
-                        return colors[b-1]
+                        return colors[b-1], polygons[b-1], styles[b-1]
                     except IndexError:
-                        return QColor()
+                        return QColor(), NodePolygon.Circle, Qt.NoBrush
 
-                color_list = []
+                color_list, polygon_list, brush_list = [], [], []
                 for value in data:
-                    color_list.append(r(bins, colors, value))
+                    c, p, s = r(bins, colors, polygons, styles, value)
+                    color_list.append(c)
+                    polygon_list.append(p)
+                    brush_list.append(QBrush(s))
             else:
                 return
 
             for dock in self.network_docks.values():
                 dock.widget().scene().setNodesColors(color_list)
+                dock.widget().scene().setNodesPolygons(polygon_list)
+                dock.widget().scene().setNodesOverlayBrushes(brush_list)
 
             self.network.columns_mappings['colors'] = (key, mapping)
         else:
@@ -2216,6 +2224,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 scene = dock.widget().scene()
                 color = scene.networkStyle().nodeBrush().color()
                 scene.setNodesColors([color for _ in scene.nodes()])
+                scene.setNodesPolygons([NodePolygon.Circle for _ in scene.nodes()])
+                scene.setNodesOverlayBrushes([QBrush(Qt.NoBrush) for _ in scene.nodes()])
 
             try:
                 del self.network.columns_mappings['colors']

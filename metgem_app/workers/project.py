@@ -3,8 +3,10 @@ import zipfile
 
 import numpy as np
 import pandas as pd
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QColor
 
+from PyQtNetworkView.node import NodePolygon
 from .base import BaseWorker
 from ..config import FILE_EXTENSION
 from ..errors import UnsupportedVersionError
@@ -143,14 +145,23 @@ class LoadProjectWorker(BaseWorker):
                             if id_ is not None and mapping is not None:
                                 if isinstance(mapping, (tuple, list)):
                                     try:
-                                        bins, colors = mapping
+                                        if len(mapping) == 2:
+                                            bins, colors = mapping
+                                            polygons = [NodePolygon.Circle.value for _ in colors]  # default value
+                                            styles = [Qt.NodeBrush for _ in colors]
+                                        elif len(mapping) == 3:
+                                            bins, colors, polygons = mapping
+                                            styles = [Qt.NoBrush for _ in colors]
+                                        else:
+                                            bins, colors, polygons, styles = mapping
                                     except TypeError:
                                         pass
                                     else:
                                         colors = [QColor(color) for color in colors]
-                                        mapping = (bins, colors)
+                                        mapping = (bins, colors, polygons, styles)
                                 elif isinstance(mapping, dict):
-                                    mapping = {k: QColor(color) for k, color in mapping.items()}
+                                    mapping = {k: (QColor(color), polygon, style)
+                                               for k, (color, polygon, style) in mapping.items()}
                                 columns_mappings['colors'] = (id_, mapping)
 
                         try:
@@ -381,16 +392,17 @@ class SaveProjectWorker(BaseWorker):
                 if mapping is not None:
                     if isinstance(mapping, (tuple, list)):
                         try:
-                            bins, colors = mapping
+                            bins, colors, polygons, styles = mapping
                         except TypeError:
                             pass
                         else:
                             colors = [color.name() if isinstance(color, QColor) else color for color in colors]
-                            columns_mappings['colors'] = (key, (bins, colors))
+                            columns_mappings['colors'] = (key, (bins, colors, polygons, styles))
                     elif isinstance(mapping, dict):
                         columns_mappings['colors'] = (key,
-                                                      {k: v.name() if isinstance(v, QColor)
-                                                       else v for k, v in mapping.items()})
+                                                      {k: (color.name(), polygon, style)
+                                                       if isinstance(color, QColor) else (color, polygon, style)
+                                                       for k, (color, polygon, style) in mapping.items()})
 
             try:
                 key, type_ = columns_mappings.get('pixmap', None)
