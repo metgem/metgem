@@ -1,7 +1,13 @@
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QGraphicsItem
-from PyQtNetworkView import NetworkScene
+
+from ....config import get_python_rendering_flag
+
 from PyQtNetworkView.graphicsitem import GraphicsItemLayer
+if get_python_rendering_flag():
+    from PyQtNetworkView._pure import NetworkScene
+else:
+    from PyQtNetworkView import NetworkScene
 
 
 class AnnotationsNetworkScene(NetworkScene):

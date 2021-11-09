@@ -6,10 +6,14 @@ from PyQt5 import uic
 from PyQt5.QtCore import Qt, QSettings, QPointF, QCoreApplication
 from PyQt5.QtGui import QShowEvent
 from PyQt5.QtWidgets import QDialog, QListWidgetItem
-from PyQtNetworkView import style_from_css, NetworkScene
 
 from .. import utils
-from ..config import STYLES_PATH, APP_PATH
+from ..config import STYLES_PATH, APP_PATH, get_python_rendering_flag
+
+if get_python_rendering_flag():
+    from PyQtNetworkView._pure import style_from_css, NetworkScene
+else:
+    from PyQtNetworkView import style_from_css, NetworkScene
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'settings_dialog.ui')
 

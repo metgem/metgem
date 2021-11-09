@@ -45,6 +45,8 @@ def run():
                         help=(f"Embed a Jupyter console inside {APPLICATION} to programmatically modify "
                               f"some {APPLICATION}'s behavior."))
     parser.add_argument('--disable-opengl', action='store_true', help="Disable use of OpenGL for older computers.")
+    parser.add_argument('--python-rendering', action='store_true',
+                        help="Force use of slower Python rendering for networks.")
 
     args = parser.parse_args()
 
@@ -67,71 +69,74 @@ def run():
 
     splash.showMessage("Loading numpy library...")
     import numpy
-    splash.setValue(5)
+    splash.setValue(10)
 
     splash.showMessage("Loading numba library...")
     import numba
-    splash.setValue(10)
+    splash.setValue(20)
 
     splash.showMessage("Loading pandas library...")
     import pandas
-    splash.setValue(15)
+    splash.setValue(30)
 
     splash.showMessage("Loading pyarrow library...")
     import pyarrow
-    splash.setValue(20)
+    splash.setValue(40)
 
     splash.showMessage("Loading igraph library...")
     import igraph
-    splash.setValue(25)
+    splash.setValue(50)
 
     splash.showMessage("Loading scipy library...")
     import scipy
-    splash.setValue(30)
+    splash.setValue(60)
 
     splash.showMessage("Loading lxml library...")
     import lxml
-    splash.setValue(35)
+    splash.setValue(70)
 
     splash.showMessage("Loading sklearn library...")
     import sklearn
-    splash.setValue(40)
+    splash.setValue(80)
 
     splash.showMessage("Loading matplotlib library...")
     import matplotlib
-    splash.setValue(45)
+    splash.setValue(90)
 
     splash.showMessage("Loading Configuration module...")
     importlib.import_module('.config', 'metgem_app')
-    splash.setValue(50)
+    splash.setValue(91)
 
     splash.showMessage("Loading Errors modules...")
     importlib.import_module('.errors', 'metgem_app')
-    splash.setValue(55)
+    splash.setValue(92)
 
     splash.showMessage("Loading Logger module...")
     importlib.import_module('.logger', 'metgem_app')
-    splash.setValue(60)
+    splash.setValue(93)
 
     splash.showMessage("Loading GraphML parser module...")
     importlib.import_module('.graphml', 'metgem_app')
-    splash.setValue(65)
+    splash.setValue(94)
 
     splash.showMessage("Loading Databases module...")
     importlib.import_module('.database', 'metgem_app')
-    splash.setValue(70)
+    splash.setValue(95)
 
     splash.showMessage("Loading Workers...")
     importlib.import_module('.workers', 'metgem_app')
-    splash.setValue(75)
+    splash.setValue(96)
+
+    from .config import set_python_rendering_flag
+    set_python_rendering_flag(args.python_rendering)
 
     splash.showMessage("Loading User interface...")
     importlib.import_module('.ui', 'metgem_app')
-    splash.setValue(90)
+    splash.setValue(98)
 
     splash.showMessage("Loading Project module...")
     importlib.import_module('.save', 'metgem_app')
-    splash.setValue(95)
+    splash.setValue(99)
 
     splash.showMessage("Loading plugins...")
     importlib.import_module('.plugins', 'metgem_app')

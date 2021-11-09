@@ -5,12 +5,17 @@ from PyQt5.QtCore import Qt, QLineF, QRectF, QPointF
 from PyQt5.QtGui import QFont, QMouseEvent, QIcon, QPen
 from PyQt5.QtWidgets import (QGraphicsView, QGraphicsLineItem, QGraphicsSceneMouseEvent,
                              QDialog, QUndoStack, QUndoView, QMenu, QWidgetAction, QGraphicsItem, QGraphicsEllipseItem)
-from PyQtNetworkView import NetworkView
 
 from .scene import AnnotationsNetworkScene
 from .commands import EditTextCommand, EditArrowCommand, MoveCommand, ResizeCommand, DeleteCommand, AddCommand
 from .annotations import ArrowItem, RectItem, TextItem, EllipseItem
 from .dialogs import TextItemInputDialog
+from ....config import get_python_rendering_flag
+
+if get_python_rendering_flag():
+    from PyQtNetworkView._pure import NetworkView
+else:
+    from PyQtNetworkView import NetworkView
 
 MODE_LINE = 0
 MODE_RECT = 1

@@ -25,6 +25,7 @@ except (FileNotFoundError, IOError):
 DEBUG = False
 EMBED_JUPYTER = False
 USE_OPENGL = True
+USE_PYTHON_RENDERING = False
 
 # Make app portable if `application folder`/data folder exists
 IS_PORTABLE = os.path.exists(os.path.join('.', 'data'))
@@ -90,3 +91,12 @@ def get_use_opengl_flag() -> bool:
 def set_use_opengl_flag(val: bool):
     global USE_OPENGL
     USE_OPENGL = val
+
+
+def set_python_rendering_flag(val: bool):
+    global USE_PYTHON_RENDERING
+    USE_PYTHON_RENDERING = val
+
+
+def get_python_rendering_flag() -> bool:
+    return USE_PYTHON_RENDERING

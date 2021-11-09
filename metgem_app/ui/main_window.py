@@ -20,7 +20,6 @@ from PyQt5.QtWidgets import (QDialog, QFileDialog, QMessageBox, QWidget, QMenu, 
 from PyQtAds.QtAds import (CDockManager, CDockWidget,
                            BottomDockWidgetArea, CenterDockWidgetArea,
                            TopDockWidgetArea, LeftDockWidgetArea)
-from PyQtNetworkView import style_from_css, style_to_cytoscape, disable_opengl
 from libmetgem import human_readable_data
 
 try:
@@ -36,6 +35,12 @@ from .. import config, ui, utils, workers, errors
 from ..ui import widgets
 from ..logger import logger, debug
 from ..utils.network import Network
+from ..config import get_python_rendering_flag
+
+if get_python_rendering_flag():
+    from PyQtNetworkView._pure import style_from_css, style_to_cytoscape, disable_opengl
+else:
+    from PyQtNetworkView import style_from_css, style_to_cytoscape, disable_opengl
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'main_window.ui')
 MainWindowUI, MainWindowBase = uic.loadUiType(UI_FILE, from_imports='metgem_app.ui', import_from='metgem_app.ui')
