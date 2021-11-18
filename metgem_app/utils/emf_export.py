@@ -124,7 +124,7 @@ if HAS_EMF_EXPORT:
                                           QPaintEngine.OddEvenMode:
                                               pyemf.ALTERNATE,
                                           QPaintEngine.ConvexMode:
-                                              pyemf.WINDING})
+                                              pyemf.WINDING}.get(mode))
                 self.emf.Polygon(pts)
 
         def drawEllipse(self, rect):
