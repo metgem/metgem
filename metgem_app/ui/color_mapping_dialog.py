@@ -31,6 +31,7 @@ MOVE_COLUMNS_SELECT = 0
 MOVE_COLUMNS_UNSELECT = 1
 
 NODE_BRUSH_STYLES = {
+    Qt.NoBrush,
     Qt.Dense1Pattern,
     Qt.Dense2Pattern,
     Qt.Dense3Pattern,
