@@ -92,8 +92,9 @@ def embed_manifest(ctx, debug):
 
     # Embed manifest in exe
     manifest = exe + '.manifest'
-    winmanifest.UpdateManifestResourcesFromXMLFile(exe, manifest)
-    os.remove(manifest)
+    if os.path.exists(manifest):
+        winmanifest.UpdateManifestResourcesFromXMLFile(exe, manifest)
+        os.remove(manifest)
 
 
 # noinspection PyShadowingNames,PyUnusedLocal
