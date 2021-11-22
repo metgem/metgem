@@ -2224,7 +2224,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 scene = dock.widget().scene()
                 color = scene.networkStyle().nodeBrush().color()
                 scene.setNodesColors([color for _ in scene.nodes()])
-                scene.setNodesPolygons([NodePolygon.Circle for _ in scene.nodes()])
+                scene.setNodesPolygons([NodePolygon.Circle.value for _ in scene.nodes()])
                 scene.setNodesOverlayBrushes([QBrush(Qt.NoBrush) for _ in scene.nodes()])
 
             try:
