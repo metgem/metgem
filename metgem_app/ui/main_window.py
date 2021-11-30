@@ -36,6 +36,7 @@ from ..ui import widgets
 from ..logger import logger, debug
 from ..utils.network import Network
 from ..config import get_python_rendering_flag
+from ..utils import hasinstance
 
 from PyQtNetworkView.node import NodePolygon
 if get_python_rendering_flag():
@@ -2055,7 +2056,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 scene = dock.widget().scene()
                 scene.setLabelsFromModel(model, column_id, metadata.LabelRole)
             self.network.columns_mappings['label'] = model.headerData(column_id, Qt.Horizontal,
-                                                                       role=metadata.KeyRole)
+                                                                      role=metadata.KeyRole)
         else:
             for dock in self.network_docks.values():
                 dock.widget().scene().resetLabels()
@@ -2073,7 +2074,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         model = self.tvNodes.model().sourceModel()
 
         if column_keys is not None and len(column_keys) > 0:
-            if isinstance(column_keys[0], str):
+            if hasinstance(column_keys, str):
                 column_ids = model.headerKeysToIndices(column_keys)
             else:
                 column_ids = column_keys

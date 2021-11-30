@@ -127,3 +127,12 @@ def enumerateMenu(menu: 'QMenu'):
             yield from enumerateMenu(action.menu())
         elif not action.isSeparator():
             yield action
+
+
+def hasinstance(collection: list, type_: type):
+    """Check if a collection has a member"""
+
+    for item in collection:
+        if isinstance(item, type_):
+            return True
+    return False
