@@ -1,3 +1,4 @@
+import pandas as pd
 from PyQt5.QtCore import QObject, pyqtSignal
 
 
@@ -13,7 +14,7 @@ class Network(QObject):
 
     def __init__(self):
         super().__init__()
-        self._interactions = None
+        self._interactions = pd.DataFrame()
         self._infos = None
         self.db_results = {}
         self.columns_mappings = {}

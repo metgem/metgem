@@ -1,8 +1,9 @@
-from typing import List
+from typing import List, Union
 
 import numpy as np
 import pandas as pd
-from PyQt5.QtCore import QStringListModel, QModelIndex, Qt, QSortFilterProxyModel, QAbstractTableModel, QSettings
+from PyQt5.QtCore import QStringListModel, QModelIndex, Qt, QSortFilterProxyModel, QAbstractTableModel, QSettings, \
+    QAbstractItemModel
 from PyQt5.QtGui import QIcon
 
 try:
@@ -73,62 +74,76 @@ class ProxyModel(QSortFilterProxyModel):
 
 class NodesProxyModel(ProxyModel):
 
+    def __init__(self, parent: QModelIndex = None):
+        super().__init__(parent)
+        self._index = pd.Index([])
+
+    def setSourceModel(self, source_model: QAbstractItemModel) -> None:
+        super().setSourceModel(source_model)
+        self._index = source_model.mzs.index
+
+    def mapToSource(self, proxy_index: QModelIndex) -> QModelIndex:
+        if self._index.size > 0:
+            proxy_index = self.index(self._index[proxy_index.row()], proxy_index.column())
+        return super().mapToSource(proxy_index)
+
+    def mapFromSource(self, source_index: QModelIndex) -> QModelIndex:
+        if self._index.size > 0 and source_index.isValid():
+            source_index = self.sourceModel().index(self._index.get_loc(source_index.row()), source_index.column())
+        return super().mapFromSource(source_index)
+
     def sort(self, column: int, order: Qt.SortOrder = Qt.AscendingOrder) -> None:
-        asc = (order == Qt.AscendingOrder)
+        self.layoutAboutToBeChanged.emit()
+
+        source = self.sourceModel()
         if column == -1:  # Reset sorting
-            self.layoutAboutToBeChanged.emit()
-            self.sourceModel().mzs = self.sourceModel().mzs.reindex(
-                pd.RangeIndex(start=0, stop=self.sourceModel().mzs.shape[0], step=1))
-            self.sourceModel().parent().network.mzs = self.sourceModel().mzs
-            if self.sourceModel().infos is not None:
-                self.sourceModel().infos = self.sourceModel().infos.reindex(self.sourceModel().mzs.index)
-                self.sourceModel().parent().network.infos = self.sourceModel().infos
-            self.layoutChanged.emit()
-        elif column == 0:  # Mzs
-            self.layoutAboutToBeChanged.emit()
-            self.sourceModel().mzs.sort_values(ascending=asc, inplace=True)
-            if self.sourceModel().infos is not None:
-                self.sourceModel().infos = self.sourceModel().infos.reindex(self.sourceModel().mzs.index)
-                self.sourceModel().parent().network.infos = self.sourceModel().infos
-            self.layoutChanged.emit()
-        elif column == 1:  # DbResults
-            self.layoutAboutToBeChanged.emit()
+            self._index = pd.Index([])
+        elif column == NodesModel.MZCol:
+            idx = source.mzs.argsort()[::1 if order == Qt.AscendingOrder else -1]
+            self._index = pd.Index(idx)
+        elif column == NodesModel.DBResultsCol:
             db_results = self.sourceModel().db_results
             df = pd.DataFrame.from_dict({x: db_results.get(x, {})
                                         .get('standards', db_results.get(x, {}).get('analogs', ['N/A']))
                                         [db_results.get(x, {}).get('current', 0)]
                                         for x in range(self.sourceModel().infos.shape[0])}).transpose()
-            df = df.sort_values(df.columns[-1], ascending=asc)
-            self.sourceModel().mzs = self.sourceModel().mzs.reindex(df.index)
-            self.sourceModel().parent().network.mzs = self.sourceModel().mzs
-            if self.sourceModel().infos is not None:
-                self.sourceModel().infos = self.sourceModel().infos.reindex(df.index)
-                self.sourceModel().parent().network.infos = self.sourceModel().infos
-            self.layoutChanged.emit()
+            df = df.sort_values(df.columns[-1], ascending=(order == Qt.AscendingOrder))
+            self._index = df.index
         elif column >= self.sourceModel().infos.shape[1] + 2:  # Column Mappings
-            if self.sourceModel().infos is not None and self.sourceModel().mappings:
-                mapped_columns = [c-2 for c in self.sourceModel().mappings[column]]
-                df = self.sourceModel().infos[self.sourceModel().infos.columns[mapped_columns]]
+            if source.infos is not None and source.mappings:
+                mapped_columns = [c-2 for c in source.mappings[column]]
+                df = source.infos[source.infos.columns[mapped_columns]]
                 s = df.sum(axis=1)
-                self.layoutAboutToBeChanged.emit()
-                s = s.sort_values(ascending=asc)
-
-                self.sourceModel().mzs = self.sourceModel().mzs.reindex(s.index)
-                self.sourceModel().parent().network.mzs = self.sourceModel().mzs
-                self.sourceModel().infos = self.sourceModel().infos.reindex(s.index)
-                self.sourceModel().parent().network.infos = self.sourceModel().infos
-                self.layoutChanged.emit()
+                s = s.sort_values(ascending=(order == Qt.AscendingOrder))
+                self._index = s.index
         else:
-            if self.sourceModel().infos is not None:
-                self.layoutAboutToBeChanged.emit()
-                self.sourceModel().infos.sort_values(self.sourceModel().infos.columns[column-2],
-                                                     ascending=asc, inplace=True)
-                self.sourceModel().mzs = self.sourceModel().mzs.reindex(self.sourceModel().infos.index)
-                self.sourceModel().parent().network.mzs = self.sourceModel().mzs
-                self.layoutChanged.emit()
+            if source.infos is not None:
+                col = source.infos.columns[column-2]
+                idx = source.infos[col].argsort()[::1 if order == Qt.AscendingOrder else -1]
+                self._index = pd.Index(idx)
+
+        self.layoutChanged.emit()
 
 
 class EdgesProxyModel(ProxyModel):
+    def __init__(self, parent: QModelIndex = None):
+        super().__init__(parent)
+        self._index = pd.Index([])
+
+    def setSourceModel(self, source_model: QAbstractItemModel) -> None:
+        super().setSourceModel(source_model)
+        self._index = source_model.interactions.index
+
+    def mapToSource(self, proxy_index: QModelIndex) -> QModelIndex:
+        if self._index.size > 0:
+            proxy_index = self.index(self._index[proxy_index.row()], proxy_index.column())
+        return super().mapToSource(proxy_index)
+
+    def mapFromSource(self, source_index: QModelIndex) -> QModelIndex:
+        if self._index.size > 0 and source_index.isValid():
+            source_index = self.sourceModel().index(self._index.get_loc(source_index.row()), source_index.column())
+        return super().mapFromSource(source_index)
+
     def sort(self, column: int, order: Qt.SortOrder = Qt.AscendingOrder) -> None:
         # The last column is virtual so we don't want to sort on this column
         if column == self.columnCount() - 1:
@@ -136,12 +151,15 @@ class EdgesProxyModel(ProxyModel):
 
         self.layoutAboutToBeChanged.emit()
         if column == -1:  # Reset sorting
-            self.sourceModel().interactions.set_index(
-                pd.RangeIndex(start=0, stop=self.sourceModel().interactions.shape[0], step=1), inplace=True)
+            self._index = pd.Index([])
         else:
-            asc = (order == Qt.AscendingOrder)
-            self.sourceModel().interactions.sort_values(self.sourceModel().interactions.columns[column],
-                                                        ascending=asc, inplace=True)
+            source = self.sourceModel()
+            col = source.interactions.columns[column]
+            data = source.interactions[col]
+            if col == 'Delta MZ':
+                data = data.abs()
+            idx = data.argsort()[::1 if order == Qt.AscendingOrder else -1]
+            self._index = pd.Index(idx)
         self.layoutChanged.emit()
 
 
@@ -206,13 +224,12 @@ class NodesModel(QAbstractTableModel):
         if role in (Qt.DisplayRole, Qt.EditRole, LabelRole, StandardsRole, AnalogsRole, DbResultsRole):
             if column == NodesModel.MZCol:
                 try:
-                    return str(round(self.mzs.iloc[row],
-                                     QSettings().value('Metadata/float_precision', 4, type=int)))
+                    return str(round(self.mzs.iloc[row], QSettings().value('Metadata/float_precision', 4, type=int)))
                 except IndexError:
                     return
             elif column == NodesModel.DBResultsCol:
                 try:
-                    results = self.db_results[self.mzs.index[row]]
+                    results = self.db_results[row]
                 except KeyError:
                     if role == Qt.DisplayRole:
                         return 'N/A'
@@ -268,20 +285,20 @@ class NodesModel(QAbstractTableModel):
         column = index.column()
         if role == Qt.EditRole and column == 1:
             try:
-                result = self.db_results[self.mzs.index[row]]
+                result = self.db_results[row]
             except KeyError:
                 return False
 
             if ('current' not in result and value != 0) or \
                     ('current' in result and result['current'] != value):
-                self.db_results[self.mzs.index[row]]['current'] = value
+                self.db_results[row]['current'] = value
                 self.dataChanged.emit(index, index)
                 return True
             return super().setData(index, value, role)
         else:
             return super().setData(index, value, role)
 
-    def headerKeysToIndices(self, keys: List[str]) -> int:
+    def headerKeysToIndices(self, keys: List[Union[str, int]]) -> int:
         """Return column indices from column keys"""
         return np.where(self.headers.isin(keys))[0]
 
@@ -360,23 +377,21 @@ class EdgesModel(QAbstractTableModel):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.interactions = None
+        self.interactions = pd.DataFrame()
 
         self.settings = QSettings()
 
     def rowCount(self, parent=QModelIndex()):
-        data = self.interactions
-        return data.shape[0] if data is not None else 0
+        return self.interactions.shape[0]
 
     def columnCount(self, parent=QModelIndex()):
-        data = self.interactions
-        if data is not None and data.size > 0:
-            return data.shape[1] + 1
+        if self.interactions.size > 0:
+            return self.interactions.shape[1] + 1
         else:
             return 0
 
     def endResetModel(self):
-        self.interactions = getattr(self.parent().network, 'interactions', None)
+        self.interactions = getattr(self.parent().network, 'interactions', pd.DataFrame())
         super().endResetModel()
 
     def data(self, index, role=Qt.DisplayRole):

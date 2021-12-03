@@ -91,7 +91,7 @@ class LoadProjectWorker(BaseWorker):
                     try:
                         network.interactions = pd.DataFrame(fid['0/interactions'])
                     except KeyError:
-                        network.interactions = None
+                        network.interactions = pd.DataFrame()
 
                     if self.isStopped():
                         self.canceled.emit()

@@ -696,15 +696,15 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
     # noinspection PyUnusedLocal
     def update_status_widgets(self, *args):
-        mzs = getattr(self.network, 'mzs', None)
-        if mzs is not None:
+        mzs = getattr(self.network, 'mzs', pd.Series())
+        if mzs.size > 0:
             num_nodes = len(mzs)
             self._status_nodes_widget.setText(
                 f'<img src=":/icons/images/node.svg" height="20" style="vertical-align: top;" /> <i>{num_nodes}</i>')
             self._status_nodes_widget.setToolTip(f"{num_nodes} Nodes" if num_nodes > 0 else "No Node")
 
-            interactions = getattr(self.network, 'interactions', None)
-            num_edges = len(interactions) if interactions is not None else 0
+            interactions = getattr(self.network, 'interactions', pd.DataFrame())
+            num_edges = interactions.size
             self._status_edges_widget.setText(
                 f'<img src=":/icons/images/edge.svg" height="20" style="vertical-align: top;" /> <i>{num_edges}</i>')
             self._status_edges_widget.setToolTip(f"{num_edges} Edges" if num_edges > 0 else "No Edge")
@@ -1249,7 +1249,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             ids = None
             if len_ == 0:
                 keys, _ = self.network.columns_mappings.get('pies', (None, None))
-                if keys is not None and len(keys) > 0 and isinstance(keys[0], str):
+                if keys is not None and len(keys) > 0 and hasinstance(keys, str):
                     ids = model.headerKeysToIndices(keys)
             else:
                 ids = [index.column() for index in selected_columns_indexes]
@@ -1646,7 +1646,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                         return
                     self.tvEdges.model().sourceModel().beginResetModel()
                     self._network.scores = scores
-                    self._network.interactions = None
+                    self._network.interactions = pd.DataFrame()
                     self.tvEdges.model().sourceModel().endResetModel()
 
                     self.tvNodes.setColumnHidden(1, self.network.db_results is None
@@ -1791,7 +1791,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
                         widget.reset_layout()
                         if widget.name == 'network':
-                            self._network.interactions = None
+                            self._network.interactions = pd.DataFrame()
                             self._workers.append(lambda _: self.prepare_generate_network_worker(keep_vertices=True))
                         self._workers.append(lambda _: widget.create_draw_worker())
                         self._workers.start()
@@ -2493,7 +2493,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
     @debug
     def prepare_generate_network_worker(self, keep_vertices=False):
-        if self._network.interactions is not None:
+        if self._network.interactions.size > 0:
             return
 
         mzs = self._network.mzs
