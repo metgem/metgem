@@ -1635,7 +1635,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                     self.network.mzs, self.network.spectra = worker.result()
                     self.tvNodes.model().sourceModel().endResetModel()
                     mzs = self.network.mzs
-                    if mzs is not None:
+                    if mzs is None:
                         mzs = np.zeros((len(self.network.spectra),), dtype=int)
                     return self.prepare_compute_scores_worker(mzs, self.network.spectra)
 
