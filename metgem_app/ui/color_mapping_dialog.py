@@ -1,6 +1,7 @@
 import os
 import random
-from typing import List, Union, Optional
+from itertools import zip_longest
+from typing import List, Union, Optional, Tuple
 
 import matplotlib.cm as mplcm
 import numpy as np
@@ -410,15 +411,32 @@ class BaseColorMappingDialog(ColorMappingDialogUI, ColorMappingDialogBase):
         for item in self.lstColors.selectedItems():
             self.lstColors.takeItem(self.lstColors.row(item))
 
-    def set_colors(self, colors: List[Union[str, QColor]]):
+    def set_colors(self, colors: List[Union[str, QColor]],
+                   polygons: List[Union[int, str, NodePolygon]] = [],
+                   brush_styles: List[Union[str, Qt.BrushStyle]] = []):
         self.lstColors.clear()
-        for color in colors:
+        for color, poly, brush_style in zip_longest(colors, polygons, brush_styles):
             if isinstance(color, str):
                 color = QColor(color)
+
+            if isinstance(poly, str):
+                try:
+                    poly = NodePolygon[poly]
+                except KeyError:
+                    poly = NodePolygon.Circle
+            if isinstance(poly, int):
+                poly = NodePolygon(poly)
+
+            if isinstance(brush_style, str):
+                brush_style = Qt.BrushStyle(int(brush_style))
 
             if color.isValid():
                 item = ColorListWidgetItem()
                 item.setBackground(color)
+                if poly is not None:
+                    item.setData(BaseColorMappingDialog.PolygonRole, poly)
+                if brush_style is not None:
+                    item.setData(BaseColorMappingDialog.BrushStyleRole, brush_style)
                 self.lstColors.addItem(item)
 
     def generate_new_colors(self, cmap: str = 'auto'):
@@ -449,23 +467,35 @@ class BaseColorMappingDialog(ColorMappingDialogUI, ColorMappingDialogBase):
         for item in self.lstUsedColumns.selectedItems():
             item.setBackground(None)
 
+    def import_color_item(self, row: List[str]) -> Tuple:
+        color = QColor(row[1][0])
+        if color.isValid():
+            return color,
+
     def load_color_list(self):
         filter_ = ["Color list (*.txt)"]
         filename, filter_ = QFileDialog.getOpenFileName(self, "Load color list",
                                                         filter=";;".join(filter_))
         if filename:
-            colors = []
+            data = []
             try:
-                with open(filename, 'r') as f:
-                    for line in f.readlines():
-                        color = QColor(line.strip('\n'))
-                        if color.isValid():
-                            colors.append(color)
-                self.set_colors(colors)
+                df = pd.read_csv(filename, header=None)
+
+                for row in df.iterrows():
+                    d = self.import_color_item(row)
+                    if d is not None:
+                        data.append(d)
+
+                self.set_colors(*zip(*data))
             except FileNotFoundError:
                 QMessageBox.warning(self, None, "Selected file does not exists.")
             except IOError:
                 QMessageBox.warning(self, None, "Load failed (I/O Error).")
+
+    def export_color_item(self, item: QListWidgetItem) -> List[str]:
+        color = item.data(Qt.BackgroundRole).color()
+        if color is not None and color.isValid():
+            return color.name(),
 
     def save_color_list(self):
         filter_ = ["Color list (*.txt)"]
@@ -475,9 +505,7 @@ class BaseColorMappingDialog(ColorMappingDialogUI, ColorMappingDialogBase):
             try:
                 with open(filename, 'w') as f:
                     for row in range(self.lstColors.count()):
-                        color = self.lstColors.item(row).data(Qt.BackgroundRole).color()
-                        if color is not None and color.isValid():
-                            f.write(color.name() + '\n')
+                        f.write(",".join([str(_) for _ in self.export_color_item(self.lstColors.item(row))]) + '\n')
             except FileNotFoundError:
                 QMessageBox.warning(self, None, "Selected file does not exists.")
             except IOError:
@@ -775,6 +803,27 @@ class ColorMappingDialog(BaseColorMappingDialog):
         for low, high in pairwise(np.histogram_bin_edges(self._data, bins=bins)):
             item = RangeListWidgetItem(low, high)
             self.lstUsedColumns.addItem(item)
+
+    def import_color_item(self, row: List[str]) -> Tuple:
+        color = QColor(row[1][0])
+        try:
+            polygon_id = NodePolygon[row[1][1]] if len(row[1]) > 1 else NodePolygon.Circle
+        except KeyError:
+            polygon_id = NodePolygon.Circle
+        brushstyle = Qt.BrushStyle(row[1][2]) if len(row[1]) > 2 else Qt.NoBrush
+
+        if color.isValid():
+            return color, polygon_id, brushstyle
+
+    def export_color_item(self, item: QListWidgetItem) -> List[str]:
+        color = item.data(Qt.BackgroundRole).color()
+        polygon_id = item.data(BaseColorMappingDialog.PolygonRole)
+        polygon_id = polygon_id if polygon_id is not None else NodePolygon.Circle
+        brushstyle = item.data(BaseColorMappingDialog.BrushStyleRole)
+        brushstyle = brushstyle if brushstyle is not None else Qt.NoBrush
+
+        if color is not None and color.isValid():
+            return color.name(), polygon_id.name, brushstyle
 
     def done(self, r):
         if r == QDialog.Accepted:
