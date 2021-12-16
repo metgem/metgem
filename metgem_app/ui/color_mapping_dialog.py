@@ -356,9 +356,6 @@ class BaseColorMappingDialog(ColorMappingDialogUI, ColorMappingDialogBase):
             if cmap == current_cmap:
                 self.cbColorMap.setCurrentIndex(i)
 
-        self.lstUsedColumns.setItemDelegate(ItemDelegate())
-        self.lstColors.setItemDelegate(ItemDelegate())
-
         self.lstColumns.viewport().installEventFilter(self)
         self.lstUsedColumns.viewport().installEventFilter(self)
         self.lstUsedColumns.installEventFilter(self)
@@ -378,33 +375,15 @@ class BaseColorMappingDialog(ColorMappingDialogUI, ColorMappingDialogBase):
     def get_color(self, item: ColorListWidgetItem = None):
         current_color = item.data(Qt.BackgroundRole).color() \
             if item is not None and item.data(Qt.BackgroundRole) is not None else QColor()
-        current_polygon = item.data(BaseColorMappingDialog.PolygonRole) \
-            if item is not None and item.data(BaseColorMappingDialog.PolygonRole) is not None else NodePolygon.Circle
-        current_brushstyle = item.data(BaseColorMappingDialog.BrushStyleRole) \
-            if item is not None and item.data(BaseColorMappingDialog.BrushStyleRole) is not None else Qt.NoBrush
-
-        color, polygon_id, brushstyle = ColorDialog.getColorPolygonAndBrushStyle(
-            initial_color=current_color,
-            initial_polygon=current_polygon,
-            initial_brushstyle=current_brushstyle,
-            parent=self,
-            options=QColorDialog.ShowAlphaChannel)
-
+        color = QColorDialog.getColor(initial=current_color, parent=self, options=QColorDialog.ShowAlphaChannel)
         if color.isValid():
             item.setBackground(color)
-        item.setData(BaseColorMappingDialog.PolygonRole, polygon_id)
-        item.setData(BaseColorMappingDialog.BrushStyleRole, brushstyle)
 
     def add_color(self):
-        color, polygon_id, brushstyle = ColorDialog.getColorPolygonAndBrushStyle(
-            parent=self,
-            options=QColorDialog.ShowAlphaChannel)
-
+        color = QColorDialog.getColor(parent=self, options=QColorDialog.ShowAlphaChannel)
         if color.isValid():
             item = ColorListWidgetItem()
             item.setBackground(color)
-            item.setData(BaseColorMappingDialog.PolygonRole, polygon_id)
-            item.setData(BaseColorMappingDialog.BrushStyleRole, brushstyle)
             self.lstColors.addItem(item)
 
     def remove_selected_colors(self):
@@ -640,6 +619,9 @@ class ColorMappingDialog(BaseColorMappingDialog):
 
         super().__init__(*args, **kwargs)
 
+        self.lstUsedColumns.setItemDelegate(ItemDelegate())
+        self.lstColors.setItemDelegate(ItemDelegate())
+
         data = self._model.headerData(self._column_id, Qt.Horizontal, role=ColumnDataRole)
         if data is not None and not isinstance(data, pd.Series):
             data = pd.Series(data)
@@ -831,6 +813,38 @@ class ColorMappingDialog(BaseColorMappingDialog):
                       for row in range(self.lstColors.count())]
             QSettings().setValue('NetworkView/node_colors', colors)
         super().done(r)
+
+    def get_color(self, item: ColorListWidgetItem = None):
+        current_color = item.data(Qt.BackgroundRole).color() \
+            if item is not None and item.data(Qt.BackgroundRole) is not None else QColor()
+        current_polygon = item.data(BaseColorMappingDialog.PolygonRole) \
+            if item is not None and item.data(BaseColorMappingDialog.PolygonRole) is not None else NodePolygon.Circle
+        current_brushstyle = item.data(BaseColorMappingDialog.BrushStyleRole) \
+            if item is not None and item.data(BaseColorMappingDialog.BrushStyleRole) is not None else Qt.NoBrush
+
+        color, polygon_id, brushstyle = ColorDialog.getColorPolygonAndBrushStyle(
+            initial_color=current_color,
+            initial_polygon=current_polygon,
+            initial_brushstyle=current_brushstyle,
+            parent=self,
+            options=QColorDialog.ShowAlphaChannel)
+
+        if color.isValid():
+            item.setBackground(color)
+        item.setData(BaseColorMappingDialog.PolygonRole, polygon_id)
+        item.setData(BaseColorMappingDialog.BrushStyleRole, brushstyle)
+
+    def add_color(self):
+        color, polygon_id, brushstyle = ColorDialog.getColorPolygonAndBrushStyle(
+            parent=self,
+            options=QColorDialog.ShowAlphaChannel)
+
+        if color.isValid():
+            item = ColorListWidgetItem()
+            item.setBackground(color)
+            item.setData(BaseColorMappingDialog.PolygonRole, polygon_id)
+            item.setData(BaseColorMappingDialog.BrushStyleRole, brushstyle)
+            self.lstColors.addItem(item)
 
     def getValues(self):
         item = self.lstUsedColumns.item(0)
