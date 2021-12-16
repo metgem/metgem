@@ -339,8 +339,8 @@ class ItemDelegate(QStyledItemDelegate):
 
 class BaseColorMappingDialog(ColorMappingDialogUI, ColorMappingDialogBase):
 
-    PolygonRole = Qt.UserRole
-    BrushStyleRole = Qt.UserRole + 1
+    PolygonRole = Qt.UserRole + 3
+    BrushStyleRole = Qt.UserRole + 4
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
