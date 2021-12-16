@@ -2186,8 +2186,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 return
 
             if isinstance(mapping, dict):
-                color_list, polygon_list, brush_list = zip(*[mapping.get(key, (QColor(), NodePolygon.Circle, Qt.NoBrush))
-                                                             for key in data])
+                color_list, polygon_list, brush_list = zip(*[mapping.get(k, (QColor(), NodePolygon.Circle, Qt.NoBrush))
+                                                             for k in data])
+                polygon_list = [x.value if isinstance(x, NodePolygon) else x for x in polygon_list]
                 brush_list = [QBrush(_) for _ in brush_list]
             elif isinstance(mapping, (tuple, list)):
                 try:
@@ -2210,7 +2211,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 for value in data:
                     c, p, s = r(bins, colors, polygons, styles, value)
                     color_list.append(c)
-                    polygon_list.append(p)
+                    polygon_list.append(p.value)
                     brush_list.append(QBrush(s))
             else:
                 return
