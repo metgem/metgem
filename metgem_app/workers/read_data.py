@@ -32,9 +32,9 @@ class ReadDataWorker(BaseWorker):
         spectra = []
 
         use_filtering = self.options.use_filtering
-        use_min_intensity_filter = self.options.use_min_intensity_filter
-        use_parent_filter = self.options.use_parent_filter
-        use_window_rank_filter = self.options.use_window_rank_filter
+        use_min_intensity_filter = self.options.use_min_intensity_filter if use_filtering else False
+        use_parent_filter = self.options.use_parent_filter if use_filtering else False
+        use_window_rank_filter = self.options.use_window_rank_filter if use_filtering else False
         min_intensity = self.options.min_intensity if use_min_intensity_filter else 0
         parent_filter_tolerance = self.options.parent_filter_tolerance if use_parent_filter else 0
         matched_peaks_window = self.options.matched_peaks_window if use_window_rank_filter else 0
@@ -80,9 +80,10 @@ class ReadDataWorker(BaseWorker):
             self.error.emit(FileEmptyError())
             return
 
-        if use_filtering:
-            spectra = filter_data_multi(mzs, spectra, min_intensity, parent_filter_tolerance,
-                                        matched_peaks_window, min_matched_peaks_search)
+        # Even if use_filtering is False, filtering should be done with neutral parameters
+        # because last step of filtering is to normalize spectra
+        spectra = filter_data_multi(mzs, spectra, min_intensity, parent_filter_tolerance,
+                                    matched_peaks_window, min_matched_peaks_search)
 
         if not spectra:
             self.error.emit(NoSpectraError())
