@@ -797,9 +797,9 @@ class ColorMappingDialog(BaseColorMappingDialog):
                 brushstyle = brushstyle if brushstyle is not None else Qt.NoBrush
 
                 if bg is not None and bg.color().isValid():
-                    mapping[group] = (bg.color(), polygon_id, brushstyle)
+                    mapping[group] = (bg.color(), polygon_id.value, brushstyle)
                 else:
-                    mapping[group] = (QColor(Qt.transparent), polygon_id, brushstyle)
+                    mapping[group] = (QColor(Qt.transparent), polygon_id.value, brushstyle)
             return self._column_id, mapping
         elif isinstance(item, GroupListWidgetItem):
             mapping = {}
@@ -813,9 +813,9 @@ class ColorMappingDialog(BaseColorMappingDialog):
                 brushstyle = brushstyle if brushstyle is not None else Qt.NoBrush
 
                 if bg is not None and bg.color().isValid():
-                    mapping[group] = (bg.color(), polygon_id, brushstyle)
+                    mapping[group] = (bg.color(), polygon_id.value, brushstyle)
                 else:
-                    mapping[group] = (QColor(Qt.transparent), polygon_id, brushstyle)
+                    mapping[group] = (QColor(Qt.transparent), polygon_id.value, brushstyle)
             return self._column_id, mapping
         else:
             bins = []
