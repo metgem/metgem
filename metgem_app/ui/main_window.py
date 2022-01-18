@@ -2499,7 +2499,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             return
 
         mzs = self._network.mzs
-        if mzs is not None:
+        if mzs is None:
             mzs = np.zeros(self._network.scores.shape[:1], dtype=int)
 
         options = self._network.options.network
