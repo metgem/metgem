@@ -3,6 +3,7 @@ import zipfile
 
 import numpy as np
 import pandas as pd
+import igraph as ig
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QColor
 
@@ -98,7 +99,10 @@ class LoadProjectWorker(BaseWorker):
                         return
 
                     # Load infos making sure it is a pandas DataFrame object (and not numpy array)
-                    network.infos = pd.DataFrame(fid['0/infos'])
+                    try:
+                        network.infos = pd.DataFrame(fid['0/infos'])
+                    except KeyError:
+                        network.infos = pd.DataFrame()
 
                     if self.isStopped():
                         self.canceled.emit()
@@ -199,7 +203,10 @@ class LoadProjectWorker(BaseWorker):
                         return
 
                     # Load options
-                    network.options = AttrDict(fid['0/options.json'])
+                    try:
+                        network.options = AttrDict(fid['0/options.json'])
+                    except KeyError:
+                        network.options = AttrDict({})
                     for opt, key in ((CosineComputationOptions(), 'cosine'),
                                      (NetworkVisualizationOptions(), 'network'),
                                      (TSNEVisualizationOptions(), 'tsne'),
@@ -235,10 +242,13 @@ class LoadProjectWorker(BaseWorker):
                         return
 
                     # Load graph
-                    gxl = fid['0/graph.graphml']
-                    parser = GraphMLParser()
-                    graph = parser.fromstring(gxl)
-                    network.graph = graph
+                    try:
+                        gxl = fid['0/graph.graphml']
+                        parser = GraphMLParser()
+                        graph = parser.fromstring(gxl)
+                        network.graph = graph
+                    except KeyError:
+                        network.graph = ig.Graph()
 
                     if self.isStopped():
                         self.canceled.emit()
@@ -277,20 +287,23 @@ class LoadProjectWorker(BaseWorker):
                             return
                     else:
                         layouts = {}
-                        names = fid['0/layouts.json']
-                        for name in names:
-                            key = f'0/layouts/{name}'
-                            layout = {}
-                            for k in fid.keys():
-                                if k.startswith(key):
-                                    x = k[len(key)+1:]
-                                    if x.startswith('colors'):
-                                        layout[x] = {k: QColor(v) for k, v in fid[k].items()}
-                                    elif x.startswith('radii'):
-                                        layout[x] = fid[k].tolist()
-                                    else:
-                                        layout[x] = fid[k]
-                            layouts[name] = layout
+                        try:
+                            names = fid['0/layouts.json']
+                            for name in names:
+                                key = f'0/layouts/{name}'
+                                layout = {}
+                                for k in fid.keys():
+                                    if k.startswith(key):
+                                        x = k[len(key)+1:]
+                                        if x.startswith('colors'):
+                                            layout[x] = {k: QColor(v) for k, v in fid[k].items()}
+                                        elif x.startswith('radii'):
+                                            layout[x] = fid[k].tolist()
+                                        else:
+                                            layout[x] = fid[k]
+                                layouts[name] = layout
+                        except KeyError:
+                            pass
 
                     # Load annotations
                     annotations = {}
