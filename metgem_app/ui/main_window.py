@@ -2596,6 +2596,9 @@ class MainWindow(MainWindowBase, MainWindowUI):
     def prepare_save_project_worker(self, fname):
         """Save current project to a file for future access"""
 
+        if not fname.endswith(config.FILE_EXTENSION):
+            fname += config.FILE_EXTENSION
+
         def process_finished():
             # Save filename and set window title
             self.fname = fname
