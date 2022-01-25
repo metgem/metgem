@@ -10,4 +10,6 @@ from .read_metadata import ReadMetadataWorker
 from .generic import GenericWorker
 from .queue import WorkerQueue
 from .embedding import TSNEWorker, MDSWorker, IsomapWorker, UMAPWorker, PHATEWorker
-from .project import LoadProjectWorker, SaveProjectWorker, UnsupportedVersionError
+from .project.save import SaveProjectWorker
+from .project.version import UnsupportedVersionError
+from .project.load import LoadProjectWorker

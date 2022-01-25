@@ -1,123 +1,158 @@
-import io
-import json
+import os
 import zipfile
 
 import numpy as np
-import pyarrow as pa
-import pyarrow.parquet as pq
-from numpy.compat import is_pathlib_path
-from numpy.lib import format
-# noinspection PyProtectedMember
-from numpy.lib.npyio import NpzFile
+import pandas as pd
 
-from ....config import FILE_EXTENSION
+from ....utils.network import Network
+from ....utils.qt import QColor
 
+from ...base import BaseWorker
 
-# Copy of numpy's _savez function to allow different file extension
-# https://github.com/numpy/numpy/blob/master/numpy/lib/npyio.py#L669
-# Copyright (c) 2005, NumPy Developers
-
-# All rights reserved.
-
-# Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-
-# Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-# Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-# Neither the name of the NumPy Developers nor the names of any contributors may be used to endorse or promote products derived from this software without specific prior written permission.
-
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+from .graphml import GraphMLWriter
+from .mnz import savez
+from .version import CURRENT_FORMAT_VERSION
+from .spectra_list import SpectraList
 
 
-class MnzFile(NpzFile):
-    zip = None
+class SaveProjectWorker(BaseWorker):
+    """Save current project to a file for future access"""
 
-    def __init__(self, file, *args, **kwargs):
-        if isinstance(file, str):
-            fid = open(file, "rb")
-            own_fid = True
-        else:
-            fid = file
-            own_fid = False
+    def __init__(self, filename: str, graph, network: Network, infos: pd.DataFrame,
+                 options: dict, layouts: dict, annotations=None, original_fname=None):
+        super().__init__()
 
-        super().__init__(fid, own_fid, *args, **kwargs)
-        self.parquet_files = [x[:-8] for x in self._files if x.endswith('.parquet')]
+        self.filename = filename
+        self.original_fname = original_fname
+        path, fname = os.path.split(filename)
+        self.tmp_filename = os.path.join(path, f".tmp-{fname}")
+        self.graph = graph
+        self.network = network
+        self.infos = infos if infos is not None else pd.DataFrame()
+        self.layouts = layouts
+        self.options = options
+        self.layouts = layouts
+        self.annotations = annotations
+        self.max = 0
+        self.desc = 'Saving project...'
 
-    def __getitem__(self, key):
-        if key in self.parquet_files:
-            with self.zip.open(key + '.parquet') as f:
-                table = pq.read_table(io.BytesIO(f.read()))
-            return table.to_pandas()
+    def run(self):
+        # Export graph to GraphML format
+        writer = GraphMLWriter()
+        gxl = writer.tostring(self.graph).decode()
 
-        val = super().__getitem__(key)
+        # Create dict for saving
+        d = {'0/scores': getattr(self.network, 'scores', np.array([])),
+             '0/interactions': getattr(self.network, 'interactions', np.array([])),
+             '0/infos': self.infos,
+             '0/graph.graphml': gxl,
+             '0/options.json': self.options,
+             '0/layouts.json': list(self.layouts.keys())}
 
-        if isinstance(val, bytes):
+        for name, layout in self.layouts.items():
+            key = f'0/layouts/{name}'
+            for k, v in layout.items():
+                d['{key}/{k}'.format(key=key, k=k)] = v
+
+        if self.annotations is not None:
+            d['0/annotations.json'] = list(self.annotations.keys())
+            for name, buffer in self.annotations.items():
+                key = f'0/annotations/{name}'
+                d[key] = buffer
+
+        db_results = getattr(self.network, 'db_results', None)
+        if db_results is not None:
+            d['0/db_results.json'] = db_results
+
+        mappings = getattr(self.network, 'mappings', None)
+        if mappings is not None:
+            d['0/mappings.json'] = mappings
+
+        columns_mappings = getattr(self.network, 'columns_mappings', None)
+        if columns_mappings:
             try:
-                return json.loads(val)
-            except (json.JSONDecodeError, UnicodeDecodeError):
-                return val
-        else:
-            return val
-                
-
-def zipfile_factory(file, *args, **kwargs):
-    """
-    Create a ZipFile.
-    Allows for Zip64, and the `file` argument can accept file, str, or
-    pathlib.Path objects. `args` and `kwargs` are passed to the zipfile.ZipFile
-    constructor.
-    """
-
-    if is_pathlib_path(file):
-        file = str(file)
-
-    kwargs['allowZip64'] = True
-    
-    return zipfile.ZipFile(file, *args, **kwargs)
-                           
-
-def savez(file, version, *args, compress=True, **kwargs):
-    if isinstance(file, str):
-        if not file.endswith(FILE_EXTENSION):
-            file = file + FILE_EXTENSION
-    elif is_pathlib_path(file):
-        if not file.name.endswith(FILE_EXTENSION):
-            file = file.parent / (file.name + FILE_EXTENSION)
-
-    namedict = kwargs
-    for i, val in enumerate(args):
-        key = 'arr_%d' % i
-        if key in namedict.keys():
-            raise ValueError(
-                "Cannot use un-named variables and keyword %s" % key)
-        namedict[key] = val
-
-    if compress:
-        compression = zipfile.ZIP_DEFLATED
-    else:
-        compression = zipfile.ZIP_STORED
-
-    with zipfile_factory(file, mode="a", compression=compression) as zipf:
-        # Write file format version
-        zipf.writestr('version', str(version))
-        
-        # Write directly to a ZIP file
-        for key, val in namedict.items():
-            if isinstance(val, (str, bytes)):
-                zipf.writestr(key, val)
+                key = columns_mappings.get('label', None)
+            except TypeError:
+                pass
             else:
-                try:
-                    s = json.dumps(val, indent=4)
-                except TypeError:
-                    if type(val).__module__ == 'pandas.core.frame':
-                        fname = key + '.parquet'
-                        force_zip64 = val.values.nbytes >= 2 ** 30
-                        with zipf.open(fname, 'w', force_zip64=force_zip64) as fid:
-                            pq.write_table(pa.Table.from_pandas(val), fid)
-                    else:
-                        fname = key + '.npy'
-                        val = np.asanyarray(val)
-                        force_zip64 = val.nbytes >= 2**30
-                        with zipf.open(fname, 'w', force_zip64=force_zip64) as fid:
-                            format.write_array(fid, val, allow_pickle=False)
+                if key is not None:
+                    columns_mappings['label'] = key
+
+            try:
+                keys, colors = columns_mappings.get('pies', (None, None))
+            except TypeError:
+                pass
+            else:
+                if colors is not None:
+                    colors = [color.name() if isinstance(color, QColor) else color for color in colors]
+                    columns_mappings['pies'] = (keys, colors)
+
+            try:
+                key, mapping = columns_mappings.get('colors', (None, None))
+            except TypeError:
+                pass
+            else:
+                if mapping is not None:
+                    if isinstance(mapping, (tuple, list)):
+                        try:
+                            bins, colors, polygons, styles = mapping
+                        except TypeError:
+                            pass
+                        else:
+                            colors = [color.name() if isinstance(color, QColor) else color for color in colors]
+                            columns_mappings['colors'] = (key, (bins, colors, polygons, styles))
+                    elif isinstance(mapping, dict):
+                        columns_mappings['colors'] = (key,
+                                                      {k: (color.name(), polygon, style)
+                                                       if isinstance(color, QColor) else (color, polygon, style)
+                                                       for k, (color, polygon, style) in mapping.items()})
+
+            try:
+                key, type_ = columns_mappings.get('pixmap', None)
+            except TypeError:
+                pass
+            else:
+                if key is not None:
+                    columns_mappings['pixmap'] = (key, type_)
+
+            d['0/columns_mappings.json'] = columns_mappings
+
+        if self.network.lazyloaded and os.path.exists(self.original_fname):
+            self.network.spectra.close()
+
+            # create a temp copy of the archive without filename
+            with zipfile.ZipFile(self.original_fname, 'r') as zin:
+                with zipfile.ZipFile(self.tmp_filename, 'w') as zout:
+                    zout.comment = zin.comment  # preserve the comment
+                    for item in zin.infolist():
+                        if item.filename.startswith('0/spectra/'):
+                            zout.writestr(item, zin.read(item.filename))
+        else:
+            # Convert lists of parent mass and spectrum data to something that be can be saved
+            mzs = getattr(self.network, 'mzs', pd.Series())
+            spectra = getattr(self.network, 'spectra', pd.DataFrame())
+            d['0/spectra/index.json'] = [{'id': i, 'mz_parent': mz_parent} for i, mz_parent in enumerate(mzs)]
+            d.update({'0/spectra/{}'.format(i): data for i, data in enumerate(spectra)})
+
+        try:
+            savez(self.tmp_filename, version=CURRENT_FORMAT_VERSION, **d)
+        except PermissionError as e:
+            try:
+                os.remove(self.tmp_filename)
+            except OSError:
+                pass
+            self.error.emit(e)
+        else:
+            try:
+                if os.path.exists(self.filename):
+                    os.remove(self.filename)
+                os.rename(self.tmp_filename, self.filename)
+                if isinstance(getattr(self.network, 'spectra', []), list):
+                    self.network.spectra = SpectraList(self.filename)
                 else:
-                    zipf.writestr(key, s)
+                    self.network.spectra.load(self.filename)
+                self.network.lazyloaded = True
+            except OSError as e:
+                self.error.emit(e)
+            else:
+                return True
