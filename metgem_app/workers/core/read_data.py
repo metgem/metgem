@@ -17,12 +17,27 @@ class FileEmptyError(Exception):
     pass
 
 
+def guess_file_format(filename):
+    ext = os.path.splitext(filename)[1].lower()
+    if ext in ('.mgf', '.msp'):
+        return ext[1:]
+
+    try:
+        with open(filename, 'r') as f:
+            head = next(f)
+            if head.startswith('BEGIN IONS'):
+                return 'mgf'
+            elif head.startswith('NAME:'):
+                return 'msp'
+    except UnicodeDecodeError:
+        return
+
+
 class ReadDataWorker(BaseWorker):
 
     def __init__(self, filename, options: CosineComputationOptions):
         super().__init__()
         self.filename = filename
-        self.ext = os.path.splitext(filename)[1].lower()
         self.options = options
         self.max = 0
         self.iterative_update = True
@@ -42,10 +57,11 @@ class ReadDataWorker(BaseWorker):
         min_matched_peaks_search = self.options.min_matched_peaks_search if use_window_rank_filter else 0
         is_ms1_data = self.options.is_ms1_data
 
-        if self.ext == '.mgf':
+        fmt = guess_file_format(self.filename)
+        if fmt == 'mgf':
             read = read_mgf
             mz_keys = ['pepmass']
-        elif self.ext == '.msp':
+        elif fmt == 'msp':
             read = read_msp
             mz_keys = ['precursormz', 'exactmass', 'mw']
         else:
