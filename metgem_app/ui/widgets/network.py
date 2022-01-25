@@ -11,7 +11,7 @@ from ..edit_options_dialog import (EditNetworkOptionsDialog, EditTSNEOptionsDial
                                    EditMDSOptionsDialog, EditIsomapOptionsDialog,
                                    EditUMAPOptionsDialog, EditPHATEOptionsDialog)
 from ... import config
-from ... import workers
+from ...workers import core as workers_core
 
 
 class BaseFrame(QFrame):
@@ -145,7 +145,7 @@ class BaseFrame(QFrame):
 
             return [self.create_worker(), process_finished]
         else:
-            return workers.GenericWorker(self.apply_layout, self._layout, self._isolated_nodes,
+            return workers_core.GenericWorker(self.apply_layout, self._layout, self._isolated_nodes,
                                          self._hide_isolated_nodes)
 
 
@@ -155,7 +155,7 @@ class NetworkFrame(BaseFrame):
     extra = False
     unlockable = True
     dialog_class = EditNetworkOptionsDialog
-    worker_class = workers.NetworkWorker
+    worker_class = workers_core.NetworkWorker
     use_edges = True
 
     def process_graph_before_export(self, g):
@@ -175,7 +175,7 @@ class TSNEFrame(NetworkFrame):
     extra = False
     unlockable = False
     dialog_class = EditTSNEOptionsDialog
-    worker_class = workers.TSNEWorker
+    worker_class = workers_core.TSNEWorker
     use_edges = False
 
     def __init__(self, *args, **kwargs):
@@ -241,7 +241,7 @@ class MDSFrame(TSNEFrame):
     extra = True
     unlockable = False
     dialog_class = EditMDSOptionsDialog
-    worker_class = workers.MDSWorker
+    worker_class = workers_core.MDSWorker
     use_edges = False
 
     def create_worker(self):
@@ -254,7 +254,7 @@ class UMAPFrame(TSNEFrame):
     extra = True
     unlockable = False
     dialog_class = EditUMAPOptionsDialog
-    worker_class = workers.UMAPWorker
+    worker_class = workers_core.UMAPWorker
     use_edges = False
 
     def create_worker(self):
@@ -267,7 +267,7 @@ class IsomapFrame(TSNEFrame):
     extra = True
     unlockable = False
     dialog_class = EditIsomapOptionsDialog
-    worker_class = workers.IsomapWorker
+    worker_class = workers_core.IsomapWorker
     use_edges = False
 
     def create_worker(self):
@@ -280,7 +280,7 @@ class PHATEFrame(TSNEFrame):
     extra = True
     unlockable = False
     dialog_class = EditPHATEOptionsDialog
-    worker_class = workers.PHATEWorker
+    worker_class = workers_core.PHATEWorker
     use_edges = False
 
     def create_worker(self):

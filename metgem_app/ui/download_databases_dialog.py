@@ -9,8 +9,11 @@ from requests.exceptions import ConnectionError, RequestException
 
 from .progress_dialog import ProgressDialog
 from .widgets import AutoToolTipItemDelegate
-from ..workers import (ListDatabasesWorker, DownloadDatabasesWorker, ConvertDatabasesWorker)
-from ..workers import WorkerQueue
+from ..workers.databases import (ListDatabasesWorker, DownloadDatabasesWorker,
+                                 ConvertDatabasesWorker)
+from ..workers.core import WorkerQueue
+from ..plugins import get_db_sources
+
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'download_databases_dialog.ui')
 
@@ -92,7 +95,7 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
             self.treeDatabases.setLoading(False)
             self.btRefresh.setEnabled(True)
 
-        worker = ListDatabasesWorker()
+        worker = ListDatabasesWorker(get_db_sources())
         worker.itemReady.connect(update_list)
         worker.error.connect(clean_up)
         worker.error.connect(self.on_error)
@@ -224,7 +227,7 @@ class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialog
         def clean_up():
             self.setEnabled(True)
 
-        worker = DownloadDatabasesWorker(ids, self.base_path)
+        worker = DownloadDatabasesWorker(ids, self.base_path, get_db_sources())
         worker.error.connect(clean_up)
         worker.error.connect(self.on_error)
         worker.canceled.connect(clean_up)

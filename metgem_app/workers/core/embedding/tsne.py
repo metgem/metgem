@@ -1,24 +1,7 @@
 import io
 
-from .base import EmbeddingWorker
-from ...errors import UserRequestedStopError
-from ...utils import AttrDict
-
-
-class TSNEVisualizationOptions(AttrDict):
-    """Class containing t-SNE visualization options.
-    """
-    
-    def __init__(self):
-        super().__init__(perplexity=6,
-                         learning_rate=200,
-                         min_score=0.70,
-                         min_scores_above_threshold=1,
-                         early_exaggeration=12,
-                         barnes_hut=True,
-                         angle=0.5,
-                         n_iter=1000,
-                         random=False)
+from .base import EmbeddingWorker, UserRequestedStopError
+from ...options import TSNEVisualizationOptions
 
     
 class ProgressStringIO(io.StringIO):
@@ -43,6 +26,9 @@ class ProgressStringIO(io.StringIO):
 
     
 class TSNEWorker(EmbeddingWorker):
+
+    def __init__(self, scores, options: TSNEVisualizationOptions):
+        super().__init__(scores, options)
 
     # noinspection PyAttributeOutsideInit
     def init(self):

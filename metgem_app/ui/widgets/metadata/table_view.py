@@ -6,7 +6,7 @@ from PyQt5 import uic
 from .freeze_table import FreezeTableMixin
 from ....models.metadata import ColorMarkRole
 from ..delegates import EnsureStringItemDelegate, StandardsResultsDelegate
-from ....utils import SignalBlocker
+from ....utils.gui import SignalBlocker
 
 import os
 

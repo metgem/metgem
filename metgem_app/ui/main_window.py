@@ -31,10 +31,17 @@ else:
     HAS_SVG = True
 
 from ..models import metadata
-from .. import config, ui, utils, workers, errors
+from .. import config, ui, utils
+from ..workers import core as workers_core
+from ..workers import gui as workers_gui
+from ..workers import net as workers_net
+from ..workers import databases as workers_dbs
+from ..workers import options as workers_opts
 from ..ui import widgets
 from ..logger import logger, debug
 from ..utils.network import Network
+from ..utils.emf_export import HAS_EMF_EXPORT, EMFPaintDevice
+from ..utils.gui import enumerateMenu, SignalGrouper, SignalBlocker
 from ..config import get_python_rendering_flag
 from ..utils import hasinstance
 
@@ -70,7 +77,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.fname = None
 
         # Workers' references
-        self._workers = workers.WorkerQueue(self, ui.ProgressDialog(self))
+        self._workers = workers_core.WorkerQueue(self, ui.ProgressDialog(self))
 
         # List of Network widgets
         self._network_docks = {}
@@ -180,7 +187,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self._welcome_screen.importDataClicked.connect(self.on_process_file_triggered)
         self._welcome_screen.openProjectClicked.connect(self.on_open_project_triggered)
 
-        self._docks_closed_signals_grouper = utils.SignalGrouper()  # Group signals emitted when dock widgets are closed
+        self._docks_closed_signals_grouper = SignalGrouper()  # Group signals emitted when dock widgets are closed
         self._docks_closed_signals_grouper.groupped.connect(self.on_network_widget_closed)
 
         self.nodes_widget.tvNodes.customContextMenuRequested.connect(self.on_nodes_table_contextmenu)
@@ -432,7 +439,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self._network.graph = ig.Graph()
 
         # Create options dict
-        self._network.options = utils.AttrDict()
+        self._network.options = workers_opts.AttrDict()
 
         for dock in self.network_docks.values():
             self.dock_manager.viewMenu().removeAction(dock.toggleViewAction())
@@ -536,7 +543,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
     @debug
     def load_project(self, filename):
         # noinspection PyShadowingNames
-        def create_draw_workers(worker: workers.LoadProjectWorker):
+        def create_draw_workers(worker: workers_core.LoadProjectWorker):
             self.reset_project()
 
             self.tvNodes.model().setSelection([])
@@ -866,7 +873,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             for dock in self.network_docks.values():
                 scene = dock.widget().scene()
                 if scene != sender:
-                    with utils.SignalBlocker(scene):
+                    with SignalBlocker(scene):
                         scene.setNodesSelection(nodes_idx)
 
     @debug
@@ -1058,7 +1065,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             if HAS_SVG:
                 filter_.append("SVG - Scalable Vector Graphics (*.svg)")
 
-            if utils.HAS_EMF_EXPORT:
+            if HAS_EMF_EXPORT:
                 filter_.append("EMF - Enhanced MetaFile (*.emf)")
 
             filename, filter_ = QFileDialog.getSaveFileName(self, "Save image",
@@ -1083,7 +1090,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 else:
                     view.scene().render(painter, target=rect)
                 painter.end()
-            elif filter_.endswith("(*.emf)") and utils.HAS_EMF_EXPORT:  # Experimental EMF export support
+            elif filter_.endswith("(*.emf)") and HAS_EMF_EXPORT:  # Experimental EMF export support
                 # noinspection PyPep8Naming
                 DPI = 75
                 # noinspection PyPep8Naming
@@ -1094,7 +1101,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 rect2 = QRectF(rect.x() * SCALE, rect.y() * SCALE, rect.width() * SCALE, rect.height() * SCALE)
                 trect = rect2.translated(-rect2.x(), -rect2.y())
                 scaled_rect = QRectF(0, 0, rect2.width() / DPI * 100, rect2.height() / DPI * 100)
-                paintdev = utils.EMFPaintDevice(scaled_rect, dpi=DPI)
+                paintdev = EMFPaintDevice(scaled_rect, dpi=DPI)
                 painter = QPainter(paintdev)
                 if type_ == 'current':
                     view.scene().render(painter, target=trect, source=QRectF(rect))
@@ -1427,7 +1434,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
     # noinspection PyUnusedLocal
     @debug
     def on_clusterize(self, *args):
-        if not workers.ClusterizeWorker.enabled():
+        if not workers_core.ClusterizeWorker.enabled():
             QMessageBox.information(self, None,
                                     ('hdbscan is required for this action '
                                      '(https://hdbscan.readthedocs.io).'))
@@ -1445,7 +1452,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         def do_clustering(result):
             if result == QDialog.Accepted:
                 # noinspection PyShadowingNames
-                def update_dataframe(worker: workers.ClusterizeWorker):
+                def update_dataframe(worker: workers_core.ClusterizeWorker):
                     self.tvNodes.model().sourceModel().beginResetModel()
                     self.network.infos[options.column_name] = data = worker.result()
                     self.tvNodes.model().sourceModel().endResetModel()
@@ -1456,7 +1463,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
                 name, options = self._dialog.getValues()
                 widget = self.network_docks[name].widget()
-                worker = workers.ClusterizeWorker(widget, options)
+                worker = workers_core.ClusterizeWorker(widget, options)
                 if worker is not None:
                     self._workers.append(worker)
                     self._workers.append(update_dataframe)
@@ -1529,7 +1536,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         model = self.tvNodes.model().sourceModel()
         key = model.headerData(logical_index, Qt.Horizontal, metadata.KeyRole)
         if isinstance(key, int):
-            with utils.SignalBlocker(self.tvNodes.horizontalHeader()):
+            with SignalBlocker(self.tvNodes.horizontalHeader()):
                 self.tvNodes.horizontalHeader().moveSection(new_visual_index, old_visual_index)
 
     @debug
@@ -1539,7 +1546,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         if not selected_idx:
             return
-        options = workers.QueryDatabasesOptions()
+        options = workers_opts.QueryDatabasesOptions()
         options.analog_search = (type_ == 'analogs')
 
         try:
@@ -1577,6 +1584,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         else:
             QMessageBox.warning(self, None,
                                 "Insilico Databases are only available for MS/MS spectra.")
+            return
         spectrum = human_readable_data(self.network.spectra[self.network.mzs.index[list(selected_idx)[0]]])
 
         self._dialog = dialog_class(self, mz, spectrum)
@@ -1629,7 +1637,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         def do_process(result):
             if result == QDialog.Accepted:
-                def create_compute_scores_worker(worker: workers.ReadDataWorker):
+                def create_compute_scores_worker(worker: workers_core.ReadDataWorker):
                     self.tvNodes.model().setSelection([])
                     self.tvNodes.model().sourceModel().beginResetModel()
                     self.network.mzs, self.network.spectra = worker.result()
@@ -1639,7 +1647,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                         mzs = np.zeros((len(self.network.spectra),), dtype=int)
                     return self.prepare_compute_scores_worker(mzs, self.network.spectra)
 
-                def store_scores(worker: workers.ComputeScoresWorker):
+                def store_scores(worker: workers_core.ComputeScoresWorker):
                     self.tvEdges.model().setSelection([])
                     scores = worker.result()
                     if not isinstance(scores, np.ndarray):
@@ -1754,7 +1762,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 def error_import_modules(e):
                     if isinstance(e, ImportError):
                         # One or more dependencies could not be loaded, disable action associated with the view
-                        actions = list(utils.enumerateMenu(self._create_network_button.menu()))
+                        actions = list(enumerateMenu(self._create_network_button.menu()))
                         for action in actions:
                             if action.data() == widget_class:
                                 action.setEnabled(False)  # Disable action
@@ -1769,7 +1777,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                             f"{widget_class.title} view can't be added because a requested module can't be loaded.")
 
                 self._dialog.finished.connect(add_view)
-                worker = workers.ImportModulesWorker(widget_class.worker_class, widget_class.title)
+                worker = workers_core.ImportModulesWorker(widget_class.worker_class, widget_class.title)
                 worker.error.connect(error_import_modules)
                 worker.finished.connect(self._dialog.open)
                 self._workers.append(worker)
@@ -1931,7 +1939,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         selected = self.nodes_selection()
         for dock in self.network_docks.values():
             scene = dock.widget().scene()
-            with utils.SignalBlocker(scene):
+            with SignalBlocker(scene):
                 scene.setNodesSelection(selected)
 
     # noinspection PyUnusedLocal
@@ -1940,7 +1948,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         selected = self.edges_selection()
         for dock in self.network_docks.values():
             scene = dock.widget().scene()
-            with utils.SignalBlocker(scene):
+            with SignalBlocker(scene):
                 scene.setEdgesSelection(selected)
 
     # noinspection PyUnusedLocal
@@ -1957,7 +1965,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
         for dock in self.network_docks.values():
             scene = dock.widget().scene()
-            with utils.SignalBlocker(scene):
+            with SignalBlocker(scene):
                 scene.setNodesSelection(sel)
 
     def add_network_widget(self, widget_class):
@@ -2333,8 +2341,8 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 QMessageBox.information(self, None,
                                         f"Your version of {QCoreApplication.applicationName()} is already up-to-date.")
 
-        worker = workers.CheckUpdatesWorker(current_version=QCoreApplication.applicationVersion(),
-                                            track_progress=notify_if_no_update)
+        worker = workers_net.CheckUpdatesWorker(current_version=QCoreApplication.applicationVersion(),
+                                                track_progress=notify_if_no_update)
         worker.finished.connect(notify_update)
         self._workers.append(worker)
         self._workers.start()
@@ -2466,7 +2474,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             else:
                 raise e
 
-        worker = workers.ComputeScoresWorker(mzs, spectra, self.network.options.cosine)
+        worker = workers_core.ComputeScoresWorker(mzs, spectra, self.network.options.cosine)
         worker.error.connect(error)
 
         return worker
@@ -2479,16 +2487,16 @@ class MainWindow(MainWindowBase, MainWindowUI):
                                                 "m/z defined.")
             elif isinstance(e, NotImplementedError):
                 QMessageBox.warning(self, None, "File format is not supported.")
-            elif isinstance(e, workers.FileEmptyError):
+            elif isinstance(e, workers_core.FileEmptyError):
                 QMessageBox.warning(self, None, "Datafile is empty!")
-            elif isinstance(e, workers.NoSpectraError):
+            elif isinstance(e, workers_core.NoSpectraError):
                 QMessageBox.warning(self, None, "No more spectra left after filtering.")
             elif hasattr(e, 'message'):
                 QMessageBox.warning(self, None, e.message)
             else:
                 QMessageBox.warning(self, None, str(e))
 
-        worker = workers.ReadDataWorker(mgf_filename, self.network.options.cosine)
+        worker = workers_core.ReadDataWorker(mgf_filename, self.network.options.cosine)
         worker.error.connect(error)
 
         return worker
@@ -2503,25 +2511,25 @@ class MainWindow(MainWindowBase, MainWindowUI):
             mzs = np.zeros(self._network.scores.shape[:1], dtype=int)
 
         options = self._network.options.network
-        worker = workers.GenerateNetworkWorker(self._network.scores, mzs, self._network.graph,
-                                               options, keep_vertices=keep_vertices)
+        worker = workers_core.GenerateNetworkWorker(self._network.scores, mzs, self._network.graph,
+                                                    options, keep_vertices=keep_vertices)
 
         if options.max_connected_nodes > 0:
             # noinspection PyShadowingNames
-            def create_max_connected_components_worker(worker: workers.GenerateNetworkWorker):
+            def create_max_connected_components_worker(worker: workers_core.GenerateNetworkWorker):
                 interactions, graph = worker.result()
                 self._network.interactions = interactions
-                return workers.MaxConnectedComponentsWorker(graph, options)
+                return workers_core.MaxConnectedComponentsWorker(graph, options)
 
             # noinspection PyShadowingNames
-            def store_interactions(worker: workers.MaxConnectedComponentsWorker):
+            def store_interactions(worker: workers_core.MaxConnectedComponentsWorker):
                 graph = worker.result()
                 self._network.graph = graph
 
             return [worker, create_max_connected_components_worker, store_interactions]
         else:
             # noinspection PyShadowingNames
-            def store_interactions(worker: workers.GenerateNetworkWorker):
+            def store_interactions(worker: workers_core.GenerateNetworkWorker):
                 interactions, graph = worker.result()
                 self._network.interactions = interactions
                 self._network.graph = graph
@@ -2578,7 +2586,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                                             f"\"{message}\".\n"
                                             "Your metadata file might be corrupted/invalid.")
 
-        worker = workers.ReadMetadataWorker(filename, options)
+        worker = workers_core.ReadMetadataWorker(filename, options)
         worker.finished.connect(file_read)
         worker.error.connect(error)
 
@@ -2614,13 +2622,13 @@ class MainWindow(MainWindowBase, MainWindowUI):
             columns = [c for c in columns if c in df.columns]
             df = df.reindex(columns=columns)
 
-        worker = workers.SaveProjectWorker(fname, self.network.graph, self.network,
-                                           df, self.network.options,
-                                           layouts={d.widget().name: d.widget().get_layout_data() for d in
-                                                    self.network_docks.values()},
-                                           annotations={d.widget().name: d.widget().get_annotations_data() for d in
-                                                    self.network_docks.values()},
-                                           original_fname=self.fname)
+        worker = workers_core.SaveProjectWorker(fname, self.network.graph, self.network,
+                                                df, self.network.options,
+                                                layouts={d.widget().name: d.widget().get_layout_data() for d in
+                                                         self.network_docks.values()},
+                                                annotations={d.widget().name: d.widget().get_annotations_data() for d in
+                                                             self.network_docks.values()},
+                                                original_fname=self.fname)
         worker.finished.connect(process_finished)
         worker.error.connect(error)
 
@@ -2634,7 +2642,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             if isinstance(e, FileNotFoundError):
                 QMessageBox.warning(self, None, f"File '{fname}' not found.")
                 self.update_recent_projects(remove_fname=fname)
-            elif isinstance(e, errors.UnsupportedVersionError):
+            elif isinstance(e, workers_core.UnsupportedVersionError):
                 QMessageBox.warning(self, None, str(e))
             elif isinstance(e, KeyError):
                 QMessageBox.critical(self, None, str(e))
@@ -2644,7 +2652,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             else:
                 raise e
 
-        worker = workers.LoadProjectWorker(fname)
+        worker = workers_core.LoadProjectWorker(fname)
         worker.error.connect(error)
 
         return worker
@@ -2660,7 +2668,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         else:
             mzs = [0] * len(indices)
         spectra = [self.network.spectra[self.network.mzs.index[index]] for index in indices]
-        worker = workers.QueryDatabasesWorker(indices, mzs, spectra, options)
+        worker = workers_dbs.QueryDatabasesWorker(indices, mzs, spectra, options)
 
         def query_finished():
             nonlocal worker
@@ -2706,7 +2714,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
     @debug
     def prepare_read_group_mapping_worker(self, filename):
-        worker = workers.ReadGroupMappingWorker(filename)
+        worker = workers_core.ReadGroupMappingWorker(filename)
 
         def finished():
             nonlocal worker
@@ -2734,7 +2742,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
     @debug
     def prepare_export_metadata_worker(self, filename, model, sep, selected_rows):
-        worker = workers.ExportMetadataWorker(filename, model, sep, selected_rows if selected_rows else None)
+        worker = workers_gui.ExportMetadataWorker(filename, model, sep, selected_rows if selected_rows else None)
 
         def finished():
             nnodes = len(selected_rows) if selected_rows else self.tvNodes.model().rowCount()
@@ -2742,7 +2750,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                                     f"Metadata of {nnodes} nodes were successfully exported to \"{filename}\".")
 
         def error(e):
-            if isinstance(e, workers.export_metadata.NoDataError):
+            if isinstance(e, workers_gui.NoDataError):
                 QMessageBox.warning(self, None,
                                     "Metadata were not exported because there is nothing to export.")
             else:
@@ -2755,14 +2763,14 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
     @debug
     def prepare_export_db_results_worker(self, filename: str, values,
-                                         model: QAbstractTableModel) -> workers.ExportDbResultsWorker:
-        worker = workers.ExportDbResultsWorker(filename, *values, config.DATABASES_PATH, model)
+                                         model: QAbstractTableModel) -> workers_gui.ExportDbResultsWorker:
+        worker = workers_gui.ExportDbResultsWorker(filename, *values, config.DATABASES_PATH, model)
 
         def finished():
             QMessageBox.information(self, None, f"Database results were successfully exported to \"{filename}\".")
 
         def error(e):
-            if isinstance(e, workers.export_db_results.NoDataError):
+            if isinstance(e, workers_gui.NoDataError):
                 QMessageBox.warning(self, None,
                                     "Database were not exported because there is nothing to export.")
             else:

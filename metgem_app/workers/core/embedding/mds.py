@@ -1,19 +1,7 @@
 import io
 
-from .base import EmbeddingWorker
-from ...errors import UserRequestedStopError
-from ...utils import AttrDict
-
-
-class MDSVisualizationOptions(AttrDict):
-    """Class containing MDS visualization options.
-    """
-
-    def __init__(self):
-        super().__init__(min_score=0.70,
-                         min_scores_above_threshold=1,
-                         max_iter=300,
-                         random=False)
+from .base import EmbeddingWorker, UserRequestedStopError
+from ...options import MDSVisualizationOptions
 
 
 class ProgressStringIO(io.StringIO):
@@ -44,6 +32,9 @@ class ProgressStringIO(io.StringIO):
 
 
 class MDSWorker(EmbeddingWorker):
+
+    def __init__(self, scores, options: MDSVisualizationOptions):
+        super().__init__(scores, options)
 
     # noinspection PyAttributeOutsideInit
     def init(self):

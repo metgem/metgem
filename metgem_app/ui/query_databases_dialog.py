@@ -1,5 +1,5 @@
 from .widgets import QueryDatabasesOptionsWidget, AutoToolTipItemDelegate
-from ..workers.databases import QueryDatabasesOptions
+from ..workers.options import QueryDatabasesOptions
 from ..database import SpectraLibrary, Bank
 from ..config import SQL_PATH, get_debug_flag
 

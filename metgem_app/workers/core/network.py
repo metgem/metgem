@@ -2,8 +2,8 @@ import igraph as ig
 import numpy as np
 from fa2 import ForceAtlas2
 
-from .base import BaseWorker
-from ..config import RADIUS
+from ..base import BaseWorker
+from ...config import RADIUS
 
 
 class NetworkWorker(BaseWorker):
@@ -19,7 +19,9 @@ class NetworkWorker(BaseWorker):
     def run(self):
         layout = np.empty((self.max, 2))
 
-        forceatlas2 = ForceAtlas2(adjustSizes=True, scalingRatio=RADIUS, verbose=False)
+        forceatlas2 = ForceAtlas2(adjustSizes=True,
+                                  scalingRatio=RADIUS,
+                                  verbose=False)
 
         clusters = sorted(self.graph.clusters(), key=len, reverse=True)
         dx, dy = 0, 0

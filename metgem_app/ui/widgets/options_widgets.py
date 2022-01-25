@@ -3,14 +3,14 @@ import os
 from PyQt5 import uic
 from PyQt5.QtWidgets import QGroupBox
 
-from ...workers.cosine import CosineComputationOptions
-from ...workers.databases.query import QueryDatabasesOptions
-from ...workers.embedding.isomap import IsomapVisualizationOptions
-from ...workers.embedding.mds import MDSVisualizationOptions
-from ...workers.embedding.phate import PHATEVisualizationOptions
-from ...workers.embedding.tsne import TSNEVisualizationOptions
-from ...workers.embedding.umap import UMAPVisualizationOptions
-from ...workers.network_generation import NetworkVisualizationOptions
+from ...workers.options import (CosineComputationOptions,
+                                QueryDatabasesOptions,
+                                IsomapVisualizationOptions,
+                                MDSVisualizationOptions,
+                                PHATEVisualizationOptions,
+                                TSNEVisualizationOptions,
+                                UMAPVisualizationOptions,
+                                NetworkVisualizationOptions)
 
 
 class NetworkOptionsWidget(QGroupBox):

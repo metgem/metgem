@@ -7,7 +7,7 @@ from PyQt5.QtCore import Qt, QSettings, QPointF, QCoreApplication
 from PyQt5.QtGui import QShowEvent
 from PyQt5.QtWidgets import QDialog, QListWidgetItem
 
-from .. import utils
+from ..utils.gui import SignalBlocker
 from ..config import STYLES_PATH, APP_PATH, get_python_rendering_flag
 
 if get_python_rendering_flag():
@@ -109,7 +109,7 @@ class SettingsDialog(SettingsDialogUI, SettingsDialogBase):
 
     def on_change_theme(self, item):
         self.gvStylePreview.scene().setNetworkStyle(item.data(StyleRole))
-        with utils.SignalBlocker(self.spinFontSize):
+        with SignalBlocker(self.spinFontSize):
             style = item.data(StyleRole)
             if style is not None:
                 font = style.nodeFont()

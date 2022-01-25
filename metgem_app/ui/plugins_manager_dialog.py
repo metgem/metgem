@@ -9,7 +9,8 @@ from . import ProgressDialog
 from ..config import PLUGINS_PATH
 from ..models.plugins import PluginsModel, AvailablePluginsModel, InstalledPluginsModel, UpdatesPluginsModel
 from ..plugins import get_loaded_plugins, reload_plugins
-from ..workers import WorkerQueue, CheckPluginsVersionsWorker, DownloadPluginsWorker
+from ..workers.net import CheckPluginsVersionsWorker, DownloadPluginsWorker
+from ..workers.core import WorkerQueue
 
 
 class PluginsManagerDialog(QDialog):

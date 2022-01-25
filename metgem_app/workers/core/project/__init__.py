@@ -4,24 +4,30 @@ import zipfile
 import numpy as np
 import pandas as pd
 import igraph as ig
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QColor
 
-from PyQtNetworkView.node import NodePolygon
-from .base import BaseWorker
-from ..config import FILE_EXTENSION
-from ..errors import UnsupportedVersionError
-from ..graphml import GraphMLParser, GraphMLWriter
-from ..save import MnzFile, savez
-from ..mappings import MODE_LINEAR, SizeMappingFunc
-from ..utils import AttrDict
-from ..utils.network import Network
-from ..workers import (NetworkVisualizationOptions, TSNEVisualizationOptions,
-                       MDSVisualizationOptions,
-                       CosineComputationOptions, UMAPVisualizationOptions)
-from ..workers.databases import StandardsResult
+from ....config import FILE_EXTENSION
+from ....mappings import MODE_LINEAR, SizeMappingFunc
+from ....utils.network import Network
+
+from ...base import BaseWorker
+from ...options import (AttrDict,
+                        NetworkVisualizationOptions,
+                        CosineComputationOptions,
+                        TSNEVisualizationOptions,
+                        MDSVisualizationOptions,
+                        UMAPVisualizationOptions,
+                        PHATEVisualizationOptions)
+from ...struct import StandardsResult
+
+from ....utils.qt import Qt, QColor
+from .graphml import GraphMLParser, GraphMLWriter
+from .save import MnzFile, savez
 
 CURRENT_FORMAT_VERSION = 4
+
+
+class UnsupportedVersionError(OSError):
+    pass
 
 
 class SpectraList(list):
@@ -151,7 +157,7 @@ class LoadProjectWorker(BaseWorker):
                                     try:
                                         if len(mapping) == 2:
                                             bins, colors = mapping
-                                            polygons = [NodePolygon.Circle.value for _ in colors]  # default value
+                                            polygons = [0 for _ in colors]  # default value
                                             styles = [Qt.NodeBrush for _ in colors]
                                         elif len(mapping) == 3:
                                             bins, colors, polygons = mapping
@@ -211,7 +217,8 @@ class LoadProjectWorker(BaseWorker):
                                      (NetworkVisualizationOptions(), 'network'),
                                      (TSNEVisualizationOptions(), 'tsne'),
                                      (MDSVisualizationOptions(), 'mds'),
-                                     (UMAPVisualizationOptions(), 'umap')):
+                                     (UMAPVisualizationOptions(), 'umap'),
+                                     (PHATEVisualizationOptions(), 'phate')):
                         if key in network.options:
                             opt.update(network.options[key])
                         network.options[key] = opt

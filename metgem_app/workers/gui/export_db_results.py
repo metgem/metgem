@@ -1,18 +1,16 @@
 from typing import Dict, List
 import os
 
-from .base import BaseWorker
-from ..database import SpectraLibrary, Spectrum
-from ..models.metadata import DbResultsRole
-
-
-class NoDataError(Exception):
-    pass
+from ..base import BaseWorker
+from ...database import SpectraLibrary, Spectrum
+from ...models.metadata import DbResultsRole
+from .errors import NoDataError
 
 
 def yield_results(results: list, num_hits: int):
     """Yield `num_hits` first results. If `results` is smaller than `num_hits`continue yielding None
-    until `num_hits` values has beend yielded."""
+    until `num_hits` values has been yielded."""
+    i = 0
     for i, r in enumerate(results[:num_hits]):
         yield r
     for _ in range(i + 1, num_hits):
@@ -29,8 +27,8 @@ class ExportDbResultsWorker(BaseWorker):
         self.sep = separator
         self.num_hits = num_hits
         self.attrs = attributes
-        self.model = model
         self.base_path = base_path
+        self.model = model
 
         self.max = self.model.rowCount()
         self.iterative_update = True
@@ -43,12 +41,11 @@ class ExportDbResultsWorker(BaseWorker):
             self.error.emit(NoDataError())
             return
 
+        lib = None
         try:
             if self.KEYS_NEEDING_DB  - set(self.attrs['standards']) or \
                self.KEYS_NEEDING_DB - set(self.attrs['standards']):
                 lib = SpectraLibrary(os.path.join(self.base_path, 'spectra'))
-            else:
-                lib = None
 
             with open(self.filename, 'w', encoding='utf-8') as f:
                 headers = ["id", "m/z"]

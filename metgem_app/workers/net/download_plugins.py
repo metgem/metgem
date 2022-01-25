@@ -4,7 +4,7 @@ from zipfile import ZipFile
 
 import requests
 
-from .base import BaseWorker
+from ..base import BaseWorker
 
 
 class DownloadPluginsWorker(BaseWorker):

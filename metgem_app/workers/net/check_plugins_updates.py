@@ -1,6 +1,6 @@
 import requests
 
-from .base import BaseWorker
+from ..base import BaseWorker
 
 
 class CheckPluginsVersionsWorker(BaseWorker):

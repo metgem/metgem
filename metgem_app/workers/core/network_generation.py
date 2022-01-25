@@ -2,36 +2,21 @@ import numpy as np
 import pandas as pd
 from libmetgem.network import generate_network
 
-from .base import BaseWorker
-from ..config import RADIUS
-from ..utils import AttrDict
-
-
-class NetworkVisualizationOptions(AttrDict):
-    """Class containing Network visualization options.
-
-    Attributes:
-        top_k (int): Maximum numbers of edges for each nodes in the network. Default value = 10
-        pairs_min_cosine (float): Minimum cosine score for network generation. Default value = 0.65
-        max_connected_nodes (int): Maximum size of a Network cluster. Default value = 1000
-
-    """
-    
-    def __init__(self):
-        super().__init__(top_k=10,
-                         pairs_min_cosine=0.7,
-                         max_connected_nodes=1000)
+from ..base import BaseWorker
+from ..options import NetworkVisualizationOptions
+from ...config import RADIUS
 
 
 class GenerateNetworkWorker(BaseWorker):
 
-    def __init__(self, scores, mzs, graph, options, keep_vertices=False):
+    def __init__(self, scores, mzs, graph, options: NetworkVisualizationOptions,
+                 keep_vertices=False):
         super().__init__()
         self._scores = scores
         self._mzs = mzs
         self._graph = graph
-        self._keep_vertices = keep_vertices
         self.options = options
+        self._keep_vertices = keep_vertices
         self.max = len(mzs)
         self.iterative_update = True
         self.desc = 'Generating Network...'

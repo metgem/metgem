@@ -1,21 +1,7 @@
 import io
 
-from .base import EmbeddingWorker
-from ...utils import AttrDict
-from ...errors import UserRequestedStopError
-
-
-class PHATEVisualizationOptions(AttrDict):
-    """Class containing PHATE visualization options.
-    """
-
-    def __init__(self):
-        super().__init__(knn=5,
-                         decay=15,
-                         gamma=1,
-                         min_score=0.70,
-                         min_scores_above_threshold=1,
-                         random=False)
+from .base import EmbeddingWorker, UserRequestedStopError
+from ...options import PHATEVisualizationOptions
 
 
 class ProgressStringIO(io.StringIO):
@@ -34,6 +20,9 @@ class ProgressStringIO(io.StringIO):
 
 
 class PHATEWorker(EmbeddingWorker):
+
+    def __init__(self, scores, options: PHATEVisualizationOptions):
+        super().__init__(scores, options)
 
     # noinspection PyAttributeOutsideInit
     def init(self):

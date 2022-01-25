@@ -5,7 +5,8 @@ from libmetgem.filter import filter_data_multi
 from libmetgem.mgf import read as read_mgf
 from libmetgem.msp import read as read_msp
 
-from .base import BaseWorker
+from ..base import BaseWorker
+from ..options import CosineComputationOptions
 
 
 class NoSpectraError(Exception):
@@ -18,7 +19,7 @@ class FileEmptyError(Exception):
 
 class ReadDataWorker(BaseWorker):
 
-    def __init__(self, filename, options):
+    def __init__(self, filename, options: CosineComputationOptions):
         super().__init__()
         self.filename = filename
         self.ext = os.path.splitext(filename)[1].lower()

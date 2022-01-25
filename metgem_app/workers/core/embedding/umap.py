@@ -1,21 +1,7 @@
 import io
 
-from .base import EmbeddingWorker
-from ...utils import AttrDict
-from ...errors import UserRequestedStopError
-
-
-class UMAPVisualizationOptions(AttrDict):
-    """Class containing UMAP visualization options.
-    """
-
-    def __init__(self):
-        super().__init__(n_neighbors=15,
-                         min_dist=0.1,
-                         min_score=0.70,
-                         min_scores_above_threshold=1,
-                         n_epochs=None,
-                         random=False)
+from .base import EmbeddingWorker, UserRequestedStopError
+from ...options import UMAPVisualizationOptions
 
 
 class ProgressStringIO(io.StringIO):
@@ -41,6 +27,9 @@ class ProgressStringIO(io.StringIO):
 
 
 class UMAPWorker(EmbeddingWorker):
+
+    def __init__(self, scores, options: UMAPVisualizationOptions):
+        super().__init__(scores, options)
 
     # noinspection PyAttributeOutsideInit
     def init(self):

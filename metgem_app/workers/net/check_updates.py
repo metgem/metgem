@@ -1,7 +1,7 @@
 import re
 import requests
 
-from .base import BaseWorker
+from ..base import BaseWorker
 
 
 class CheckUpdatesWorker(BaseWorker):

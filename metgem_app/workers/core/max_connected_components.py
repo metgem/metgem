@@ -1,9 +1,11 @@
-from .base import BaseWorker
+from ..base import BaseWorker
+from ..options import NetworkVisualizationOptions
 
 
 class MaxConnectedComponentsWorker(BaseWorker):
 
-    def __init__(self, graph, options, keep_vertices=False):
+    def __init__(self, graph, options: NetworkVisualizationOptions,
+                 keep_vertices=False):
         super().__init__()
         self._graph = graph
         self._keep_vertices = keep_vertices

@@ -1,10 +1,7 @@
 from PyQt5.QtCore import Qt
 
-from .base import BaseWorker
-
-
-class NoDataError(Exception):
-    pass
+from ..base import BaseWorker
+from .errors import NoDataError
 
 
 class ExportMetadataWorker(BaseWorker):

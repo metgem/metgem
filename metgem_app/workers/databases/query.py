@@ -1,39 +1,18 @@
 import operator
-from collections import namedtuple
 
 from libmetgem.database import query
 
 from ..base import BaseWorker
-from ..cosine import CosineComputationOptions
+from ..options import QueryDatabasesOptions
 from ...config import SQL_PATH, get_debug_flag
 from ...database import SpectraLibrary, Bank
-
-StandardsResult = namedtuple('StandardsResult', ['score', 'bank', 'id', 'text'])
-
-
-class QueryDatabasesOptions(CosineComputationOptions):
-    """Class containing spectra cosine scores options.
-
-    Attributes:
-        See `CosineComputationOptions`.
-        min_cosine (float): Minimum cosine score for database query.
-        analog_search (bool): Look for analogs (different m/z parent) instead or standards (same m/z parent).
-        analog_mz_tolerance (float): m/z tolerance used for analog search, in Da.
-        positive_polarity (bool): True for positive polarity, False for negative polarity.
-        databases (list of int): Indexes of databases to query in. If empty, search in all available databases.
-    """
-
-    def __init__(self):
-        super().__init__(min_cosine=0.65,
-                         analog_search=False,
-                         analog_mz_tolerance=100.,
-                         positive_polarity=True,
-                         databases=[])
+from ..struct import StandardsResult
 
 
 class QueryDatabasesWorker(BaseWorker):
 
-    def __init__(self, indices, mzs, spectra, options):
+    def __init__(self, indices, mzs, spectra,
+                 options: QueryDatabasesOptions):
         super().__init__()
         self._indices = list(indices)
         self._mzs = mzs

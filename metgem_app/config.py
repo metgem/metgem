@@ -1,9 +1,6 @@
 import os
 import sys
 
-# Network visualisation
-from PyQt5.QtCore import QSettings, QCoreApplication
-
 RADIUS = 30
 
 # File format
@@ -32,21 +29,26 @@ IS_PORTABLE = os.path.exists(os.path.join('.', 'data'))
 
 if IS_PORTABLE:
     USER_PATH = os.path.join(APP_PATH, 'data')
-    QSettings.setDefaultFormat(QSettings.IniFormat)
-    QSettings.setPath(QSettings.IniFormat, QSettings.UserScope, USER_PATH)
+    try:
+        # Network visualisation
+        from PyQt5.QtCore import QSettings
+        QSettings.setDefaultFormat(QSettings.IniFormat)
+        QSettings.setPath(QSettings.IniFormat, QSettings.UserScope, USER_PATH)
+    except ImportError:
+        pass
 elif sys.platform.startswith('win'):
-    USER_PATH = os.path.join(os.path.expandvars(r'%APPDATA%'), QCoreApplication.applicationName())
+    USER_PATH = os.path.join(os.path.expandvars(r'%APPDATA%'), "MetGem")
 elif sys.platform.startswith('darwin'):
-    USER_PATH = os.path.join(os.path.expanduser('~'), 'Library', 'Application Support', QCoreApplication.applicationName())
+    USER_PATH = os.path.join(os.path.expanduser('~'), 'Library', 'Application Support', "MetGem")
 elif sys.platform.startswith('linux'):
-    USER_PATH = os.path.join(os.path.expanduser('~'), '.config', QCoreApplication.applicationName())
+    USER_PATH = os.path.join(os.path.expanduser('~'), '.config', "MetGem")
 else:
     USER_PATH = os.path.realpath('.')
 
 DATABASES_PATH = os.path.join(USER_PATH, 'databases')
 SQL_PATH = os.path.join(DATABASES_PATH, 'spectra.sqlite')
 if sys.platform.startswith('darwin'):
-    LOG_PATH = os.path.join(os.path.expanduser('~'), 'Library', 'Logs', QCoreApplication.applicationName())
+    LOG_PATH = os.path.join(os.path.expanduser('~'), 'Library', 'Logs', "MetGem")
 else:
     LOG_PATH = os.path.join(USER_PATH, 'log')
 STYLES_PATH = os.path.join(USER_PATH, 'styles')

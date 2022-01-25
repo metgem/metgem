@@ -10,7 +10,7 @@ from numpy.lib import format
 # noinspection PyProtectedMember
 from numpy.lib.npyio import NpzFile
 
-from .config import FILE_EXTENSION
+from ....config import FILE_EXTENSION
 
 
 # Copy of numpy's _savez function to allow different file extension

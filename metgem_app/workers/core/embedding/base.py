@@ -2,10 +2,21 @@ import sys
 
 import numpy as np
 
-from ..base import BaseWorker
-from ...config import RADIUS
-from ...errors import UserRequestedStopError
-from ...utils import BoundingBox
+from ...base import BaseWorker, UserRequestedStopError
+from ....config import RADIUS
+
+
+class BoundingBox:
+    def __init__(self, layout):
+        self.left, self.top = layout.min(axis=0)
+        self.right, self.bottom = layout.max(axis=0)
+        self.height = self.bottom - self.top
+        self.width = self.right - self.left
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}-> left:{self.left}, right:{self.right}, " \
+               f"top:{self.top}, bottom: {self.bottom}, " \
+               f"height:{self.height}, width: {self.width}"
 
 
 class EmbeddingWorker(BaseWorker):

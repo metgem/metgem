@@ -1,6 +1,10 @@
 from collections import deque
 
-from PyQt5.QtCore import QThread
+try:
+    from PyQt5.QtCore import QThread
+    HAS_THREADS = True
+except ImportError:
+    HAS_THREADS = False
 
 from .generic import GenericWorker
 
@@ -42,7 +46,7 @@ class WorkerQueue(deque):
         self.widgetProgress.setMaximum(maximum)
 
     def connect_events(self, worker):
-        use_thread = not isinstance(worker, GenericWorker)
+        use_thread = HAS_THREADS and not isinstance(worker, GenericWorker)
 
         if use_thread:
             thread = QThread(self.parent())

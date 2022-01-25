@@ -3,7 +3,6 @@ import inspect
 import os
 from typing import Iterator, List, Tuple
 
-from PyQt5.QtCore import QCoreApplication
 from lxml import html
 from pluginbase import PluginBase
 
@@ -93,12 +92,12 @@ def reload_plugins():
     if source is not None:
         source = None
     source = base.make_plugin_source(searchpath=[PLUGINS_PATH],
-                                     identifier=QCoreApplication.applicationName())
+                                     identifier="MetGem")
     if builtins_source is None:
         builtins_source = base.make_plugin_source(searchpath=[os.path.join(APP_PATH,
                                                                            'metgem_app',
                                                                            'plugins')],
-                                                  identifier=f"{QCoreApplication.applicationName()}_builtins")
+                                                  identifier="MetGem_builtins")
 
     for plugin_name in builtins_source.list_plugins():
         plugin = load_plugin(builtins_source, plugin_name)

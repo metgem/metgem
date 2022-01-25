@@ -6,9 +6,11 @@ from PyQt5.QtGui import QPalette, QColor
 from PyQt5.QtWidgets import QFileDialog, QDialog, QMenu, QListWidgetItem, QMessageBox
 
 from .widgets import CosineOptionsWidget, AVAILABLE_NETWORK_WIDGETS
-from .. import workers, ui, utils
+from .. import ui
+from ..workers.core import WorkerQueue, ImportModulesWorker
+from ..workers.options import ReadMetadataOptions
+from ..utils.gui import enumerateMenu
 from .import_metadata_dialog import ImportMetadataDialog
-from ..workers.read_metadata import ReadMetadataOptions
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'process_data_dialog.ui')
 
@@ -39,7 +41,7 @@ class ProcessDataDialog(ProcessDataDialogBase, ProcessDataDialogUI):
         self._metadata_options = ReadMetadataOptions()
         self._options = options
         self._dialog = None
-        self._workers = workers.WorkerQueue(self, ui.ProgressDialog(self))
+        self._workers = WorkerQueue(self, ui.ProgressDialog(self))
         self._create_network_menu = create_network_menu
 
         self.setupUi(self)
@@ -143,7 +145,7 @@ class ProcessDataDialog(ProcessDataDialogBase, ProcessDataDialogUI):
                 if isinstance(e, ImportError):
                     # One or more dependencies could not be loaded, disable action associated with the view
                     for menu in (self.btAddView.menu(), self._create_network_menu):
-                        actions = list(utils.enumerateMenu(menu))
+                        actions = list(enumerateMenu(menu))
                         for action in actions:
                             if action.data() == widget_class:
                                 action.setEnabled(False)  # Disable action
@@ -158,7 +160,7 @@ class ProcessDataDialog(ProcessDataDialogBase, ProcessDataDialogUI):
                             f"{widget_class.title} view can't be added because a requested module can't be loaded.")
 
             self._dialog.finished.connect(add_view)
-            worker = workers.ImportModulesWorker(widget_class.worker_class, widget_class.title)
+            worker = ImportModulesWorker(widget_class.worker_class, widget_class.title)
             worker.error.connect(error_import_modules)
             worker.finished.connect(self._dialog.open)
             self._workers.append(worker)

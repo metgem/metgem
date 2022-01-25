@@ -1,4 +1,4 @@
-from .base import BaseWorker
+from ..base import BaseWorker
 
 
 class GenericWorker(BaseWorker):

@@ -2,26 +2,14 @@ import os
 
 import pandas as pd
 
-from .base import BaseWorker
-from ..utils import AttrDict
+from ..base import BaseWorker
+from ..options import ReadMetadataOptions
 
 
-class ReadMetadataOptions(AttrDict):
-
-    def __init__(self):
-        super().__init__(sep=None,
-                         skiprows=None,
-                         nrows=None,
-                         dtype=None,
-                         header='infer',
-                         usecols=None,
-                         index_col=None,
-                         comment=None)
-
-    
 class ReadMetadataWorker(BaseWorker):
     
-    def __init__(self, filename, options, track_progress=True):
+    def __init__(self, filename, options: ReadMetadataOptions,
+                 track_progress=True):
         super().__init__()
         self.filename = filename
         self.options = options

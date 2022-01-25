@@ -1,19 +1,11 @@
 from .base import EmbeddingWorker
-from ...utils import AttrDict
-
-
-class IsomapVisualizationOptions(AttrDict):
-    """Class containing Isomap visualization options.
-    """
-
-    def __init__(self):
-        super().__init__(min_score=0.70,
-                         min_scores_above_threshold=1,
-                         n_neighbors=5,
-                         max_iter=300)
+from ...options import IsomapVisualizationOptions
 
 
 class IsomapWorker(EmbeddingWorker):
+
+    def __init__(self, scores, options: IsomapVisualizationOptions):
+        super().__init__(scores, options)
 
     # noinspection PyAttributeOutsideInit
     def init(self):

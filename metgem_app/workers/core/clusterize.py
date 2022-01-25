@@ -1,22 +1,12 @@
 import numpy as np
 
-from .base import BaseWorker
-from ..utils import AttrDict
-
-
-class ClusterizeOptions(AttrDict):
-
-    def __init__(self):
-        super().__init__(column_name='clusters',
-                         min_cluster_size=5,
-                         min_samples=None,
-                         cluster_selection_epsilon=0.,
-                         cluster_selection_method='eom')
+from ..base import BaseWorker
+from ..options import ClusterizeOptions
 
 
 class ClusterizeWorker(BaseWorker):
 
-    def __init__(self, widget: 'NetworkFrame', options):
+    def __init__(self, widget: 'NetworkFrame', options: ClusterizeOptions):
         super().__init__()
         self._widget = widget
         self.options = options
