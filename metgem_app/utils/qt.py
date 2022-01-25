@@ -11,7 +11,8 @@ except (ImportError, RuntimeError):
             super().__init__()
 
         def emit(self, *args, **kwargs):
-            pass
+            if isinstance(args, (list, tuple)) and args and isinstance(args[0], Exception):
+                raise args[0]
 
     class Qt(object):
         Horizontal = 1
