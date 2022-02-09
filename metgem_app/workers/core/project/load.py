@@ -1,16 +1,15 @@
 import zipfile
 
-import igraph as ig
 import pandas as pd
 
-from ....mappings import SizeMappingFunc, MODE_LINEAR
-from ....utils.network import Network
 from ....utils.qt import QColor, Qt
+from ....mappings import SizeMappingFunc, MODE_LINEAR
+from ....utils.network import Network, generate_id
 from ...struct import StandardsResult
 
 from ...base import BaseWorker
-from ...options import AttrDict, CosineComputationOptions, NetworkVisualizationOptions, \
-    TSNEVisualizationOptions, MDSVisualizationOptions, UMAPVisualizationOptions, PHATEVisualizationOptions
+from ...options import AttrDict, AVAILABLE_NETWORK_OPTIONS, CosineComputationOptions, AVAILABLE_OPTIONS, \
+    NetworkVisualizationOptions, TSNEVisualizationOptions
 
 from .mnz import MnzFile
 from .spectra_list import SpectraList
@@ -41,23 +40,13 @@ class LoadProjectWorker(BaseWorker):
                                                   + "This file format is not supported anymore.\n"
                                                   + "Please generate networks from raw data again")
 
-                elif version in (2, 3, CURRENT_FORMAT_VERSION):
+                elif version in (2, 3, 4, CURRENT_FORMAT_VERSION):
                     # Create network object
                     network = Network()
                     network.lazyloaded = True
 
                     # Load scores matrix
                     network.scores = fid['0/scores']
-
-                    if self.isStopped():
-                        self.canceled.emit()
-                        return
-
-                    # Load interactions
-                    try:
-                        network.interactions = pd.DataFrame(fid['0/interactions'])
-                    except KeyError:
-                        network.interactions = pd.DataFrame()
 
                     if self.isStopped():
                         self.canceled.emit()
@@ -168,23 +157,40 @@ class LoadProjectWorker(BaseWorker):
                         return
 
                     # Load options
+                    names_to_ids = {}
                     try:
                         network.options = AttrDict(fid['0/options.json'])
                     except KeyError:
                         network.options = AttrDict({})
-                    for opt, key in ((CosineComputationOptions(), 'cosine'),
-                                     (NetworkVisualizationOptions(), 'network'),
-                                     (TSNEVisualizationOptions(), 'tsne'),
-                                     (MDSVisualizationOptions(), 'mds'),
-                                     (UMAPVisualizationOptions(), 'umap'),
-                                     (PHATEVisualizationOptions(), 'phate')):
-                        if key in network.options:
-                            opt.update(network.options[key])
-                        network.options[key] = opt
-                    # Prior to version 3, max_connected_nodes value was set 1000 but ignored
-                    # Set it to 0 to keep the same behavior
-                    if version < 3:
-                        network.options.network.max_connected_nodes = 0
+                    # Prior to version 5, network views options was unique for each views
+                    # Generate an id for those views
+                    if version < 5:
+                        for key in AVAILABLE_NETWORK_OPTIONS.keys():
+                            if key in network.options:
+                                id_ = generate_id(key)
+                                network.options[id_] = network.options[key]
+                                del network.options[key]
+                                names_to_ids[key] = id_
+                    # Make sure that network view options does not miss some values
+                    # If values are missing, fill with default
+                    for key, val in network.options.items():
+                        if '_' in key:  # Network views options
+                            name = key.split('_')[0]
+                            options_class = AVAILABLE_NETWORK_OPTIONS.get(name, None)
+                            if options_class is not None:
+                                opt = options_class()
+                                opt.update(network.options[key])
+                                network.options[key] = opt
+                            # Prior to version 3, max_connected_nodes value was set 1000 but ignored
+                            # Set it to 0 to keep the same behavior
+                            if version < 3 and name == NetworkVisualizationOptions.name:
+                                network.options[key].max_connected_nodes = 0
+                        elif key in AVAILABLE_OPTIONS:
+                            options_class = AVAILABLE_OPTIONS.get(key, None)
+                            if options_class is not None:
+                                opt = options_class()
+                                opt.update(network.options[key])
+                                network.options[key] = opt
 
                     if self.isStopped():
                         self.canceled.emit()
@@ -207,44 +213,15 @@ class LoadProjectWorker(BaseWorker):
                         self.canceled.emit()
                         return
 
-                    # Load graph
-                    try:
-                        gxl = fid['0/graph.graphml']
-                        parser = GraphMLParser()
-                        graph = parser.fromstring(gxl)
-                        network.graph = graph
-                    except KeyError:
-                        network.graph = ig.Graph()
-
-                    if self.isStopped():
-                        self.canceled.emit()
-                        return
-
-                    # Load layouts
-                    layouts = {}
-                    if version <= 3:
-                        colors = graph.vs['__color'] if '__color' in graph.vs.attributes() else {}
-                        if isinstance(colors, list):
-                            colors = {str(i): c for i, c in enumerate(colors) if c is not None}
-                        radii = graph.vs['__size'] if '__size' in graph.vs.attributes() else {}
-
-                        layouts['network'] = {
-                                              'layout': fid['0/network_layout'],
-                                              # Prior to version 4, colors of nodes were stored as graph attributes
-                                              'colors': colors,
-                                              'radii': radii
-                                             }
-
-                        if self.isStopped():
-                            self.canceled.emit()
-                            return
-
-                        layouts['tsne'] = {'layout': fid['0/tsne_layout'],
-                                           'colors': colors,
-                                           'radii': radii
-                                           }
+                    # Load graphs/interactions
+                    graphs = {}
+                    parser = GraphMLParser()
+                    if version < 5:
                         try:
-                            layouts['tsne']['isolated_nodes'] = fid['0/tsne_isolated_nodes']
+                            gxl = fid['0/graph.graphml']
+                            interactions = pd.DataFrame(fid['0/interactions'])
+                            graphs[NetworkVisualizationOptions.name] = {'graph': parser.fromstring(gxl),
+                                                                        'interactions': interactions}
                         except KeyError:
                             pass
 
@@ -252,7 +229,46 @@ class LoadProjectWorker(BaseWorker):
                             self.canceled.emit()
                             return
                     else:
-                        layouts = {}
+                        names = fid['0/layouts.json']
+                        for name in names:
+                            try:
+                                gxl = fid[f'0/graphs/{name}.graphml']
+                                interactions = fid[f'0/graphs/{name}']
+                                graphs[name] = {'graph': parser.fromstring(gxl),
+                                                'interactions': interactions}
+                            except KeyError:
+                                pass
+
+                    # Load layouts
+                    layouts = {}
+                    if version <= 3:
+                        graph = graphs[NetworkVisualizationOptions.name]
+                        colors = graph.vs['__color'] if '__color' in graph.vs.attributes() else {}
+                        if isinstance(colors, list):
+                            colors = {str(i): c for i, c in enumerate(colors) if c is not None}
+                        radii = graph.vs['__size'] if '__size' in graph.vs.attributes() else {}
+
+                        layouts[NetworkVisualizationOptions.name] = {
+                            'layout': fid['0/network_layout'],
+                            # Prior to version 4, colors of nodes were stored as graph attributes
+                            'colors': colors,
+                            'radii': radii
+                        }
+
+                        if self.isStopped():
+                            self.canceled.emit()
+                            return
+
+                        layouts[TSNEVisualizationOptions.name] = {
+                            'layout': fid['0/tsne_layout'],
+                            'colors': colors,
+                            'radii': radii
+                        }
+                        try:
+                            layouts[TSNEVisualizationOptions.name]['isolated_nodes'] = fid['0/tsne_isolated_nodes']
+                        except KeyError:
+                            pass
+                    else:
                         try:
                             names = fid['0/layouts.json']
                             for name in names:
@@ -271,6 +287,10 @@ class LoadProjectWorker(BaseWorker):
                         except KeyError:
                             pass
 
+                    if self.isStopped():
+                        self.canceled.emit()
+                        return
+
                     # Load annotations
                     annotations = {}
                     try:
@@ -281,7 +301,23 @@ class LoadProjectWorker(BaseWorker):
                     except KeyError:
                         pass
 
-                    return network, layouts, annotations
+                    if self.isStopped():
+                        self.canceled.emit()
+                        return
+
+                    # For version < 5, network views were unique for each type
+                    # When loading options, new ids were generated and a mapping was created
+                    # Rename these keys in graphs and layouts dicts
+                    if version < 5:
+                        for name, id_ in names_to_ids.items():
+                            if name in graphs:
+                                graphs[id_] = graphs[name]
+                                del graphs[name]
+                            if name in layouts:
+                                layouts[id_] = layouts[name]
+                                del layouts[name]
+
+                    return network, layouts, graphs, annotations
                 else:
                     raise UnsupportedVersionError(f"Unrecognized file format version (version={version}).")
         except (FileNotFoundError, KeyError, zipfile.BadZipFile, UnsupportedVersionError) as e:

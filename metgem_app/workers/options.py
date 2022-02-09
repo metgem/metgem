@@ -1,6 +1,16 @@
 class AttrDict(dict):
     """A dictionary where item can be accessed as attributes."""
 
+    name = None
+
+    # noinspection PyUnresolvedReferences
+    @classmethod
+    def get_subclasses(cls):
+        for subclass in cls.__subclasses__():
+            if subclass.name is not None:
+                yield subclass
+            yield from subclass.get_subclasses()
+
     def __getattr__(self, item):
         try:
             return self.__getitem__(item)
@@ -30,7 +40,12 @@ class AttrDict(dict):
         return AttrDict(self)
 
 
-class ClusterizeOptions(AttrDict):
+class Options(AttrDict):
+    pass
+
+
+class ClusterizeOptions(Options):
+    name = 'clusterize'
 
     def __init__(self):
         super().__init__(column_name='clusters',
@@ -40,7 +55,7 @@ class ClusterizeOptions(AttrDict):
                          cluster_selection_method='eom')
 
 
-class CosineComputationOptions(AttrDict):
+class CosineComputationOptions(Options):
     """Class containing spectra cosine scores options.
 
     Attributes:
@@ -53,6 +68,8 @@ class CosineComputationOptions(AttrDict):
         matched_peaks_window (int): in Da.
 
     """
+
+    name = 'cosine'
 
     def __init__(self, **kwargs):
         super().__init__(mz_tolerance=0.02,
@@ -69,23 +86,9 @@ class CosineComputationOptions(AttrDict):
                          **kwargs)
 
 
-class NetworkVisualizationOptions(AttrDict):
-    """Class containing Network visualization options.
+class ReadMetadataOptions(Options):
 
-    Attributes:
-        top_k (int): Maximum numbers of edges for each nodes in the network. Default value = 10
-        pairs_min_cosine (float): Minimum cosine score for network generation. Default value = 0.65
-        max_connected_nodes (int): Maximum size of a Network cluster. Default value = 1000
-
-    """
-
-    def __init__(self):
-        super().__init__(top_k=10,
-                         pairs_min_cosine=0.7,
-                         max_connected_nodes=1000)
-
-
-class ReadMetadataOptions(AttrDict):
+    name = 'metadata'
 
     def __init__(self):
         super().__init__(sep=None,
@@ -96,7 +99,6 @@ class ReadMetadataOptions(AttrDict):
                          usecols=None,
                          index_col=None,
                          comment=None)
-
 
 
 class QueryDatabasesOptions(CosineComputationOptions):
@@ -111,6 +113,8 @@ class QueryDatabasesOptions(CosineComputationOptions):
         databases (list of int): Indexes of databases to query in. If empty, search in all available databases.
     """
 
+    name = 'query_dbs'
+
     def __init__(self):
         super().__init__(min_cosine=0.65,
                          analog_search=False,
@@ -119,9 +123,31 @@ class QueryDatabasesOptions(CosineComputationOptions):
                          databases=[])
 
 
-class IsomapVisualizationOptions(AttrDict):
+class VisualizationOptions(Options):
+    pass
+
+
+class NetworkVisualizationOptions(VisualizationOptions):
+    """Class containing Network visualization options.
+
+    Attributes:
+        top_k (int): Maximum numbers of edges for each nodes in the network. Default value = 10
+        pairs_min_cosine (float): Minimum cosine score for network generation. Default value = 0.65
+        max_connected_nodes (int): Maximum size of a Network cluster. Default value = 1000
+
+    """
+    name = 'network'
+
+    def __init__(self):
+        super().__init__(top_k=10,
+                         pairs_min_cosine=0.7,
+                         max_connected_nodes=1000)
+
+
+class IsomapVisualizationOptions(VisualizationOptions):
     """Class containing Isomap visualization options.
     """
+    name = 'isomap'
 
     def __init__(self):
         super().__init__(min_score=0.70,
@@ -130,9 +156,10 @@ class IsomapVisualizationOptions(AttrDict):
                          max_iter=300)
 
 
-class MDSVisualizationOptions(AttrDict):
+class MDSVisualizationOptions(VisualizationOptions):
     """Class containing MDS visualization options.
     """
+    name = 'mds'
 
     def __init__(self):
         super().__init__(min_score=0.70,
@@ -141,9 +168,10 @@ class MDSVisualizationOptions(AttrDict):
                          random=False)
 
 
-class PHATEVisualizationOptions(AttrDict):
+class PHATEVisualizationOptions(VisualizationOptions):
     """Class containing PHATE visualization options.
     """
+    name = 'phate'
 
     def __init__(self):
         super().__init__(knn=5,
@@ -154,9 +182,10 @@ class PHATEVisualizationOptions(AttrDict):
                          random=False)
 
 
-class TSNEVisualizationOptions(AttrDict):
+class TSNEVisualizationOptions(VisualizationOptions):
     """Class containing t-SNE visualization options.
     """
+    name = 'tsne'
 
     def __init__(self):
         super().__init__(perplexity=6,
@@ -170,9 +199,10 @@ class TSNEVisualizationOptions(AttrDict):
                          random=False)
 
 
-class UMAPVisualizationOptions(AttrDict):
+class UMAPVisualizationOptions(VisualizationOptions):
     """Class containing UMAP visualization options.
     """
+    name = 'umap'
 
     def __init__(self):
         super().__init__(n_neighbors=15,
@@ -181,3 +211,7 @@ class UMAPVisualizationOptions(AttrDict):
                          min_scores_above_threshold=1,
                          n_epochs=None,
                          random=False)
+
+
+AVAILABLE_OPTIONS = {obj.name: obj for obj in Options.get_subclasses()}
+AVAILABLE_NETWORK_OPTIONS = {obj.name: obj for obj in VisualizationOptions.get_subclasses()}

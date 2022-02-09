@@ -3,6 +3,7 @@ import zipfile
 
 import numpy as np
 import pandas as pd
+import igraph as ig
 
 from ....utils.network import Network
 from ....utils.qt import QColor
@@ -18,18 +19,18 @@ from .spectra_list import SpectraList
 class SaveProjectWorker(BaseWorker):
     """Save current project to a file for future access"""
 
-    def __init__(self, filename: str, graph, network: Network, infos: pd.DataFrame,
-                 options: dict, layouts: dict, annotations=None, original_fname=None):
+    def __init__(self, filename: str, network: Network, infos: pd.DataFrame,
+                 options: dict, layouts: dict, graphs: {}, annotations=None, original_fname=None):
         super().__init__()
 
         self.filename = filename
         self.original_fname = original_fname
         path, fname = os.path.split(filename)
         self.tmp_filename = os.path.join(path, f".tmp-{fname}")
-        self.graph = graph
         self.network = network
         self.infos = infos if infos is not None else pd.DataFrame()
         self.layouts = layouts
+        self.graphs = graphs
         self.options = options
         self.layouts = layouts
         self.annotations = annotations
@@ -37,15 +38,9 @@ class SaveProjectWorker(BaseWorker):
         self.desc = 'Saving project...'
 
     def run(self):
-        # Export graph to GraphML format
-        writer = GraphMLWriter()
-        gxl = writer.tostring(self.graph).decode()
-
         # Create dict for saving
         d = {'0/scores': getattr(self.network, 'scores', np.array([])),
-             '0/interactions': getattr(self.network, 'interactions', np.array([])),
              '0/infos': self.infos,
-             '0/graph.graphml': gxl,
              '0/options.json': self.options,
              '0/layouts.json': list(self.layouts.keys())}
 
@@ -53,6 +48,13 @@ class SaveProjectWorker(BaseWorker):
             key = f'0/layouts/{name}'
             for k, v in layout.items():
                 d['{key}/{k}'.format(key=key, k=k)] = v
+
+        # Export graph to GraphML format
+        writer = GraphMLWriter()
+        for name, g in self.graphs.items():
+            graph = g.get('graph', ig.Graph())
+            d[f'0/graphs/{name}.graphml'] = writer.tostring(graph).decode()
+            d[f'0/graphs/{name}'] = g.get('interactions', pd.DataFrame())
 
         if self.annotations is not None:
             d['0/annotations.json'] = list(self.annotations.keys())

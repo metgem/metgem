@@ -1,6 +1,9 @@
 import os
+import sys
 
 import numpy as np
+import igraph as ig
+import pandas as pd
 from PyQt5 import uic
 from PyQt5.QtCore import pyqtSignal, Qt, QObject
 from PyQt5.QtGui import QPen
@@ -12,18 +15,44 @@ from ..edit_options_dialog import (EditNetworkOptionsDialog, EditTSNEOptionsDial
                                    EditUMAPOptionsDialog, EditPHATEOptionsDialog)
 from ... import config
 from ...workers import core as workers_core
+from ...workers import options as workers_opts
+
+
+def short_id(id_):
+    return id_.split('_')[1].split('-')[0]
+
+
+if sys.hexversion >= 0x03090000:  # Python>=3.9
+    def classproperty(func):
+        return classmethod(property(func))
+else:
+    class classproperty(property):
+
+        def __get__(self, obj, objtype=None):
+            return super(classproperty, self).__get__(objtype)
+
+        def __set__(self, obj, value):
+            super(classproperty, self).__set__(type(obj), value)
+
+        def __delete__(self, obj):
+            super(classproperty, self).__delete__(type(obj))
 
 
 class BaseFrame(QFrame):
-    name = None
+    id = None
     title = None
     unlockable = False
     extra = False
     dialog_class = None
     worker_class = None
+    options_class = None
     use_edges = True
     editOptionsTriggered = pyqtSignal(QWidget)
     workerReady = pyqtSignal(QObject)
+
+    @classproperty
+    def name(cls):
+        return cls.options_class.name
 
     # noinspection PyUnresolvedReferences
     @classmethod
@@ -33,14 +62,18 @@ class BaseFrame(QFrame):
                 yield subclass
             yield from subclass.get_subclasses()
 
-    def __init__(self, network):
+    def __init__(self, id_: str, network, graph=ig.Graph(), interactions=pd.DataFrame()):
         super().__init__()
         uic.loadUi(os.path.join(os.path.dirname(__file__), 'network.ui'), self)
 
+        self.id = id_
+        self._name = None
         self._layout = None
         self._hide_isolated_nodes = False
         self._isolated_nodes = []
         self._network = network
+        self._graph = graph if isinstance(graph, ig.Graph) else ig.Graph()
+        self._interactions = interactions if isinstance(interactions, pd.DataFrame) else pd.DataFrame()
 
         # Send Scale sliders to a toolbutton menu
         menu = QMenu()
@@ -63,6 +96,26 @@ class BaseFrame(QFrame):
 
     def scene(self):
         return self.gvNetwork.scene()
+
+    @property
+    def short_id(self):
+        return short_id(self.id)
+
+    @property
+    def graph(self):
+        return self._graph
+
+    @graph.setter
+    def graph(self, graph):
+        self._graph = graph
+
+    @property
+    def interactions(self):
+        return self._interactions
+
+    @interactions.setter
+    def interactions(self, interactions):
+        self._interactions = interactions
         
     def apply_layout(self, layout, isolated_nodes=None, hide_isolated_nodes=False):
         self._hide_isolated_nodes = hide_isolated_nodes
@@ -100,6 +153,12 @@ class BaseFrame(QFrame):
                 'radii': np.array(scene.nodesRadii(), dtype=np.uint8)
                }
 
+    def get_graph_data(self):
+        return {
+                'graph': self._graph,
+                'interactions': self._interactions
+               }
+
     def get_annotations_data(self) -> bytes:
         return self.view().saveAnnotations()
 
@@ -112,20 +171,23 @@ class BaseFrame(QFrame):
     def set_style(self, style):
         self.scene().setNetworkStyle(style)
 
-    def create_draw_worker(self, compute_layouts=True, colors=[], radii=[], layout=None, isolated_nodes=None,):
+    def create_draw_worker(self, compute_layouts=True, colors=[], radii=[], layout=None, isolated_nodes=None):
         scene = self.scene()
         if self.use_edges:
             scene.removeAllEdges()
 
         # Add nodes
         nodes = scene.nodes()
-        if not nodes and self._network.graph.vs:
-            nodes = scene.createNodes(self._network.graph.vs['name'], colors=colors, radii=radii)
+        if not nodes:
+            if self._graph.vs:  # Network views
+                nodes = scene.createNodes(self._graph.vs['name'], colors=colors, radii=radii)
+            elif self._network.scores.size > 0: # Embedding views
+                nodes = scene.createNodes(np.arange(self._network.scores.shape[0]), colors=colors, radii=radii)
 
         if self.use_edges:
             # Add edges
             edges_attr = [(e.index, nodes[e.source], nodes[e.target], e['__width'])
-                          for e in self._network.graph.es if not e.is_loop()]
+                          for e in self._graph.es if not e.is_loop()]
             if edges_attr:
                 scene.createEdges(*zip(*edges_attr))
 
@@ -146,16 +208,16 @@ class BaseFrame(QFrame):
             return [self.create_worker(), process_finished]
         else:
             return workers_core.GenericWorker(self.apply_layout, self._layout, self._isolated_nodes,
-                                         self._hide_isolated_nodes)
+                                              self._hide_isolated_nodes)
 
 
 class NetworkFrame(BaseFrame):
-    name = 'network'
     title = 'Network'
     extra = False
     unlockable = True
     dialog_class = EditNetworkOptionsDialog
     worker_class = workers_core.NetworkWorker
+    options_class = workers_opts.NetworkVisualizationOptions
     use_edges = True
 
     def process_graph_before_export(self, g):
@@ -166,16 +228,16 @@ class NetworkFrame(BaseFrame):
         return g
 
     def create_worker(self):
-        return self.worker_class(self._network.graph, self.scene().nodesRadii())
+        return self.worker_class(self._graph, self.scene().nodesRadii())
 
 
 class TSNEFrame(NetworkFrame):
-    name = 'tsne'
     title = 't-SNE'
     extra = False
     unlockable = False
     dialog_class = EditTSNEOptionsDialog
     worker_class = workers_core.TSNEWorker
+    options_class = workers_opts.TSNEVisualizationOptions
     use_edges = False
 
     def __init__(self, *args, **kwargs):
@@ -228,7 +290,7 @@ class TSNEFrame(NetworkFrame):
         return g
 
     def create_worker(self):
-        return self.worker_class(self._network.scores, self._network.options.tsne)
+        return self.worker_class(self._network.scores, self._network.options[self.id])
 
     def set_style(self, style):
         super().set_style(style)
@@ -236,12 +298,12 @@ class TSNEFrame(NetworkFrame):
 
 
 class MDSFrame(TSNEFrame):
-    name = 'mds'
     title = 'MDS'
     extra = True
     unlockable = False
     dialog_class = EditMDSOptionsDialog
     worker_class = workers_core.MDSWorker
+    options_class = workers_opts.MDSVisualizationOptions
     use_edges = False
 
     def create_worker(self):
@@ -249,12 +311,12 @@ class MDSFrame(TSNEFrame):
 
 
 class UMAPFrame(TSNEFrame):
-    name = 'umap'
     title = 'UMAP'
     extra = True
     unlockable = False
     dialog_class = EditUMAPOptionsDialog
     worker_class = workers_core.UMAPWorker
+    options_class = workers_opts.UMAPVisualizationOptions
     use_edges = False
 
     def create_worker(self):
@@ -262,12 +324,12 @@ class UMAPFrame(TSNEFrame):
 
 
 class IsomapFrame(TSNEFrame):
-    name = 'isomap'
     title = 'Isomap'
     extra = True
     unlockable = False
     dialog_class = EditIsomapOptionsDialog
     worker_class = workers_core.IsomapWorker
+    options_class = workers_opts.IsomapVisualizationOptions
     use_edges = False
 
     def create_worker(self):
@@ -275,12 +337,12 @@ class IsomapFrame(TSNEFrame):
 
 
 class PHATEFrame(TSNEFrame):
-    name = 'phate'
     title = 'PHATE'
     extra = True
     unlockable = False
     dialog_class = EditPHATEOptionsDialog
     worker_class = workers_core.PHATEWorker
+    options_class = workers_opts.PHATEVisualizationOptions
     use_edges = False
 
     def create_worker(self):
