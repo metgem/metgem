@@ -391,7 +391,8 @@ class EdgesModel(QAbstractTableModel):
             return 0
 
     def endResetModel(self):
-        self.interactions = getattr(self.parent().network, 'interactions', pd.DataFrame())
+        widget = self.parent().current_network_widget
+        self.interactions = getattr(widget, 'interactions', pd.DataFrame())
         super().endResetModel()
 
     def data(self, index, role=Qt.DisplayRole):
@@ -417,7 +418,7 @@ class EdgesModel(QAbstractTableModel):
                     return
             else:
                 data = self.interactions.iloc[row, column]
-                if role == LabelRole:
+                if role in (Qt.DisplayRole, LabelRole):
                     return str(data)
                 else:
                     return data

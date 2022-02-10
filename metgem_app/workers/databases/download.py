@@ -1,27 +1,25 @@
-import ftplib
 import os
-from datetime import datetime
 from urllib.parse import urljoin
 
 import requests
-from PyQt5.QtCore import pyqtSignal
-from lxml import html, etree
+from lxml import html
 
 from ..base import BaseWorker
-from ...plugins import get_db_sources
+from ...utils.qt import pyqtSignal
 
 
 class ListDatabasesWorker(BaseWorker):
 
     itemReady = pyqtSignal(dict)
 
-    def __init__(self):
+    def __init__(self, db_sources):
         super().__init__(track_progress=False)
+        self.db_sources = db_sources
 
     def run(self):
         items = []
 
-        for plugin in get_db_sources():
+        for plugin in self.db_sources:
             origin = plugin.name
             if not isinstance(origin, str):
                 continue
@@ -32,7 +30,7 @@ class ListDatabasesWorker(BaseWorker):
                     r = requests.get(url, timeout=1)
                     r.raise_for_status()
             except (requests.ConnectionError, requests.HTTPError,
-                    requests.exceptions.MissingSchema, requests.exceptions.Timeout) as e:
+                    requests.exceptions.MissingSchema, requests.exceptions.Timeout):
                 pass
             else:
                 if url is None or r.status_code == 200:
@@ -64,13 +62,14 @@ class ListDatabasesWorker(BaseWorker):
 
 class DownloadDatabasesWorker(BaseWorker):
 
-    def __init__(self, ids, path):
+    def __init__(self, ids, path, db_sources):
         super().__init__()
         self.ids = ids
         self.path = path
         self.iterative_update = True
         self.max = 0
         self.desc = 'Downloading databases...'
+        self.db_sources = db_sources
 
     def run(self):
         downloaded = {}
@@ -83,7 +82,7 @@ class DownloadDatabasesWorker(BaseWorker):
 
         # First step, get file sizes
         # ---------------------------
-        for plugin in get_db_sources():
+        for plugin in self.db_sources:
             origin = plugin.name
             url = plugin.page
             items_base_url = plugin.items_base_url
@@ -118,7 +117,7 @@ class DownloadDatabasesWorker(BaseWorker):
 
         # Second step, download files
         # ---------------------------
-        for plugin in get_db_sources():
+        for plugin in self.db_sources:
             origin = plugin.name
             url = plugin.page
             items_base_url = plugin.items_base_url

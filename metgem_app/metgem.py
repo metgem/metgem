@@ -115,16 +115,17 @@ def run():
     importlib.import_module('.logger', 'metgem_app')
     splash.setValue(93)
 
-    splash.showMessage("Loading GraphML parser module...")
-    importlib.import_module('.graphml', 'metgem_app')
-    splash.setValue(94)
-
     splash.showMessage("Loading Databases module...")
     importlib.import_module('.database', 'metgem_app')
-    splash.setValue(95)
+    splash.setValue(94)
 
     splash.showMessage("Loading Workers...")
-    importlib.import_module('.workers', 'metgem_app')
+    importlib.import_module('.workers.options', 'metgem_app')
+    importlib.import_module('.workers.base', 'metgem_app')
+    importlib.import_module('.workers.databases', 'metgem_app')
+    importlib.import_module('.workers.core', 'metgem_app')
+    importlib.import_module('.workers.net', 'metgem_app')
+    importlib.import_module('.workers.gui', 'metgem_app')
     splash.setValue(96)
 
     from .config import set_python_rendering_flag
@@ -133,10 +134,6 @@ def run():
     splash.showMessage("Loading User interface...")
     importlib.import_module('.ui', 'metgem_app')
     splash.setValue(98)
-
-    splash.showMessage("Loading Project module...")
-    importlib.import_module('.save', 'metgem_app')
-    splash.setValue(99)
 
     splash.showMessage("Loading plugins...")
     importlib.import_module('.plugins', 'metgem_app')

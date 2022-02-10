@@ -8,7 +8,7 @@ from PyQt5.QtGui import QPalette, QColor
 from PyQt5.QtWidgets import QCompleter, QFileSystemModel, QDialog, QFileDialog, QListWidget
 
 from .progress_dialog import ProgressDialog
-from ..workers import WorkerQueue
+from ..workers.core import WorkerQueue
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'export_db_results_dialog.ui')
 

@@ -4,7 +4,7 @@ from PyQt5 import uic
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QDialog
 
-from ..workers import ClusterizeOptions
+from ..workers.options import ClusterizeOptions
 
 
 class ClusterizeDialog(QDialog):

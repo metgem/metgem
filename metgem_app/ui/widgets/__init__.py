@@ -1,7 +1,7 @@
-# These two imports SHOULD be left on top of the file
+# These imports SHOULD be left on top of the file
 from .metadata import (CsvDelimiterCombo,
                        NodeTableView, EdgeTableView, NodesWidget, EdgesWidget)
-from metgem_app.ui.widgets.annotations.table import AnnotationsWidget, AnnotationsModel
+from .annotations.table import AnnotationsWidget, AnnotationsModel
 from .options_widgets import (TSNEOptionsWidget, NetworkOptionsWidget, MDSOptionsWidget,
                               UMAPOptionsWidget, IsomapOptionsWidget, PHATEOptionsWidget,
                               CosineOptionsWidget, QueryDatabasesOptionsWidget)

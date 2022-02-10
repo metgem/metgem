@@ -5,10 +5,15 @@ from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QPalette, QColor
 from PyQt5.QtWidgets import QFileDialog, QDialog, QMenu, QListWidgetItem, QMessageBox
 
+from ..utils.network import generate_id
+from ..utils.gui import enumerateMenu
+from ..workers.core import WorkerQueue, ImportModulesWorker
+from ..workers.options import ReadMetadataOptions
+
 from .widgets import CosineOptionsWidget, AVAILABLE_NETWORK_WIDGETS
-from .. import workers, ui, utils
+from .widgets.network import short_id
+from .progress_dialog import ProgressDialog
 from .import_metadata_dialog import ImportMetadataDialog
-from ..workers.read_metadata import ReadMetadataOptions
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'process_data_dialog.ui')
 
@@ -32,6 +37,7 @@ class ProcessDataDialog(ProcessDataDialogBase, ProcessDataDialogUI):
 
     """
     NameRole = Qt.UserRole + 1
+    IdRole = Qt.UserRole + 2
 
     def __init__(self, create_network_menu, *args, options=None, **kwargs):
         super().__init__(*args, **kwargs)
@@ -39,7 +45,7 @@ class ProcessDataDialog(ProcessDataDialogBase, ProcessDataDialogUI):
         self._metadata_options = ReadMetadataOptions()
         self._options = options
         self._dialog = None
-        self._workers = workers.WorkerQueue(self, ui.ProgressDialog(self))
+        self._workers = WorkerQueue(self, ProgressDialog(self))
         self._create_network_menu = create_network_menu
 
         self.setupUi(self)
@@ -119,31 +125,27 @@ class ProcessDataDialog(ProcessDataDialogBase, ProcessDataDialogUI):
         action = self.sender()
         widget_class = action.data()
         if widget_class is not None:
-            for row in range(self.lstViews.count()):
-                item = self.lstViews.item(row)
-                if item.data(ProcessDataDialog.NameRole) == widget_class.name:
-                    QMessageBox.warning(self, None, "A network of this type already exists.")
-                    return
-
-            options = self._options.get(widget_class.name, {})
-            self._dialog = widget_class.dialog_class(self, options=options)
+            self._dialog = widget_class.dialog_class(self, options=None)
 
             # noinspection PyShadowingNames
             def add_view(result):
                 if result == QDialog.Accepted:
                     options = self._dialog.getValues()
-                    self._options[widget_class.name] = options
-                    item = QListWidgetItem(widget_class.title)
+                    id_ = generate_id(widget_class.name)
+                    self._options[id_] = options
+                    item = QListWidgetItem(f"{widget_class.title} ({short_id(id_)})")
+                    item.setToolTip(id_)
                     item.setSizeHint(QSize(0, 50))
                     item.setTextAlignment(Qt.AlignCenter)
                     item.setData(ProcessDataDialog.NameRole, widget_class.name)
+                    item.setData(ProcessDataDialog.IdRole, id_)
                     self.lstViews.addItem(item)
 
             def error_import_modules(e):
                 if isinstance(e, ImportError):
                     # One or more dependencies could not be loaded, disable action associated with the view
                     for menu in (self.btAddView.menu(), self._create_network_menu):
-                        actions = list(utils.enumerateMenu(menu))
+                        actions = list(enumerateMenu(menu))
                         for action in actions:
                             if action.data() == widget_class:
                                 action.setEnabled(False)  # Disable action
@@ -155,10 +157,10 @@ class ProcessDataDialog(ProcessDataDialogBase, ProcessDataDialogUI):
                                 break
 
                     QMessageBox.warning(self, None,
-                            f"{widget_class.title} view can't be added because a requested module can't be loaded.")
+                        f"{widget_class.title} view can't be added because a requested module can't be loaded.")
 
             self._dialog.finished.connect(add_view)
-            worker = workers.ImportModulesWorker(widget_class.worker_class, widget_class.title)
+            worker = ImportModulesWorker(widget_class.worker_class, widget_class.title)
             worker.error.connect(error_import_modules)
             worker.finished.connect(self._dialog.open)
             self._workers.append(worker)
@@ -183,13 +185,14 @@ class ProcessDataDialog(ProcessDataDialogBase, ProcessDataDialogUI):
             return
         else:
             if widget_class is not None:
-                options = self._options.get(name, {})
+                id_ = item.data(ProcessDataDialog.IdRole)
+                options = self._options.get(id_, {})
                 dialog = widget_class.dialog_class(self, options=options)
 
                 def set_options(result):
                     if result == QDialog.Accepted:
                         options = dialog.getValues()
-                        self._options[widget_class.name] = options
+                        self._options[id_] = options
 
                 dialog.finished.connect(set_options)
                 dialog.open()
@@ -270,6 +273,6 @@ class ProcessDataDialog(ProcessDataDialogBase, ProcessDataDialogUI):
 
         metadata_file = self.editMetadataFile.text() if os.path.isfile(self.editMetadataFile.text()) else None
         self._options.cosine = self.cosine_widget.getValues()
-        views = [self.lstViews.item(row).data(ProcessDataDialog.NameRole) for row in range(self.lstViews.count())]
+        views = [self.lstViews.item(row).data(ProcessDataDialog.IdRole) for row in range(self.lstViews.count())]
         return (self.editProcessFile.text(), self.gbMetadata.isChecked(),  metadata_file,
                 self._metadata_options, self._options, views)

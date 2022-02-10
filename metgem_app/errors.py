@@ -7,14 +7,6 @@ from PyQt5.QtCore import QCoreApplication
 from PyQt5.QtWidgets import QMessageBox, qApp
 
 
-class UserRequestedStopError(Exception):
-    """Raised if user request to stop a worker's process"""
-
-
-class UnsupportedVersionError(OSError):
-    pass
-
-
 # noinspection PyArgumentList
 def exceptionHandler(exctype, value, trace):
     """

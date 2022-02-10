@@ -9,6 +9,7 @@ __license__ = "GPLv3"
 
 from lxml import etree
 
+
 class GNPS(DbSource):
 
     name = "GNPS"

@@ -8,8 +8,9 @@ from PyQt5.QtGui import QPalette, QColor, QIcon
 from PyQt5.QtWidgets import QCompleter, QFileSystemModel, QDialog, QFileDialog, QTableWidgetItem, QMessageBox
 
 from .progress_dialog import ProgressDialog
-from ..utils import SignalBlocker
-from ..workers import WorkerQueue, ReadMetadataWorker, ReadMetadataOptions
+from ..utils.gui import SignalBlocker
+from ..workers.core import WorkerQueue, ReadMetadataWorker
+from ..workers.options import ReadMetadataOptions
 
 UI_FILE = os.path.join(os.path.dirname(__file__), 'import_metadata_dialog.ui')
 

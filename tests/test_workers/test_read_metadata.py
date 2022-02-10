@@ -1,4 +1,5 @@
-from metgem_app.workers import ReadMetadataWorker, ReadMetadataOptions
+from metgem_app.workers.core import ReadMetadataWorker
+from metgem_app.workers.options import ReadMetadataOptions
 import pandas as pd
 
 

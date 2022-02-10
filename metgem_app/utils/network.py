@@ -1,16 +1,20 @@
+import uuid
+
 import pandas as pd
-from PyQt5.QtCore import QObject, pyqtSignal
+from .qt import QObject, pyqtSignal
+
+
+def generate_id(type: str):
+    return f"{type}_{uuid.uuid4()}"
 
 
 class Network(QObject):
-    __slots__ = 'mzs', 'spectra', 'scores', 'graph', 'options', '_infos', '_interactions', \
+    __slots__ = 'mzs', 'spectra', 'scores', 'options', '_infos', \
                 'db_results', 'mappings', 'columns_mappings', \
                 'lazyloaded'
 
     infosAboutToChange = pyqtSignal()
     infosChanged = pyqtSignal()
-    interactionsAboutToChange = pyqtSignal()
-    interactionsChanged = pyqtSignal()
 
     def __init__(self):
         super().__init__()
@@ -30,14 +34,3 @@ class Network(QObject):
         self._infos = data
         self.infosChanged.emit()
 
-    @property
-    def interactions(self):
-        return self._interactions
-
-    @interactions.setter
-    def interactions(self, data):
-        if data is not None:
-            self.interactionsAboutToChange.emit()
-        self._interactions = data
-        if data is not None:
-            self.interactionsChanged.emit()

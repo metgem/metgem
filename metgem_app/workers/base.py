@@ -1,8 +1,11 @@
-from PyQt5.QtCore import QObject, pyqtSignal
+from ..utils.qt import QObject, pyqtSignal
+
+
+class UserRequestedStopError(Exception):
+    """Raised if user request to stop a worker's process"""
 
 
 class BaseWorker(QObject):
-
     started = pyqtSignal()
     finished = pyqtSignal()
     canceled = pyqtSignal()
