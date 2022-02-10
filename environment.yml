@@ -35,3 +35,4 @@ dependencies:
     - pynndescent>=0.5.0
     - phate>=0.4.5
     - hdbscan>=0.8
+    - click>=8.0
