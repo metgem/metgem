@@ -49,7 +49,8 @@ class ProcessResourceCommand(cmd.Command):
             skip = not any([os.path.getmtime(qrc) > rc_mtime for qrc in qrcs])
 
         if not skip:
-            processResourceFile(qrcs, rc, False)
+            os.system(f"pyrcc5 -o {rc} {' '.join(qrcs)}")
+
 
 class BuildPyCommand(build_py):
     """Custom build command to include ProcessResource command"""
