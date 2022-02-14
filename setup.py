@@ -4,7 +4,6 @@ import os
 from setuptools import setup, find_packages
 from setuptools.command.build_py import build_py
 from distutils import cmd
-from PyQt5.pyrcc_main import processResourceFile
 
 import versioneer
 
@@ -80,42 +79,15 @@ setup(
                  "Programming Language :: Python :: 3",
                  "Programming Language :: Python :: 3.6",
                  "Programming Language :: Python :: 3.7",
-                 "Programming Language :: Python :: 3.8"],
+                 "Programming Language :: Python :: 3.8",
+                 "Programming Language :: Python :: 3.9"],
     packages=find_packages(exclude=("metgem_packaging", "tests",)),
-    scripts=['MetGem'],
+    scripts=['MetGem', 'metgem-cli'],
     data_files=data_files,
     package_dir={'metgem': 'metgem'},
     package_data=package_data,
     include_package_data=True,
     cmdclass=versioneer.get_cmdclass({'process_resource': ProcessResourceCommand,
                                       'build_py': BuildPyCommand}),
-    install_requires=['pandas >=0.22',
-                      'lxml >=4.0',
-                      'pyqt',
-                      'python-igraph >=0.7.1',
-                      'scikit-learn >=0.19',
-                      'scipy >=1.0.0',
-                      'qtconsole >=4.3',
-                      'matplotlib >=2.2,<3.2',
-                      'requests >=2.18',
-                      'sqlalchemy >=1.2',
-                      'pyarrow >=0.9.0',
-                      'pluginbase >=1.0',
-                      'pyyaml >=3.13',
-                      'rdkit',
-                      'numexpr >=2.7.0',
-                      'xlrd',
-                      'odfpy',
-                      'feedparser',
-                      'mplcursors',
-                      'py2cytoscape >=0.7.0',
-                      'libmetgem >=0.4',
-                      'pyqtnetworkview >=0.5.1',
-                      'forceatlas2 >=0.2',
-                      'pyemf >=2.1.2alpha',
-                      'pyqtads >=3.3.0',
-                      'numba >=0.46.0',
-                      'umap-learn >= 0.3.10',
-                      'phate >= 0.4.5'],
     zip_safe=False
 )

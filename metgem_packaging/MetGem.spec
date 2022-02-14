@@ -23,11 +23,25 @@ for k in location.keys():
         s = location[k].split("Library")[1]
         location[k] = os.path.join(sys.prefix, "Library" + s)
 
+
+# noinspection PyUnresolvedReferences
+def clean_datas(a: Analysis):
+    # Remove unused IPython data files
+    a.datas = [dat for dat in a.datas if not dat[0].startswith('IPython')]
+
+    # Remove unused pytz data files
+    a.datas = [dat for dat in a.datas if not dat[0].startswith('pytz')]
+
+    # Remove matplotlib sample data
+    a.datas = [dat for dat in a.datas if not ('sample_data' in dat[0] and dat[0].startswith('mpl-data'))]
+
+    return a
+
+
 # if --debug flag is passed, make a debug release
 DEBUG = '--debug' in sys.argv
 
 pathex = []
-binaries = []
 binaries = []
 datas = []
 hookspath = []
@@ -40,12 +54,15 @@ if DEBUG:
     coll_name += '_debug'
 
 # Add plugins in datas
+# noinspection PyUnresolvedReferences
 datas += [(f, os.path.join("metgem_app", "plugins"))
           for f in glob.glob(os.path.join(SPECPATH, '..', 'metgem_app', 'plugins', '*.py'))
           if os.path.basename(f) != '__init__.py']
 
 # Add tests in datas
+# noinspection PyUnresolvedReferences
 datas += [(f, "tests") for f in glob.glob(os.path.join(SPECPATH, '..', 'tests', '**', '*.py'))]
+# noinspection PyUnresolvedReferences
 datas += [(os.path.join(SPECPATH, '..', 'pytest.ini'), '.')]
 
 # Get data from setup.py
@@ -54,6 +71,7 @@ distribution = run_setup(os.path.join(SPECPATH, "..", "setup.py"), stop_after="i
 for f in distribution.package_data['metgem_app']:
     # noinspection PyUnresolvedReferences
     path = os.path.join(SPECPATH, "build", "lib", "metgem_app", f)
+    # noinspection PyUnresolvedReferences
     alt_path = os.path.join(SPECPATH, "..", "metgem_app", f)
     dest_path = os.path.join("metgem_app", os.path.dirname(f))
     if os.path.exists(path):
@@ -69,8 +87,10 @@ for d, files in distribution.data_files:
 version = distribution.get_version()
 print(f"VERSION FOUND FROM SETUP: {version}")
 
+# noinspection PyUnresolvedReferences
 with open(os.path.join(SPECPATH, '.stub'), 'w') as fp: 
     pass
+# noinspection PyUnresolvedReferences
 datas.append((os.path.join(SPECPATH, '.stub'), "Library/bin"))
 
 # Encrypt files?
@@ -149,31 +169,32 @@ hookspath.extend([os.path.join(SPECPATH, "hooks")])
 # noinspection PyUnresolvedReferences
 runtime_hooks.extend(sorted(glob.glob(os.path.join(SPECPATH, "rthooks", "pyi_*.py"))))
 
+kwargs = dict(pathex=pathex,
+              runtime_hooks=runtime_hooks,
+              excludes=excludes,
+              win_no_prefer_redirects=False,
+              win_private_assemblies=False,
+              cipher=block_cipher,
+              noarchive=False)
 # noinspection PyUnresolvedReferences
-a = Analysis([os.path.join(SPECPATH, 'build', 'scripts', 'MetGem')],
-             pathex=pathex,
-             binaries=binaries,
-             datas=datas,
-             hiddenimports=hiddenimports,
-             hookspath=hookspath,
-             runtime_hooks=runtime_hooks,
-             excludes=excludes,
-             win_no_prefer_redirects=False,
-             win_private_assemblies=False,
-             cipher=block_cipher,
-             noarchive=False)
+gui_a = Analysis([os.path.join(SPECPATH, 'build', 'scripts', 'MetGem')],
+                 **kwargs,
+                 hookspath=hookspath,
+                 hiddenimports=hiddenimports,
+                 datas=datas,
+                 binaries=binaries)
+# noinspection PyUnresolvedReferences
+cli_a = Analysis([os.path.join(SPECPATH, 'build', 'scripts', 'metgem-cli')],
+                 **kwargs,
+                 hookspath=hookspath + [os.path.join(SPECPATH, "hooks", "pre_safe_import_module")])
 
-# Remove unused IPython data files
-a.datas = [dat for dat in a.datas if not dat[0].startswith('IPython')]
-
-# Remove unused pytz data files
-a.datas = [dat for dat in a.datas if not dat[0].startswith('pytz')]
-
-# Remove matplotlib sample data
-a.datas = [dat for dat in a.datas if not ('sample_data' in dat[0] and dat[0].startswith('mpl-data'))]
+gui_a = clean_datas(gui_a)
+cli_a = clean_datas(cli_a)
 
 # noinspection PyUnresolvedReferences
-pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
+gui_pyz = PYZ(gui_a.pure, gui_a.zipped_data, cipher=block_cipher)
+# noinspection PyUnresolvedReferences
+cli_pyz = PYZ(cli_a.pure, cli_a.zipped_data, cipher=block_cipher)
 
 if sys.platform.startswith('win'):
     # noinspection PyUnresolvedReferences
@@ -240,30 +261,39 @@ else:
     icon = None
     version_file = None
 
+kwargs = dict(exclude_binaries=True,
+              append_pkg=False,
+              debug=DEBUG,
+              bootloader_ignore_signals=False,
+              strip=False,
+              upx=True,
+              version=version_file,
+              icon=icon)
 # noinspection PyUnresolvedReferences
-exe = EXE(pyz,
-          a.scripts,
+gui_exe = EXE(gui_pyz,
+          gui_a.scripts,
           [],
-          exclude_binaries=True,
-          append_pkg=False,
-          name='MetGem',
-          debug=DEBUG,
-          bootloader_ignore_signals=False,
-          strip=False,
-          upx=True,
-          console=DEBUG,
-          version=version_file,
-          icon=icon)
+          **kwargs, name='MetGem', console=DEBUG)
+# noinspection PyUnresolvedReferences
+cli_exe = EXE(cli_pyz,
+          cli_a.scripts,
+          [],
+          **kwargs, name='metgem-cli', console=True)
 
 # noinspection PyUnresolvedReferences
-coll = COLLECT(exe,
-               a.binaries,
-               a.zipfiles,
-               a.datas,
+coll = COLLECT(gui_exe,
+               gui_a.binaries,
+               gui_a.zipfiles,
+               gui_a.datas,
+               cli_exe,
+               cli_a.binaries,
+               cli_a.zipfiles,
+               cli_a.datas,
                strip=False,
                upx=False,
                upx_exclude=[],
                name=coll_name)
+
 
 if sys.platform.startswith('darwin') and not DEBUG:
     # noinspection PyUnresolvedReferences
