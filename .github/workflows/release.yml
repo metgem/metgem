@@ -44,10 +44,16 @@ jobs:
       uses: conda-incubator/setup-miniconda@v2
       with:
         activate-environment: metgem
+        mamba-version: "*"
         channel-priority: strict
         python-version: ${{ steps.check-cache.outputs.python-version }}
         environment-file: ${{ steps.check-cache.outputs.environment }}
         use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!
+    - run: |
+        conda info
+        conda list
+        conda config --show-sources
+        conda config --show
     - name: Install Build Dependencies
       uses: ./.github/actions/install_build_dependencies
       with:
