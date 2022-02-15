@@ -31,7 +31,8 @@ runs:
         python="${{ inputs.python-version }}"
         if [ "${{ inputs.cache-hit }}" == "true" ]; then
           if [ -f "$HOME/conda-env-explicit.txt" ]; then
-            environment="$HOME/conda-env-explicit.txt"
+            cp "$HOME/conda-env-explicit.txt" conda-env-explicit.txt
+            environment="conda-env-explicit.txt"
             explicit="true"
             python=""
             echo "Use cached explicit environment"
