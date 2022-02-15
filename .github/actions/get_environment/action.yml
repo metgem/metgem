@@ -30,7 +30,7 @@ runs:
         explicit="false"
         python="${{ inputs.python-version }}"
         if [ "${{ inputs.cache-hit }}" == "true" ]; then
-          if [ -f "conda-env-explicit.txt" ]; then
+          if [ -f "~/conda-env-explicit.txt" ]; then
             environment="conda-env-explicit.txt"
             explicit="true"
             python=""

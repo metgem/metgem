@@ -32,7 +32,7 @@ jobs:
       with:
         path: |
             ~/conda_pkgs_dir
-            conda-env-explicit.txt
+            ~/conda-env-explicit.txt
         key: ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-${{ hashFiles('environment*.yml') }}
     - name: Check Cache
       id: check-cache
