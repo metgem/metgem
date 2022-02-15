@@ -13,6 +13,8 @@ defaults:
     
 env:
   GITHUB_TOKEN: ${{ github.token }}
+  SETUPTOOLS_USE_DISTUTILS: stdlib
+  CONDA_DLL_SEARCH_MODIFICATION_ENABLE: 1
 
 jobs:
   build:
