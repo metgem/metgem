@@ -23,7 +23,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        python-version: [3.8]
+        python-version: [3.9]
         os: [ubuntu-latest, windows-latest, macos-latest]
       fail-fast: false
 
@@ -34,7 +34,7 @@ jobs:
       uses: actions/cache@v2
       env:
         # Increase this value to reset cache if environment.yml has not changed
-        CACHE_NUMBER: 1
+        CACHE_NUMBER: 2
       with:
         path: |
             ~/conda_pkgs_dir
