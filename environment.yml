@@ -6,7 +6,7 @@ channels:
 dependencies:
     - pandas>=0.22
     - lxml>=4.0
-    - numpy>=1.14, <=1.19.2
+    - numpy>=1.14
     - pyqt>=5.9
     - python-igraph>=0.7.1
     - scikit-learn>=0.19
@@ -27,7 +27,7 @@ dependencies:
     - py2cytoscape>=0.7.0
     - libmetgem>=0.6.3
     - pyqtnetworkview>=0.5.9
-    - forceatlas2>=0.2
+    - forceatlas2>=0.3.6
     - pyemf>=2.1.2alpha
     - pyqtads>=3.7.2
     - numba>=0.46.0
