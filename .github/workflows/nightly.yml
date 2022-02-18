@@ -153,20 +153,24 @@ jobs:
       - name: generate-matrix
         id: generate-matrix
         run: |
-          os=()
-          if ${{ github.event.inputs.linux }}; then
-            os+=('ubuntu-latest')
+          if [ "${{ github.event_name }}" == "repository_dispatch" ]; then
+            os=()
+            if ${{ github.event.inputs.linux }}; then
+              os+=('ubuntu-latest')
+            fi
+            if ${{ github.event.inputs.windows }}; then
+              os+=('windows-latest')
+            fi
+            if ${{ github.event.inputs.macos }}; then
+              os+=('macos-latest')
+            fi
+            os=$(printf ", '%s'" "${os[@]}")
+            os="[${os:2}]"
+            echo "OS selected: $os"
+            echo "::set-output name=os::$os"
+          else
+            echo "::set-output name=os::['ubuntu-latest','windows-latest','macos-latest']"
           fi
-          if ${{ github.event.inputs.windows }}; then
-            os+=('windows-latest')
-          fi
-          if ${{ github.event.inputs.macos }}; then
-            os+=('macos-latest')
-          fi
-          os=$(printf ", '%s'" "${os[@]}")
-          os="[${os:2}]"
-          echo "OS selected: $os"
-          echo "::set-output name=os::$os"
           
   update-nightly-tag:
     needs: build
