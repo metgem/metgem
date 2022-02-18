@@ -42,11 +42,11 @@ jobs:
   build:
     needs: [check-assets, generate-matrix]
     if: ${{ github.event_name == 'workflow_dispatch' || needs.check-assets.outputs.needs-build == 'true' }}
-    runs-on: ${{ needs.generate-matrix.outputs.os }}
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         python-version: [3.9]
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: ${{ needs.generate-matrix.outputs.os }}
       fail-fast: false
 
     steps:
@@ -165,6 +165,7 @@ jobs:
           fi
           os=$(printf ",%s" "${os[@]}")
           os=${os:1}
+          echo "OS selected: $os"
           echo "::set-output name=os::$os"
           
   update-nightly-tag:
