@@ -17,10 +17,10 @@ runs:
             mamba install pywin32
           fi
         fi
-    - name: Install pip build dependencies
+    - name: Install macOS build dependencies
       shell: bash -l {0}
       run: |
         if [ "${{ runner.os }}" == "macOS" ]; then
-          pip install dmgbuild biplist
+          npm install -g appdmg
         fi
       
