@@ -10,6 +10,21 @@ on:
         type: boolean
         required: false
         default: false
+      linux:
+        description: 'Run build on Linux'
+        type: boolean
+        required: false
+        default: true
+      windows:
+        description: 'Run build on Windows'
+        type: boolean
+        required: false
+        default: true
+      macos:
+        description: 'Run build on macOS'
+        type: boolean
+        required: false
+        default: true
         
   repository_dispatch:
     types: nightly-build
@@ -25,9 +40,9 @@ env:
 
 jobs:
   build:
-    needs: check-assets
-    if: needs.check-assets.outputs.needs-build == 'true'
-    runs-on: ${{ matrix.os }}
+    needs: [check-assets, generate-matrix]
+    if: ${{ github.event_name == 'workflow_dispatch' || needs.check-assets.outputs.needs-build == 'true' }}
+    runs-on: ${{ needs.generate-matrix.outputs.os }}
     strategy:
       matrix:
         python-version: [3.9]
@@ -82,7 +97,7 @@ jobs:
       uses: ./.github/actions/tests
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
-      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
+      if: ${{ failure() && github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
       with:
         limit-access-to-actor: true
     - name: Upload Tests Artifacts
@@ -128,6 +143,34 @@ jobs:
             done
           fi
           echo "::set-output name=needs-build::$needs_build"
+          
+  generate-matrix:
+    runs-on: ubuntu-latest
+    name: "Generate matrix job specs"
+    outputs:
+      os: ${{ steps.generate-matrix.outputs.os }}
+      steps:
+        - name: generate-matrix
+          id: generate-matrix
+          if: ${{ github.event_name == 'workflow_dispatch' }}
+          run: |
+            if [ ${{ github.event_name == 'workflow_dispatch' }} ]; then
+              os = ()
+              if [ ${{ github.event.inputs.linux }} ]; then
+                foo+=('ubuntu-latest')
+              fi
+              if [ ${{ github.event.inputs.windows }} ]; then
+                foo+=('windows-latest')
+              fi
+              if [ ${{ github.event.inputs.macos }} ]; then
+                foo+=('macos-latest')
+              fi
+              os=$(printf ", %s" "${os[@]}")
+              os=${os:1}
+              echo "::set-output name=os::$os"
+            else
+              echo "::set-output name=os::[ubuntu-latest, windows-latest, macos-latest]"
+            fi
           
   update-nightly-tag:
     needs: build
