@@ -153,8 +153,8 @@ def installer(ctx, validate_appstream=True):
                            'contents': [{'x': 125, 'y': 525, 'type': 'link', 'path': '/Applications'},
                                         {'x': 125, 'y': 125, 'type': 'file', 'path': source_folder, 'name': 'Metgem'}]}
             appdmg_json_fn = os.path.join(PACKAGING_DIR, 'appdmg.json')
-            with open('appdmg2.json', 'w') as f:
-                json.dump(appdmg_json, appdmg_json_fn)
+            with open(appdmg_json_fn, 'w') as f:
+                json.dump(appdmg_json, f)
 
             shutil.copytree(application, tmp_application)
             shutil.copytree(os.path.join(PACKAGING_DIR, '..', 'examples'),
