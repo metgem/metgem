@@ -155,17 +155,17 @@ jobs:
         if: ${{ github.event_name == 'workflow_dispatch' }}
         run: |
           if [ ${{ github.event_name == 'workflow_dispatch' }} ]; then
-            os = ()
+            os=()
             if [ ${{ github.event.inputs.linux }} ]; then
-              foo+=('ubuntu-latest')
+              os+=('ubuntu-latest')
             fi
             if [ ${{ github.event.inputs.windows }} ]; then
-              foo+=('windows-latest')
+              os+=('windows-latest')
             fi
             if [ ${{ github.event.inputs.macos }} ]; then
-              foo+=('macos-latest')
+              os+=('macos-latest')
             fi
-            os=$(printf ", %s" "${os[@]}")
+            os=$(printf ",%s" "${os[@]}")
             os=${os:1}
             echo "::set-output name=os::$os"
           else
