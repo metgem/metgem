@@ -79,10 +79,10 @@ jobs:
       id: tests
       uses: ./.github/actions/tests
     - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-        if: ${{ always() && github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
-        with:
-          limit-access-to-actor: true
+      uses: mxschmitt/action-tmate@v3
+      if: ${{ always() && github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
+      with:
+        limit-access-to-actor: true
     - name: Upload Tests Artifacts
       if: always()
       uses: actions/upload-artifact@v2
