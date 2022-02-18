@@ -1,6 +1,8 @@
+import json
 import os
 import shutil
 import sys
+import tempfile
 
 from invoke import task
 from PyQt5.pyrcc_main import processResourceFile
@@ -128,10 +130,37 @@ def installer(ctx, validate_appstream=True):
     if sys.platform.startswith('win'):
         iscc = shutil.which("ISCC")
         iss = os.path.join(PACKAGING_DIR, 'setup.iss')
-        ctx.run("{} {}".format(iscc, iss))
+        ctx.run(f"{iscc} {iss}")
     elif sys.platform.startswith('darwin'):
-        settings = os.path.join(PACKAGING_DIR, 'dmgbuild_settings.py')
-        ctx.run("dmgbuild -s {} '' XXX.dmg -Dpackaging_dir={}".format(settings, PACKAGING_DIR))
+        output = os.path.join(PACKAGING_DIR, NAME + '.dmg')
+        if os.path.exists(output):
+            os.unlink(output)
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            application = os.path.join(PACKAGING_DIR, 'dist', NAME + '.app')
+            icon = os.join(PACKAGING_DIR, 'main.icns')
+            source_folder = os.path.join(tmp_dir.name, NAME)
+            tmp_application = os.path.join(source_folder, NAME + '.app')
+
+            os.makedirs(source_folder)
+            os.system(f"{os.path.join(PACKAGING_DIR, 'set_folder_icon.sh')} {icon} {tmp_dir.name} {NAME}")
+
+            appdmg_json = {'title': NAME,
+                           'icon': icon,
+                           'icon-size': 150,
+                           'background': os.path.join(PACKAGING_DIR, 'installer_background.png'),
+                           'window': {'size': {'width': 800, 'height': 400}},
+                           'contents': [{'x': 125, 'y': 525, 'type': 'link', 'path': '/Applications'},
+                                        {'x': 125, 'y': 125, 'type': 'file', 'path': source_folder, 'name': 'Metgem'}]}
+            appdmg_json_fn = os.path.join(PACKAGING_DIR, 'appdmg.json')
+            with open('appdmg2.json', 'w') as f:
+                json.dump(appdmg_json, appdmg_json_fn)
+
+            shutil.copytree(application, tmp_application)
+            shutil.copytree(os.path.join(PACKAGING_DIR, '..', 'examples'),
+                            os.path.join(source_folder, 'examples'))
+
+            os.system(f'appdmg {appdmg_json_fn} {output}')
     elif sys.platform.startswith('linux'):
         if not os.path.exists('{}/appimagetool-x86_64.AppImage'.format(PACKAGING_DIR)):
             ctx.run('wget {} -P {}'.format(APPIMAGE_TOOL_URL, PACKAGING_DIR))
