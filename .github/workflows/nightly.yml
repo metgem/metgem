@@ -166,7 +166,7 @@ jobs:
           os=$(printf ",%s" "${os[@]}")
           os=${os:1}
           echo "OS selected: $os"
-          echo "::set-output name=os::$os"
+          echo "::set-output name=os::[$os]"
           
   update-nightly-tag:
     needs: build
