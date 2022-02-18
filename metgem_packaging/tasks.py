@@ -138,12 +138,16 @@ def installer(ctx, validate_appstream=True):
 
         with tempfile.TemporaryDirectory() as tmp_dir:
             application = os.path.join(PACKAGING_DIR, 'dist', NAME + '.app')
-            icon = os.join(PACKAGING_DIR, 'main.icns')
+            icon = os.path.join(PACKAGING_DIR, 'main.icns')
             source_folder = os.path.join(tmp_dir.name, NAME)
             tmp_application = os.path.join(source_folder, NAME + '.app')
 
             os.makedirs(source_folder)
             os.system(f"{os.path.join(PACKAGING_DIR, 'set_folder_icon.sh')} {icon} {tmp_dir.name} {NAME}")
+
+            shutil.copytree(application, tmp_application)
+            shutil.copytree(os.path.join(PACKAGING_DIR, '..', 'examples'),
+                            os.path.join(source_folder, 'examples'))
 
             appdmg_json = {'title': NAME,
                            'icon': icon,
@@ -155,10 +159,6 @@ def installer(ctx, validate_appstream=True):
             appdmg_json_fn = os.path.join(PACKAGING_DIR, 'appdmg.json')
             with open(appdmg_json_fn, 'w') as f:
                 json.dump(appdmg_json, f)
-
-            shutil.copytree(application, tmp_application)
-            shutil.copytree(os.path.join(PACKAGING_DIR, '..', 'examples'),
-                            os.path.join(source_folder, 'examples'))
 
             os.system(f'appdmg {appdmg_json_fn} {output}')
     elif sys.platform.startswith('linux'):
