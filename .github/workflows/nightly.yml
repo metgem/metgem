@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: "0 2 * * *" # run at 2 AM UTC
   workflow_dispatch:
+    inputs:
+      debug_enabled:
+        description: 'Run the build with tmate debugging enabled'
+        required: false
+        default: false
   repository_dispatch:
     types: nightly-build
     
@@ -73,6 +78,11 @@ jobs:
     - name: Run Tests
       id: tests
       uses: ./.github/actions/tests
+    - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ always() && github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
+        with:
+          limit-access-to-actor: true
     - name: Upload Tests Artifacts
       if: always()
       uses: actions/upload-artifact@v2
