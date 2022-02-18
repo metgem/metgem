@@ -149,28 +149,28 @@ jobs:
     name: "Generate matrix job specs"
     outputs:
       os: ${{ steps.generate-matrix.outputs.os }}
-      steps:
-        - name: generate-matrix
-          id: generate-matrix
-          if: ${{ github.event_name == 'workflow_dispatch' }}
-          run: |
-            if [ ${{ github.event_name == 'workflow_dispatch' }} ]; then
-              os = ()
-              if [ ${{ github.event.inputs.linux }} ]; then
-                foo+=('ubuntu-latest')
-              fi
-              if [ ${{ github.event.inputs.windows }} ]; then
-                foo+=('windows-latest')
-              fi
-              if [ ${{ github.event.inputs.macos }} ]; then
-                foo+=('macos-latest')
-              fi
-              os=$(printf ", %s" "${os[@]}")
-              os=${os:1}
-              echo "::set-output name=os::$os"
-            else
-              echo "::set-output name=os::[ubuntu-latest, windows-latest, macos-latest]"
+    steps:
+      - name: generate-matrix
+        id: generate-matrix
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        run: |
+          if [ ${{ github.event_name == 'workflow_dispatch' }} ]; then
+            os = ()
+            if [ ${{ github.event.inputs.linux }} ]; then
+              foo+=('ubuntu-latest')
             fi
+            if [ ${{ github.event.inputs.windows }} ]; then
+              foo+=('windows-latest')
+            fi
+            if [ ${{ github.event.inputs.macos }} ]; then
+              foo+=('macos-latest')
+            fi
+            os=$(printf ", %s" "${os[@]}")
+            os=${os:1}
+            echo "::set-output name=os::$os"
+          else
+            echo "::set-output name=os::[ubuntu-latest, windows-latest, macos-latest]"
+          fi
           
   update-nightly-tag:
     needs: build
