@@ -163,10 +163,10 @@ jobs:
           if ${{ github.event.inputs.macos }}; then
             os+=('macos-latest')
           fi
-          os=$(printf ",%s" "${os[@]}")
-          os=${os:1}
-          echo "OS selected: $os"
-          echo "::set-output name=os::[$os]"
+          os=$(printf ", %s" "${os[@]}")
+          os=${os:2}
+          echo "OS selected: [$os,]"
+          echo "::set-output name=os::[$os,]"
           
   update-nightly-tag:
     needs: build
