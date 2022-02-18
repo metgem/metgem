@@ -35,8 +35,6 @@ defaults:
     
 env:
   GITHUB_TOKEN: ${{ github.token }}
-  # https://setuptools.pypa.io/en/latest/history.html#breaking-changes
-  SETUPTOOLS_USE_DISTUTILS: stdlib
 
 jobs:
   build:
