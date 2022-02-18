@@ -4,6 +4,7 @@ channels:
     - metgem
     - bioconda
 dependencies:
+    - setuptools<60.0
     - pandas>=0.22
     - lxml>=4.0
     - numpy>=1.14
