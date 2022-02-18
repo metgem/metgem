@@ -139,11 +139,11 @@ def installer(ctx, validate_appstream=True):
         with tempfile.TemporaryDirectory() as tmp_dir:
             application = os.path.join(PACKAGING_DIR, 'dist', NAME + '.app')
             icon = os.path.join(PACKAGING_DIR, 'main.icns')
-            source_folder = os.path.join(tmp_dir.name, NAME)
+            source_folder = os.path.join(tmp_dir, NAME)
             tmp_application = os.path.join(source_folder, NAME + '.app')
 
             os.makedirs(source_folder)
-            os.system(f"{os.path.join(PACKAGING_DIR, 'set_folder_icon.sh')} {icon} {tmp_dir.name} {NAME}")
+            os.system(f"{os.path.join(PACKAGING_DIR, 'set_folder_icon.sh')} {icon} {tmp_dir} {NAME}")
 
             shutil.copytree(application, tmp_application)
             shutil.copytree(os.path.join(PACKAGING_DIR, '..', 'examples'),
