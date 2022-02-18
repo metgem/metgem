@@ -154,8 +154,8 @@ def installer(ctx, validate_appstream=True):
                            'icon-size': 150,
                            'background': os.path.join(PACKAGING_DIR, 'installer_background.png'),
                            'window': {'size': {'width': 800, 'height': 400}},
-                           'contents': [{'x': 125, 'y': 525, 'type': 'link', 'path': '/Applications'},
-                                        {'x': 125, 'y': 125, 'type': 'file', 'path': source_folder, 'name': 'Metgem'}]}
+                           'contents': [{'x': 525, 'y': 125, 'type': 'link', 'path': '/Applications'},
+                                        {'x': 125, 'y': 125, 'type': 'file', 'path': source_folder}]}
             appdmg_json_fn = os.path.join(PACKAGING_DIR, 'appdmg.json')
             with open(appdmg_json_fn, 'w') as f:
                 json.dump(appdmg_json, f)
