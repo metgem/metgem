@@ -152,25 +152,20 @@ jobs:
     steps:
       - name: generate-matrix
         id: generate-matrix
-        if: ${{ github.event_name == 'workflow_dispatch' }}
         run: |
-          if [ ${{ github.event_name == 'workflow_dispatch' }} ]; then
-            os=()
-            if [ ${{ github.event.inputs.linux }} ]; then
-              os+=('ubuntu-latest')
-            fi
-            if [ ${{ github.event.inputs.windows }} ]; then
-              os+=('windows-latest')
-            fi
-            if [ ${{ github.event.inputs.macos }} ]; then
-              os+=('macos-latest')
-            fi
-            os=$(printf ",%s" "${os[@]}")
-            os=${os:1}
-            echo "::set-output name=os::$os"
-          else
-            echo "::set-output name=os::[ubuntu-latest, windows-latest, macos-latest]"
+          os=()
+          if ${{ github.event.inputs.linux }}; then
+            os+=('ubuntu-latest')
           fi
+          if ${{ github.event.inputs.windows }}; then
+            os+=('windows-latest')
+          fi
+          if ${{ github.event.inputs.macos }}; then
+            os+=('macos-latest')
+          fi
+          os=$(printf ",%s" "${os[@]}")
+          os=${os:1}
+          echo "::set-output name=os::$os"
           
   update-nightly-tag:
     needs: build
