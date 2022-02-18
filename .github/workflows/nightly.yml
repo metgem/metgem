@@ -46,7 +46,7 @@ jobs:
     strategy:
       matrix:
         python-version: [3.9]
-        os: ${{ needs.generate-matrix.outputs.os }}
+        os: ${{ fromJSON(needs.generate-matrix.outputs.os) }}
       fail-fast: false
 
     steps:
