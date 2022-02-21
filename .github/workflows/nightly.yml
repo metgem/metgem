@@ -151,15 +151,15 @@ jobs:
       - name: generate-matrix
         id: generate-matrix
         run: |
-          if [ "${{ github.event_name }}" == "repository_dispatch" ]; then
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
             os=()
-            if ${{ github.event.inputs.linux }}; then
+            if [ "${{ github.event.inputs.linux}}" == "true" ]; then
               os+=('ubuntu-latest')
             fi
-            if ${{ github.event.inputs.windows }}; then
+            if [ "${{ github.event.inputs.windows}}" == "true" ]; then
               os+=('windows-latest')
             fi
-            if ${{ github.event.inputs.macos }}; then
+            if [ "${{ github.event.inputs.macos }}" == "true" ]; then
               os+=('macos-latest')
             fi
             os=$(printf ", '%s'" "${os[@]}")
