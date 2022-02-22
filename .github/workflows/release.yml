@@ -1,9 +1,10 @@
 name: Release
 
 on:
-  release:
-    types: [ published ]
-    branches: [ master ]
+  push:
+    # Sequence of patterns matched against refs/tags
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
     
 defaults:
   run:
@@ -13,72 +14,92 @@ env:
   GITHUB_TOKEN: ${{ github.token }}
 
 jobs:
-  build:
+  create-release:
+    name: Get/Create Release
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create-release.outputs.upload_url }} 
+    steps:
+      - name: Create Release
+        if: ${{ !env.ACT }}
+        id: create-release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: MetGem ${{ github.ref }}
+          prerelease: true
+          allowUpdates: true
+    
+
+  build-release:
+    name: Build
+    needs: create-release
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         python-version: [3.9]
         os: [ubuntu-latest, windows-latest, macos-latest]
       fail-fast: false
-
     steps:
-    - uses: actions/checkout@v2
-    - name: Cache conda
-      id: cache
-      uses: actions/cache@v2
-      env:
-        # Increase this value to reset cache if environment.yml has not changed
-        CACHE_NUMBER: 2
-      with:
-        path: |
-            ~/conda_pkgs_dir
-            ~/conda-env-explicit.txt
-        key: ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-${{ hashFiles('environment*.yml') }}
-    - name: Check Cache
-      id: check-cache
-      uses: ./.github/actions/get_environment
-      with:
-        cache-hit: ${{ steps.cache.outputs.cache-hit }}
-        python-version: ${{ matrix.python-version }}
-    - name: Set up Python
-      uses: conda-incubator/setup-miniconda@v2
-      with:
-        activate-environment: metgem
-        mamba-version: "*"
-        channel-priority: strict
-        channels: conda-forge,metgem,bioconda
-        python-version: ${{ steps.check-cache.outputs.python-version }}
-        environment-file: ${{ steps.check-cache.outputs.environment }}
-        use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!
-    - run: |
-        conda info
-        conda list
-        conda config --show-sources
-        conda config --show
-    - name: Install Build Dependencies
-      uses: ./.github/actions/install_build_dependencies
-      with:
-        pip-only: ${{ steps.check-cache.outputs.explicit }}
-    - name: Build
-      id: build
-      uses: ./.github/actions/build
-    - name: Run Tests
-      id: tests
-      uses: ./.github/actions/tests
-    - name: Upload Tests Artifacts
-      if: always()
-      uses: actions/upload-artifact@v2
-      with:
-        name: tests
-        path: ${{ steps.tests.outputs.log }}
-    - name: Get Release
-      id: get-release
-      uses: bruceadams/get-release@v1.2.0
-    - name: Upload Release Asset
-      id: upload-release-asset
-      uses: actions/upload-release-asset@v1
-      with:
-        upload_url: ${{ steps.get-release.outputs.upload_url }} 
-        asset_path: metgem_packaging/${{ steps.build.outputs.asset-name }}
-        asset_name: ${{ steps.build.outputs.asset-basename }}-${{ github.event.release.tag_name }}.${{ steps.build.outputs.asset-ext }}
-        asset_content_type: ${{ steps.build.outputs.asset-mimetype }}
+      - uses: actions/checkout@v2
+      - name: Cache conda
+        if: ${{ !env.ACT }}
+        id: cache
+        uses: actions/cache@v2
+        env:
+          # Increase this value to reset cache if environment.yml has not changed
+          CACHE_NUMBER: 2
+        with:
+          path: |
+              ~/conda_pkgs_dir
+              ~/conda-env-explicit.txt
+          key: ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-${{ hashFiles('environment*.yml') }}
+      - name: Check Cache
+        id: check-cache
+        uses: ./.github/actions/get_environment
+        with:
+          cache-hit: ${{ steps.cache.outputs.cache-hit }}
+          python-version: ${{ matrix.python-version }}
+      - name: Set up Python
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          miniconda-variant: Mambaforge
+          miniconda-version: 'latest'
+          activate-environment: metgem
+          mamba-version: "*"
+          channel-priority: strict
+          channels: conda-forge,metgem,bioconda
+          python-version: ${{ steps.check-cache.outputs.python-version }}
+          environment-file: ${{ steps.check-cache.outputs.environment }}
+          use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!
+      - run: |
+          conda info
+          conda list
+          conda config --show-sources
+          conda config --show
+      - name: Install Build Dependencies
+        uses: ./.github/actions/install_build_dependencies
+        with:
+          pip-only: ${{ steps.check-cache.outputs.explicit }}
+      - name: Build
+        id: build
+        uses: ./.github/actions/build
+      - name: Run Tests
+        id: tests
+        uses: ./.github/actions/tests
+      - name: Upload Tests Artifacts
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: tests
+          path: ${{ steps.tests.outputs.log }}
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }} 
+          asset_path: metgem_packaging/${{ steps.build.outputs.asset-name }}
+          asset_name: ${{ steps.build.outputs.asset-basename }}-${{ github.event.release.tag_name }}.${{ steps.build.outputs.asset-ext }}
+          asset_content_type: ${{ steps.build.outputs.asset-mimetype }}

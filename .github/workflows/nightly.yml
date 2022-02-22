@@ -37,20 +37,22 @@ env:
   GITHUB_TOKEN: ${{ github.token }}
 
 jobs:
-  build:
+  build-nightly:
+    name: Build
     needs: [check-assets, generate-matrix]
     if: ${{ github.event_name == 'workflow_dispatch' || needs.check-assets.outputs.needs-build == 'true' }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         python-version: [3.9]
-        os: ${{ fromJSON(needs.generate-matrix.outputs.os) }}
+        os: fromJSON(needs.generate-matrix.outputs.os)
       fail-fast: false
 
     steps:
     - uses: actions/checkout@v2
     - name: Cache conda
       id: cache
+      if: ${{ !env.ACT }}
       uses: actions/cache@v2
       env:
         # Increase this value to reset cache if environment.yml has not changed
@@ -69,6 +71,8 @@ jobs:
     - name: Set up Python
       uses: conda-incubator/setup-miniconda@v2
       with:
+        miniconda-variant: Mambaforge
+        miniconda-version: 'latest'
         activate-environment: metgem
         mamba-version: "*"
         channel-priority: strict
@@ -86,6 +90,7 @@ jobs:
       with:
         pip-only: ${{ steps.check-cache.outputs.explicit }}
     - name: Fetch tags
+      if: ${{ !env.ACT }}
       run: git fetch --prune --unshallow # This is important to get version from versioneer
     - name: Build
       id: build
@@ -95,16 +100,17 @@ jobs:
       uses: ./.github/actions/tests
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
-      if: ${{ failure() && github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
+      if: ${{ failure() && !env.ACT && github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
       with:
         limit-access-to-actor: true
     - name: Upload Tests Artifacts
-      if: always()
+      if: ${{ always() && !env.ACT }}
       uses: actions/upload-artifact@v2
       with:
         name: tests
         path: ${{ steps.tests.outputs.log }}
     - name: Deploy Nightly
+      if: ${{ !env.ACT }}
       uses: WebFreak001/deploy-nightly@v1.1.0
       with:
         upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/33563969/assets{?name,label}
@@ -127,7 +133,7 @@ jobs:
           hash=${hash::6}
           names=( $(curl -sL https://api.github.com/repos/${{ github.repository }}/releases/33563969/assets | jq -r '.[].name') )
           needs_build='true'
-          if [ "${{ github.event_name }}" == "repository_dispatch" || "${{ github.event_name }}" == "workflow_dispatch" ]; then
+          if [ "${{ github.event_name }}" == "repository_dispatch" ] || [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
             echo "[WARNING] Nightly workflow triggered manually"
           else
             for name in "${names[@]}"
@@ -171,7 +177,7 @@ jobs:
           fi
           
   update-nightly-tag:
-    needs: build
+    needs: build-nightly
     runs-on: ubuntu-latest
     steps:
       - name: Update Nightly tag
