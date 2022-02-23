@@ -45,7 +45,7 @@ jobs:
     strategy:
       matrix:
         python-version: [3.9]
-        os: fromJSON(needs.generate-matrix.outputs.os)
+        os: ${{ fromJSON(needs.generate-matrix.outputs.os) }}
       fail-fast: false
 
     steps:
@@ -168,12 +168,12 @@ jobs:
             if [ "${{ github.event.inputs.macos }}" == "true" ]; then
               os+=('macos-latest')
             fi
-            os=$(printf ", '%s'" "${os[@]}")
+            os=$(printf ', "%s"' "${os[@]}")
             os="[${os:2}]"
-            echo "OS selected: $os"
+            echo "[INFO] OS selected: $os"
             echo "::set-output name=os::$os"
           else
-            echo "::set-output name=os::['ubuntu-latest','windows-latest','macos-latest']"
+            echo '::set-output name=os::["ubuntu-latest","windows-latest","macos-latest"]'
           fi
           
   update-nightly-tag:
