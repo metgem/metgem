@@ -703,7 +703,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
 
     # noinspection PyUnusedLocal
     def update_status_widgets(self, *args):
-        mzs = getattr(self.network, 'mzs', pd.Series())
+        mzs = getattr(self.network, 'mzs', pd.Series(dtype='float64'))
         widget = self.current_network_widget
         if widget is not None and mzs.size > 0:
             num_nodes = len(mzs)

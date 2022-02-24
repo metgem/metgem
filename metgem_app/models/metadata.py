@@ -172,7 +172,7 @@ class NodesModel(QAbstractTableModel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.infos = None
-        self.mzs = pd.Series()
+        self.mzs = pd.Series(dtype='float64')
         self.db_results = None
         self.headers = pd.Index([])
         self.headers_colors = {}
