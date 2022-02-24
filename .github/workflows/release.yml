@@ -1,10 +1,23 @@
 name: Release
 
 on:
-  push:
-    # Sequence of patterns matched against refs/tags
-    tags:
-      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+  workflow_dispatch:
+    inputs:
+      linux:
+        description: 'Run build on Linux'
+        type: boolean
+        required: false
+        default: true
+      windows:
+        description: 'Run build on Windows'
+        type: boolean
+        required: false
+        default: true
+      macos:
+        description: 'Run build on macOS'
+        type: boolean
+        required: false
+        default: true
     
 defaults:
   run:
@@ -14,33 +27,24 @@ env:
   GITHUB_TOKEN: ${{ github.token }}
 
 jobs:
-  create-release:
-    name: Get/Create Release
+  print-job:
+    name: Print event
     runs-on: ubuntu-latest
-    outputs:
-      upload_url: ${{ steps.create-release.outputs.upload_url }} 
     steps:
-      - name: Create Release
-        if: ${{ !env.ACT }}
-        id: create-release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: MetGem ${{ github.ref }}
-          prerelease: true
-          allowUpdates: true
-    
+    - name: Dump GitHub context
+      env:
+        GITHUB_CONTEXT: ${{ toJson(github) }}
+      run: |
+        echo "$GITHUB_CONTEXT"
 
   build-release:
     name: Build
-    needs: create-release
-    runs-on: ${{ matrix.os }}
+    needs: [print-job, generate-matrix]
+    runs-on: ${{ matrix.os }}-latest
     strategy:
       matrix:
         python-version: [3.9]
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: ${{ fromJSON(needs.generate-matrix.outputs.os) }}
       fail-fast: false
     steps:
       - uses: actions/checkout@v2
@@ -65,8 +69,8 @@ jobs:
       - name: Set up Python
         uses: conda-incubator/setup-miniconda@v2
         with:
-          miniconda-variant: Mambaforge
-          miniconda-version: 'latest'
+          miniforge-variant: Mambaforge
+          miniforge-version: latest
           activate-environment: metgem
           mamba-version: "*"
           channel-priority: strict
@@ -95,11 +99,50 @@ jobs:
         with:
           name: tests
           path: ${{ steps.tests.outputs.log }}
+      - name: Get/Create Release
+        if: ${{ !env.ACT }}
+        id: create-release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: MetGem ${{ github.ref }}
+          prerelease: true
+          allowUpdates: true
       - name: Upload Release Asset
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
         with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }} 
+          upload_url: ${{ steps.create-release.outputs.upload_url }} 
           asset_path: metgem_packaging/${{ steps.build.outputs.asset-name }}
           asset_name: ${{ steps.build.outputs.asset-basename }}-${{ github.event.release.tag_name }}.${{ steps.build.outputs.asset-ext }}
           asset_content_type: ${{ steps.build.outputs.asset-mimetype }}
+
+  generate-matrix:
+    runs-on: ubuntu-latest
+    name: "Generate matrix job specs"
+    outputs:
+      os: ${{ steps.generate-matrix.outputs.os }}
+    steps:
+      - name: generate-matrix
+        id: generate-matrix
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            os=()
+            if [ "${{ github.event.inputs.linux}}" == "true" ]; then
+              os+=('ubuntu')
+            fi
+            if [ "${{ github.event.inputs.windows}}" == "true" ]; then
+              os+=('windows')
+            fi
+            if [ "${{ github.event.inputs.macos }}" == "true" ]; then
+              os+=('macos')
+            fi
+            os=$(printf ', "%s"' "${os[@]}")
+            os="[${os:2}]"
+            echo "[INFO] OS selected: $os"
+            echo "::set-output name=os::$os"
+          else
+            echo '::set-output name=os::["ubuntu","windows","macos"]'
+          fi

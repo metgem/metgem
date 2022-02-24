@@ -41,7 +41,7 @@ jobs:
     name: Build
     needs: [check-assets, generate-matrix]
     if: ${{ github.event_name == 'workflow_dispatch' || needs.check-assets.outputs.needs-build == 'true' }}
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}-latest
     strategy:
       matrix:
         python-version: [3.9]
@@ -71,8 +71,8 @@ jobs:
     - name: Set up Python
       uses: conda-incubator/setup-miniconda@v2
       with:
-        miniconda-variant: Mambaforge
-        miniconda-version: 'latest'
+        miniforge-variant: Mambaforge
+        miniforge-version: latest
         activate-environment: metgem
         mamba-version: "*"
         channel-priority: strict
@@ -160,20 +160,20 @@ jobs:
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
             os=()
             if [ "${{ github.event.inputs.linux}}" == "true" ]; then
-              os+=('ubuntu-latest')
+              os+=('ubuntu')
             fi
             if [ "${{ github.event.inputs.windows}}" == "true" ]; then
-              os+=('windows-latest')
+              os+=('windows')
             fi
             if [ "${{ github.event.inputs.macos }}" == "true" ]; then
-              os+=('macos-latest')
+              os+=('macos')
             fi
             os=$(printf ', "%s"' "${os[@]}")
             os="[${os:2}]"
             echo "[INFO] OS selected: $os"
             echo "::set-output name=os::$os"
           else
-            echo '::set-output name=os::["ubuntu-latest","windows-latest","macos-latest"]'
+            echo '::set-output name=os::["ubuntu","windows","macos"]'
           fi
           
   update-nightly-tag:
