@@ -5,12 +5,12 @@ import requests
 from lxml import html
 
 from ..base import BaseWorker
-from ...utils.qt import pyqtSignal
+from ...utils.qt import Signal
 
 
 class ListDatabasesWorker(BaseWorker):
 
-    itemReady = pyqtSignal(dict)
+    itemReady = Signal(dict)
 
     def __init__(self, db_sources):
         super().__init__(track_progress=False)

@@ -1,6 +1,6 @@
 from typing import Any
 
-from PyQt5.QtCore import QAbstractListModel, Qt, QModelIndex, QAbstractTableModel
+from qtpy.QtCore import QAbstractListModel, Qt, QModelIndex, QAbstractTableModel
 
 from ..database import Bank, Spectrum, Base
 

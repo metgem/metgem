@@ -1,18 +1,12 @@
-import os
 from typing import Union
 
-from PyQt5 import uic
-from PyQt5.QtCore import QPointF, Qt
-from PyQt5.QtGui import QPainterPath, QPixmap, QPainter, QPen, QIcon, QColor
-from PyQt5.QtWidgets import QListWidgetItem
-
-UI_FILE = os.path.join(os.path.dirname(__file__), 'pen_parameters_dialog.ui')
-AboutDialogUI, AboutDialogDialogBase = uic.loadUiType(UI_FILE,
-                                                      from_imports='metgem_app.ui',
-                                                      import_from='metgem_app.ui')
+from qtpy.QtCore import QPointF, Qt
+from qtpy.QtGui import QPainterPath, QPixmap, QPainter, QPen, QIcon, QColor
+from qtpy.QtWidgets import QListWidgetItem, QDialog
+from .pen_parameters_dialog_ui import Ui_Dialog
 
 
-class PenParametersDialog(AboutDialogUI, AboutDialogDialogBase):
+class PenParametersDialog(QDialog, Ui_Dialog):
     PenStyleRole = Qt.UserRole
     ColorRole = Qt.UserRole + 1
 

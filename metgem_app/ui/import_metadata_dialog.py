@@ -2,24 +2,18 @@ import csv
 import os
 import sys
 
-from PyQt5 import uic
-from PyQt5.QtCore import Qt, QDir, QItemSelectionModel, QItemSelection
-from PyQt5.QtGui import QPalette, QColor, QIcon
-from PyQt5.QtWidgets import QCompleter, QFileSystemModel, QDialog, QFileDialog, QTableWidgetItem, QMessageBox
+from qtpy.QtCore import Qt, QDir, QItemSelectionModel, QItemSelection
+from qtpy.QtGui import QPalette, QColor, QIcon
+from qtpy.QtWidgets import QCompleter, QFileSystemModel, QDialog, QFileDialog, QTableWidgetItem, QMessageBox
 
 from .progress_dialog import ProgressDialog
 from ..utils.gui import SignalBlocker
 from ..workers.core import WorkerQueue, ReadMetadataWorker
 from ..workers.options import ReadMetadataOptions
-
-UI_FILE = os.path.join(os.path.dirname(__file__), 'import_metadata_dialog.ui')
-
-ImportMetadataDialogUI, ImportMetadataDialogBase = uic.loadUiType(UI_FILE,
-                                                                  from_imports='metgem_app.ui',
-                                                                  import_from='metgem_app.ui')
+from .import_metadata_dialog_ui import Ui_ImportMetadataDialog
 
 
-class ImportMetadataDialog(ImportMetadataDialogBase, ImportMetadataDialogUI):
+class ImportMetadataDialog(QDialog, Ui_ImportMetadataDialog):
 
     # noinspection PyUnusedLocal
     def __init__(self, *args, filename=None, delimiter=None, **kwargs):

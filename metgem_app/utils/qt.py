@@ -1,14 +1,14 @@
 try:
-    from PyQt5.QtCore import QObject, pyqtSignal
-    from PyQt5.QtCore import Qt
-    from PyQt5.QtGui import QColor
+    from qtpy.QtCore import QObject, Signal
+    from qtpy.QtCore import Qt
+    from qtpy.QtGui import QColor
 except (ImportError, RuntimeError):
     from typing import Callable
 
     class QObject(object):
         pass
 
-    class pyqtSignal(object):
+    class Signal(object):
         slots = []
 
         def __init__(self, *args):

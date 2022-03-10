@@ -1,7 +1,7 @@
 from typing import Union
 
-from PyQt5.QtCore import QLineF, QRectF, QPointF
-from PyQt5.QtWidgets import QGraphicsScene, QGraphicsItem, QUndoCommand
+from qtpy.QtCore import QLineF, QRectF, QPointF
+from qtpy.QtWidgets import QGraphicsScene, QGraphicsItem, QUndoCommand
 from .annotations import ArrowItem, TextItem
 
 

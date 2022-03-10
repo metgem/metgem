@@ -1,17 +1,17 @@
 import os
 
-from PyQt5 import uic
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QDialog
+from qtpy.QtCore import Qt
+from qtpy.QtWidgets import QDialog
 
 from ..workers.options import ClusterizeOptions
+from .clusterize_dialog_ui import Ui_Dialog
 
 
-class ClusterizeDialog(QDialog):
+class ClusterizeDialog(QDialog, Ui_Dialog):
 
     def __init__(self, *args, views, **kwargs):
         super().__init__(*args, **kwargs)
-        uic.loadUi(os.path.join(os.path.dirname(__file__), 'clusterize_dialog.ui'), self)
+        self.setupUi(self)
 
         self.setWindowFlags(Qt.Tool | Qt.CustomizeWindowHint | Qt.WindowCloseButtonHint)
 

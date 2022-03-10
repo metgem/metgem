@@ -1,3 +1,4 @@
+import glob
 import json
 import os
 import shutil
@@ -5,7 +6,6 @@ import sys
 import tempfile
 
 from invoke import task
-from PyQt5.pyrcc_main import processResourceFile
 
 PACKAGING_DIR = os.path.dirname(__file__)
 DIST = os.path.join(PACKAGING_DIR, 'dist')
@@ -54,7 +54,15 @@ def rc(ctx):
     if skip:
         print('[RC] resource file is up-to-date, skipping build.')
     else:
-        processResourceFile(qrcs, rc, False)
+        os.system(f"pyside2-rcc -o {rc} {' '.join(qrcs)}")
+
+# noinspection PyShadowingNames,PyUnusedLocal
+@task
+def uic(ctx):
+    for fn in glob.glob(os.path.join(PACKAGING_DIR, '..', 'metgem_app', 'ui', '**', '*.ui'), recursive=True):
+        fn = os.path.realpath(fn)
+        out = fn[:-3] + '_ui.py'
+        os.system(f"pyside2-uic {fn} -o {out}")
 
 
 # noinspection PyShadowingNames,PyUnusedLocal

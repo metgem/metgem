@@ -1,7 +1,7 @@
 from collections import deque
 
 try:
-    from PyQt5.QtCore import QThread
+    from qtpy.QtCore import QThread
     HAS_THREADS = True
 except ImportError:
     HAS_THREADS = False
@@ -47,7 +47,7 @@ class WorkerQueue(deque):
 
     def connect_events(self, worker):
         use_thread = HAS_THREADS and not isinstance(worker, GenericWorker)
-
+        use_thread = False
         if use_thread:
             thread = QThread(self.parent())
             worker.moveToThread(thread)
@@ -81,12 +81,13 @@ class WorkerQueue(deque):
         self.widgetProgress.rejected.connect(worker._reject)
         worker.started.connect(lambda: self.show_progressbar(worker))
         worker.finished.connect(cleanup)
-        worker.canceled.connect(self.clear)
+        worker.canceled.connect(lambda: self.clear())
         worker.canceled.connect(cleanup)
-        worker.error.connect(self.clear)
+        worker.error.connect(lambda: self.clear())
         worker.error.connect(cleanup)
         worker.updated.connect(update_progress)
-        worker.maximumChanged.connect(self.update_maximum)
+        # lambda is a workaround to 'unhashable type' PySide bug
+        worker.maximumChanged.connect(lambda m: self.update_maximum(m))
 
         if use_thread:
             # noinspection PyUnboundLocalVariable

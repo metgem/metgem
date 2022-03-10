@@ -1,127 +1,51 @@
-from ..spectrum import SpectrumWidget, SpectraComparisonWidget
 from ....database import Spectrum
-from ..delegates import StarRating
+from .databases_details_ui import Ui_DownloadDatabaseDialog
 
-import os
-
-from PyQt5.QtWidgets import QDataWidgetMapper, QLabel, QWidget
-from PyQt5 import uic
-from PyQt5.QtGui import QPainter
-
-UI_FILE = os.path.join(os.path.dirname(__file__), 'databases_details.ui')
+from qtpy.QtWidgets import  QWidget
 
 
-class HTMLLabel(QLabel):
-    LINK = '{}'
-
-    def setProperty(self, name, value):
-        if name == b'text':
-            value = self.LINK.format(value)
-
-        super().setProperty(name, value)
-
-    def setText(self, value):
-        self.setProperty(b'text', value)
-
-
-class PubMedLabel(HTMLLabel):
-    LINK = "<a href='http://www.ncbi.nlm.nih.gov/pubmed/?term={0}'>{0}</a>"
-
-
-class SpectrumIdLabel(HTMLLabel):
-    LINK = "<a href='https://gnps.ucsd.edu/ProteoSAFe/gnpslibraryspectrum.jsp?SpectrumID={0}'>{0}</a>"
-
-
-class SubmitUserLabel(HTMLLabel):
-    LINK = "<a href='https://gnps.ucsd.edu/ProteoSAFe/user/summary.jsp?user={0}'>{0}</a>"
-
-
-class QualityLabel(QLabel):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._star_rating = StarRating()
-
-    def paintEvent(self, event):
-        try:
-            rating = int(self.text())
-        except (ValueError, TypeError):
-            super().paintEvent(event)
-        else:
-            painter = QPainter(self)
-            self._star_rating.paint(painter, self.rect(), rating)
-
-    def sizeHint(self):
-        return self._star_rating.sizeHint()
-
-    def minimumSize(self):
-        return self.sizeHint()
-
-
-class SpectrumDataWidgetMapper(QDataWidgetMapper):
-
-    def addMapping(self, widget, section, property_name=None):
-        if isinstance(widget, QLabel):
-            property_name = b'text'
-        elif section == Spectrum.peaks:
-            property_name = b'spectrum1'
-            if isinstance(widget, (SpectrumWidget, SpectraComparisonWidget)):
-                widget = widget.canvas
-        elif section == Spectrum.pepmass:
-            property_name = b'spectrum1_parent'
-        elif section == Spectrum.inchi:
-            property_name = b'inchi'
-        elif section == Spectrum.smiles:
-            widget = widget.second_mapping
-            property_name = b'smiles'
-
-        model = self.model()
-        if model is not None and not isinstance(section, int):
-            section = model.column_index(section)
-
-        if property_name is None:
-            super().addMapping(widget, section)
-        else:
-            super().addMapping(widget, section, property_name)
-
-
-class SpectrumDetailsWidget(QWidget):
+class SpectrumDetailsWidget(QWidget, Ui_DownloadDatabaseDialog):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        uic.loadUi(os.path.join(os.path.dirname(__file__), UI_FILE), self)
+        self.setupUi(self)
 
-        self._mapper = None
+        self._model = None
+
         self.widgetFragmentsList.spectra_widget = self.widgetSpectrum
         self.widgetSpectrum.dataLoaded.connect(self.widgetFragmentsList.populate_fragments_list)
         self.widgetSpectrum.dataCleared.connect(self.widgetFragmentsList.clear_fragments_list)
 
     def model(self):
-        return self._mapper.model()
+        return self._model
 
     def setModel(self, model):
-        self._mapper = SpectrumDataWidgetMapper()
-        self._mapper.setModel(model)
-        self._mapper.addMapping(self.lblName, Spectrum.name)
-        self._mapper.addMapping(self.lblInChI, Spectrum.inchi)
-        self._mapper.addMapping(self.lblSmiles, Spectrum.smiles)
-        self._mapper.addMapping(self.lblPubMed, Spectrum.pubmed)
-        self._mapper.addMapping(self.lblPepmass, Spectrum.pepmass)
-        self._mapper.addMapping(self.lblPolarity, Spectrum.positive)
-        self._mapper.addMapping(self.lblCharge, Spectrum.charge)
-        self._mapper.addMapping(self.lblMSLevel, Spectrum.mslevel)
-        self._mapper.addMapping(self.lblQuality, Spectrum.libraryquality)
-        self._mapper.addMapping(self.lblLibraryId, Spectrum.spectrumid)
-        self._mapper.addMapping(self.lblSourceInstrument, Spectrum.source_instrument_id)
-        self._mapper.addMapping(self.lblPi, Spectrum.pi_id)
-        self._mapper.addMapping(self.lblOrganism, Spectrum.organism_id)
-        self._mapper.addMapping(self.lblDataCollector, Spectrum.datacollector_id)
-        self._mapper.addMapping(self.lblSubmitUser, Spectrum.submituser_id)
-        self._mapper.addMapping(self.widgetSpectrum, Spectrum.pepmass)
-        self._mapper.addMapping(self.widgetSpectrum, Spectrum.peaks)
-        self._mapper.addMapping(self.widgetStructure, Spectrum.inchi)
-        self._mapper.addMapping(self.widgetStructure, Spectrum.smiles)
+        self._model = model
+
+    def getData(self, row, section):
+        return self._model.data(self._model.index(row, self._model.column_index(section)))
 
     def setCurrentIndex(self, index: int):
-        if self._mapper is not None:
-            self._mapper.setCurrentIndex(index)
+        if self._model is not None:
+            def to_text(data):
+                return str(data) if data is not None else ""
+
+            self.lblName.setText(to_text(self.getData(index, Spectrum.name)))
+            self.lblInChI.setText(to_text(self.getData(index, Spectrum.inchi)))
+            self.lblSmiles.setText(to_text(self.getData(index, Spectrum.smiles)))
+            self.lblPubMed.setText(to_text(self.getData(index, Spectrum.pubmed)))
+            self.lblPepmass.setText(to_text(self.getData(index, Spectrum.pepmass)))
+            self.lblPolarity.setText(to_text(self.getData(index, Spectrum.positive)))
+            self.lblCharge.setText(to_text(self.getData(index, Spectrum.charge)))
+            self.lblMSLevel.setText(to_text(self.getData(index, Spectrum.mslevel)))
+            self.lblQuality.setText(to_text(self.getData(index, Spectrum.libraryquality)))
+            self.lblLibraryId.setText(to_text(self.getData(index, Spectrum.spectrumid)))
+            self.lblSourceInstrument.setText(to_text(self.getData(index, Spectrum.source_instrument_id)))
+            self.lblPi.setText(to_text(self.getData(index, Spectrum.pi_id)))
+            self.lblOrganism.setText(to_text(self.getData(index, Spectrum.organism_id)))
+            self.lblDataCollector.setText(to_text(self.getData(index, Spectrum.datacollector_id)))
+            self.lblSubmitUser.setText(to_text(self.getData(index, Spectrum.submituser_id)))
+            self.widgetSpectrum.canvas.spectrum1_parent = self.getData(index, Spectrum.pepmass)
+            self.widgetSpectrum.canvas.spectrum1 = self.getData(index, Spectrum.peaks)
+            self.widgetStructure.setInchi(self.getData(index, Spectrum.inchi))
+            self.widgetStructure.setSmiles(self.getData(index, Spectrum.smiles))

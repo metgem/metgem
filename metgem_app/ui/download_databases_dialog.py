@@ -1,10 +1,9 @@
 import ftplib
 import os
 
-from PyQt5 import uic
-from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QTreeWidgetItem, QDialogButtonBox, QMessageBox
+from qtpy.QtCore import Qt, QSize
+from qtpy.QtGui import QIcon
+from qtpy.QtWidgets import QTreeWidgetItem, QDialogButtonBox, QMessageBox, QDialog
 from requests.exceptions import ConnectionError, RequestException
 
 from .progress_dialog import ProgressDialog
@@ -13,16 +12,10 @@ from ..workers.databases import (ListDatabasesWorker, DownloadDatabasesWorker,
                                  ConvertDatabasesWorker)
 from ..workers.core import WorkerQueue
 from ..plugins import get_db_sources
+from .download_databases_dialog_ui import Ui_Dialog
 
 
-UI_FILE = os.path.join(os.path.dirname(__file__), 'download_databases_dialog.ui')
-
-DownloadDatabasesDialogUI, DownloadDatabasesDialogBase = uic.loadUiType(UI_FILE,
-                                                                        from_imports='metgem_app.ui',
-                                                                        import_from='metgem_app.ui')
-
-
-class DownloadDatabasesDialog(DownloadDatabasesDialogUI, DownloadDatabasesDialogBase):
+class DownloadDatabasesDialog(QDialog, Ui_Dialog):
     IdsRole = Qt.UserRole + 1
     DescRole = Qt.UserRole + 2
     OriginRole = Qt.UserRole + 3

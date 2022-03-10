@@ -1,7 +1,7 @@
 from typing import List, Any
 
-from PyQt5.QtCore import Qt, QModelIndex, QAbstractItemModel, QIdentityProxyModel
-from PyQt5.QtWidgets import QTableView, QAbstractItemView, QHeaderView
+from qtpy.QtCore import Qt, QModelIndex, QAbstractItemModel, QIdentityProxyModel
+from qtpy.QtWidgets import QTableView, QAbstractItemView, QHeaderView
 
 from ....models.link_item_selection_model import LinkItemSelectionModel
 

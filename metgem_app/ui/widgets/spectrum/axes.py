@@ -1,4 +1,4 @@
-from PyQt5.QtCore import QSettings
+from qtpy.QtCore import QSettings
 from matplotlib.axes import Axes
 from matplotlib.projections import register_projection
 
@@ -11,7 +11,7 @@ class SpectrumAxes(Axes):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        float_precision = QSettings().value('Metadata/float_precision', 4, type=int)
+        float_precision = QSettings().value('Metadata/float_precision', 4)
         self.fmt_xdata = lambda x: f'{x:.{float_precision}f}'
         self.fmt_ydata = lambda y: f'{y:.0f}%'
 

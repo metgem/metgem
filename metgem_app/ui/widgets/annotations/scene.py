@@ -1,19 +1,19 @@
-from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtWidgets import QGraphicsItem
+from qtpy.QtCore import Signal
+from qtpy.QtWidgets import QGraphicsItem
 
 from ....config import get_python_rendering_flag
 
-from PyQtNetworkView.graphicsitem import GraphicsItemLayer
+from PySide2MolecularNetwork.graphicsitem import GraphicsItemLayer
 if get_python_rendering_flag():
-    from PyQtNetworkView._pure import NetworkScene
+    from PySide2MolecularNetwork._pure import NetworkScene
 else:
-    from PyQtNetworkView import NetworkScene
+    from PySide2MolecularNetwork import NetworkScene
 
 
 class AnnotationsNetworkScene(NetworkScene):
-    annotationAdded = pyqtSignal(QGraphicsItem)
-    arrowEdited = pyqtSignal(QGraphicsItem)
-    editAnnotationItemRequested = pyqtSignal(QGraphicsItem)
+    annotationAdded = Signal(QGraphicsItem)
+    arrowEdited = Signal(QGraphicsItem)
+    editAnnotationItemRequested = Signal(QGraphicsItem)
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

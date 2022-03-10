@@ -7,9 +7,8 @@ from matplotlib.backend_tools import ToolBase
 from matplotlib.backends.backend_qt5agg import FigureManagerQT as FigureManager
 
 # noinspection PyUnresolvedReferences
-from PyQt5.QtCore import pyqtProperty
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QSizePolicy, QVBoxLayout, QLabel
+from qtpy.QtCore import Qt
+from qtpy.QtWidgets import QWidget, QHBoxLayout, QSizePolicy, QVBoxLayout, QLabel
 
 from .canvas import SpectrumCanvas
 
@@ -156,7 +155,7 @@ class SpectrumWidget(QWidget):
         lheight = self.locLabel.sizeHint().height()
         self.locLabel.setFixedSize(cwidth, lheight)
         bbox = self.canvas.axes.get_window_extent()
-        dpi_ratio = self.canvas._dpi_ratio
+        dpi_ratio = self.canvas.device_pixel_ratio
         x = bbox.xmin + 5
         y = self.canvas.figure.bbox.height / dpi_ratio - bbox.ymax - lheight
         self.locLabel.move(x*dpi_ratio, y*dpi_ratio)
@@ -212,7 +211,7 @@ class SpectrumWidget(QWidget):
             if not keypress:
                 self._step_zoom_timer.start()
 
-    @pyqtProperty(str)
+    @property
     def spectrum1_parent(self):
         # noinspection PyPropertyAccess
         return self.canvas.spectrum1_parent

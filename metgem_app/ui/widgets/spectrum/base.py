@@ -1,8 +1,8 @@
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 
-from PyQt5.QtCore import pyqtSignal, Qt
-from PyQt5.QtWidgets import QSizePolicy
+from qtpy.QtCore import Signal, Qt
+from qtpy.QtWidgets import QSizePolicy
 
 from libmetgem import MZ, INTENSITY
 
@@ -18,9 +18,9 @@ else:
 
 
 class BaseCanvas(FigureCanvas):
-    dataRequested = pyqtSignal()
-    dataLoaded = pyqtSignal()
-    dataCleared = pyqtSignal()
+    dataRequested = Signal()
+    dataLoaded = Signal()
+    dataCleared = Signal()
 
     X_SPACING = 10
     X_MARGIN = 50

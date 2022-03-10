@@ -11,20 +11,20 @@ import numpy as np
 import pandas as pd
 import requests
 import sqlalchemy
-from PyQt5 import uic
-from PyQt5.QtCore import QSettings, Qt, QCoreApplication, QRectF, QAbstractTableModel
-from PyQt5.QtGui import QPainter, QImage, QColor, QKeyEvent, QIcon, QFontMetrics, QFont, QKeySequence, QCursor, QBrush
-from PyQt5.QtWidgets import (QDialog, QFileDialog, QMessageBox, QWidget, QMenu, QActionGroup, QMainWindow,
+from qtpy.QtCore import QSettings, Qt, QCoreApplication, QRectF, QAbstractTableModel
+from qtpy.QtGui import QPainter, QImage, QColor, QKeyEvent, QIcon, QFontMetrics, QFont, QKeySequence, QCursor, QBrush
+from qtpy.QtWidgets import (QDialog, QFileDialog, QMessageBox, QWidget, QMenu, QActionGroup, QMainWindow,
                              QAction, qApp, QTableView, QComboBox, QToolBar,
                              QApplication, QGraphicsView, QLineEdit, QListWidget, QLabel, QToolButton)
-from PyQtAds.QtAds import (CDockManager, CDockWidget,
+
+from PySide2Ads.QtAds import (CDockManager, CDockWidget,
                            BottomDockWidgetArea, CenterDockWidgetArea,
                            TopDockWidgetArea, LeftDockWidgetArea)
 from libmetgem import human_readable_data
 
 try:
     # noinspection PyUnresolvedReferences
-    from PyQt5.QtSvg import QSvgGenerator
+    from qtpy.QtSvg import QSvgGenerator
 except ImportError:
     HAS_SVG = False
 else:
@@ -44,15 +44,14 @@ from ..utils.emf_export import HAS_EMF_EXPORT, EMFPaintDevice
 from ..utils.gui import enumerateMenu, SignalGrouper, SignalBlocker
 from ..config import get_python_rendering_flag
 from ..utils import hasinstance
+from .main_window_ui import Ui_MainWindow
+from .widgets.search_ui import Ui_Form as Ui_SearchWidget
 
-from PyQtNetworkView.node import NodePolygon
+from PySide2MolecularNetwork.node import NodePolygon
 if get_python_rendering_flag():
-    from PyQtNetworkView._pure import style_from_css, style_to_cytoscape, disable_opengl
+    from PySide2MolecularNetwork._pure import style_from_css, style_to_cytoscape, disable_opengl
 else:
-    from PyQtNetworkView import style_from_css, style_to_cytoscape, disable_opengl
-
-UI_FILE = os.path.join(os.path.dirname(__file__), 'main_window.ui')
-MainWindowUI, MainWindowBase = uic.loadUiType(UI_FILE, from_imports='metgem_app.ui', import_from='metgem_app.ui')
+    from PySide2MolecularNetwork import style_from_css, style_to_cytoscape, disable_opengl
 
 COLUMN_MAPPING_PIE_CHARTS = 0
 COLUMN_MAPPING_LABELS = 1
@@ -61,8 +60,14 @@ COLUMN_MAPPING_NODES_COLORS = 3
 COLUMN_MAPPING_NODES_PIXMAPS = 4
 
 
+class SearchWidget(QWidget, Ui_SearchWidget):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setupUi(self)
+
+
 # noinspection PyCallByClass,PyArgumentList
-class MainWindow(MainWindowBase, MainWindowUI):
+class MainWindow(QMainWindow, Ui_MainWindow):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -120,12 +125,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.init_project()
 
         # Move search layout to search toolbar
-        self.search_widget = QWidget()
-        uic.loadUi(os.path.join(os.path.dirname(__file__), 'widgets', 'search.ui'), self.search_widget)
+        self.search_widget = SearchWidget()
         self.tbSearch.addWidget(self.search_widget)
 
         # Reorganise export as image actions
-        export_button = widgets.ToolBarMenu()
+        export_button = widgets.ToolBarMenu(self)
         export_button.setDefaultAction(self.actionExportAsImage)
         export_button.addAction(self.actionExportAsImage)
         export_button.addAction(self.actionExportCurrentViewAsImage)
@@ -134,7 +138,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.tbExport.removeAction(self.actionExportCurrentViewAsImage)
 
         # Reorganize export metadata actions
-        export_button = widgets.ToolBarMenu()
+        export_button = widgets.ToolBarMenu(self)
         export_button.setDefaultAction(self.actionExportMetadata)
         export_button.addAction(self.actionExportMetadata)
         export_button.addAction(self.actionExportDatabaseResults)
@@ -337,7 +341,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         self.menuView.addMenu(popup_menu)
 
         # Populate list of recently opened projects
-        menu = QMenu()
+        self._recent_project_menu = menu = QMenu()
         self.recent_projects = []
 
         self.actionRecentProjects.setMenu(menu)
@@ -870,22 +874,18 @@ class MainWindow(MainWindowBase, MainWindowUI):
             self.actionViewMiniMap.setChecked(not visible)
 
     @debug
-    def on_scene_selection_changed(self, update_view=True):
-        sender = self.sender()
-        if isinstance(sender, QGraphicsView):
-            sender = sender.scene()
-
-        nodes_idx = [item.index() for item in sender.selectedNodes()]
-        edges_idx = [item.index() for item in sender.selectedEdges()]
+    def on_scene_selection_changed(self, scene, update_view=True):
+        nodes_idx = [item.index() for item in scene.selectedNodes()]
+        edges_idx = [item.index() for item in scene.selectedEdges()]
         self.tvNodes.model().setSelection(nodes_idx)
         self.tvEdges.model().setSelection(edges_idx)
 
         if update_view and self.actionLinkViews.isChecked():
             for dock in self.network_docks.values():
-                scene = dock.widget().scene()
-                if scene != sender:
-                    with SignalBlocker(scene):
-                        scene.setNodesSelection(nodes_idx)
+                widget_scene = dock.widget().scene()
+                if widget_scene != scene:
+                    with SignalBlocker(widget_scene):
+                        widget_scene.setNodesSelection(nodes_idx)
 
     @debug
     def on_set_selected_nodes_color(self, color: QColor):
@@ -1601,7 +1601,11 @@ class MainWindow(MainWindowBase, MainWindowUI):
         spectrum = human_readable_data(self.network.spectra[self.network.mzs.index[list(selected_idx)[0]]])
 
         self._dialog = dialog_class(self, mz, spectrum)
-        self._dialog.show()
+
+        def store_result():
+            print(self._dialog.getValues())
+        self._dialog.finished.connect(store_result)
+        self._dialog.open()
 
     # noinspection PyUnusedLocal
     @debug
@@ -1984,10 +1988,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
         view = widget.view()
         scene = widget.scene()
         scene.setNetworkStyle(self.style)
-        scene.selectionChanged.connect(self.on_scene_selection_changed)
+        scene.selectionChanged.connect(lambda sc=scene: self.on_scene_selection_changed(sc))
         scene.annotationAdded.connect(self.on_annotations_added)
         scene.arrowEdited.connect(self.on_arrow_edited)
-        view.focusedIn.connect(lambda: self.on_scene_selection_changed(update_view=False))
+        view.focusedIn.connect(lambda sc=scene: self.on_scene_selection_changed(sc, update_view=False))
         view.undoStack().cleanChanged.connect(self.on_undo_stack_clean_changed)
         view.setContextMenuPolicy(Qt.CustomContextMenu)
         view.customContextMenuRequested.connect(self.on_view_contextmenu)
@@ -2153,7 +2157,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
             model.setHeaderData(column_id, Qt.Horizontal, font, role=Qt.FontRole)
 
             for dock in self.network_docks.values():
-                dock.widget().scene().setNodesRadiiFromModel(model, column_id, Qt.DisplayRole, func)
+                dock.widget().scene().setNodesRadiiFromModel(model, column_id, func, Qt.DisplayRole)
 
             key = model.headerData(column_id, Qt.Horizontal, role=metadata.KeyRole)
             self._network.columns_mappings['size'] = (key, func)
@@ -2223,7 +2227,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
                 for value in data:
                     c, p, s = r(bins, colors, polygons, styles, value)
                     color_list.append(c)
-                    polygon_list.append(p.value)
+                    polygon_list.append(p)
                     brush_list.append(QBrush(s))
             else:
                 return
@@ -2309,7 +2313,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         setting = settings.value('State')
         if setting is not None:
             self.restoreState(setting)
-        self.recent_projects = settings.value('RecentProjects', type=list)
+        self.recent_projects = settings.value('RecentProjects')
         self.update_recent_projects()
         settings.endGroup()
 
@@ -2317,7 +2321,7 @@ class MainWindow(MainWindowBase, MainWindowUI):
         setting = settings.value('style', None)
         style = style_from_css(setting)
         if style is not None:
-            font_size = settings.value('style_font_size', None, type=int)
+            font_size = settings.value('style_font_size', None)
             if font_size is not None:
                 font = style.nodeFont()
                 font.setPointSize(font_size)

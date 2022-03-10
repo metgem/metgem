@@ -186,7 +186,7 @@
   <customwidget>
    <class>NetworkView</class>
    <extends>QGraphicsView</extends>
-   <header>PyQtNetworkView.h</header>
+   <header>PySide2MolecularNetwork.h</header>
   </customwidget>
  </customwidgets>
  <resources>

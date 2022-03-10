@@ -1,22 +1,16 @@
 import os
-import sys
 
-from PyQt5 import uic
-from PyQt5.QtCore import Qt, QDir
-from PyQt5.QtGui import QPalette, QColor, QIcon
-from PyQt5.QtWidgets import QCompleter, QFileSystemModel, QDialog, QFileDialog, QDialogButtonBox, QMessageBox
+from qtpy.QtCore import Qt, QDir
+from qtpy.QtGui import QPalette, QColor, QIcon
+from qtpy.QtWidgets import QCompleter, QFileSystemModel, QDialog, QFileDialog, QDialogButtonBox, QMessageBox
 
 from .progress_dialog import ProgressDialog
 from ..workers.databases import ConvertDatabasesWorker
 from ..workers.core import WorkerQueue
-
-UI_FILE = os.path.join(os.path.dirname(__file__), 'import_user_database_dialog.ui')
-ImportUserDatabaseDialogUI, ImportUserDatabaseDialogBase = uic.loadUiType(UI_FILE,
-                                                                          from_imports='metgem_app.ui',
-                                                                          import_from='metgem_app.ui')
+from .import_user_database_dialog_ui import Ui_ImportUserDatabaseDialog
 
 
-class ImportUserDatabaseDialog(ImportUserDatabaseDialogBase, ImportUserDatabaseDialogUI):
+class ImportUserDatabaseDialog(QDialog, Ui_ImportUserDatabaseDialog):
 
     def __init__(self, *args, base_path=None, **kwargs):
         super().__init__(*args, **kwargs)

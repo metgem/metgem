@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Form</class>
- <widget class="QWidget" name="Form">
+ <class>DownloadDatabaseDialog</class>
+ <widget class="QWidget" name="DownloadDatabaseDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -541,33 +541,33 @@
   <customwidget>
    <class>StructureSvgWidget</class>
    <extends>QWidget</extends>
-   <header>metgem_app/ui/widgets.h</header>
+   <header>metgem_app/ui/widgets/structure.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>PubMedLabel</class>
    <extends>QLabel</extends>
-   <header>metgem_app/ui/widgets.h</header>
+   <header>metgem_app/ui/widgets/databases/widgets.h</header>
   </customwidget>
   <customwidget>
    <class>SpectrumIdLabel</class>
    <extends>QLabel</extends>
-   <header>metgem_app/ui/widgets.h</header>
+   <header>metgem_app/ui/widgets/databases/widgets.h</header>
   </customwidget>
   <customwidget>
    <class>SubmitUserLabel</class>
    <extends>QLabel</extends>
-   <header>metgem_app/ui/widgets.h</header>
+   <header>metgem_app/ui/widgets/databases/widgets.h</header>
   </customwidget>
   <customwidget>
    <class>QualityLabel</class>
    <extends>QLabel</extends>
-   <header>metgem_app/ui/widgets.h</header>
+   <header>metgem_app/ui/widgets/databases/widgets.h</header>
   </customwidget>
   <customwidget>
    <class>SpectrumWidget</class>
    <extends>QWidget</extends>
-   <header>metgem_app/ui/widgets.h</header>
+   <header>metgem_app/ui/widgets/spectrum/widget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>

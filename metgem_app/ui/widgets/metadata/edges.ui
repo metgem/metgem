@@ -235,7 +235,7 @@
   <customwidget>
    <class>EdgeTableView</class>
    <extends>QTableView</extends>
-   <header>metgem_app/ui/widgets.h</header>
+   <header>metgem_app/ui/widgets/metadata/edge.h</header>
   </customwidget>
  </customwidgets>
  <resources>
