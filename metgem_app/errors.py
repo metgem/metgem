@@ -3,8 +3,8 @@ import os
 import sys
 import traceback
 
-from PyQt5.QtCore import QCoreApplication
-from PyQt5.QtWidgets import QMessageBox, qApp
+from qtpy.QtCore import QCoreApplication
+from qtpy.QtWidgets import QMessageBox, qApp
 
 
 # noinspection PyArgumentList

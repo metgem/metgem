@@ -1,9 +1,8 @@
-import os
 from typing import Any
 
-from PyQt5 import uic
-from PyQt5.QtCore import QModelIndex, Qt, QSortFilterProxyModel, QItemSelection, QAbstractTableModel
-from PyQt5.QtWidgets import QWidget, QGraphicsScene
+from qtpy.QtCore import QModelIndex, Qt, QSortFilterProxyModel, QItemSelection, QAbstractTableModel
+from qtpy.QtWidgets import QWidget, QGraphicsScene
+from .table_ui import Ui_AnnotationsWidget
 
 
 class AnnotationsModel(QAbstractTableModel):
@@ -40,11 +39,11 @@ class AnnotationsModel(QAbstractTableModel):
         return super().headerData(section, orientation, role)
 
 
-class AnnotationsWidget(QWidget):
+class AnnotationsWidget(QWidget, Ui_AnnotationsWidget):
     def __init__(self):
         super().__init__()
 
-        uic.loadUi(os.path.join(os.path.dirname(__file__), 'table.ui'), self)
+        self.setupUi(self)
         self.tvAnnotations.doubleClicked.connect(self.on_double_clicked)
 
     def on_selection_changed(self, selected: QItemSelection, deselected: QItemSelection):

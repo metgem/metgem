@@ -26,7 +26,7 @@ class GenerateNetworkWorker(BaseWorker):
             if value < 0:
                 self.max += -value
             else:
-                self.updated.emit(value)
+                self.updated.emit(min(value, self.max))
             return not self.isStopped()
 
         # Create edges table (filter score below a threshold and apply TopK algorithm

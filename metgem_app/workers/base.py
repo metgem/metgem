@@ -1,4 +1,4 @@
-from ..utils.qt import QObject, pyqtSignal
+from ..utils.qt import QObject, Signal
 
 
 class UserRequestedStopError(Exception):
@@ -6,12 +6,12 @@ class UserRequestedStopError(Exception):
 
 
 class BaseWorker(QObject):
-    started = pyqtSignal()
-    finished = pyqtSignal()
-    canceled = pyqtSignal()
-    updated = pyqtSignal(int)
-    error = pyqtSignal(Exception)
-    maximumChanged = pyqtSignal(int)
+    started = Signal()
+    finished = Signal()
+    canceled = Signal()
+    updated = Signal(int)
+    error = Signal(Exception)
+    maximumChanged = Signal(int)
 
     _enabled = True
 

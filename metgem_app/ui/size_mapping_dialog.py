@@ -2,21 +2,15 @@ import os
 from typing import Any, Optional, Union
 
 import numpy as np
-from PyQt5 import uic
-from PyQt5.QtCore import (Qt, QRectF, QLineF, QPointF, QAbstractTableModel, pyqtSignal,
-                          QVariant, QSize, QModelIndex)
-from PyQt5.QtGui import QPainter, QPen, QPainterPath, QShowEvent, QBrush, QColor
-from PyQt5.QtWidgets import (QGraphicsScene, QGraphicsEllipseItem, QGraphicsItem,
+from qtpy.QtCore import (Qt, QRectF, QLineF, QPointF, QAbstractTableModel, Signal,
+                          QSize, QModelIndex)
+from qtpy.QtGui import QPainter, QPen, QPainterPath, QShowEvent, QBrush, QColor
+from qtpy.QtWidgets import (QGraphicsScene, QGraphicsEllipseItem, QGraphicsItem,
                              QGraphicsPathItem, QGraphicsSceneMouseEvent, QStyleOptionGraphicsItem,
-                             QWidget, QStyle, QListWidgetItem, QMessageBox)
+                             QWidget, QStyle, QListWidgetItem, QMessageBox, QDialog)
 
 from ..mappings import MODE_LINEAR, MODE_LOG, SizeMappingFunc
-
-UI_FILE = os.path.join(os.path.dirname(__file__), 'size_mapping_dialog.ui')
-
-SizeMappingDialogUI, SizeMappingDialogBase = uic.loadUiType(UI_FILE,
-                                                            from_imports='metgem_app.ui',
-                                                            import_from='metgem_app.ui')
+from .size_mapping_dialog_ui import Ui_Dialog
 
 ColumnRole = Qt.UserRole + 1
 
@@ -174,8 +168,8 @@ class StopHandle(Handle):
 
 
 class Scene(QGraphicsScene):
-    handleMoved = pyqtSignal(Handle)
-    handleSelectionChanged = pyqtSignal(QVariant)  # Handle or None
+    handleMoved = Signal(Handle)
+    handleSelectionChanged = Signal(Handle)  # Handle or None
 
     DATA_VALUE = 0
     DATA_SIZE = 1
@@ -294,7 +288,7 @@ class ColumnListWidgetItem(QListWidgetItem):
         return super().__lt__(other)
 
 
-class SizeMappingDialog(SizeMappingDialogUI, SizeMappingDialogBase):
+class SizeMappingDialog(QDialog, Ui_Dialog):
 
     def __init__(self, *args, model: QAbstractTableModel, column_id: int, func: 'SizeMappingFunc' = None, **kwargs):
         super().__init__(*args, **kwargs)

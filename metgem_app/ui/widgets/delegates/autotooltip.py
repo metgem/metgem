@@ -1,5 +1,5 @@
-from PyQt5.QtWidgets import QItemDelegate, QToolTip
-from PyQt5.QtCore import QEvent, Qt
+from qtpy.QtWidgets import QItemDelegate, QToolTip
+from qtpy.QtCore import QEvent, Qt
 
 
 class AutoToolTipItemDelegateMixin:
@@ -35,8 +35,8 @@ class AutoToolTipItemDelegate(AutoToolTipItemDelegateMixin, QItemDelegate):
 
 if __name__ == "__main__":
     import sys
-    from PyQt5.QtWidgets import QApplication, QListView
-    from PyQt5.QtGui import QStandardItemModel, QStandardItem
+    from qtpy.QtWidgets import QApplication, QListView
+    from qtpy.QtGui import QStandardItemModel, QStandardItem
 
     app = QApplication(sys.argv)
 

@@ -808,7 +808,7 @@
   <customwidget>
    <class>NodeTableView</class>
    <extends>QTableView</extends>
-   <header>metgem_app/ui/widgets.h</header>
+   <header>metgem_app/ui/widgets/metadata/node.h</header>
   </customwidget>
  </customwidgets>
  <resources>

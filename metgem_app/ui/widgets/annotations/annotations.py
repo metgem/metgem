@@ -1,10 +1,10 @@
 import math
 from typing import Optional
 
-from PyQt5.QtCore import Qt, QRectF, QPointF, QSizeF
-from PyQt5.QtGui import (QPainterPath, QPainterPathStroker, QPainter,
+from qtpy.QtCore import Qt, QRectF, QPointF, QSizeF
+from qtpy.QtGui import (QPainterPath, QPainterPathStroker, QPainter,
                          QBrush, QColor, QPolygonF, QPen)
-from PyQt5.QtWidgets import (QGraphicsLineItem, QGraphicsRectItem, QGraphicsSimpleTextItem,
+from qtpy.QtWidgets import (QGraphicsLineItem, QGraphicsRectItem, QGraphicsSimpleTextItem,
                              QGraphicsItem, QGraphicsEllipseItem, QStyleOptionGraphicsItem, QWidget)
 
 
@@ -85,7 +85,9 @@ class ArrowItem(QGraphicsLineItem):
             p1 = p0 + QPointF(math.sin(a) * size, -math.cos(a) * size)
             p2 = p0 + QPointF(math.sin(b) * size, -math.cos(b) * size)
             self._arrow_tail.clear()
-            self._arrow_tail << p0 << p1 << p2
+            self._arrow_tail.append(p0)
+            self._arrow_tail.append(p1)
+            self._arrow_tail.append(p2)
             painter.drawPolygon(self._arrow_tail)
 
         if self._has_head:
@@ -96,7 +98,9 @@ class ArrowItem(QGraphicsLineItem):
             p1 = p0 + QPointF(math.sin(a) * size, -math.cos(a) * size)
             p2 = p0 + QPointF(math.sin(b) * size, -math.cos(b) * size)
             self._arrow_head.clear()
-            self._arrow_head << p0 << p1 << p2
+            self._arrow_head.append(p0)
+            self._arrow_head.append(p1)
+            self._arrow_head.append(p2)
             painter.drawPolygon(self._arrow_head)
 
     def __str__(self):

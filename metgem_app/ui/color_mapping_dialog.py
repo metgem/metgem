@@ -6,24 +6,18 @@ from typing import List, Union, Optional, Tuple
 import matplotlib.cm as mplcm
 import numpy as np
 import pandas as pd
-from PyQt5 import uic
-from PyQt5.QtCore import Qt, QSettings, QSize, QAbstractTableModel, QModelIndex, QObject, QEvent, QRect, QRectF
-from PyQt5.QtGui import QColor, QStandardItemModel, QIcon, QDropEvent, QKeyEvent, QBrush, QImage, QPixmap, QPainter, \
+from qtpy.QtCore import Qt, QSettings, QSize, QAbstractTableModel, QModelIndex, QObject, QEvent, QRect, QRectF
+from qtpy.QtGui import QColor, QStandardItemModel, QIcon, QDropEvent, QKeyEvent, QBrush, QImage, QPixmap, QPainter, \
     QTransform, QPen, QPolygonF, QGradient, QPalette
-from PyQt5.QtWidgets import (QDialog, QColorDialog, QListWidgetItem, QFileDialog, QMessageBox, QInputDialog,
+from qtpy.QtWidgets import (QDialog, QColorDialog, QListWidgetItem, QFileDialog, QMessageBox, QInputDialog,
                              QAbstractItemView, QDialogButtonBox, QFormLayout, QDoubleSpinBox, QAbstractSpinBox, QLabel,
                              QStyledItemDelegate, QStyleOptionViewItem, QWidget, QHBoxLayout, QButtonGroup,
                              QToolButton)
 
-from PyQtNetworkView.node import NODE_POLYGON_MAP, NodePolygon
+from PySide2MolecularNetwork.node import NODE_POLYGON_MAP, NodePolygon
 from ..models.metadata import ColorMarkRole, ColumnDataRole
 from ..utils import pairwise
-
-UI_FILE = os.path.join(os.path.dirname(__file__), 'color_mapping_dialog.ui')
-
-ColorMappingDialogUI, ColorMappingDialogBase = uic.loadUiType(UI_FILE,
-                                                              from_imports='metgem_app.ui',
-                                                              import_from='metgem_app.ui')
+from .color_mapping_dialog_ui import Ui_ColorMappingDialog
 
 ColumnRole = Qt.UserRole + 1
 ValueRole = Qt.UserRole + 2
@@ -337,7 +331,7 @@ class ItemDelegate(QStyledItemDelegate):
         painter.restore()
 
 
-class BaseColorMappingDialog(ColorMappingDialogUI, ColorMappingDialogBase):
+class BaseColorMappingDialog(QDialog, Ui_ColorMappingDialog):
 
     PolygonRole = Qt.UserRole + 3
     BrushStyleRole = Qt.UserRole + 4
@@ -565,8 +559,7 @@ class PieColorMappingDialog(BaseColorMappingDialog):
                     self.lstColumns.addItem(item)
 
         colors = QSettings().value('NetworkView/pie_colors',
-                                   [c.name() for c in generate_colors(8)],
-                                   type=str)
+                                   [c.name() for c in generate_colors(8)])
         self.set_colors(colors)
 
         self.btUseSelectedColumns.clicked.connect(lambda: self.move_selected_columns(MOVE_COLUMNS_SELECT))
@@ -644,8 +637,7 @@ class ColorMappingDialog(BaseColorMappingDialog):
         self.populate_bins(mapping)
 
         colors = QSettings().value('NetworkView/node_colors',
-                                   [c.name() for c in generate_colors(8)],
-                                   type=str)
+                                   [c.name() for c in generate_colors(8)])
         self.set_colors(colors)
 
         self.btUseSelectedColumns.clicked.connect(self.on_use_selected_column)
@@ -659,7 +651,7 @@ class ColorMappingDialog(BaseColorMappingDialog):
             self.btEditBin.clicked.disconnect()
             self.btAddBin.clicked.disconnect()
             self.btRemoveBins.clicked.disconnect()
-        except TypeError:
+        except (TypeError, RuntimeError):
             pass
 
         data = self._data

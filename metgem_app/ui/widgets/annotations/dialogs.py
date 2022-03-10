@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QDialog, QFormLayout, QLineEdit, QSpinBox, QDialogButtonBox
+from qtpy.QtWidgets import QDialog, QFormLayout, QLineEdit, QSpinBox, QDialogButtonBox
 
 
 class TextItemInputDialog(QDialog):

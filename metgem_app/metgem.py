@@ -30,6 +30,9 @@ def run():
     # Make sure decimal separator is dot
     os.environ['LC_NUMERIC'] = 'C'
 
+    # Add ui folder to path to be able to load ui_rc from ui generated files
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'ui'))
+
     # Fix no window shown on Mac OS Big Sur
     # http://www.tiger-222.fr/?d=2020/11/16/11/06/36-macos-big-sur-et-pyqt
     if sys.platform.startswith('darwin'):
@@ -50,10 +53,10 @@ def run():
 
     args = parser.parse_args()
 
-    from PyQt5.QtWidgets import QApplication
-    from PyQt5.QtCore import QCoreApplication
+    from qtpy.QtWidgets import QApplication
+    from qtpy.QtCore import QCoreApplication
     # QtWebEngineWidgets must be imported before a QApplication is created
-    from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEnginePage, QWebEngineProfile
+    from qtpy.QtWebEngineWidgets import QWebEngineView, QWebEnginePage, QWebEngineProfile
 
     app = QApplication(sys.argv)
 

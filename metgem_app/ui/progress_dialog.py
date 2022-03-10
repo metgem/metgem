@@ -1,23 +1,17 @@
-import os
-
-from PyQt5 import uic
-from PyQt5.QtCore import Qt
+from qtpy.QtCore import Qt
+from qtpy.QtWidgets import QDialog
 
 try:
     # noinspection PyUnresolvedReferences
-    from PyQt5.QtWinExtras import QWinTaskbarButton, QWinTaskbarProgress
+    from qtpy.QtWinExtras import QWinTaskbarButton, QWinTaskbarProgress
     HAS_WINEXTRAS = True
 except ImportError:
     HAS_WINEXTRAS = False
 
-UI_FILE = os.path.join(os.path.dirname(__file__), 'progress_dialog.ui')
-
-ProgressDialogUI, ProgressDialogBase = uic.loadUiType(UI_FILE,
-                                                      from_imports='metgem_app.ui',
-                                                      import_from='metgem_app.ui')
+from .progress_dialog_ui import Ui_Dialog
 
 
-class ProgressDialog(ProgressDialogUI, ProgressDialogBase):
+class ProgressDialog(QDialog, Ui_Dialog):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -27,15 +21,16 @@ class ProgressDialog(ProgressDialogUI, ProgressDialogBase):
         if HAS_WINEXTRAS:
             self._button = QWinTaskbarButton(self)
             self._button.setWindow(self.windowHandle())
-            self._button.setOverlayIcon(self.icon())
+            self._button.setOverlayIcon(self.windowIcon())
 
     def value(self):
         return self.progressBar.value()
 
     def setValue(self, value):
-        self.progressBar.setValue(value)
+        val = min(value, self.progressBar.maximum())
+        self.progressBar.setValue(val)
         if HAS_WINEXTRAS:
-            self._button.progress().setValue(value)
+            self._button.progress().setValue(val)
 
     def format(self):
         return self.windowTitle()

@@ -2,9 +2,9 @@ from typing import List, Union
 
 import numpy as np
 import pandas as pd
-from PyQt5.QtCore import QStringListModel, QModelIndex, Qt, QSortFilterProxyModel, QAbstractTableModel, QSettings, \
+from qtpy.QtCore import QStringListModel, QModelIndex, Qt, QSortFilterProxyModel, QAbstractTableModel, QSettings, \
     QAbstractItemModel
-from PyQt5.QtGui import QIcon
+from qtpy.QtGui import QIcon
 
 try:
     import os
@@ -410,7 +410,7 @@ class EdgesModel(QAbstractTableModel):
                 if NEUTRAL_LOSSES is not None:
                     for _, r in NEUTRAL_LOSSES.iterrows():
                         d_th = r['Mass difference']
-                        tol = self.settings.value('Metadata/neutral_tolerance', 50, type=int)
+                        tol = self.settings.value('Metadata/neutral_tolerance', 50)
                         if abs((d_exp - d_th) / d_th) * 10**6 < tol:
                             interpretations.append(r['Origin'])
                     return ' ; '.join(interpretations)

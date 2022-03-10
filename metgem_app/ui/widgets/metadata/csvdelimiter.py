@@ -1,11 +1,11 @@
-from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtWidgets import QComboBox, QLineEdit
+from qtpy.QtCore import Signal
+from qtpy.QtWidgets import QComboBox, QLineEdit
 
 from ....models.metadata import CsvDelimiterModel
 
 
 class CsvDelimiterCombo(QComboBox):
-    delimiterChanged = pyqtSignal(str)
+    delimiterChanged = Signal(str)
 
     def __init__(self, *args, other_edit=None, **kwargs):
         super().__init__(*args, **kwargs)

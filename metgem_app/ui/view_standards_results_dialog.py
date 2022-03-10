@@ -1,23 +1,15 @@
-import os
-
 import numpy as np
-from PyQt5 import uic
-from PyQt5.QtCore import Qt, QModelIndex, QItemSelection, QItemSelectionModel
-from PyQt5.QtGui import QStandardItemModel, QIcon, QStandardItem
-from PyQt5.QtWidgets import QAbstractItemView
+from qtpy.QtCore import Qt, QModelIndex, QItemSelection, QItemSelectionModel
+from qtpy.QtGui import QStandardItemModel, QIcon, QStandardItem
+from qtpy.QtWidgets import QAbstractItemView, QDialog
 
 from .widgets.delegates.quality import LibraryQualityDelegate
 from ..database import Spectrum
 from ..models.standards_results import SpectraModel
-
-UI_FILE = os.path.join(os.path.dirname(__file__), 'view_standards_results_dialog.ui')
-
-ViewStandardsResultsDialogUI, ViewStandardsResultsDialogBase = uic.loadUiType(UI_FILE,
-                                                                              from_imports='metgem_app.ui',
-                                                                              import_from='metgem_app.ui')
+from .view_standards_results_dialog_ui import Ui_Dialog
 
 
-class ViewStandardsResultsDialog(ViewStandardsResultsDialogUI, ViewStandardsResultsDialogBase):
+class ViewStandardsResultsDialog(QDialog, Ui_Dialog):
 
     def __init__(self, *args, mz_parent=None, spectrum: np.ndarray = None, base_path=None,
                  selection: dict = None, **kwargs):

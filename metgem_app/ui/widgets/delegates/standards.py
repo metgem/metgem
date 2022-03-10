@@ -1,6 +1,6 @@
-from PyQt5.QtCore import Qt, QObject, QEvent, QModelIndex, pyqtSignal
-from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon
-from PyQt5.QtWidgets import (QStyledItemDelegate, QComboBox, QTreeView,
+from qtpy.QtCore import Qt, QObject, QEvent, QModelIndex, Signal
+from qtpy.QtGui import QStandardItemModel, QStandardItem, QIcon
+from qtpy.QtWidgets import (QStyledItemDelegate, QComboBox, QTreeView,
                              QWidget, QHBoxLayout, QSizePolicy, QToolButton)
 
 from ....models.metadata import StandardsRole, AnalogsRole, DbResultsRole
@@ -91,7 +91,7 @@ class StandardsResultsComboBox(QComboBox):
 
 class StandardsResultsDelegate(QStyledItemDelegate):
 
-    viewDetailsClicked = pyqtSignal(int, dict)
+    viewDetailsClicked = Signal(int, dict)
 
     def __init__(self, parent=None):
         super().__init__(parent)

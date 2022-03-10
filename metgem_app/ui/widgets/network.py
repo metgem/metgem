@@ -4,10 +4,9 @@ import sys
 import numpy as np
 import igraph as ig
 import pandas as pd
-from PyQt5 import uic
-from PyQt5.QtCore import pyqtSignal, Qt, QObject
-from PyQt5.QtGui import QPen
-from PyQt5.QtWidgets import QFrame, QMenu, QWidgetAction, QWidget, QGraphicsLineItem
+from qtpy.QtCore import Signal, Qt, QObject
+from qtpy.QtGui import QPen
+from qtpy.QtWidgets import QFrame, QMenu, QWidgetAction, QWidget, QGraphicsLineItem
 
 from .annotations import AnnotationsNetworkScene
 from ..edit_options_dialog import (EditNetworkOptionsDialog, EditTSNEOptionsDialog,
@@ -16,6 +15,7 @@ from ..edit_options_dialog import (EditNetworkOptionsDialog, EditTSNEOptionsDial
 from ... import config
 from ...workers import core as workers_core
 from ...workers import options as workers_opts
+from .network_ui import Ui_NetworkFrame
 
 
 def short_id(id_):
@@ -38,7 +38,7 @@ else:
             super(classproperty, self).__delete__(type(obj))
 
 
-class BaseFrame(QFrame):
+class BaseFrame(QFrame, Ui_NetworkFrame):
     id = None
     title = None
     unlockable = False
@@ -47,8 +47,8 @@ class BaseFrame(QFrame):
     worker_class = None
     options_class = None
     use_edges = True
-    editOptionsTriggered = pyqtSignal(QWidget)
-    workerReady = pyqtSignal(QObject)
+    editOptionsTriggered = Signal(QWidget)
+    workerReady = Signal(QObject)
 
     @classproperty
     def name(cls):
@@ -64,7 +64,7 @@ class BaseFrame(QFrame):
 
     def __init__(self, id_: str, network, graph=ig.Graph(), interactions=pd.DataFrame()):
         super().__init__()
-        uic.loadUi(os.path.join(os.path.dirname(__file__), 'network.ui'), self)
+        self.setupUi(self)
 
         self.id = id_
         self._name = None
@@ -76,7 +76,7 @@ class BaseFrame(QFrame):
         self._interactions = interactions if isinstance(interactions, pd.DataFrame) else pd.DataFrame()
 
         # Send Scale sliders to a toolbutton menu
-        menu = QMenu()
+        self._menu = menu = QMenu()
         action = QWidgetAction(self)
         action.setDefaultWidget(self.sliderScale)
         menu.addAction(action)

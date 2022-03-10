@@ -1,5 +1,5 @@
-from PyQt5.QtCore import QModelIndex
-from PyQt5.QtWidgets import QStyledItemDelegate, QWidget, QStyleOptionViewItem, QLineEdit
+from qtpy.QtCore import QModelIndex
+from qtpy.QtWidgets import QStyledItemDelegate, QWidget, QStyleOptionViewItem, QLineEdit
 
 
 class EnsureStringItemDelegate(QStyledItemDelegate):

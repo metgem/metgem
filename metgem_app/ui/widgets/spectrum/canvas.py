@@ -1,7 +1,7 @@
 from enum import Enum
 
 # noinspection PyUnresolvedReferences
-from PyQt5.QtCore import pyqtProperty, QVariant, QSettings
+from qtpy.QtCore import QSettings
 
 from matplotlib.ticker import FuncFormatter, AutoMinorLocator
 
@@ -59,7 +59,7 @@ class SpectrumCanvas(BaseCanvas):
 
         if idx is not None:
             if parent is not None:
-                float_precision = QSettings().value('Metadata/float_precision', 4, type=int)
+                float_precision = QSettings().value('Metadata/float_precision', 4)
                 return f"{idx+1} ($m/z$ {parent:.{float_precision}f})"
             else:
                 return f"{idx+1}"
@@ -121,7 +121,7 @@ class SpectrumCanvas(BaseCanvas):
         super().draw()
         self.figure.subplots_adjust(bottom=0.4)
 
-    @pyqtProperty(QVariant)
+    @property
     def spectrum1(self):
         return self._spectrum1_data
 
@@ -129,7 +129,7 @@ class SpectrumCanvas(BaseCanvas):
     def spectrum1(self, data):
         self._set_data('spectrum1', data)
 
-    @pyqtProperty(str)
+    @property
     def spectrum1_parent(self):
         return self._spectrum1_parent
 
@@ -142,7 +142,7 @@ class SpectrumCanvas(BaseCanvas):
         except TypeError:
             pass
 
-    @pyqtProperty(int)
+    @property
     def spectrum1_index(self):
         return self._spectrum1_idx
 
@@ -152,7 +152,7 @@ class SpectrumCanvas(BaseCanvas):
         if self._spectrum1_plot is not None:
             self._spectrum1_plot.set_label(self.format_label(SpectrumPosition.first))
 
-    @pyqtProperty(QVariant)
+    @property
     def spectrum2(self):
         return self._spectrum2_data
 
@@ -160,7 +160,7 @@ class SpectrumCanvas(BaseCanvas):
     def spectrum2(self, data):
         self._set_data('spectrum2', data)
 
-    @pyqtProperty(str)
+    @property
     def spectrum2_parent(self):
         return self._spectrum2_parent
 
@@ -170,7 +170,7 @@ class SpectrumCanvas(BaseCanvas):
         if self._spectrum2_plot is not None:
             self._spectrum2_plot.set_label(self.format_label(SpectrumPosition.second))
 
-    @pyqtProperty(int)
+    @property
     def spectrum2_index(self):
         return self._spectrum2_idx
 
@@ -188,7 +188,7 @@ class SpectrumCanvas(BaseCanvas):
     def spectrum2_plot(self):
         return self._spectrum2_plot
 
-    @pyqtProperty(str)
+    @property
     def title(self):
         return self._title
 

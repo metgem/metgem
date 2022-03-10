@@ -1,19 +1,13 @@
 import base64
-import os
 
-from PyQt5 import uic
-from PyQt5.QtCore import QCoreApplication
-from PyQt5.QtWidgets import QTextBrowser
+from qtpy.QtCore import QCoreApplication
+from qtpy.QtWidgets import QTextBrowser, QDialog
 
 from ..config import LICENSE_TEXT
-
-UI_FILE = os.path.join(os.path.dirname(__file__), 'about_dialog.ui')
-AboutDialogUI, AboutDialogDialogBase = uic.loadUiType(UI_FILE,
-                                                      from_imports='metgem_app.ui',
-                                                      import_from='metgem_app.ui')
+from .about_dialog_ui import Ui_AboutDialog
 
 
-class AboutDialog(AboutDialogDialogBase, AboutDialogUI):
+class AboutDialog(QDialog, Ui_AboutDialog):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -101,7 +95,7 @@ class AboutDialog(AboutDialogDialogBase, AboutDialogUI):
             "<li><a href=\"https://github.com/githubuser0xFFFF/Qt-Advanced-Docking-System/\">"
             "Qt-Advanced-Docking-System</a>: LGPL v2.1</li>"
             "<li><a href=\"https://github.com/metgem/pyemf/\">pyemf</a>: GPL v2</li>"
-            "<li><a href=\"https://github.com/metgem/PyQtNetworkView/\">PyQtNetworkView</a>: GPL v3</li>"
+            "<li><a href=\"https://github.com/metgem/PySide2MolecularNetwork/\">PySide2MolecularNetwork</a>: GPL v3</li>"
             "<li><a href=\"https://github.com/metgem/libmetgem/\">libmetgem</a>: GPL v3</li>"
             "<li><a href=\"http://numba.pydata.org/\">numba</a>: 2-clause BSD</li>"
             "<li><a href=\"https://umap-learn.readthedocs.io/\">umap-learn</a>: 3-clause BSD</li>"

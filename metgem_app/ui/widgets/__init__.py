@@ -1,6 +1,7 @@
 # These imports SHOULD be left on top of the file
 from .metadata import (CsvDelimiterCombo,
-                       NodeTableView, EdgeTableView, NodesWidget, EdgesWidget)
+                       NodesWidget, EdgesWidget,
+                       NodeTableView, EdgeTableView)
 from .annotations.table import AnnotationsWidget, AnnotationsModel
 from .options_widgets import (TSNEOptionsWidget, NetworkOptionsWidget, MDSOptionsWidget,
                               UMAPOptionsWidget, IsomapOptionsWidget, PHATEOptionsWidget,

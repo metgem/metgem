@@ -27,8 +27,8 @@ else:
 
 import struct
 
-from PyQt5.QtCore import QByteArray, QBuffer, QIODevice, Qt, QRectF
-from PyQt5.QtGui import QPaintEngine, QPainterPath, QPaintDevice
+from qtpy.QtCore import QByteArray, QBuffer, QIODevice, Qt, QRectF
+from qtpy.QtGui import QPaintEngine, QPainterPath, QPaintDevice
 
 if HAS_EMF_EXPORT:
     inch_mm = 25.4

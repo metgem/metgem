@@ -1,8 +1,8 @@
 # noinspection PyUnresolvedReferences
-from PyQt5.QtCore import pyqtProperty, QPoint, Qt
-from PyQt5.QtCore import QByteArray, QSize
-from PyQt5.QtSvg import QSvgWidget
-from PyQt5.QtWidgets import QVBoxLayout, QPushButton, QWidget, QMenu, QAction, QApplication
+from qtpy.QtCore import QPoint, Qt
+from qtpy.QtCore import QByteArray, QSize
+from qtpy.QtSvg import QSvgWidget
+from qtpy.QtWidgets import QVBoxLayout, QPushButton, QWidget, QMenu, QAction, QApplication
 
 try:
     # noinspection PyUnresolvedReferences
@@ -34,18 +34,6 @@ else:
     OPENBABEL_INCHI = 'inchi' in pybel.informats.keys()
 
 
-class SecondColumnMapping(QWidget):
-
-    @pyqtProperty(str)
-    def smiles(self):
-        # noinspection PyPropertyAccess
-        return self.parent().smiles
-
-    @smiles.setter
-    def smiles(self, smiles):
-        self.parent().smiles = smiles
-
-
 class StructureSvgWidget(QSvgWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -60,8 +48,6 @@ class StructureSvgWidget(QSvgWidget):
         self.setLayout(layout)
 
         self.btShowStructure.setVisible(False)
-
-        self.second_mapping = SecondColumnMapping(self)
 
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.show_context_menu)
@@ -78,26 +64,16 @@ class StructureSvgWidget(QSvgWidget):
     def has_data(self):
         return bool(self._inchi or self._smiles)
 
-    @pyqtProperty(str)
-    def inchi(self):
-        return self._inchi
-
-    @inchi.setter
-    def inchi(self, inchi):
-        self.setInchi(inchi)
-
-    @pyqtProperty(str)
-    def smiles(self):
+    def getSmiles(self):
         return self._smiles
-
-    @smiles.setter
-    def smiles(self, smiles):
-        self.setSmiles(smiles)
 
     def setSmiles(self, smiles):
         self._smiles = smiles
         self.btShowStructure.setVisible(self.has_data)
         self.load(QByteArray(b''))
+
+    def getInchi(self):
+        return self._inchi
 
     def setInchi(self, inchi):
         self._inchi = inchi
