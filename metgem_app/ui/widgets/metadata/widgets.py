@@ -56,6 +56,7 @@ class NodesWidget(QWidget, Ui_NodesWidget):
         self.btHighlightSelectedNodes.setDefaultAction(self.actionHighlightSelectedNodes)
         self.btAddColumnsByFormulae.setDefaultAction(self.actionAddColumnsByFormulae)
         self.btClusterize.setDefaultAction(self.actionClusterize)
+        self.btNumberizeClusters.setDefaultAction(self.actionNumberize)
         self.btDeleteColumns.setDefaultAction(self.actionDeleteColumns)
         self.btSetAlternatingRowColors.setDefaultAction(self.actionSetAlternatingRowColors)
         self.btEnableOrdering.setDefaultAction(self.actionEnableOrdering)

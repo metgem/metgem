@@ -222,6 +222,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.nodes_widget.actionCFMID.triggered.connect(lambda: self.on_query_in_silico_db('cfm-id'))
         self.nodes_widget.actionAddColumnsByFormulae.triggered.connect(self.on_add_columns_by_formulae)
         self.nodes_widget.actionClusterize.triggered.connect(self.on_clusterize)
+        self.nodes_widget.actionNumberize.triggered.connect(self.on_numberize)
         self.nodes_widget.actionDeleteColumns.triggered.connect(self.on_delete_nodes_columns)
 
         self.edges_widget.actionHighlightSelectedEdges.triggered.connect(self.highlight_selected_edges)
@@ -1458,9 +1459,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         docks = self.network_docks.items()
         if not docks:
-            QMessageBox.warning(self, None, 'Plase add a view first.')
+            QMessageBox.warning(self, None, 'Please add a view first.')
             return
-        self._dialog = ui.ClusterizeDialog(self, views={k: v.widget().title for k, v in docks})
+        self._dialog = ui.ClusterizeDialog(self, views={k: f"{v.widget().title} ({v.widget().short_id})"
+                                                        for k, v in docks})
 
         def do_clustering(result):
             if result == QDialog.Accepted:
@@ -1483,6 +1485,38 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     self._workers.start()
 
         self._dialog.finished.connect(do_clustering)
+        self._dialog.open()
+
+    @debug
+    def on_numberize(self, *args):
+        docks = self.network_docks.items()
+        if not docks:
+            QMessageBox.warning(self, None, 'Please add a view first.')
+            return
+        self._dialog = ui.NumberizeDialog(self, views={k: f"{v.widget().title} ({v.widget().short_id})"
+                                                    for k, v in docks if v.widget().name == widgets.NetworkFrame.name})
+
+        def do_numbering(result):
+            if result == QDialog.Accepted:
+                # noinspection PyShadowingNames
+                def update_dataframe(worker: workers_core.ClusterizeWorker):
+                    self.tvNodes.model().sourceModel().beginResetModel()
+                    self.network.infos[options.column_name] = data = worker.result()
+                    self.tvNodes.model().sourceModel().endResetModel()
+
+                    column_index = self.network.infos.columns.get_loc(options.column_name)
+                    self.tvNodes.setColumnBlinking(column_index + 2, True)
+                    QMessageBox.information(self, None, f"Found {np.unique(data).size} clusters.")
+
+                name, options = self._dialog.getValues()
+                widget = self.network_docks[name].widget()
+                worker = workers_core.NumberizeWorker(widget, options)
+                if worker is not None:
+                    self._workers.append(worker)
+                    self._workers.append(update_dataframe)
+                    self._workers.start()
+
+        self._dialog.finished.connect(do_numbering)
         self._dialog.open()
 
     # noinspection PyUnusedLocal
@@ -1952,7 +1986,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         for dock in self.network_docks.values():
             scene = dock.widget().scene()
             with SignalBlocker(scene):
-                scene.setNodesSelection(selected)
+                scene.setNodesSelection(list(selected))
 
     # noinspection PyUnusedLocal
     @debug
@@ -1961,7 +1995,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         for dock in self.network_docks.values():
             scene = dock.widget().scene()
             with SignalBlocker(scene):
-                scene.setEdgesSelection(selected)
+                scene.setEdgesSelection(list(selected))
 
     # noinspection PyUnusedLocal
     @debug

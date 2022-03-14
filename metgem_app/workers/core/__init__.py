@@ -1,4 +1,5 @@
 from .clusterize import ClusterizeWorker
+from .numberize import NumberizeWorker
 from .cosine import ComputeScoresWorker
 from .import_modules import ImportModulesWorker
 from .max_connected_components import MaxConnectedComponentsWorker

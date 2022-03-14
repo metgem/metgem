@@ -113,6 +113,7 @@
     <file>images/edit-undo.svg</file>
     <file>images/edit-redo.svg</file>
     <file>images/edit-delete.svg</file>
+    <file>images/numberize.svg</file>
   </qresource>
   <qresource prefix="logo">
     <file>images/main-wide.svg</file>

@@ -1,5 +1,3 @@
-import os
-
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import QDialog
 
@@ -18,8 +16,8 @@ class ClusterizeDialog(QDialog, Ui_Dialog):
         for desc, name in (('Excess of Mass', 'eom'), ('Leaf', 'leaf')):
             self.cbMethod.addItem(desc, name)
 
-        for key, title in views.items():
-            self.cbView.addItem(title, key)
+        for key, name in views.items():
+            self.cbView.addItem(name, key)
 
         self.chkMinSamples.stateChanged.connect(self.spinMinSamples.setEnabled)
 
