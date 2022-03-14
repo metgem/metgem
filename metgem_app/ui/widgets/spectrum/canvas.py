@@ -59,7 +59,7 @@ class SpectrumCanvas(BaseCanvas):
 
         if idx is not None:
             if parent is not None:
-                float_precision = QSettings().value('Metadata/float_precision', 4)
+                float_precision = QSettings().value('Metadata/float_precision', 4, type=int)
                 return f"{idx+1} ($m/z$ {parent:.{float_precision}f})"
             else:
                 return f"{idx+1}"

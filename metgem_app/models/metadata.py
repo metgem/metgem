@@ -410,7 +410,7 @@ class EdgesModel(QAbstractTableModel):
                 if NEUTRAL_LOSSES is not None:
                     for _, r in NEUTRAL_LOSSES.iterrows():
                         d_th = r['Mass difference']
-                        tol = self.settings.value('Metadata/neutral_tolerance', 50)
+                        tol = self.settings.value('Metadata/neutral_tolerance', 50, type=int)
                         if abs((d_exp - d_th) / d_th) * 10**6 < tol:
                             interpretations.append(r['Origin'])
                     return ' ; '.join(interpretations)

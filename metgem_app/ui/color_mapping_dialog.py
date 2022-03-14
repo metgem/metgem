@@ -317,7 +317,7 @@ class ItemDelegate(QStyledItemDelegate):
         painter.setClipRect(option.rect)
         painter.setPen(QPen(Qt.lightGray, h/5.))
         if brushstyle is not None:
-            painter.setBrush(QBrush(Qt.lightGray, brushstyle))
+            painter.setBrush(QBrush(Qt.lightGray, Qt.BrushStyle(brushstyle)))
         zoom = .9
         painter.setTransform(QTransform()
                              .translate(option.rect.x()+h/2+10, option.rect.y()+h/2)
@@ -409,7 +409,7 @@ class BaseColorMappingDialog(QDialog, Ui_ColorMappingDialog):
                 if poly is not None:
                     item.setData(BaseColorMappingDialog.PolygonRole, poly)
                 if brush_style is not None:
-                    item.setData(BaseColorMappingDialog.BrushStyleRole, brush_style)
+                    item.setData(BaseColorMappingDialog.BrushStyleRole, Qt.BrushStyle(brush_style))
                 self.lstColors.addItem(item)
 
     def generate_new_colors(self, cmap: str = 'auto'):
@@ -824,7 +824,7 @@ class ColorMappingDialog(BaseColorMappingDialog):
         if color.isValid():
             item.setBackground(color)
         item.setData(BaseColorMappingDialog.PolygonRole, polygon_id)
-        item.setData(BaseColorMappingDialog.BrushStyleRole, brushstyle)
+        item.setData(BaseColorMappingDialog.BrushStyleRole, Qt.BrushStyle(brushstyle))
 
     def add_color(self):
         color, polygon_id, brushstyle = ColorDialog.getColorPolygonAndBrushStyle(
@@ -835,7 +835,7 @@ class ColorMappingDialog(BaseColorMappingDialog):
             item = ColorListWidgetItem()
             item.setBackground(color)
             item.setData(BaseColorMappingDialog.PolygonRole, polygon_id)
-            item.setData(BaseColorMappingDialog.BrushStyleRole, brushstyle)
+            item.setData(BaseColorMappingDialog.BrushStyleRole, Qt.BrushStyle(brushstyle))
             self.lstColors.addItem(item)
 
     def getValues(self):
@@ -865,7 +865,7 @@ class ColorMappingDialog(BaseColorMappingDialog):
                 polygon_id = item.data(BaseColorMappingDialog.PolygonRole)
                 polygon_id = polygon_id if polygon_id is not None else NodePolygon.Circle
                 brushstyle = item.data(BaseColorMappingDialog.BrushStyleRole)
-                brushstyle = brushstyle if brushstyle is not None else Qt.NoBrush
+                brushstyle = Qt.BrushStyle(brushstyle) if brushstyle is not None else Qt.NoBrush
 
                 if bg is not None and bg.color().isValid():
                     mapping[group] = (bg.color(), polygon_id.value, brushstyle)
@@ -884,7 +884,7 @@ class ColorMappingDialog(BaseColorMappingDialog):
                 polygon_id = item.data(BaseColorMappingDialog.PolygonRole)
                 polygon_id = polygon_id if polygon_id is not None else NodePolygon.Circle
                 brushstyle = item.data(BaseColorMappingDialog.BrushStyleRole)
-                brushstyle = brushstyle if brushstyle is not None else Qt.NoBrush
+                brushstyle = Qt.BrushStyle(brushstyle) if brushstyle is not None else Qt.NoBrush
 
                 bins.append(low)
                 polygons.append(polygon_id.value)

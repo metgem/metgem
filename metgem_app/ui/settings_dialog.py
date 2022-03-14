@@ -76,7 +76,7 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
         else:
             self.lstStyles.setCurrentRow(0)
 
-        font_size = settings.value('NetworkView/style_font_size', 0)
+        font_size = settings.value('NetworkView/style_font_size', 0, type=int)
         if font_size > 0:
             self.chkOverrideFontSize.setChecked(True)
             self.spinFontSize.setEnabled(True)
@@ -89,11 +89,11 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
         self.spinFontSize.valueChanged.connect(self.on_change_font_size)
 
         # Metadata tab
-        value = settings.value('Metadata/neutral_tolerance', 50)
+        value = settings.value('Metadata/neutral_tolerance', 50, type=int)
         if value is not None:
             self.spinNeutralTolerance.setValue(value)
 
-        value = settings.value('Metadata/float_precision', 4)
+        value = settings.value('Metadata/float_precision', 4, type=int)
         if value is not None:
             self.spinFloatPrecision.setValue(value)
 
