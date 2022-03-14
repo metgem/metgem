@@ -37,3 +37,4 @@ dependencies:
     - phate>=0.4.5
     - hdbscan>=0.8
     - click>=8.0
+    - tornado>=6.1
