@@ -17,7 +17,7 @@ from PyInstaller.utils.hooks import get_module_file_attribute
 # On Anaconda distributions, qt_plugins_binaries can't be found because QLibraryInfo returns wrong path
 import PyInstaller.utils.hooks.qt
 
-location = PyInstaller.utils.hooks.qt.pyqt5_library_info.location
+location = PyInstaller.utils.hooks.qt.pyside2_library_info.location
 for k in location.keys():
     if not os.path.exists(location[k]) and "Library" in location[k]:
         s = location[k].split("Library")[1]
@@ -104,7 +104,7 @@ excludes.extend(['FixTk', 'tcl', 'tk', '_tkinter', 'tkinter', 'Tkinter', 'matplo
 excludes.extend(['lib2to3'])
 
 # Try to locate Qt base directory
-qt_base_dir = os.path.join(os.path.dirname(get_module_file_attribute('PyQt5')), 'Qt')
+qt_base_dir = os.path.join(os.path.dirname(get_module_file_attribute('PySide2')), 'Qt')
 if not os.path.exists(qt_base_dir):
     qt_base_dir = os.path.join(sys.prefix, 'Library')
 
@@ -115,20 +115,20 @@ if sys.platform.startswith('win'):
     pathex.append(os.path.join('C:', 'Program Files', 'OpenSSL', 'bin'))
 
 # Get Qt styles dll
-binaries.extend(qt_plugins_binaries('styles', namespace='PyQt5'))
-binaries.extend(qt_plugins_binaries('platforms', namespace='PyQt5'))
-binaries.extend(qt_plugins_binaries('iconengines', namespace='PyQt5'))
-binaries.extend(qt_plugins_binaries('imageformats', namespace='PyQt5'))
+binaries.extend(qt_plugins_binaries('styles', namespace='PySide2'))
+binaries.extend(qt_plugins_binaries('platforms', namespace='PySide2'))
+binaries.extend(qt_plugins_binaries('iconengines', namespace='PySide2'))
+binaries.extend(qt_plugins_binaries('imageformats', namespace='PySide2'))
 
 # Adds Qt OpenGL
-hiddenimports.extend(['PyQt5.QtOpenGL'])
+hiddenimports.extend(['PySide2.QtOpenGL'])
 if sys.platform.startswith('win'):
-    binaries.extend([(os.path.join(qt_base_dir, 'bin', dll), r'PyQt5\Qt\bin')
+    binaries.extend([(os.path.join(qt_base_dir, 'bin', dll), r'PySide2\Qt\bin')
                      for dll in ('libEGL.dll', 'libGLESv2.dll')])
 
 # Add Qt Dbus on macOS
 if sys.platform.startswith('darwin'):
-    hiddenimports.extend(['PyQt5.QtDBus'])
+    hiddenimports.extend(['PySide2.QtDBus'])
     
 # Add missing modules
 hiddenimports.extend(['sqlalchemy.ext.baked', 'sqlalchemy.sql.default_comparator',
