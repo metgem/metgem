@@ -74,7 +74,7 @@ class FragmentsListWidget(QWidget, Ui_Form):
             if matches.size == 0:
                 return
 
-            float_precision = QSettings().value('Metadata/float_precision', 4)
+            float_precision = QSettings().value('Metadata/float_precision', 4, type=int)
             for table, t in ((self.twFragments, SpectraMatchState.fragment),
                              (self.twNeutralLosses, SpectraMatchState.neutral_loss)):
                 filter_ = np.where(matches['type'] == t)[0]
