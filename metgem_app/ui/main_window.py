@@ -1242,10 +1242,10 @@ class MainWindow(MainWindowBase, MainWindowUI):
     # noinspection PyUnusedLocal
     @debug
     def on_select_first_neighbors_triggered(self, nodes, *args):
-        view = self.current_view
-        if view is not None:
-            neighbors = [v.index for node in nodes for v in view.graph.vs[node.index()].neighbors()]
-            view.scene().setNodesSelection(neighbors)
+        widget = self.current_network_widget
+        if widget is not None:
+            neighbors = [v.index for node in nodes for v in widget.graph.vs[node.index()].neighbors()]
+            widget.view().scene().setNodesSelection(neighbors)
 
     @debug
     def on_use_columns_for(self, type_):
