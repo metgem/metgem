@@ -46,12 +46,15 @@ binaries = []
 datas = []
 hookspath = []
 runtime_hooks = []
-hiddenimports = ['metgem_app.ui.ui_rc', 'pytest', 'pytestqt', 'pytest_mock']
+hiddenimports = ['pytest', 'pytestqt', 'pytest_mock']
 excludes = []
 
 coll_name = 'MetGem'
 if DEBUG:
     coll_name += '_debug'
+
+# Add ui_rc module in datas
+datas += [(os.path.join('..', 'metgem_app', 'ui', 'ui_rc.py'), os.path.join('metgem_app', 'ui'))]
 
 # Add plugins in datas
 # noinspection PyUnresolvedReferences
