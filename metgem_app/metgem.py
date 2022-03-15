@@ -60,6 +60,10 @@ def run():
 
     app = QApplication(sys.argv)
 
+    # PyInstaller hack for qt to find plugins
+    if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+        QApplication.addLibraryPath(os.path.join(sys._MEIPASS, "PySide2", "plugins"))
+
     QCoreApplication.setOrganizationDomain(DOMAIN)
     QCoreApplication.setOrganizationName(ORGANIZATION)
     QCoreApplication.setApplicationName(APPLICATION)
