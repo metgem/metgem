@@ -22,10 +22,6 @@ class ExportDBResultsDialog(QDialog, Ui_Dialog):
         self._dialog = None
         self._workers = WorkerQueue(self, ProgressDialog(self))
 
-        super().__init__(*args, **kwargs)
-
-        self.setupUi(self)
-
         self._dialog = None
 
         # Set completer for output files
