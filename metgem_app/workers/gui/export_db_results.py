@@ -43,7 +43,7 @@ class ExportDbResultsWorker(BaseWorker):
 
         lib = None
         try:
-            if self.KEYS_NEEDING_DB  - set(self.attrs['standards']) or \
+            if self.KEYS_NEEDING_DB - set(self.attrs['standards']) or \
                self.KEYS_NEEDING_DB - set(self.attrs['standards']):
                 lib = SpectraLibrary(os.path.join(self.base_path, 'spectra'))
 
@@ -57,7 +57,7 @@ class ExportDbResultsWorker(BaseWorker):
 
                 # Export data
                 for i in range(nrows):
-                    mz = round(self.model.index(i, 0).data(), 4)
+                    mz = self.model.index(i, 0).data()
                     data = [str(i+1), str(mz)]
                     results_dict = {'standards': [], 'analogs': []}
                     results = self.model.index(i, 1).data(DbResultsRole)

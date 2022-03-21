@@ -72,7 +72,8 @@ class ExportDBResultsDialog(ExportDBResultsDialogBase, ExportDBResultsDialogUI):
             return False
 
     def validate_separator(self):
-        if len(self.editFieldSeparator.text()) == 1:
+        if self.cbFieldSeparator.currentIndex() < self.cbFieldSeparator.count()\
+                or len(self.editFieldSeparator.text()) == 1:
             self.editFieldSeparator.setPalette(self.style().standardPalette())
             return True
         else:
@@ -118,4 +119,4 @@ class ExportDBResultsDialog(ExportDBResultsDialogBase, ExportDBResultsDialogUI):
                 if item.checkState() == Qt.Checked:
                     attributes[type_].append(item.data(Qt.DisplayRole))
 
-        return self.editExportFile.text(), self.editFieldSeparator.delimiter(), self.spinNumHits.value(), attributes
+        return self.editExportFile.text(), self.cbFieldSeparator.delimiter(), self.spinNumHits.value(), attributes
