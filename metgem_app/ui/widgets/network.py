@@ -76,7 +76,7 @@ class BaseFrame(QFrame, Ui_NetworkFrame):
         self._interactions = interactions if isinstance(interactions, pd.DataFrame) else pd.DataFrame()
 
         # Send Scale sliders to a toolbutton menu
-        self._menu = menu = QMenu()
+        menu = QMenu()
         action = QWidgetAction(self)
         action.setDefaultWidget(self.sliderScale)
         menu.addAction(action)

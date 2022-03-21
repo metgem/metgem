@@ -342,7 +342,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.menuView.addMenu(popup_menu)
 
         # Populate list of recently opened projects
-        self._recent_project_menu = menu = QMenu()
+        menu = QMenu()
         self.recent_projects = []
 
         self.actionRecentProjects.setMenu(menu)

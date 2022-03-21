@@ -73,7 +73,7 @@ class ProcessDataDialog(QDialog, Ui_ProcessFileDialog):
             self.cosine_widget.setValues(options.cosine)
 
         # Build menu to add views
-        self._menu = menu = QMenu()
+        menu = QMenu()
         self.btAddView.setMenu(menu)
         set_default = True
         extras_menu = None
