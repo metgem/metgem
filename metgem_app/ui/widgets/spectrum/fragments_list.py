@@ -1,5 +1,6 @@
 import itertools
 import numpy as np
+from PySide2.QtWidgets import QMainWindow
 
 from qtpy.QtCore import Qt, QSettings
 from qtpy.QtWidgets import QWidget, QTableWidgetItem
@@ -64,8 +65,10 @@ class FragmentsListWidget(QWidget, Ui_Form):
         data1 = self._spectra_widget.spectrum1
         mz2 = self._spectra_widget.spectrum2_parent
         data2 = self._spectra_widget.spectrum2
-        dock_widget = findParent(QtAds.CDockWidget, self)
-        main_window = dock_widget.dockManager().parent() if dock_widget else None
+        main_window = findParent(QMainWindow, self)
+        if main_window is None:
+            dock_widget = findParent(QtAds.CDockWidget, self)
+            main_window = dock_widget.dockManager().parent() if dock_widget else None
 
         if main_window is not None and mz1 is not None and data1 is not None and mz2 is not None and data2 is not None:
             data1 = square_root_and_normalize_data(data1)
