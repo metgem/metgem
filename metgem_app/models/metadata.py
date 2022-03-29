@@ -449,7 +449,7 @@ class EdgesModel(QAbstractTableModel):
 
         column = index.column()
         row = index.row()
-        if role in (Qt.DisplayRole, Qt.EditRole, LabelRole):
+        if role in (Qt.DisplayRole, Qt.EditRole, LabelRole, ColumnDataRole):
             if column == self.columnCount()-1:
                 if role == LabelRole:
                     return

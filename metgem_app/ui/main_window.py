@@ -2004,12 +2004,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def highlight_nodes_from_selected_edges(self, *args):
         selected = self.edges_selection()
         model = self.tvEdges.sourceModel()
-        sel = set()
+        sel = []
         for row in selected:
-            source = model.index(row, 0).data() - 1
-            dest = model.index(row, 1).data() - 1
-            sel.add(source)
-            sel.add(dest)
+            source = model.index(row, 0).data(metadata.ColumnDataRole) - 1
+            dest = model.index(row, 1).data(metadata.ColumnDataRole) - 1
+            sel.append(source)
+            sel.append(dest)
 
         for dock in self.network_docks.values():
             scene = dock.widget().scene()
