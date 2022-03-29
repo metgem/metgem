@@ -86,8 +86,12 @@ class RearrangeColumnsProxymodel(QIdentityProxyModel):
         if not proxy_index.isValid():
             return QModelIndex()
 
+        source_column = self.sourceColumnForProxyColumn(proxy_index.column())
+        if source_column == -1:
+            return super().mapToSource(proxy_index)
+
         # This is just an indirect way to call sourceModel.createIndex(row, sourceColumn, pointer)
-        fake_index = self.createIndex(proxy_index.row(), self.sourceColumnForProxyColumn(proxy_index.column()),
+        fake_index = self.createIndex(proxy_index.row(), source_column,
                                       proxy_index.internalPointer())
         return super().mapToSource(fake_index)
 
