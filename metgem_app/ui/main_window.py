@@ -11,7 +11,8 @@ import numpy as np
 import pandas as pd
 import requests
 import sqlalchemy
-from qtpy.QtCore import QSettings, Qt, QCoreApplication, QRectF, QAbstractTableModel
+
+from qtpy.QtCore import (QSettings, Qt, QCoreApplication, QRectF, QAbstractTableModel)
 from qtpy.QtGui import QPainter, QImage, QColor, QKeyEvent, QIcon, QFontMetrics, QFont, QKeySequence, QCursor, QBrush
 from qtpy.QtWidgets import (QDialog, QFileDialog, QMessageBox, QWidget, QMenu, QActionGroup, QMainWindow,
                              QAction, qApp, QTableView, QComboBox, QToolBar,

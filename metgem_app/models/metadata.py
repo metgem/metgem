@@ -2,8 +2,8 @@ from typing import List, Union
 
 import numpy as np
 import pandas as pd
-from qtpy.QtCore import QStringListModel, QModelIndex, Qt, QSortFilterProxyModel, QAbstractTableModel, QSettings, \
-    QAbstractItemModel
+from qtpy.QtCore import (QStringListModel, QModelIndex, Qt, QSortFilterProxyModel, QAbstractTableModel, QSettings,
+                         QAbstractItemModel)
 from qtpy.QtGui import QIcon
 
 try:
