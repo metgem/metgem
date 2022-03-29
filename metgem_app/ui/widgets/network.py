@@ -306,9 +306,6 @@ class MDSFrame(TSNEFrame):
     options_class = workers_opts.MDSVisualizationOptions
     use_edges = False
 
-    def create_worker(self):
-        return self.worker_class(self._network.scores, self._network.options.mds)
-
 
 class UMAPFrame(TSNEFrame):
     title = 'UMAP'
@@ -318,9 +315,6 @@ class UMAPFrame(TSNEFrame):
     worker_class = workers_core.UMAPWorker
     options_class = workers_opts.UMAPVisualizationOptions
     use_edges = False
-
-    def create_worker(self):
-        return self.worker_class(self._network.scores, self._network.options.umap)
 
 
 class IsomapFrame(TSNEFrame):
@@ -332,9 +326,6 @@ class IsomapFrame(TSNEFrame):
     options_class = workers_opts.IsomapVisualizationOptions
     use_edges = False
 
-    def create_worker(self):
-        return self.worker_class(self._network.scores, self._network.options.isomap)
-
 
 class PHATEFrame(TSNEFrame):
     title = 'PHATE'
@@ -344,9 +335,6 @@ class PHATEFrame(TSNEFrame):
     worker_class = workers_core.PHATEWorker
     options_class = workers_opts.PHATEVisualizationOptions
     use_edges = False
-
-    def create_worker(self):
-        return self.worker_class(self._network.scores, self._network.options.phate)
 
 
 AVAILABLE_NETWORK_WIDGETS = {obj.name: obj for obj in BaseFrame.get_subclasses()}
