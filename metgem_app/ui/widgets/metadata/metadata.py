@@ -28,3 +28,9 @@ class MetadataTableView(QTableView):
     def resetSorting(self):
         self.horizontalHeader().setSortIndicator(-1, Qt.AscendingOrder)
         self.model().sort(-1)
+
+    def sourceModel(self):
+        model = self.model()
+        while hasattr(model, 'sourceModel'):
+            model = model.sourceModel()
+        return model

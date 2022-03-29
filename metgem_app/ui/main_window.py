@@ -113,11 +113,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Add model to table views
         model = metadata.NodesModel(self)
-        proxy = metadata.NodesProxyModel()
+        proxy = metadata.NodesSortFilterProxyModel()
         proxy.setSourceModel(model)
         self.tvNodes.setModel(proxy)
         model = metadata.EdgesModel(self)
-        proxy = metadata.EdgesProxyModel()
+        proxy = metadata.EdgesSortFilterProxyModel()
         proxy.setSourceModel(model)
         self.tvEdges.setModel(proxy)
 
@@ -496,8 +496,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     @network.setter
     def network(self, network):
-        network.infosAboutToChange.connect(self.tvNodes.model().sourceModel().beginResetModel)
-        network.infosChanged.connect(self.tvNodes.model().sourceModel().endResetModel)
+        network.infosAboutToChange.connect(self.tvNodes.sourceModel().beginResetModel)
+        network.infosChanged.connect(self.tvNodes.sourceModel().endResetModel)
 
         self.tvNodes.setColumnHidden(1, network.db_results is None or len(network.db_results) == 0)
 
@@ -549,12 +549,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
             self.tvNodes.model().setSelection([])
             self.tvEdges.model().setSelection([])
-            self.tvNodes.model().sourceModel().beginResetModel()
+            self.tvNodes.sourceModel().beginResetModel()
             network, layouts, graphs, annotations = worker.result()
             self.network = network
-            self.tvNodes.model().sourceModel().endResetModel()
-            self.tvEdges.model().sourceModel().beginResetModel()
-            self.tvEdges.model().sourceModel().endResetModel()
+            self.tvNodes.sourceModel().endResetModel()
+            self.tvEdges.sourceModel().beginResetModel()
+            self.tvEdges.sourceModel().endResetModel()
 
             self.tvNodes.setColumnHidden(1, self.network.db_results is None or len(self.network.db_results) == 0)
 
@@ -631,11 +631,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.dock_spectra.toggleView(False)
         self.dock_annotations.toggleView(False)
 
-        self.tvNodes.model().sourceModel().beginResetModel()
-        self.tvEdges.model().sourceModel().beginResetModel()
+        self.tvNodes.sourceModel().beginResetModel()
+        self.tvEdges.sourceModel().beginResetModel()
         self.init_project()
-        self.tvNodes.model().sourceModel().endResetModel()
-        self.tvEdges.model().sourceModel().endResetModel()
+        self.tvNodes.sourceModel().endResetModel()
+        self.tvEdges.sourceModel().endResetModel()
         self.spectra_widget.set_spectrum1(None)
         self.spectra_widget.set_spectrum2(None)
         self.update_search_menu()
@@ -852,8 +852,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if isinstance(now, widgets.AnnotationsNetworkView):
             self.update_status_widgets()
 
-            self.tvEdges.model().sourceModel().beginResetModel()
-            self.tvEdges.model().sourceModel().endResetModel()
+            self.tvEdges.sourceModel().beginResetModel()
+            self.tvEdges.sourceModel().endResetModel()
 
             self.actionViewMiniMap.setChecked(now.minimap.isVisible())
             self.btUndoAnnotations.setMenu(now.undoMenu())
@@ -862,8 +862,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     @debug
     def on_current_tab_changing(self, index: int):
         if index == 1:  # Edges
-            self.tvEdges.model().sourceModel().beginResetModel()
-            self.tvEdges.model().sourceModel().endResetModel()
+            self.tvEdges.sourceModel().beginResetModel()
+            self.tvEdges.sourceModel().endResetModel()
 
     # noinspection PyUnusedLocal
     @debug
@@ -1150,10 +1150,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         if filename:
             sep = '\t' if filter_.endswith("(*.tsv)") else ','
-            selected_rows = {self.tvNodes.model().mapToSource(index).row()
-                             for index in self.tvNodes.selectionModel().selectedRows()}
+            selected_rows = [index.row() for index in self.tvNodes.selectionModel().selectedRows()]
 
-            worker = self.prepare_export_metadata_worker(filename, self.tvNodes.model().sourceModel(),
+            worker = self.prepare_export_metadata_worker(filename, self.tvNodes.model(),
                                                          sep, selected_rows)
             if worker is not None:
                 self._workers.append(worker)
@@ -1170,7 +1169,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 if not filename:
                     return
                 worker = self.prepare_export_db_results_worker(filename, values,
-                                                               self.tvNodes.model().sourceModel())
+                                                               self.tvNodes.sourceModel())
                 if worker is not None:
                     self._workers.append(worker)
                     self._workers.start()
@@ -1250,7 +1249,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     @debug
     def on_use_columns_for(self, type_):
-        model = self.tvNodes.model().sourceModel()
+        model = self.tvNodes.sourceModel()
         if model.columnCount() <= 1:
             return
 
@@ -1416,7 +1415,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                             'pi': np.pi, 'e': np.e,
                              }
 
-                self.tvNodes.model().sourceModel().beginResetModel()
+                self.tvNodes.sourceModel().beginResetModel()
                 # noinspection PyShadowingNames
                 errors = {}
                 for name, mapping in mappings.items():
@@ -1434,7 +1433,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                         errors[name] = e
 
                 self.check_columns_mappings_after_data_changed(set(mappings.keys()))
-                self.tvNodes.model().sourceModel().endResetModel()
+                self.tvNodes.sourceModel().endResetModel()
 
                 if errors:
                     str_errors = '\n'.join([f'"{name}" -> {error}' for (name, error) in errors.items()])
@@ -1468,9 +1467,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if result == QDialog.Accepted:
                 # noinspection PyShadowingNames
                 def update_dataframe(worker: workers_core.ClusterizeWorker):
-                    self.tvNodes.model().sourceModel().beginResetModel()
+                    self.tvNodes.sourceModel().beginResetModel()
                     self.network.infos[options.column_name] = data = worker.result()
-                    self.tvNodes.model().sourceModel().endResetModel()
+                    self.tvNodes.sourceModel().endResetModel()
 
                     column_index = self.network.infos.columns.get_loc(options.column_name)
                     self.tvNodes.setColumnBlinking(column_index + 2, True)
@@ -1500,9 +1499,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if result == QDialog.Accepted:
                 # noinspection PyShadowingNames
                 def update_dataframe(worker: workers_core.ClusterizeWorker):
-                    self.tvNodes.model().sourceModel().beginResetModel()
+                    self.tvNodes.sourceModel().beginResetModel()
                     self.network.infos[options.column_name] = data = worker.result()
-                    self.tvNodes.model().sourceModel().endResetModel()
+                    self.tvNodes.sourceModel().endResetModel()
 
                     column_index = self.network.infos.columns.get_loc(options.column_name)
                     self.tvNodes.setColumnBlinking(column_index + 2, True)
@@ -1540,7 +1539,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if reply == QMessageBox.No:
             return
 
-        model = self.tvNodes.model().sourceModel()
+        model = self.tvNodes.sourceModel()
         num_columns = model.columnCount()
         model.beginResetModel()
         column_names = set([model.headerData(index.column(), Qt.Horizontal, metadata.KeyRole)
@@ -1580,7 +1579,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.has_unsaved_changes = True
 
         # Cancel movement for columns not in the nodes' dataframe
-        model = self.tvNodes.model().sourceModel()
+        model = self.tvNodes.sourceModel()
         key = model.headerData(logical_index, Qt.Horizontal, metadata.KeyRole)
         if isinstance(key, int):
             with SignalBlocker(self.tvNodes.horizontalHeader()):
@@ -1690,9 +1689,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if result == QDialog.Accepted:
                 def create_compute_scores_worker(worker: workers_core.ReadDataWorker):
                     self.tvNodes.model().setSelection([])
-                    self.tvNodes.model().sourceModel().beginResetModel()
+                    self.tvNodes.sourceModel().beginResetModel()
                     self._network.mzs, self._network.spectra = worker.result()
-                    self.tvNodes.model().sourceModel().endResetModel()
+                    self.tvNodes.sourceModel().endResetModel()
                     mzs = self.network.mzs
                     if mzs is None:
                         mzs = np.zeros((len(self.network.spectra),), dtype=int)
@@ -2001,7 +2000,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     @debug
     def highlight_nodes_from_selected_edges(self, *args):
         selected = self.edges_selection()
-        model = self.tvEdges.model().sourceModel()
+        model = self.tvEdges.sourceModel()
         sel = set()
         for row in selected:
             source = model.index(row, 0).data() - 1
@@ -2083,7 +2082,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     @debug
     def set_nodes_label(self, column_id: int = None, column_key: Union[int, str] = None):
-        model = self.tvNodes.model().sourceModel()
+        model = self.tvNodes.sourceModel()
         for column in range(model.columnCount()):
             font = model.headerData(column, Qt.Horizontal, role=Qt.FontRole)
             if font is not None and font.overline():
@@ -2121,7 +2120,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     @debug
     def set_nodes_pie_chart_values(self, column_ids: List[int] = None, colors: List[Union[QColor, str]] = [],
                                    column_keys: List[Union[int, str]] = None):
-        model = self.tvNodes.model().sourceModel()
+        model = self.tvNodes.sourceModel()
 
         if column_keys is not None and len(column_keys) > 0:
             if hasinstance(column_keys, str):
@@ -2170,7 +2169,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     @debug
     def set_nodes_sizes_values(self, column_id: int = None, func: Callable = None,
                                column_key: Union[int, str] = None):
-        model = self.tvNodes.model().sourceModel()
+        model = self.tvNodes.sourceModel()
 
         for column in range(model.columnCount()):
             font = model.headerData(column, Qt.Horizontal, role=Qt.FontRole)
@@ -2211,7 +2210,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                 mapping: Union[Dict[str, Tuple[QColor, NodePolygon]],
                                                Tuple[List[float], List[QColor], List[NodePolygon]]] = {},
                                 column_key: Union[int, str] = None):
-        model = self.tvNodes.model().sourceModel()
+        model = self.tvNodes.sourceModel()
         for column in range(model.columnCount()):
             font = model.headerData(column, Qt.Horizontal, role=Qt.FontRole)
             if font is not None and font.italic():
@@ -2291,7 +2290,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def set_nodes_pixmaps_values(self, column_id: int = None,
                                 column_key: Union[int, str] = None,
                                 type_: int = widgets.AnnotationsNetworkScene.PixmapsAuto):
-        model = self.tvNodes.model().sourceModel()
+        model = self.tvNodes.sourceModel()
         for column in range(model.columnCount()):
             font = model.headerData(column, Qt.Horizontal, role=Qt.FontRole)
             if font is not None and font.bold():
@@ -2580,7 +2579,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def prepare_read_metadata_worker(self, filename, options):
         def file_read():
             nonlocal worker
-            model = self.tvNodes.model().sourceModel()
+            model = self.tvNodes.sourceModel()
             model.beginResetModel()
             df = self._network.infos
             if df is not None and not df.empty:
@@ -2657,7 +2656,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             else:
                 raise e
 
-        model = self.tvNodes.model().sourceModel()
+        model = self.tvNodes.sourceModel()
         header = self.tvNodes.horizontalHeader()
         df = self._network.infos
         columns = [model.headerData(header.visualIndex(i), Qt.Horizontal, metadata.KeyRole)
@@ -2720,7 +2719,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             nonlocal worker
             result = worker.result()
             if result:
-                self.tvNodes.model().sourceModel().beginResetModel()
+                self.tvNodes.sourceModel().beginResetModel()
                 type_ = "analogs" if options.analog_search else "standards"
                 # Update db_results with these new results
                 num_results = 0
@@ -2734,7 +2733,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     elif row in self._network.db_results and type_ in self._network.db_results[row]:
                         del self._network.db_results[row][type_]
                 self.has_unsaved_changes = True
-                self.tvNodes.model().sourceModel().endResetModel()
+                self.tvNodes.sourceModel().endResetModel()
 
                 # Show column if db_results is not empty
                 was_hidden = self.tvNodes.isColumnHidden(1)
@@ -2765,13 +2764,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         def finished():
             nonlocal worker
             result = worker.result()
-            self.tvNodes.model().sourceModel().beginResetModel()
+            self.tvNodes.sourceModel().beginResetModel()
             if hasattr(self._network, 'mappings'):
                 self._network.mappings.update(result)
             else:
                 self._network.mappings = result
             self.has_unsaved_changes = True
-            self.tvNodes.model().sourceModel().endResetModel()
+            self.tvNodes.sourceModel().endResetModel()
 
         def error(e):
             if isinstance(e, ValueError):
