@@ -6,6 +6,8 @@ from ...database import SpectraLibrary, Spectrum
 from ...models.metadata import DbResultsRole
 from .errors import NoDataError
 
+from qtpy.QtCore import Qt
+
 
 def yield_results(results: list, num_hits: int):
     """Yield `num_hits` first results. If `results` is smaller than `num_hits`continue yielding None
@@ -21,7 +23,8 @@ class ExportDbResultsWorker(BaseWorker):
     KEYS_NEEDING_DB = {'Name', 'SMILES', 'Inchi', 'm/z parent'}
 
     def __init__(self, filename: str, separator: str, num_hits: int,
-                 attributes: Dict[str, List[str]], base_path: str, model):
+                 attributes: Dict[str, List[str]], base_path: str, model,
+                 selected_rows: List[int]):
         super().__init__()
         self.filename = filename
         self.sep = separator
@@ -29,6 +32,7 @@ class ExportDbResultsWorker(BaseWorker):
         self.attrs = attributes
         self.base_path = base_path
         self.model = model
+        self.selected_rows = selected_rows
 
         self.max = self.model.rowCount()
         self.iterative_update = True
@@ -40,6 +44,8 @@ class ExportDbResultsWorker(BaseWorker):
         if nrows <= 0:
             self.error.emit(NoDataError())
             return
+
+        rows = self.selected_rows if self.selected_rows else range(nrows)
 
         lib = None
         try:
@@ -56,13 +62,16 @@ class ExportDbResultsWorker(BaseWorker):
                 f.write(self.sep.join(headers) + '\n')
 
                 # Export data
-                for i in range(nrows):
+                for i in rows:
                     mz = self.model.index(i, 0).data()
-                    data = [str(i+1), str(mz)]
+                    data = [self.model.headerData(i, Qt.Vertical), str(mz)]
                     results_dict = {'standards': [], 'analogs': []}
                     results = self.model.index(i, 1).data(DbResultsRole)
                     if results is not None:
                         for type_, res in results.items():
+                            if type_ not in ('standards', 'analogs'):
+                                continue
+
                             res = results.get(type_, None)
                             for r in yield_results(res, self.num_hits):
                                 if lib is not None and r is not None:

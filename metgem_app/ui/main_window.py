@@ -1168,8 +1168,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 filename, *values = self._dialog.getValues()
                 if not filename:
                     return
+                selected_rows = [index.row() for index in self.tvNodes.selectionModel().selectedRows()]
                 worker = self.prepare_export_db_results_worker(filename, values,
-                                                               self.tvNodes.sourceModel())
+                                                               self.tvNodes.model(),
+                                                               selected_rows)
                 if worker is not None:
                     self._workers.append(worker)
                     self._workers.start()
@@ -2808,11 +2810,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     @debug
     def prepare_export_db_results_worker(self, filename: str, values,
-                                         model: QAbstractTableModel) -> workers_gui.ExportDbResultsWorker:
-        worker = workers_gui.ExportDbResultsWorker(filename, *values, config.DATABASES_PATH, model)
+                                         model: QAbstractTableModel, selected_rows) -> workers_gui.ExportDbResultsWorker:
+        worker = workers_gui.ExportDbResultsWorker(filename, *values, config.DATABASES_PATH, model, selected_rows)
 
         def finished():
-            QMessageBox.information(self, None, f"Database results were successfully exported to \"{filename}\".")
+            nnodes = len(selected_rows) if selected_rows else self.tvNodes.model().rowCount()
+            QMessageBox.information(self, None,
+                                    f"Database results for {nnodes} nodes were successfully exported to \"{filename}\".")
 
         def error(e):
             if isinstance(e, workers_gui.NoDataError):
