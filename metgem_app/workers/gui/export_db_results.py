@@ -17,6 +17,10 @@ def yield_results(results: list, num_hits: int):
         yield None
 
 
+def clean_string(s: str):
+    return ''.join(s.encode('ascii', 'ignore').decode().strip().splitlines())
+
+
 class ExportDbResultsWorker(BaseWorker):
     KEYS_NEEDING_DB = {'Name', 'SMILES', 'Inchi', 'm/z parent'}
 
@@ -75,19 +79,19 @@ class ExportDbResultsWorker(BaseWorker):
                                     if k == 'Score':
                                         results_dict[type_].append(str(round(r.score, 4)) if r is not None else '')
                                     elif k == 'Database':
-                                        results_dict[type_].append(r.bank if r is not None
+                                        results_dict[type_].append(clean_string(r.bank) if r is not None
                                                                    and r.bank is not None else '')
                                     elif k == 'm/z parent':
                                         results_dict[type_].append(str(round(spec.pepmass, 4)) if spec is not None
                                                                    and spec.pepmass is not None else '')
                                     elif k == 'Name':
-                                        results_dict[type_].append(spec.name if spec is not None
+                                        results_dict[type_].append(clean_string(spec.name) if spec is not None
                                                                    and spec.name is not None else '')
                                     elif k == 'SMILES':
-                                        results_dict[type_].append(spec.smiles if spec is not None
+                                        results_dict[type_].append(clean_string(spec.smiles) if spec is not None
                                                                    and spec.smiles is not None else '')
                                     elif k == 'Inchi':
-                                        results_dict[type_].append(spec.inchi if spec is not None
+                                        results_dict[type_].append(clean_string(spec.inchi) if spec is not None
                                                                    and spec.inchi is not None else '')
 
                         for type_ in ('standards', 'analogs'):
