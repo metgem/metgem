@@ -39,7 +39,7 @@ class AboutDialog(QDialog, Ui_AboutDialog):
                               <i>Developer and Tester</i></p>"""
         authors += """<p><b>Credits</b></p>
             <p><i>Various Suggestions &amp; Testing:</i> Cyrille Santerre, Simon Remy, Florence Mondeguer, Orianne Brel,
-            Morgane Barthélémy, Téo Hebra</p>"""
+            Morgane Barthélémy, Téo Hebra, Marceau Levasseur</p>"""
         self.setAuthors(authors)
 
         # noinspection PyPep8
