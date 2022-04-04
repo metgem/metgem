@@ -1,6 +1,7 @@
 import glob
 import sys
 import os
+import subprocess
 
 from setuptools import setup, find_packages
 from setuptools.command.build_py import build_py
@@ -43,7 +44,7 @@ class ProcessResourceCommand(cmd.Command):
             skip = not any([os.path.getmtime(qrc) > rc_mtime for qrc in qrcs])
 
         if not skip:
-            os.system(f"pyside2-rcc -o {rc} {' '.join(qrcs)}")
+            subprocess.run(['pyside2-rcc', '-o', rc, ' '.join(qrcs)], shell=True)
 
 
 class ProcessUICommand(cmd.Command):
@@ -61,7 +62,7 @@ class ProcessUICommand(cmd.Command):
         for fn in glob.glob(os.path.join('metgem_app', 'ui', '**', '*.ui'), recursive=True):
             fn = os.path.realpath(fn)
             out = fn[:-3] + '_ui.py'
-            os.system(f"pyside2-uic {fn} -o {out} ")
+            subprocess.run(['pyside2-uic', fn, '-o', out])
 
 
 class BuildPyCommand(build_py):

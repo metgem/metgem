@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 import os.path
 import shutil
 import tempfile
+import subprocess
 
 # noinspection PyUnresolvedReferences
 import biplist
@@ -15,7 +16,8 @@ PACKAGING_DIR = defines.get('packaging_dir', 'metgem_packaging')
 tmp_dir = tempfile.TemporaryDirectory()
 os.makedirs(os.path.join(tmp_dir.name, APPNAME))
 shutil.copy(f"{PACKAGING_DIR}/main.icns", tmp_dir.name)
-os.system(f"{PACKAGING_DIR}/set_folder_icon.sh {PACKAGING_DIR}/main.icns {tmp_dir.name} {APPNAME}")
+subprocess.run([f"PACKAGING_DIR}/set_folder_icon.sh", f"{PACKAGING_DIR}/main.icns", tmp_dir.name, APPNAME],
+               shell=True)
 
 #
 # Example settings file for dmgbuild
