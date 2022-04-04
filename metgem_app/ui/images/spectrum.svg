@@ -2,23 +2,23 @@
 <!-- Created with matplotlib (http://matplotlib.org/) -->
 
 <svg
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    height="72pt"
    version="1.1"
    viewBox="0 0 72 72"
    width="72pt"
    id="svg2"
-   inkscape:version="0.91 r13725"
+   inkscape:version="1.1.1 (3bf5ae0d25, 2021-09-20)"
    sodipodi:docname="spectrum.svg"
    inkscape:export-filename="C:\Users\elie\Desktop\Base de donnees souches\ui\widgets\images\spectrum_large.png"
    inkscape:export-xdpi="48"
-   inkscape:export-ydpi="48">
+   inkscape:export-ydpi="48"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
   <metadata
      id="metadata17">
     <rdf:RDF>
@@ -41,16 +41,18 @@
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
      inkscape:window-width="1920"
-     inkscape:window-height="1018"
+     inkscape:window-height="1017"
      id="namedview15"
      showgrid="false"
-     inkscape:zoom="2.6222222"
-     inkscape:cx="-104.6822"
-     inkscape:cy="45"
+     inkscape:zoom="0.65555555"
+     inkscape:cx="179.23729"
+     inkscape:cy="-119.74576"
      inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
-     inkscape:current-layer="text_1" />
+     inkscape:current-layer="text_1"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="pt" />
   <defs
      id="defs4">
     <style
@@ -73,6 +75,30 @@
        transform="translate(-38.135593,-0.30508475)"
        style="stroke-linecap:butt;stroke-linejoin:round">
       <rect
+         style="fill:#24d0fc;fill-opacity:1;stroke:none;stroke-width:15;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
+         id="rect4163-6"
+         width="7.6271186"
+         height="61.322029"
+         x="43.474571"
+         y="5.0169535"
+         ry="2.5550845" />
+      <rect
+         style="fill:#24d0fc;fill-opacity:1;stroke:none;stroke-width:15;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
+         id="rect4163-6-4"
+         width="7.6271186"
+         height="33.864403"
+         x="70.322037"
+         y="31.881359"
+         ry="1.4110167" />
+      <rect
+         style="fill:#24d0fc;fill-opacity:1;stroke:none;stroke-width:15;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
+         id="rect4163-6-4-7"
+         width="7.6271186"
+         height="43.932198"
+         x="96.755905"
+         y="21.345766"
+         ry="1.8305082" />
+      <rect
          style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:15;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
          id="rect4163"
          width="7.6271186"
@@ -81,30 +107,6 @@
          y="-107.38983"
          ry="2.7711861"
          transform="matrix(0,1,-1,0,0,0)" />
-      <rect
-         style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:15;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
-         id="rect4163-6"
-         width="7.6271186"
-         height="61.322029"
-         x="43.474571"
-         y="5.0169535"
-         ry="2.5550845" />
-      <rect
-         style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:15;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
-         id="rect4163-6-4"
-         width="7.6271186"
-         height="33.864403"
-         x="70.322037"
-         y="31.881359"
-         ry="1.4110167" />
-      <rect
-         style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:15;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
-         id="rect4163-6-4-7"
-         width="7.6271186"
-         height="43.932198"
-         x="96.755905"
-         y="21.345766"
-         ry="1.8305082" />
     </g>
   </g>
 </svg>
