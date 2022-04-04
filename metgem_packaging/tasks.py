@@ -45,11 +45,11 @@ def buildpy(ctx):
 
 # noinspection PyShadowingNames,PyUnusedLocal
 @task
-def rc(ctx):
+def rc(ctx, force=False):
     qrcs = [os.path.join(PACKAGING_DIR, '..', 'metgem_app', 'ui', 'ui.qrc')]
     rc = os.path.join(PACKAGING_DIR, '..', 'metgem_app', 'ui', 'ui_rc.py')
     skip = False
-    if os.path.exists(rc):
+    if not force and os.path.exists(rc):
         rc_mtime = os.path.getmtime(rc)
         skip = not any([os.path.getmtime(qrc) > rc_mtime for qrc in qrcs])
 
