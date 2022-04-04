@@ -1,20 +1,49 @@
 from ....database import Spectrum
-from .databases_details_ui import Ui_DownloadDatabaseDialog
+from .databases_details_ui import Ui_DatabasesDetails
 
-from qtpy.QtWidgets import  QWidget
+from qtpy.QtWidgets import QWidget
+from PySide2Ads.QtAds import CDockManager, CDockWidget, CenterDockWidgetArea
 
 
-class SpectrumDetailsWidget(QWidget, Ui_DownloadDatabaseDialog):
+class SpectrumDetailsWidget(QWidget, Ui_DatabasesDetails):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.setupUi(self)
 
         self._model = None
+        self.dock_manager = CDockManager(self)
+        self.docks = []
+        dock_area = None
+
+        for _ in range(self.tabWidget.count()):
+            w = self.tabWidget.widget(0)
+            dock = CDockWidget(self.tabWidget.tabText(0))
+            dock.setFeature(CDockWidget.DockWidgetFloatable, False)
+            dock.setFeature(CDockWidget.DockWidgetClosable, False)
+            dock.setIcon(self.tabWidget.tabIcon(0))
+            self.docks.append(dock)
+            if dock_area is None:
+                dock_area = self.dock_manager.addDockWidget(CenterDockWidgetArea, dock)
+            else:
+                dock_area = self.dock_manager.addDockWidget(CenterDockWidgetArea, dock, dock_area)
+            dock.setWidget(w)
+        if self.docks:
+            self.docks[0].setAsCurrentTab()
+            self.layout().removeWidget(self.tabWidget)
+            self.tabWidget.setParent(None)
+            self.tabWidget.deleteLater()
+            self.layout().addWidget(self.dock_manager)
+            self.layout().setMargin(0)
+            self.widgetSpectrum.canvas.showEvent = lambda _: None  # prevent matplotlib bug
 
         self.widgetFragmentsList.spectra_widget = self.widgetSpectrum
         self.widgetSpectrum.dataLoaded.connect(self.widgetFragmentsList.populate_fragments_list)
         self.widgetSpectrum.dataCleared.connect(self.widgetFragmentsList.clear_fragments_list)
+
+    def hideEvent(self, event):
+        for w in self.dock_manager.floatingWidgets():
+            w.close()
 
     def model(self):
         return self._model
