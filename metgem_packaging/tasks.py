@@ -5,7 +5,7 @@ import shutil
 import sys
 import tempfile
 import subprocess
-
+import tqdm
 
 from invoke import task
 
@@ -66,7 +66,9 @@ def uic(ctx, filename=''):
     if not filename:
         filename = '*'
 
-    for fn in glob.glob(os.path.join(PACKAGING_DIR, '..', 'metgem_app', 'ui', '**', filename + '.ui'), recursive=True):
+    files = glob.glob(os.path.join(PACKAGING_DIR, '..', 'metgem_app', 'ui', '**', filename + '.ui'),
+                      recursive=True)
+    for fn in tqdm.tqdm(files):
         fn = os.path.realpath(fn)
         out = fn[:-3] + '_ui.py'
         subprocess.run(['pyside2-uic', fn, '-o', out],
