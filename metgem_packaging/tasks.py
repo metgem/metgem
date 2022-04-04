@@ -58,8 +58,11 @@ def rc(ctx):
 
 # noinspection PyShadowingNames,PyUnusedLocal
 @task
-def uic(ctx):
-    for fn in glob.glob(os.path.join(PACKAGING_DIR, '..', 'metgem_app', 'ui', '**', '*.ui'), recursive=True):
+def uic(ctx, filename=''):
+    if not filename:
+        filename = '*'
+
+    for fn in glob.glob(os.path.join(PACKAGING_DIR, '..', 'metgem_app', 'ui', '**', filename + '.ui'), recursive=True):
         fn = os.path.realpath(fn)
         out = fn[:-3] + '_ui.py'
         os.system(f"pyside2-uic {fn} -o {out}")
