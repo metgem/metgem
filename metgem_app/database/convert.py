@@ -9,6 +9,7 @@ from sqlalchemy.exc import OperationalError
 from .models import Spectrum, Organism, Submitter, DataCollector, Instrument, Bank, Investigator
 from .session import create_session
 from ..utils import grouper
+from ..utils.read_data import guess_file_format
 
 
 def clean_string(string):
@@ -137,11 +138,11 @@ class DataBaseBuilder:
             self._uniques['bank'][bank_name] = self._indexes['bank']
 
         for path in filenames:
-            ext = os.path.splitext(os.path.basename(path))[1]
+            fmt = guess_file_format(path)
 
-            if ext == '.mgf':
+            if fmt == 'mgf':
                 read = read_mgf
-            elif ext == '.msp':
+            elif fmt == 'msp':
                 read = read_msp
             else:
                 raise NotImplementedError
@@ -157,10 +158,10 @@ class DataBaseBuilder:
                         break
 
                     params, peaks = entry
-                    if ext == '.mgf':
+                    if fmt == 'mgf':
                         pepmass = params.get('pepmass', -1)
                         inchiaux = params.get('inchiaux', None)
-                    elif ext == '.msp':
+                    elif fmt == 'msp':
                         pepmass = params.get('precursormz', -1)
                         if pepmass == -1:
                             pepmass = params.get('exactmass', -1)

@@ -7,6 +7,7 @@ from libmetgem.msp import read as read_msp
 
 from ..base import BaseWorker
 from ..options import CosineComputationOptions
+from ...utils.read_data import guess_file_format
 
 
 class NoSpectraError(Exception):
@@ -15,22 +16,6 @@ class NoSpectraError(Exception):
 
 class FileEmptyError(Exception):
     pass
-
-
-def guess_file_format(filename):
-    ext = os.path.splitext(filename)[1].lower()
-    if ext in ('.mgf', '.msp'):
-        return ext[1:]
-
-    try:
-        with open(filename, 'r') as f:
-            head = next(f)
-            if head.startswith('BEGIN IONS'):
-                return 'mgf'
-            elif head.startswith('NAME:'):
-                return 'msp'
-    except UnicodeDecodeError:
-        return
 
 
 class ReadDataWorker(BaseWorker):
