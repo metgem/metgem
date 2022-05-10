@@ -62,7 +62,7 @@ class ProcessUICommand(cmd.Command):
         for fn in glob.glob(os.path.join('metgem_app', 'ui', '**', '*.ui'), recursive=True):
             fn = os.path.realpath(fn)
             out = fn[:-3] + '_ui.py'
-            subprocess.run(['pyside2-uic', fn, '-o', out])
+            subprocess.run(['pyside2-uic', fn, '-o', out], shell=True)
 
 
 class BuildPyCommand(build_py):

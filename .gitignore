@@ -182,3 +182,4 @@ examples/*.txt
 *.event
 .stub
 .idea/*
+*.dll

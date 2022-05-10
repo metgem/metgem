@@ -6,6 +6,9 @@ import sys
 import tempfile
 import subprocess
 import tqdm
+import requests
+import io
+import zipfile
 
 from invoke import task
 
@@ -14,6 +17,8 @@ DIST = os.path.join(PACKAGING_DIR, 'dist')
 BUILD = os.path.join(PACKAGING_DIR, 'build')
 NAME = 'MetGem'
 APPIMAGE_TOOL_URL = "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
+API_MS_WIN_CORE_PATH_URL = "https://github.com/nalexandru/api-ms-win-core-path-HACK/releases/download/0.3.1/api-ms-win-core-path-blender-0.3.1.zip"
+API_MS_WIN_CORE_PATH = "api-ms-win-core-path-blender/x64/api-ms-win-core-path-l1-1-0.dll"
 
 
 @task
@@ -38,10 +43,12 @@ def build(ctx, clean=False, validate_appstream=True):
     exe(ctx, clean)
     installer(ctx, validate_appstream)
 
+
 # noinspection PyShadowingNames
 @task
 def buildpy(ctx):
     ctx.run("cd {0}/.. && python setup.py build -b {0}/build --build-scripts {0}/build/scripts".format(PACKAGING_DIR))
+
 
 # noinspection PyShadowingNames,PyUnusedLocal
 @task
@@ -95,6 +102,14 @@ def exe(ctx, clean=False, debug=False, build_py=True):
             embed_manifest(ctx, debug)
             if not debug:
                 com(ctx)
+
+            # Download api-ms-win-core-path dll file modified for Windows 7
+            if not os.path.exists(os.path.join(PACKAGING_DIR, API_MS_WIN_CORE_PATH)):
+                r = requests.get(API_MS_WIN_CORE_PATH_URL, allow_redirects=True)
+                with zipfile.ZipFile(io.BytesIO(r.content), 'r') as zip:
+                    zip_info = zip.getinfo(API_MS_WIN_CORE_PATH)
+                    zip_info.filename = os.path.basename(zip_info.filename)
+                    zip.extract(zip_info, PACKAGING_DIR)
         elif sys.platform.startswith('darwin'):
             add_rpath(ctx)
 

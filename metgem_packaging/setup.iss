@@ -53,6 +53,7 @@ Name: "{app}\data"; Check: IsPortable
 [Files]
 Source: "dist\{#AppName}\{#AppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dist\{#AppName}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "api-ms-win-core-path-l1-1-0.dll"; DestDir: "{app}"; Flags: ignoreversion; OnlyBelowVersion: 6.2
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
