@@ -2350,6 +2350,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if setting is not None:
             self.restoreState(setting)
         self.recent_projects = settings.value('RecentProjects')
+        if self.recent_projects is None:
+            self.recent_projects = []
         self.update_recent_projects()
         settings.endGroup()
 
