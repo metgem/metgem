@@ -64,7 +64,7 @@ def rc(ctx, force=False):
         print('[RC] resource file is up-to-date, skipping build.')
     else:
         subprocess.run(['pyside2-rcc', '-o', rc, ' '.join(qrcs)],
-                       shell=True)
+                       shell=sys.platform == 'win32')
         print('[RC] Resource file updated.')
 
 # noinspection PyShadowingNames,PyUnusedLocal
@@ -79,7 +79,7 @@ def uic(ctx, filename=''):
         fn = os.path.realpath(fn)
         out = fn[:-3] + '_ui.py'
         subprocess.run(['pyside2-uic', fn, '-o', out],
-                       shell=True,
+                       shell=sys.platform == 'win32',
                        stdout=subprocess.DEVNULL,
                        stderr=subprocess.STDOUT)
     print(f'[UIC] {len(files)} UI file(s) updated.')
@@ -179,7 +179,7 @@ def installer(ctx, validate_appstream=True):
             tmp_application = os.path.join(source_folder, NAME + '.app')
 
             os.makedirs(source_folder)
-            subprocess.run([os.path.join(PACKAGING_DIR, 'set_folder_icon.sh'), icon, tmp_dir, NAME], shell=True)
+            subprocess.run([os.path.join(PACKAGING_DIR, 'set_folder_icon.sh'), icon, tmp_dir, NAME])
 
             shutil.copytree(application, tmp_application)
             shutil.copytree(os.path.join(PACKAGING_DIR, '..', 'examples'),
@@ -196,7 +196,7 @@ def installer(ctx, validate_appstream=True):
             with open(appdmg_json_fn, 'w') as f:
                 json.dump(appdmg_json, f)
 
-            subprocess.run(['appdmg', appdmg_json_fn, output], shell=True)
+            subprocess.run(['appdmg', appdmg_json_fn, output])
     elif sys.platform.startswith('linux'):
         if not os.path.exists('{}/appimagetool-x86_64.AppImage'.format(PACKAGING_DIR)):
             ctx.run('wget {} -P {}'.format(APPIMAGE_TOOL_URL, PACKAGING_DIR))
