@@ -1,21 +1,16 @@
 import os
 
-from PyQt5 import uic
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QAbstractItemView
+from qtpy.QtCore import Qt
+from qtpy.QtWidgets import QAbstractItemView, QDialog
 
 from ..models.databases import BanksModel, SpectraModel
 from ..database import SpectraLibrary, Spectrum
 from .widgets.delegates.autotooltip import AutoToolTipItemDelegate
 from .widgets.delegates.quality import LibraryQualityDelegate
-
-UI_FILE = os.path.join(os.path.dirname(__file__), 'view_databases_dialog.ui')
-ViewDatabasesDialogUI, ViewDatabasesDialogBase = uic.loadUiType(UI_FILE,
-                                                                from_imports='metgem_app.ui',
-                                                                import_from='metgem_app.ui')
+from .view_databases_dialog_ui import Ui_Dialog
 
 
-class ViewDatabasesDialog(ViewDatabasesDialogUI, ViewDatabasesDialogBase):
+class ViewDatabasesDialog(QDialog, Ui_Dialog):
 
     def __init__(self, *args, base_path=None, **kwargs):
         super().__init__(*args, **kwargs)

@@ -2,21 +2,13 @@ from .widgets import QueryDatabasesOptionsWidget, AutoToolTipItemDelegate
 from ..workers.options import QueryDatabasesOptions
 from ..database import SpectraLibrary, Bank
 from ..config import SQL_PATH, get_debug_flag
+from .query_databases_dialog_ui import Ui_Dialog
 
-import os
-
-from PyQt5 import uic
-from PyQt5.QtCore import Qt, QSettings
-from PyQt5.QtWidgets import QListWidgetItem
-
-UI_FILE = os.path.join(os.path.dirname(__file__), 'query_databases_dialog.ui')
-
-QueryDatabasesDialogUI, QueryDatabasesDialogBase = uic.loadUiType(UI_FILE,
-                                                                  from_imports='metgem_app.ui',
-                                                                  import_from='metgem_app.ui')
+from qtpy.QtCore import Qt, QSettings
+from qtpy.QtWidgets import QListWidgetItem, QDialog
 
 
-class QueryDatabasesDialog(QueryDatabasesDialogBase, QueryDatabasesDialogUI):
+class QueryDatabasesDialog(QDialog, Ui_Dialog):
 
     IdsRole = Qt.UserRole + 1
 

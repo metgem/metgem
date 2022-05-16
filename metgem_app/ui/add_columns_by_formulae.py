@@ -1,19 +1,13 @@
-import os
 from keyword import iskeyword
 from typing import Tuple, List
 
 import yaml
-from PyQt5 import uic
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QValidator
-from PyQt5.QtWidgets import QTableWidgetItem, QFileDialog, QMessageBox, QStyledItemDelegate, QMenu, QTableWidget, \
-    QTableView
+from qtpy.QtCore import Qt
+from qtpy.QtGui import QValidator
+from qtpy.QtWidgets import (QTableWidgetItem, QFileDialog, QMessageBox, QStyledItemDelegate,
+                            QMenu, QTableWidget, QTableView, QDialog)
 
-UI_FILE = os.path.join(os.path.dirname(__file__), 'add_columns_by_formulae.ui')
-
-AddColumnsByFormulaeDialogUI, AddColumnsByFormulaeDialogBase = uic.loadUiType(UI_FILE,
-                                                                              from_imports='metgem_app.ui',
-                                                                              import_from='metgem_app.ui')
+from .add_columns_by_formulae_ui import Ui_AddColumnsByFormulaeDialog
 
 
 # noinspection PyShadowingBuiltins
@@ -65,7 +59,7 @@ class ColumnNameDelegate(QStyledItemDelegate):
         return editor
 
 
-class AddColumnsByFormulaeDialog(AddColumnsByFormulaeDialogUI, AddColumnsByFormulaeDialogBase):
+class AddColumnsByFormulaeDialog(QDialog, Ui_AddColumnsByFormulaeDialog):
     COLUMN_TITLE = 0
     COLUMN_ALIAS = 1
 
@@ -101,7 +95,9 @@ class AddColumnsByFormulaeDialog(AddColumnsByFormulaeDialogUI, AddColumnsByFormu
                 item = QTableWidgetItem(title)
                 self.tblAlias.setItem(i, AddColumnsByFormulaeDialog.COLUMN_ALIAS, item)
 
+        self._menus = []
         menu = QMenu()
+        self._menus.append(menu)
         menu.addSection("Power and logarithmic functions")
         for func in sorted(['exp', 'expm1', 'log', 'log10', 'log1p', 'log2', 'sqrt']):
             action = menu.addAction(func)
@@ -130,6 +126,7 @@ class AddColumnsByFormulaeDialog(AddColumnsByFormulaeDialogUI, AddColumnsByFormu
         self.btAddFunction.setMenu(menu)
 
         menu = QMenu()
+        self._menus.append(menu)
         for text, const in sorted([('Pi', 'pi'), ('e Euler’s number', 'e')]):
             action = menu.addAction(const)
             action.setData(const)
@@ -137,6 +134,7 @@ class AddColumnsByFormulaeDialog(AddColumnsByFormulaeDialogUI, AddColumnsByFormu
         self.btAddConstant.setMenu(menu)
 
         menu = QMenu()
+        self._menus.append(menu)
         menu.addSection("Arithmetic Operators")
         for text, operator in [('+ Addition', '+'), ('- Subtraction', '-'), ('* Multiplication', '*'),
                                ('/ Division', '/'), ('% Modulus', '%'), ('** Exponent', '**'),

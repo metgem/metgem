@@ -1,6 +1,6 @@
 import os
 
-from PyQt5.QtCore import QAbstractTableModel, Qt, QModelIndex
+from qtpy.QtCore import QAbstractTableModel, Qt, QModelIndex
 from sqlalchemy.orm import joinedload
 
 from ..database import Spectrum, SpectraLibrary, Base

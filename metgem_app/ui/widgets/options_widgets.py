@@ -1,7 +1,6 @@
 import os
 
-from PyQt5 import uic
-from PyQt5.QtWidgets import QGroupBox
+from qtpy.QtWidgets import QGroupBox
 
 from ...workers.options import (CosineComputationOptions,
                                 QueryDatabasesOptions,
@@ -12,13 +11,22 @@ from ...workers.options import (CosineComputationOptions,
                                 UMAPVisualizationOptions,
                                 NetworkVisualizationOptions)
 
+from .network_options_widget_ui import Ui_gbNetworkOptions
+from .cosine_options_widget_ui import Ui_gbCosineOptions
+from .tsne_options_widget_ui import Ui_gbTSNEOptions
+from .umap_options_widget_ui import Ui_gbOptions as Ui_gbUMAPOptions
+from .mds_options_widget_ui import Ui_gbOptions as Ui_gbMDSOptions
+from .isomap_options_widget_ui import Ui_gbOptions as Ui_gbIsomapOptions
+from .phate_options_widget_ui import Ui_gbOptions as Ui_gbPHATEOptions
+from .databases_options_widget_ui import Ui_gbDatabaseOptions
 
-class NetworkOptionsWidget(QGroupBox):
+
+class NetworkOptionsWidget(QGroupBox, Ui_gbNetworkOptions):
     """Create a widget containing Network visualization options"""
     
     def __init__(self):
         super().__init__()
-        uic.loadUi(os.path.join(os.path.dirname(__file__), 'network_options_widget.ui'), self)
+        self.setupUi(self)
 
     def getValues(self):
         options = NetworkVisualizationOptions()
@@ -40,12 +48,13 @@ class NetworkOptionsWidget(QGroupBox):
         self.spinNetworkMaxConnectedComponentSize.setValue(options.max_connected_nodes)
 
 
-class CosineOptionsWidget(QGroupBox):
+class CosineOptionsWidget(QGroupBox, Ui_gbCosineOptions):
     """Create a widget containing Cosine computations options"""
 
     def __init__(self):
         super().__init__()
-        uic.loadUi(os.path.join(os.path.dirname(__file__), 'cosine_options_widget.ui'), self)
+        self.setupUi(self)
+
         self.chkUseParentFiltering.stateChanged.connect(self.spinParentFilterTolerance.setEnabled)
         self.chkUseMinIntensityFiltering.stateChanged.connect(self.spinMinIntensity.setEnabled)
         self.chkUseWindowRankFiltering.stateChanged.connect(self.spinMinMatchedPeaksSearch.setEnabled)
@@ -81,12 +90,12 @@ class CosineOptionsWidget(QGroupBox):
         self.chkUseWindowRankFiltering.setChecked(options.use_window_rank_filter)
 
 
-class TSNEOptionsWidget(QGroupBox):
+class TSNEOptionsWidget(QGroupBox, Ui_gbTSNEOptions):
     """Create a widget containing t-SNE visualization options"""
 
     def __init__(self):
         super().__init__()
-        uic.loadUi(os.path.join(os.path.dirname(__file__), 'tsne_options_widget.ui'), self)
+        self.setupUi(self)
 
     def getValues(self):
         """Return t-SNE options"""
@@ -123,12 +132,12 @@ class TSNEOptionsWidget(QGroupBox):
         self.chkRandomState.setChecked(options.random)
 
 
-class UMAPOptionsWidget(QGroupBox):
+class UMAPOptionsWidget(QGroupBox, Ui_gbUMAPOptions):
     """Create a widget containing UMAP visualization options"""
 
     def __init__(self):
         super().__init__()
-        uic.loadUi(os.path.join(os.path.dirname(__file__), 'umap_options_widget.ui'), self)
+        self.setupUi(self)
         self.cbNumIterations.stateChanged.connect(self.spinNumIterations.setEnabled)
 
     def getValues(self):
@@ -157,12 +166,12 @@ class UMAPOptionsWidget(QGroupBox):
         self.chkRandomState.setChecked(options.random)
 
 
-class MDSOptionsWidget(QGroupBox):
+class MDSOptionsWidget(QGroupBox, Ui_gbMDSOptions):
     """Create a widget containing MDS visualization options"""
 
     def __init__(self):
         super().__init__()
-        uic.loadUi(os.path.join(os.path.dirname(__file__), 'mds_options_widget.ui'), self)
+        self.setupUi(self)
 
     def getValues(self):
         options = MDSVisualizationOptions()
@@ -180,12 +189,12 @@ class MDSOptionsWidget(QGroupBox):
         self.chkRandomState.setChecked(options.random)
 
 
-class IsomapOptionsWidget(QGroupBox):
+class IsomapOptionsWidget(QGroupBox, Ui_gbIsomapOptions):
     """Create a widget containing Isomap visualization options"""
 
     def __init__(self):
         super().__init__()
-        uic.loadUi(os.path.join(os.path.dirname(__file__), 'isomap_options_widget.ui'), self)
+        self.setupUi(self)
 
     def getValues(self):
         options = IsomapVisualizationOptions()
@@ -203,12 +212,12 @@ class IsomapOptionsWidget(QGroupBox):
         self.spinNumNeighbors.setValue(options.n_neighbors)
 
 
-class PHATEOptionsWidget(QGroupBox):
+class PHATEOptionsWidget(QGroupBox, Ui_gbPHATEOptions):
     """Create a widget containing PHATE visualization options"""
 
     def __init__(self):
         super().__init__()
-        uic.loadUi(os.path.join(os.path.dirname(__file__), 'phate_options_widget.ui'), self)
+        self.setupUi(self)
 
     def getValues(self):
         """Return PHATE options"""
@@ -232,12 +241,12 @@ class PHATEOptionsWidget(QGroupBox):
         self.chkRandomState.setChecked(options.random)
 
 
-class QueryDatabasesOptionsWidget(QGroupBox):
+class QueryDatabasesOptionsWidget(QGroupBox, Ui_gbDatabaseOptions):
     """Create a widget containing Database query options"""
 
     def __init__(self):
         super().__init__()
-        uic.loadUi(os.path.join(os.path.dirname(__file__), 'databases_options_widget.ui'), self)
+        self.setupUi(self)
 
         # Populate polarity combobox
         self.cbPolarity.addItems(['Positive', 'Negative'])

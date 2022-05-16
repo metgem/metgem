@@ -131,7 +131,7 @@ class SaveProjectWorker(BaseWorker):
                             zout.writestr(item, zin.read(item.filename))
         else:
             # Convert lists of parent mass and spectrum data to something that be can be saved
-            mzs = getattr(self.network, 'mzs', pd.Series())
+            mzs = getattr(self.network, 'mzs', pd.Series(dtype='float64'))
             spectra = getattr(self.network, 'spectra', pd.DataFrame())
             d['0/spectra/index.json'] = [{'id': i, 'mz_parent': mz_parent} for i, mz_parent in enumerate(mzs)]
             d.update({'0/spectra/{}'.format(i): data for i, data in enumerate(spectra)})

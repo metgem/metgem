@@ -1,132 +1,16 @@
-from PyQt5.QtGui import QPainter, QPalette
-from PyQt5.QtWidgets import QTableView, QAbstractButton, QHeaderView, QWidget, QMenu
-from PyQt5.QtCore import Qt, QObject, QEvent, QRect, QTimer, QModelIndex
-from PyQt5 import uic
+from qtpy.QtWidgets import QMenu, QWidget
+from qtpy.QtCore import Qt
 
-from .freeze_table import FreezeTableMixin
-from ....models.metadata import ColorMarkRole
-from ..delegates import EnsureStringItemDelegate, StandardsResultsDelegate
+from .nodes_ui import Ui_NodesWidget
+from .edges_ui import Ui_EdgesWidget
 from ....utils.gui import SignalBlocker
 
-import os
 
-
-class HeaderView(QHeaderView):
-    """QHeaderView that can have a different color background and or color mark for each section"""
-
-    def paintSection(self, painter: QPainter, rect: QRect, logical_index: int):
-        bg = self.model().headerData(logical_index, Qt.Horizontal, Qt.BackgroundColorRole)
-        cm = self.model().headerData(logical_index, Qt.Horizontal, ColorMarkRole)
-
-        painter.save()
-        super().paintSection(painter, rect, logical_index)
-        painter.restore()
-
-        if bg is not None and bg.isValid():
-            bg.setAlpha(100)
-            painter.fillRect(rect, bg)
-
-        if cm is not None and cm.isValid():
-            painter.fillRect(rect.adjusted(0, 0, 0, -int(7 * rect.height() / 8)), cm)
-
-
-class MetadataTableView(QTableView):
-    """ TableView to display metadata"""
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self.setItemDelegate(EnsureStringItemDelegate())
-
-        # Install event filter on top left button (usually used to select all rows and columns)
-        btn = self.findChild(QAbstractButton)
-        if btn:
-            btn.installEventFilter(self)
-        self.horizontalHeader().setSortIndicator(-1, Qt.AscendingOrder)
-
-    def eventFilter(self, watched: QObject, event: QEvent):
-        # If top-left button is right clicked, reset model's sorting order
-        if event.type() == QEvent.MouseButtonRelease:
-            if event.button() == Qt.RightButton:
-                self.resetSorting()
-        return False
-
-    def resetSorting(self):
-        self.horizontalHeader().setSortIndicator(-1, Qt.AscendingOrder)
-        self.model().sort(-1)
-
-
-class NodeTableView(FreezeTableMixin, MetadataTableView):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self.timers = {}
-
-        for table in (self, self.frozenTable()):
-            header = HeaderView(Qt.Horizontal, table)
-            header.setHighlightSections(True)
-            header.setSectionsClickable(True)
-            header.setStretchLastSection(True)
-            if table == self:
-                self.setHorizontalHeader(header)
-            else:
-                self.setFrozenTableHorizontalHeader(header)
-
-        self.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.setAlternatingRowColors(True)
-        self.frozenTable().setAlternatingRowColors(True)
-
-        delegate = StandardsResultsDelegate()
-        self.viewDetailsClicked = delegate.viewDetailsClicked
-        self.setItemDelegateForColumn(1, delegate)
-
-    def setColumnBlinking(self, section: int, blink: bool):
-        if section in self.timers:
-            self.timers[section].stop()
-            del self.timers[section]
-            self.model().setHeaderData(section, Qt.Horizontal, None, role=Qt.BackgroundColorRole)
-
-        if blink:
-            timer = self.timers[section] = QTimer()
-            colored = True
-
-            def update():
-                nonlocal colored
-                color = self.palette().color(QPalette.Highlight) if colored else None
-                self.model().setHeaderData(section, Qt.Horizontal, color, role=Qt.BackgroundColorRole)
-                colored = not colored
-
-            timer.timeout.connect(update)
-            timer.start(500)
-
-    def currentChanged(self, current: QModelIndex, previous: QModelIndex):
-        self.setColumnBlinking(current.column(), False)
-        return super().currentChanged(current, previous)
-
-
-class EdgeTableView(MetadataTableView):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self.horizontalHeader().setStretchLastSection(True)
-
-        self.setContextMenuPolicy(Qt.CustomContextMenu)
-
-        self.setAlternatingRowColors(True)
-
-    def sizeHintForColumn(self, column: int):
-        if column == self.model().columnCount() - 1:
-            return 0
-        return super().sizeHintForColumn(column)
-
-
-class NodesWidget(QWidget):
+class NodesWidget(QWidget, Ui_NodesWidget):
 
     def __init__(self):
         super().__init__()
-        uic.loadUi(os.path.join(os.path.dirname(__file__), 'nodes.ui'), self)
+        self.setupUi(self)
 
         hh = self.tvNodes.horizontalHeader()
         self._sort_indicator_section = -1
@@ -166,6 +50,7 @@ class NodesWidget(QWidget):
         self.btHighlightSelectedNodes.setDefaultAction(self.actionHighlightSelectedNodes)
         self.btAddColumnsByFormulae.setDefaultAction(self.actionAddColumnsByFormulae)
         self.btClusterize.setDefaultAction(self.actionClusterize)
+        self.btNumberizeClusters.setDefaultAction(self.actionNumberize)
         self.btDeleteColumns.setDefaultAction(self.actionDeleteColumns)
         self.btSetAlternatingRowColors.setDefaultAction(self.actionSetAlternatingRowColors)
         self.btEnableOrdering.setDefaultAction(self.actionEnableOrdering)
@@ -252,11 +137,11 @@ class NodesWidget(QWidget):
             self.tvNodes.setFrozenColumns(None)
 
 
-class EdgesWidget(QWidget):
+class EdgesWidget(QWidget, Ui_EdgesWidget):
 
     def __init__(self):
         super().__init__()
-        uic.loadUi(os.path.join(os.path.dirname(__file__), 'edges.ui'), self)
+        self.setupUi(self)
 
         hh = self.tvEdges.horizontalHeader()
         self._sort_indicator_section = -1

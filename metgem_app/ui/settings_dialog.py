@@ -2,24 +2,19 @@ import glob
 import os
 import random
 
-from PyQt5 import uic
-from PyQt5.QtCore import Qt, QSettings, QPointF, QCoreApplication
-from PyQt5.QtGui import QShowEvent
-from PyQt5.QtWidgets import QDialog, QListWidgetItem
+from qtpy.QtCore import Qt, QSettings, QPointF, QCoreApplication
+from qtpy.QtGui import QShowEvent
+from qtpy.QtWidgets import QDialog, QListWidgetItem
 
 from ..utils.gui import SignalBlocker
 from ..config import STYLES_PATH, APP_PATH, get_python_rendering_flag
 
 if get_python_rendering_flag():
-    from PyQtNetworkView._pure import style_from_css, NetworkScene
+    from PySide2MolecularNetwork._pure import style_from_css, NetworkScene
 else:
-    from PyQtNetworkView import style_from_css, NetworkScene
+    from PySide2MolecularNetwork import style_from_css, NetworkScene
 
-UI_FILE = os.path.join(os.path.dirname(__file__), 'settings_dialog.ui')
-
-SettingsDialogUI, SettingsDialogBase = uic.loadUiType(UI_FILE,
-                                                      from_imports='metgem_app.ui',
-                                                      import_from='metgem_app.ui')
+from .settings_dialog_ui import Ui_SettingsDialog
 
 POSITIONS = [(14, 47), (34, 37), (15, 21), (40, 14), (58, 33),
              (60, 59), (46, 77), (70, 80), (84, 63), (76, 42)]
@@ -30,7 +25,7 @@ StyleRole = Qt.UserRole + 1
 CssRole = Qt.UserRole + 2
 
 
-class SettingsDialog(SettingsDialogUI, SettingsDialogBase):
+class SettingsDialog(QDialog, Ui_SettingsDialog):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

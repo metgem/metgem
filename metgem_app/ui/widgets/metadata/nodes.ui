@@ -282,6 +282,29 @@
       </widget>
      </item>
      <item>
+      <widget class="QToolButton" name="btNumberizeClusters">
+       <property name="toolTip">
+        <string>Numberize clusters from classical network view</string>
+       </property>
+       <property name="statusTip">
+        <string>Numberize clusters from classical network view</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="../../ui.qrc">
+         <normaloff>:/icons/images/numberize.svg</normaloff>:/icons/images/numberize.svg</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>24</width>
+         <height>24</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QToolButton" name="btDeleteColumns">
        <property name="toolTip">
         <string>Remove selected columns</string>
@@ -803,12 +826,27 @@
     <string>CFM-ID</string>
    </property>
   </action>
+  <action name="actionNumberize">
+   <property name="icon">
+    <iconset resource="../../ui.qrc">
+     <normaloff>:/icons/images/numberize.svg</normaloff>:/icons/images/numberize.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Numberize</string>
+   </property>
+   <property name="toolTip">
+    <string>Numberize clusters from classical network view</string>
+   </property>
+   <property name="statusTip">
+    <string>Numberize clusters from classical network view</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
    <class>NodeTableView</class>
    <extends>QTableView</extends>
-   <header>metgem_app/ui/widgets.h</header>
+   <header>metgem_app/ui/widgets/metadata/node.h</header>
   </customwidget>
  </customwidgets>
  <resources>

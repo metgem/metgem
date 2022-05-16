@@ -1,19 +1,13 @@
 import base64
-import os
 
-from PyQt5 import uic
-from PyQt5.QtCore import QCoreApplication
-from PyQt5.QtWidgets import QTextBrowser
+from qtpy.QtCore import QCoreApplication
+from qtpy.QtWidgets import QTextBrowser, QDialog
 
 from ..config import LICENSE_TEXT
-
-UI_FILE = os.path.join(os.path.dirname(__file__), 'about_dialog.ui')
-AboutDialogUI, AboutDialogDialogBase = uic.loadUiType(UI_FILE,
-                                                      from_imports='metgem_app.ui',
-                                                      import_from='metgem_app.ui')
+from .about_dialog_ui import Ui_AboutDialog
 
 
-class AboutDialog(AboutDialogDialogBase, AboutDialogUI):
+class AboutDialog(QDialog, Ui_AboutDialog):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -45,7 +39,7 @@ class AboutDialog(AboutDialogDialogBase, AboutDialogUI):
                               <i>Developer and Tester</i></p>"""
         authors += """<p><b>Credits</b></p>
             <p><i>Various Suggestions &amp; Testing:</i> Cyrille Santerre, Simon Remy, Florence Mondeguer, Orianne Brel,
-            Morgane Barthélémy, Téo Hebra</p>"""
+            Morgane Barthélémy, Téo Hebra, Marceau Levasseur</p>"""
         self.setAuthors(authors)
 
         # noinspection PyPep8
@@ -73,8 +67,8 @@ class AboutDialog(AboutDialogDialogBase, AboutDialogUI):
             "<li><a href=\"http://cython.org/\">Cython</a>: Apache v2</li>"
             "<li><a href=\"https://www.openmp.org/\">OpenMP</a>: MIT</li>"
             "<li><a href=\"https://www.qt.io/\">Qt</a>: GPLv2 + GPLv3 + LGPLv2.1 + LGPLv3</li>"
-            "<li><a href=\"https://www.riverbankcomputing.com/software/pyqt/download5\">PyQt</a>: GPLv3</li>"
-            "<li><a href=\"https://www.riverbankcomputing.com/software/sip/download\">sip</a>: SIP License + GPLv2 + GPLv3</li>"
+            "<li><a href=\"http://www.pyside.org/\">PySide2</a>: LGPLv2.1</li>"
+            "<li><a href=\"https://www.pyside.org\">Shiboken2</a>: LGPLv3</li>"
             "<li><a href=\"https://pandas.pydata.org/\">Pandas</a>: 3-clause BSD</li>"
             "<li><a href=\"https://arrow.apache.org/\">PyArrow</a>: Apache v2</li>"
             "<li><a href=\"http://scikit-learn.org/\">Scikit-learn</a>: 3-clause BSD</li>"
@@ -92,7 +86,7 @@ class AboutDialog(AboutDialogDialogBase, AboutDialogUI):
             "<li><a href=\"https://qtconsole.readthedocs.io/en/stable\">qtconsole</a>: 3-clause BSD</li>"
             "<li><a href=\"http://pluginbase.pocoo.org/\">pluginbase</a>: 3-clause BSD</li>"
             "<li><a href=\"https://pyyaml.org/\">PyYAML</a>: MIT</li>"
-            "<li><a href=\"http://www.rdkit.org//\">rdKIT</a>: 3-clause BSD</li>"
+            "<li><a href=\"http://www.rdkit.org//\">RDKit</a>: 3-clause BSD</li>"
             "<li><a href=\"https://numexpr.readthedocs.io/\">NumExpr</a>: MIT</li>"
             "<li><a href=\"https://github.com/python-excel/xlrd/\">xlrd</a>: 3-clause BSD</li>"
             "<li><a href=\"https://github.com/eea/odfpy/\">odfpy</a>: Apache v2</li>"
@@ -100,8 +94,9 @@ class AboutDialog(AboutDialogDialogBase, AboutDialogUI):
             "<li><a href=\"https://mplcursors.readthedocs.io/\">mplcursors</a>: MIT</li>"
             "<li><a href=\"https://github.com/githubuser0xFFFF/Qt-Advanced-Docking-System/\">"
             "Qt-Advanced-Docking-System</a>: LGPL v2.1</li>"
+            "<li><a href=\"https://github.com/metgem/PySide2Ads/\">PySide2Ads</a>: LGPL v2.1</li>"
             "<li><a href=\"https://github.com/metgem/pyemf/\">pyemf</a>: GPL v2</li>"
-            "<li><a href=\"https://github.com/metgem/PyQtNetworkView/\">PyQtNetworkView</a>: GPL v3</li>"
+            "<li><a href=\"https://github.com/metgem/PySide2MolecularNetwork/\">PySide2MolecularNetwork</a>: GPLv3</li>"
             "<li><a href=\"https://github.com/metgem/libmetgem/\">libmetgem</a>: GPL v3</li>"
             "<li><a href=\"http://numba.pydata.org/\">numba</a>: 2-clause BSD</li>"
             "<li><a href=\"https://umap-learn.readthedocs.io/\">umap-learn</a>: 3-clause BSD</li>"

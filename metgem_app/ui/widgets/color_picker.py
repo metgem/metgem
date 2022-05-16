@@ -1,10 +1,10 @@
-from PyQt5.QtCore import Qt, QSettings, pyqtSignal
-from PyQt5.QtGui import QIcon, QPainter, QBrush, QColor
-from PyQt5.QtWidgets import QToolButton, QWidgetAction, QColorDialog, QMenu, QAction, QAbstractButton, QDialogButtonBox
+from qtpy.QtCore import Qt, QSettings, Signal
+from qtpy.QtGui import QIcon, QPainter, QBrush, QColor
+from qtpy.QtWidgets import QToolButton, QWidgetAction, QColorDialog, QMenu, QAction, QAbstractButton, QDialogButtonBox
 
 
 class ColorPicker(QToolButton):
-    colorReset = pyqtSignal()
+    colorReset = Signal()
 
     def __init__(self, action: QAction = None, color_group=None, default_color=Qt.blue, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -36,7 +36,7 @@ class ColorPicker(QToolButton):
         for i, color in enumerate(custom_colors):
             self._dialog.setCustomColor(i, color)
         current_color = QColor(default_color) if color_group is None\
-            else settings.value(f"{color_group}/Current", QColor(default_color), type=QColor)
+            else settings.value(f"{color_group}/Current", QColor(default_color))
         if current_color.isValid():
             self._dialog.setCurrentColor(current_color)
             self.on_color_selected(current_color)

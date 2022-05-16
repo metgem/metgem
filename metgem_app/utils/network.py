@@ -1,7 +1,7 @@
 import uuid
 
 import pandas as pd
-from .qt import QObject, pyqtSignal
+from .qt import QObject, Signal
 
 
 def generate_id(type: str):
@@ -9,12 +9,8 @@ def generate_id(type: str):
 
 
 class Network(QObject):
-    __slots__ = 'mzs', 'spectra', 'scores', 'options', '_infos', \
-                'db_results', 'mappings', 'columns_mappings', \
-                'lazyloaded'
-
-    infosAboutToChange = pyqtSignal()
-    infosChanged = pyqtSignal()
+    infosAboutToChange = Signal()
+    infosChanged = Signal()
 
     def __init__(self):
         super().__init__()

@@ -2,10 +2,11 @@ import datetime
 import os
 import webbrowser
 
-from PyQt5 import uic
-from PyQt5.QtCore import QSize, QSettings, Qt
-from PyQt5.QtGui import QAbstractTextDocumentLayout, QPalette, QTextDocument
-from PyQt5.QtWidgets import QWidget, QListWidgetItem, QStyledItemDelegate, QStyleOptionViewItem, QApplication, QStyle
+from qtpy.QtCore import QSize, QSettings, Qt
+from qtpy.QtGui import QAbstractTextDocumentLayout, QPalette, QTextDocument
+from qtpy.QtWidgets import QWidget, QListWidgetItem, QStyledItemDelegate, QStyleOptionViewItem, QApplication, QStyle
+
+from .welcome_widget_ui import Ui_WelcomeScreen
 
 try:
     # noinspection PyUnresolvedReferences
@@ -61,13 +62,13 @@ class HTMLDelegate(QStyledItemDelegate):
         return QSize(self.doc.idealWidth(), self.doc.size().height())
 
 
-class WelcomeWidget(QWidget):
+class WelcomeWidget(QWidget, Ui_WelcomeScreen):
     URL_NEWS_RSS = "https://metgem.github.io/feed.xml"
     LinkRole = Qt.UserRole
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        uic.loadUi(os.path.join(os.path.dirname(__file__), 'welcome_widget.ui'), self)
+        self.setupUi(self)
 
         self.lstRecentProjects.clear()
         self.lstNews.clear()
@@ -81,7 +82,7 @@ class WelcomeWidget(QWidget):
                     self.lstNews.clear()
 
             self.chkEnableNews.stateChanged.connect(on_enable_news_state_changed)
-            news_enabled = QSettings().value('NewsEnabled', False, type=bool)
+            news_enabled = QSettings().value('NewsEnabled', False)
             self.chkEnableNews.setChecked(news_enabled)
             self.lstNews.itemClicked.connect(self.on_news_item_clicked)
         else:

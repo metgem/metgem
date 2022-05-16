@@ -18,7 +18,7 @@
 
 # Python Port of KLinkItemSelectionModel and KModelIndexProxyMapper from KDAB
 
-from PyQt5.QtCore import (QModelIndex, pyqtSignal, QItemSelectionModel, QItemSelection, QObject,
+from qtpy.QtCore import (QModelIndex, Signal, QItemSelectionModel, QItemSelection, QObject,
                           QAbstractItemModel, QAbstractProxyModel)
 
 from typing import Union
@@ -26,7 +26,7 @@ from typing import Union
 
 # https://github.com/KDAB/GammaRay/blob/master/3rdparty/kde/kmodelindexproxymapper.cpp
 class ModelIndexProxyMapper(QObject):
-    isConnectedChanged = pyqtSignal()
+    isConnectedChanged = Signal()
 
     def __init__(self, leftModel: QAbstractItemModel, rightModel: QAbstractItemModel, parent: QObject):
         super().__init__(parent)
@@ -212,7 +212,7 @@ class ModelIndexProxyMapper(QObject):
 
 # https://github.com/KDAB/GammaRay/blob/master/3rdparty/kde/klinkitemselectionmodel.cpp
 class LinkItemSelectionModel(QItemSelectionModel):
-    linkedItemSelectionModelChanged = pyqtSignal()
+    linkedItemSelectionModelChanged = Signal()
 
     # noinspection PyUnresolvedReferences
     def __init__(self, model: QAbstractItemModel, proxy_selector: QItemSelectionModel, parent: QObject = None):

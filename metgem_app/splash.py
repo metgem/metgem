@@ -1,8 +1,8 @@
 import os
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPixmap, QPainter
-from PyQt5.QtWidgets import QSplashScreen, QProgressBar, QLabel, qApp
+from qtpy.QtCore import Qt
+from qtpy.QtGui import QPixmap, QPainter
+from qtpy.QtWidgets import QSplashScreen, QProgressBar, QLabel, qApp
 
 
 class SplashScreen(QSplashScreen):

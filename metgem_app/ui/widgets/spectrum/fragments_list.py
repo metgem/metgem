@@ -1,17 +1,29 @@
 import itertools
-import os
 import numpy as np
+from PySide2.QtWidgets import QMainWindow
 
-from PyQt5.QtCore import Qt, QSettings
-from PyQt5.QtWidgets import QWidget, QTableWidgetItem
-from PyQt5 import uic
-from PyQtAds import QtAds
+from qtpy.QtCore import Qt, QSettings
+from qtpy.QtWidgets import QWidget, QTableWidgetItem
+from PySide2Ads import QtAds
 
 from libmetgem import MZ, square_root_and_normalize_data
 from libmetgem.cosine import compare_spectra, SpectraMatchState
 
+from .fragments_list_ui import Ui_Form
 
-class FragmentsListWidget(QWidget):
+
+def findParent(type_, widget):
+    if not type_:
+        return None
+
+    parent_widget = widget.parentWidget()
+    while parent_widget:
+        if isinstance(parent_widget, type_):
+            return parent_widget
+        parent_widget = parent_widget.parentWidget()
+
+
+class FragmentsListWidget(QWidget, Ui_Form):
     IndexRole = Qt.UserRole + 1
 
     def __init__(self, parent):
@@ -19,7 +31,7 @@ class FragmentsListWidget(QWidget):
 
         self._spectra_widget = None
 
-        uic.loadUi(os.path.join(os.path.dirname(__file__), 'fragments_list.ui'), self)
+        self.setupUi(self)
         self.twFragments.itemSelectionChanged.connect(self.update_peaks_selection)
         self.twNeutralLosses.itemSelectionChanged.connect(self.update_peaks_selection)
 
@@ -53,8 +65,10 @@ class FragmentsListWidget(QWidget):
         data1 = self._spectra_widget.spectrum1
         mz2 = self._spectra_widget.spectrum2_parent
         data2 = self._spectra_widget.spectrum2
-        dock_widget = QtAds.internal.findParent(QtAds.CDockWidget, self)
-        main_window = dock_widget.dockManager().parent() if dock_widget else None
+        main_window = findParent(QMainWindow, self)
+        if main_window is None:
+            dock_widget = findParent(QtAds.CDockWidget, self)
+            main_window = dock_widget.dockManager().parent() if dock_widget else None
 
         if main_window is not None and mz1 is not None and data1 is not None and mz2 is not None and data2 is not None:
             data1 = square_root_and_normalize_data(data1)

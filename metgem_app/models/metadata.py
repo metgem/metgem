@@ -2,9 +2,9 @@ from typing import List, Union
 
 import numpy as np
 import pandas as pd
-from PyQt5.QtCore import QStringListModel, QModelIndex, Qt, QSortFilterProxyModel, QAbstractTableModel, QSettings, \
-    QAbstractItemModel
-from PyQt5.QtGui import QIcon
+from qtpy.QtCore import (QStringListModel, QModelIndex, Qt, QSortFilterProxyModel, QAbstractTableModel, QSettings,
+                         QAbstractItemModel)
+from qtpy.QtGui import QIcon
 
 try:
     import os
@@ -48,31 +48,7 @@ class CsvDelimiterModel(QStringListModel):
         return self.seps[index.row()]
 
 
-class ProxyModel(QSortFilterProxyModel):
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-
-        self._selection = None
-
-    def filterAcceptsRow(self, source_row: int, source_parent: QModelIndex):
-        if self._selection is not None:
-            if source_row in self._selection:
-                return True
-            return False
-
-        return super().filterAcceptsRow(source_row, source_parent)
-
-    def setSelection(self, idx):
-        """Display only selected items from the scene"""
-        if len(idx) == 0:
-            self._selection = None
-        else:
-            self._selection = idx
-        self.invalidateFilter()
-
-
-class NodesProxyModel(ProxyModel):
+class NodesSortProxyModel(QSortFilterProxyModel):
 
     def __init__(self, parent: QModelIndex = None):
         super().__init__(parent)
@@ -83,13 +59,13 @@ class NodesProxyModel(ProxyModel):
         self._index = source_model.mzs.index
 
     def mapToSource(self, proxy_index: QModelIndex) -> QModelIndex:
-        if self._index.size > 0:
-            proxy_index = self.index(self._index[proxy_index.row()], proxy_index.column())
+        if self._index.size > 0 and proxy_index.isValid():
+            return self.sourceModel().index(self._index[proxy_index.row()], proxy_index.column())
         return super().mapToSource(proxy_index)
 
     def mapFromSource(self, source_index: QModelIndex) -> QModelIndex:
         if self._index.size > 0 and source_index.isValid():
-            source_index = self.sourceModel().index(self._index.get_loc(source_index.row()), source_index.column())
+            return self.index(self._index.get_loc(source_index.row()), source_index.column())
         return super().mapFromSource(source_index)
 
     def sort(self, column: int, order: Qt.SortOrder = Qt.AscendingOrder) -> None:
@@ -125,7 +101,7 @@ class NodesProxyModel(ProxyModel):
         self.layoutChanged.emit()
 
 
-class EdgesProxyModel(ProxyModel):
+class EdgesSortProxyModel(QSortFilterProxyModel):
     def __init__(self, parent: QModelIndex = None):
         super().__init__(parent)
         self._index = pd.Index([])
@@ -135,13 +111,13 @@ class EdgesProxyModel(ProxyModel):
         self._index = source_model.interactions.index
 
     def mapToSource(self, proxy_index: QModelIndex) -> QModelIndex:
-        if self._index.size > 0:
-            proxy_index = self.index(self._index[proxy_index.row()], proxy_index.column())
+        if self._index.size > 0 and proxy_index.isValid():
+            return self.sourceModel().index(self._index[proxy_index.row()], proxy_index.column())
         return super().mapToSource(proxy_index)
 
     def mapFromSource(self, source_index: QModelIndex) -> QModelIndex:
         if self._index.size > 0 and source_index.isValid():
-            source_index = self.sourceModel().index(self._index.get_loc(source_index.row()), source_index.column())
+            return self.index(self._index.get_loc(source_index.row()), source_index.column())
         return super().mapFromSource(source_index)
 
     def sort(self, column: int, order: Qt.SortOrder = Qt.AscendingOrder) -> None:
@@ -161,6 +137,78 @@ class EdgesProxyModel(ProxyModel):
             idx = data.argsort()[::1 if order == Qt.AscendingOrder else -1]
             self._index = pd.Index(idx)
         self.layoutChanged.emit()
+
+
+class SelectionProxyModel(QSortFilterProxyModel):
+    _selection = None
+
+    def filterAcceptsRow(self, source_row: int, source_parent: QModelIndex):
+        if self._selection is not None:
+            index = super().sourceModel().index(source_row, 0, source_parent)
+            index = super().sourceModel().mapToSource(index)
+            if index.isValid() and index.row() in self._selection:
+                return True
+            return False
+
+        return super().filterAcceptsRow(source_row, source_parent)
+
+    def setSelection(self, idx):
+        """Display only selected items from the scene"""
+
+        if len(idx) == 0:
+            self._selection = None
+        else:
+            self._selection = idx
+        self.invalidateFilter()
+
+
+class FilterProxyModel(SelectionProxyModel):
+    _sort_proxy = QSortFilterProxyModel()
+
+    def setSourceModel(self, source_model: QAbstractItemModel) -> None:
+        self._sort_proxy.setSourceModel(source_model)
+        super().setSourceModel(self._sort_proxy)
+
+    def sort(self, column: int, order: Qt.SortOrder = Qt.AscendingOrder) -> None:
+        self._sort_proxy.sort(column, order)
+
+    def sortColumn(self):
+        return self._sort_proxy.sortColumn()
+
+    def sortOrder(self):
+        return self._sort_proxy.sortOrder()
+
+    def sortCaseSensitivity(self):
+        return self._sort_proxy.sortCaseSensitivity()
+
+    def sortRole(self):
+        return self._sort_proxy.sortRole()
+
+    def setSortRole(self, role):
+        self._sort_proxy.setSortRole(role)
+
+    def setSortCaseSensitivity(self, cs):
+        self._sort_proxy.setSortCaseSensitivity(cs)
+
+    def setSortLocaleAware(self, on):
+        self._sort_proxy.setSortLocaleAware(on)
+
+    def setDynamicSortFilter(self, enable):
+        self._sort_proxy.setDynamicSortFilter(enable)
+
+    def mapSelectionToSource(self, proxy_selection):
+        return super().sourceModel().mapSelectionToSource(super().mapSelectionToSource(proxy_selection))
+
+    def mapSelectionFromSource(self, source_selection):
+        return super().mapSelectionFromSource(super().sourceModel().mapSelectionToSource(source_selection))
+
+
+class NodesSortFilterProxyModel(FilterProxyModel):
+    _sort_proxy = NodesSortProxyModel()
+
+
+class EdgesSortFilterProxyModel(FilterProxyModel):
+    _sort_proxy = EdgesSortProxyModel()
 
 
 class NodesModel(QAbstractTableModel):
@@ -401,7 +449,7 @@ class EdgesModel(QAbstractTableModel):
 
         column = index.column()
         row = index.row()
-        if role in (Qt.DisplayRole, Qt.EditRole, LabelRole):
+        if role in (Qt.DisplayRole, Qt.EditRole, LabelRole, ColumnDataRole):
             if column == self.columnCount()-1:
                 if role == LabelRole:
                     return

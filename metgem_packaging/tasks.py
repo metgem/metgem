@@ -1,17 +1,24 @@
+import glob
 import json
 import os
 import shutil
 import sys
 import tempfile
+import subprocess
+import tqdm
+import requests
+import io
+import zipfile
 
 from invoke import task
-from PyQt5.pyrcc_main import processResourceFile
 
 PACKAGING_DIR = os.path.dirname(__file__)
 DIST = os.path.join(PACKAGING_DIR, 'dist')
 BUILD = os.path.join(PACKAGING_DIR, 'build')
 NAME = 'MetGem'
 APPIMAGE_TOOL_URL = "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
+API_MS_WIN_CORE_PATH_URL = "https://github.com/nalexandru/api-ms-win-core-path-HACK/releases/download/0.3.1/api-ms-win-core-path-blender-0.3.1.zip"
+API_MS_WIN_CORE_PATH = "api-ms-win-core-path-blender/x64/api-ms-win-core-path-l1-1-0.dll"
 
 
 @task
@@ -36,25 +43,46 @@ def build(ctx, clean=False, validate_appstream=True):
     exe(ctx, clean)
     installer(ctx, validate_appstream)
 
+
 # noinspection PyShadowingNames
 @task
 def buildpy(ctx):
     ctx.run("cd {0}/.. && python setup.py build -b {0}/build --build-scripts {0}/build/scripts".format(PACKAGING_DIR))
 
+
 # noinspection PyShadowingNames,PyUnusedLocal
 @task
-def rc(ctx):
+def rc(ctx, force=False):
     qrcs = [os.path.join(PACKAGING_DIR, '..', 'metgem_app', 'ui', 'ui.qrc')]
     rc = os.path.join(PACKAGING_DIR, '..', 'metgem_app', 'ui', 'ui_rc.py')
     skip = False
-    if os.path.exists(rc):
+    if not force and os.path.exists(rc):
         rc_mtime = os.path.getmtime(rc)
         skip = not any([os.path.getmtime(qrc) > rc_mtime for qrc in qrcs])
 
     if skip:
         print('[RC] resource file is up-to-date, skipping build.')
     else:
-        processResourceFile(qrcs, rc, False)
+        subprocess.run(['pyside2-rcc', '-o', rc, ' '.join(qrcs)],
+                       shell=True)
+        print('[RC] Resource file updated.')
+
+# noinspection PyShadowingNames,PyUnusedLocal
+@task
+def uic(ctx, filename=''):
+    if not filename:
+        filename = '*'
+
+    files = glob.glob(os.path.join(PACKAGING_DIR, '..', 'metgem_app', 'ui', '**', filename + '.ui'),
+                      recursive=True)
+    for fn in tqdm.tqdm(files):
+        fn = os.path.realpath(fn)
+        out = fn[:-3] + '_ui.py'
+        subprocess.run(['pyside2-uic', fn, '-o', out],
+                       shell=True,
+                       stdout=subprocess.DEVNULL,
+                       stderr=subprocess.STDOUT)
+    print(f'[UIC] {len(files)} UI file(s) updated.')
 
 
 # noinspection PyShadowingNames,PyUnusedLocal
@@ -74,6 +102,14 @@ def exe(ctx, clean=False, debug=False, build_py=True):
             embed_manifest(ctx, debug)
             if not debug:
                 com(ctx)
+
+            # Download api-ms-win-core-path dll file modified for Windows 7
+            if not os.path.exists(os.path.join(PACKAGING_DIR, API_MS_WIN_CORE_PATH)):
+                r = requests.get(API_MS_WIN_CORE_PATH_URL, allow_redirects=True)
+                with zipfile.ZipFile(io.BytesIO(r.content), 'r') as zip:
+                    zip_info = zip.getinfo(API_MS_WIN_CORE_PATH)
+                    zip_info.filename = os.path.basename(zip_info.filename)
+                    zip.extract(zip_info, PACKAGING_DIR)
         elif sys.platform.startswith('darwin'):
             add_rpath(ctx)
 
@@ -143,7 +179,7 @@ def installer(ctx, validate_appstream=True):
             tmp_application = os.path.join(source_folder, NAME + '.app')
 
             os.makedirs(source_folder)
-            os.system(f"{os.path.join(PACKAGING_DIR, 'set_folder_icon.sh')} {icon} {tmp_dir} {NAME}")
+            subprocess.run([os.path.join(PACKAGING_DIR, 'set_folder_icon.sh'), icon, tmp_dir, NAME], shell=True)
 
             shutil.copytree(application, tmp_application)
             shutil.copytree(os.path.join(PACKAGING_DIR, '..', 'examples'),
@@ -160,7 +196,7 @@ def installer(ctx, validate_appstream=True):
             with open(appdmg_json_fn, 'w') as f:
                 json.dump(appdmg_json, f)
 
-            os.system(f'appdmg {appdmg_json_fn} {output}')
+            subprocess.run(['appdmg', appdmg_json_fn, output], shell=True)
     elif sys.platform.startswith('linux'):
         if not os.path.exists('{}/appimagetool-x86_64.AppImage'.format(PACKAGING_DIR)):
             ctx.run('wget {} -P {}'.format(APPIMAGE_TOOL_URL, PACKAGING_DIR))

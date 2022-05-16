@@ -1,5 +1,5 @@
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QDialogButtonBox
+from qtpy.QtCore import Qt
+from qtpy.QtWidgets import QDialog, QVBoxLayout, QDialogButtonBox
 
 from .widgets import (TSNEOptionsWidget, NetworkOptionsWidget, MDSOptionsWidget,
                       UMAPOptionsWidget, IsomapOptionsWidget, PHATEOptionsWidget)

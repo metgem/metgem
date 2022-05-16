@@ -55,6 +55,13 @@ class ClusterizeOptions(Options):
                          cluster_selection_method='eom')
 
 
+class NumberizeOptions(Options):
+    name = 'numberize'
+
+    def __init__(self):
+        super().__init__(column_name='clusters')
+
+
 class CosineComputationOptions(Options):
     """Class containing spectra cosine scores options.
 

@@ -1,9 +1,8 @@
 import os
 
-from PyQt5 import uic
-from PyQt5.QtCore import Qt, QItemSelection, QSortFilterProxyModel
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QDialog, QLabel, QHeaderView, QMessageBox, QDialogButtonBox
+from qtpy.QtCore import Qt, QItemSelection, QSortFilterProxyModel
+from qtpy.QtGui import QIcon
+from qtpy.QtWidgets import QDialog, QLabel, QHeaderView, QMessageBox, QDialogButtonBox
 
 from . import ProgressDialog
 from ..config import PLUGINS_PATH
@@ -11,16 +10,17 @@ from ..models.plugins import PluginsModel, AvailablePluginsModel, InstalledPlugi
 from ..plugins import get_loaded_plugins, reload_plugins
 from ..workers.net import CheckPluginsVersionsWorker, DownloadPluginsWorker
 from ..workers.core import WorkerQueue
+from .plugins_manager_dialog_ui import Ui_PluginsManager
 
 
-class PluginsManagerDialog(QDialog):
+class PluginsManagerDialog(QDialog, Ui_PluginsManager):
 
     def __init__(self, parent):
         super().__init__(parent)
 
         self.setWindowFlags(Qt.Tool | Qt.CustomizeWindowHint | Qt.WindowCloseButtonHint)
 
-        uic.loadUi(os.path.join(os.path.dirname(__file__), 'plugins_manager_dialog.ui'), self)
+        self.setupUi(self)
 
         self.tabWidget.setCurrentIndex(0)
 

@@ -2,22 +2,16 @@ import os
 import sys
 from typing import Dict, List
 
-from PyQt5 import uic
-from PyQt5.QtCore import Qt, QDir
-from PyQt5.QtGui import QPalette, QColor
-from PyQt5.QtWidgets import QCompleter, QFileSystemModel, QDialog, QFileDialog, QListWidget
+from qtpy.QtCore import Qt, QDir
+from qtpy.QtGui import QPalette, QColor
+from qtpy.QtWidgets import QCompleter, QFileSystemModel, QDialog, QFileDialog, QListWidget
 
 from .progress_dialog import ProgressDialog
 from ..workers.core import WorkerQueue
-
-UI_FILE = os.path.join(os.path.dirname(__file__), 'export_db_results_dialog.ui')
-
-ExportDBResultsDialogUI, ExportDBResultsDialogBase = uic.loadUiType(UI_FILE,
-                                                                    from_imports='metgem_app.ui',
-                                                                    import_from='metgem_app.ui')
+from .export_db_results_dialog_ui import Ui_Dialog
 
 
-class ExportDBResultsDialog(ExportDBResultsDialogBase, ExportDBResultsDialogUI):
+class ExportDBResultsDialog(QDialog, Ui_Dialog):
 
     # noinspection PyUnusedLocal
     def __init__(self, *args, **kwargs):
@@ -27,10 +21,6 @@ class ExportDBResultsDialog(ExportDBResultsDialogBase, ExportDBResultsDialogUI):
 
         self._dialog = None
         self._workers = WorkerQueue(self, ProgressDialog(self))
-
-        super().__init__(*args, **kwargs)
-
-        self.setupUi(self)
 
         self._dialog = None
 

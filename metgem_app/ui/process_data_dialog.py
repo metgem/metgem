@@ -1,9 +1,8 @@
 import os
 
-from PyQt5 import uic
-from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtGui import QPalette, QColor
-from PyQt5.QtWidgets import QFileDialog, QDialog, QMenu, QListWidgetItem, QMessageBox
+from qtpy.QtCore import Qt, QSize
+from qtpy.QtGui import QPalette, QColor
+from qtpy.QtWidgets import QFileDialog, QDialog, QMenu, QListWidgetItem, QMessageBox
 
 from ..utils.network import generate_id
 from ..utils.gui import enumerateMenu
@@ -14,15 +13,10 @@ from .widgets import CosineOptionsWidget, AVAILABLE_NETWORK_WIDGETS
 from .widgets.network import short_id
 from .progress_dialog import ProgressDialog
 from .import_metadata_dialog import ImportMetadataDialog
-
-UI_FILE = os.path.join(os.path.dirname(__file__), 'process_data_dialog.ui')
-
-ProcessDataDialogUI, ProcessDataDialogBase = uic.loadUiType(UI_FILE,
-                                                            from_imports='metgem_app.ui',
-                                                            import_from='metgem_app.ui')
+from .process_data_dialog_ui import Ui_ProcessFileDialog
 
 
-class ProcessDataDialog(ProcessDataDialogBase, ProcessDataDialogUI):
+class ProcessDataDialog(QDialog, Ui_ProcessFileDialog):
     """Create and open a dialog to process a new .mgf file.
 
     Creates a dialog containing 4 widgets:

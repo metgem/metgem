@@ -137,12 +137,12 @@
   <customwidget>
    <class>AnnotationsNetworkView</class>
    <extends>QGraphicsView</extends>
-   <header>metgem_app/ui/widgets.h</header>
+   <header>metgem_app/ui/widgets/annotations/view.h</header>
   </customwidget>
   <customwidget>
    <class>Slider</class>
    <extends>QSlider</extends>
-   <header>metgem_app/ui/widgets.h</header>
+   <header>metgem_app/ui/widgets/slider.h</header>
   </customwidget>
  </customwidgets>
  <resources>

@@ -1,5 +1,7 @@
+import glob
 import sys
 import os
+import subprocess
 
 from setuptools import setup, find_packages
 from setuptools.command.build_py import build_py
@@ -10,15 +12,9 @@ import versioneer
 # Gather data files
 package_data = {'metgem_app': ['splash.png',
                                'styles/*.css',
-                               'ui/*.ui',
                                'ui/widgets/images/*',
-                               'ui/widgets/*.ui',
-                               'ui/widgets/databases/*.ui',
-                               'ui/widgets/spectrum/*.ui',
                                'ui/widgets/spectrum/images/*',
-                               'ui/widgets/metadata/*.ui',
                                'models/*.csv',
-                               'ui/widgets/annotations/*.ui'
                                ]}
 
 data_files = [("", ["LICENSE"])]
@@ -48,14 +44,33 @@ class ProcessResourceCommand(cmd.Command):
             skip = not any([os.path.getmtime(qrc) > rc_mtime for qrc in qrcs])
 
         if not skip:
-            os.system(f"pyrcc5 -o {rc} {' '.join(qrcs)}")
+            subprocess.run(['pyside2-rcc', '-o', rc, ' '.join(qrcs)], shell=True)
+
+
+class ProcessUICommand(cmd.Command):
+    """A custom command to compile UI files into Python files"""
+
+    description = "Compile ui files into python files"
+
+    def initialize_options(self):
+        return
+
+    def finalize_options(self):
+        return
+
+    def run(self):
+        for fn in glob.glob(os.path.join('metgem_app', 'ui', '**', '*.ui'), recursive=True):
+            fn = os.path.realpath(fn)
+            out = fn[:-3] + '_ui.py'
+            subprocess.run(['pyside2-uic', fn, '-o', out], shell=True)
 
 
 class BuildPyCommand(build_py):
-    """Custom build command to include ProcessResource command"""
+    """Custom build command to include ProcessResource and ProcessUI commands"""
 
     def run(self):
         self.run_command("process_resource")
+        self.run_command("process_ui")
         build_py.run(self)
 
 
@@ -88,6 +103,7 @@ setup(
     package_data=package_data,
     include_package_data=True,
     cmdclass=versioneer.get_cmdclass({'process_resource': ProcessResourceCommand,
+                                      'process_ui': ProcessUICommand,
                                       'build_py': BuildPyCommand}),
     zip_safe=False
 )

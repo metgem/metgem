@@ -1,9 +1,9 @@
 import struct
 from typing import Union
 
-from PyQt5.QtCore import Qt, QLineF, QRectF, QPointF
-from PyQt5.QtGui import QFont, QMouseEvent, QIcon, QPen
-from PyQt5.QtWidgets import (QGraphicsView, QGraphicsLineItem, QGraphicsSceneMouseEvent,
+from qtpy.QtCore import Qt, QLineF, QRectF, QPointF
+from qtpy.QtGui import QFont, QMouseEvent, QIcon, QPen
+from qtpy.QtWidgets import (QGraphicsView, QGraphicsLineItem, QGraphicsSceneMouseEvent,
                              QDialog, QUndoStack, QUndoView, QMenu, QWidgetAction, QGraphicsItem, QGraphicsEllipseItem)
 
 from .scene import AnnotationsNetworkScene
@@ -13,9 +13,9 @@ from .dialogs import TextItemInputDialog
 from ....config import get_python_rendering_flag
 
 if get_python_rendering_flag():
-    from PyQtNetworkView._pure import NetworkView
+    from PySide2MolecularNetwork._pure import NetworkView
 else:
-    from PyQtNetworkView import NetworkView
+    from PySide2MolecularNetwork import NetworkView
 
 MODE_LINE = 0
 MODE_RECT = 1
@@ -190,7 +190,7 @@ class AnnotationsNetworkView(NetworkView):
 
         for item in scene.annotationsLayer.childItems():
             if item.isSelected():
-                self._undo_stack.push(DeleteCommand(item, self))
+                self._undo_stack.push(DeleteCommand(item, scene))
 
     def on_edit_annotation_item_requested(self, item: QGraphicsItem):
         # Edit text item

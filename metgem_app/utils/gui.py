@@ -1,4 +1,4 @@
-from PyQt5.QtCore import QObject, pyqtSignal, QTimer
+from qtpy.QtCore import QObject, Signal, QTimer
 
 
 class SignalBlocker:
@@ -19,7 +19,7 @@ class SignalBlocker:
 class SignalGrouper(QObject):
     """Accumulate signals and emit a signal with all the senders after a timeout"""
 
-    groupped = pyqtSignal(set)
+    groupped = Signal(set)
 
     def __init__(self, timeout=100):
         super().__init__()

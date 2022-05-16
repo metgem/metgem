@@ -44,10 +44,10 @@
 
 import math
 
-from PyQt5.QtCore import QPointF, QSize, Qt
-from PyQt5.QtGui import QPainter, QPolygonF, QColor
-from PyQt5.QtWidgets import (QAbstractItemView, QApplication, QStyle,
-                             QStyledItemDelegate, QTableWidget, QTableWidgetItem)
+from qtpy.QtCore import QPointF, QSize, Qt
+from qtpy.QtGui import QPainter, QPolygonF, QColor
+from qtpy.QtWidgets import (QAbstractItemView, QApplication, QStyle,
+                            QStyledItemDelegate, QTableWidget, QTableWidgetItem)
 
 
 class StarRating:
@@ -61,8 +61,8 @@ class StarRating:
 
         self.__polygon = QPolygonF([QPointF(1.0, 0.5)])
         for i in range(5):
-            self.__polygon << QPointF(0.5 + 0.5 * math.cos(0.8 * i * math.pi),
-                                      0.5 + 0.5 * math.sin(0.8 * i * math.pi))
+            self.__polygon.append(QPointF(0.5 + 0.5 * math.cos(0.8 * i * math.pi),
+                                          0.5 + 0.5 * math.sin(0.8 * i * math.pi)))
 
     def paint(self, painter, rect, value):
         painter.save()

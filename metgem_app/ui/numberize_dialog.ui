@@ -1,30 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>InSilicoDBDialog</class>
- <widget class="QDialog" name="InSilicoDBDialog">
-  <property name="windowModality">
-   <enum>Qt::ApplicationModal</enum>
-  </property>
+ <class>Dialog</class>
+ <widget class="QDialog" name="Dialog">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1018</width>
-    <height>520</height>
+    <width>174</width>
+    <height>93</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>In Silico Databases</string>
+   <string>Numberize</string>
   </property>
-  <property name="windowIcon">
-   <iconset resource="ui.qrc">
-    <normaloff>:/icons/images/main.svg</normaloff>:/icons/images/main.svg</iconset>
-  </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
-   <item>
-    <widget class="QWebEngineView" name="browser" native="true"/>
+  <layout class="QFormLayout" name="formLayout">
+   <item row="1" column="0">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Column name</string>
+     </property>
+    </widget>
    </item>
-   <item>
+   <item row="1" column="1">
+    <widget class="QLineEdit" name="btColumnName">
+     <property name="toolTip">
+      <string>Name of data column that will be created</string>
+     </property>
+     <property name="text">
+      <string>clusters</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0" colspan="2">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -34,24 +41,24 @@
      </property>
     </widget>
    </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="label_5">
+     <property name="text">
+      <string>Number from</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="QComboBox" name="cbView"/>
+   </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>QWebEngineView</class>
-   <extends>QWidget</extends>
-   <header>PySide2.QtWebEngineWidgets</header>
-   <container>1</container>
-  </customwidget>
- </customwidgets>
- <resources>
-  <include location="ui.qrc"/>
- </resources>
+ <resources/>
  <connections>
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>InSilicoDBDialog</receiver>
+   <receiver>Dialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -67,7 +74,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>InSilicoDBDialog</receiver>
+   <receiver>Dialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

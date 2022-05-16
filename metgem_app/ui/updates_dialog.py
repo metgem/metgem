@@ -1,12 +1,12 @@
-import os
 import webbrowser
 
-from PyQt5 import uic
-from PyQt5.QtCore import QCoreApplication, QSettings, Qt
-from PyQt5.QtWidgets import QDialog, QDialogButtonBox
+from qtpy.QtCore import QCoreApplication, QSettings, Qt
+from qtpy.QtWidgets import QDialog, QDialogButtonBox
+
+from .updates_dialog_ui import Ui_UpdateDialog
 
 
-class UpdatesDialog(QDialog):
+class UpdatesDialog(QDialog, Ui_UpdateDialog):
 
     def __init__(self, parent, version, release_notes, url):
         super().__init__(parent)
@@ -16,7 +16,7 @@ class UpdatesDialog(QDialog):
         self._url = url
         self._version = version
 
-        uic.loadUi(os.path.join(os.path.dirname(__file__), 'updates_dialog.ui'), self)
+        self.setupUi(self)
 
         self.lblNewversion.setText(f"<b>{QCoreApplication.applicationName()} {version}</b> is now available.")
         if release_notes:

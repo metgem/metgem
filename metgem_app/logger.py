@@ -1,7 +1,7 @@
 import logging
 import os
 from functools import wraps
-from PyQt5.QtCore import QCoreApplication
+from qtpy.QtCore import QCoreApplication
 from logging.handlers import RotatingFileHandler
 
 import numpy as np
