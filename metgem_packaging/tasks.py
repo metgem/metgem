@@ -179,7 +179,8 @@ def installer(ctx, validate_appstream=True):
             tmp_application = os.path.join(source_folder, NAME + '.app')
 
             os.makedirs(source_folder)
-            subprocess.run([os.path.join(PACKAGING_DIR, 'set_folder_icon.sh'), icon, tmp_dir, NAME])
+            subprocess.run([os.path.join(PACKAGING_DIR, 'set_folder_icon.sh'), icon, tmp_dir, NAME],
+                           shell=True)
 
             shutil.copytree(application, tmp_application)
             shutil.copytree(os.path.join(PACKAGING_DIR, '..', 'examples'),
