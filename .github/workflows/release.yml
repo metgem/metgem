@@ -102,7 +102,7 @@ jobs:
       - name: Get/Create Release
         if: ${{ !env.ACT }}
         id: create-release
-        uses: ncipollo/release-action@v1.10.
+        uses: ncipollo/release-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
