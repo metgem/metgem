@@ -102,12 +102,10 @@ jobs:
       - name: Get/Create Release
         if: ${{ !env.ACT }}
         id: create-release
-        uses: actions/create-release@v1
+        uses: ncipollo/release-action@v1.10.
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}
-          release_name: MetGem ${{ github.ref }}
           prerelease: true
           allowUpdates: true
       - name: Upload Release Asset
