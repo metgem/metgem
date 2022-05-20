@@ -1,4 +1,3 @@
-hiddenimports = ['sklearn.utils._cython_blas',
-                 'sklearn.utils._weight_vector',
-                 'sklearn.utils._typedefs',
-                 'sklearn.utils._heap']
+from PyInstaller.utils.hooks import collect_submodules
+
+hiddenimports = collect_submodules('sklearn.utils', filter=lambda x: "tests" not in x.split("."))
