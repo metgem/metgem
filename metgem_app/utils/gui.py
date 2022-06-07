@@ -1,4 +1,43 @@
 from qtpy.QtCore import QObject, Signal, QTimer
+from qtpy import QtWidgets
+from qtpy import QtCore
+import shiboken2
+
+
+def wrap_instance(obj, base=None):
+    """Cast instance to the most suitable class
+    Based on https://github.com/mottosso/Qt.py
+    Arguments:
+        obj (QObject): object to wrap.
+        base (QObject, optional): Base class to wrap with. Defaults to QObject,
+            which should handle anything.
+    """
+
+    assert isinstance(obj, QObject), "Argument 'obj' must be of type <QObject>"
+    assert (base is None) or issubclass(base, QObject), (
+        "Argument 'base' must be of type <QObject>")
+
+    ptr = int(shiboken2.getCppPointer(obj)[0])
+
+    if base is None:
+        q_object = shiboken2.wrapInstance(ptr, QObject)
+        meta_object = q_object.metaObject()
+
+        while True:
+            class_name = meta_object.className()
+
+            try:
+                base = getattr(QtWidgets, class_name)
+            except AttributeError:
+                try:
+                    base = getattr(QtCore, class_name)
+                except AttributeError:
+                    meta_object = meta_object.superClass()
+                    continue
+
+            break
+
+    return shiboken2.wrapInstance(ptr, base)
 
 
 class SignalBlocker:

@@ -5,9 +5,10 @@ import yaml
 from qtpy.QtCore import Qt
 from qtpy.QtGui import QValidator
 from qtpy.QtWidgets import (QTableWidgetItem, QFileDialog, QMessageBox, QStyledItemDelegate,
-                            QMenu, QTableWidget, QTableView, QDialog)
+                            QMenu, QTableWidget, QTableView, QDialog, QLineEdit)
 
 from .add_columns_by_formulae_ui import Ui_AddColumnsByFormulaeDialog
+from ..utils.gui import wrap_instance
 
 
 # noinspection PyShadowingBuiltins
@@ -26,7 +27,7 @@ class AliasValidator(QValidator):
 class AliasDelegate(QStyledItemDelegate):
 
     def createEditor(self, parent, option, index):
-        editor = super().createEditor(parent, option, index)
+        editor = QLineEdit(parent)
         editor.setValidator(AliasValidator())
         return editor
 
@@ -254,7 +255,7 @@ class AddColumnsByFormulaeDialog(QDialog, Ui_AddColumnsByFormulaeDialog):
             if not index.isValid():
                 return
             if index.column() == AddColumnsByFormulaeDialog.COLUMN_FORMULA:
-                editor = self.tblMappings.indexWidget(index)
+                editor = wrap_instance(self.tblMappings.indexWidget(index))
                 item = self.sender()
                 if item:
                     editor.insert(item.data())
