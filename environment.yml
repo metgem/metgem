@@ -22,6 +22,7 @@ dependencies:
     - rdkit
     - numexpr>=2.7.0
     - xlrd
+    - openpyxl
     - odfpy
     - feedparser
     - mplcursors
