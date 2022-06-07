@@ -116,11 +116,13 @@ class AddColumnsByFormulaeDialog(QDialog, Ui_AddColumnsByFormulaeDialog):
             action.setData(func + '()')
             action.triggered.connect(self.add_text_to_mappings_editor)
         menu.addSection("Statistical Functions")
-        for func in sorted(['mean', 'median', 'std', 'var', 'quantile', 'min', 'max']):
+        for func in sorted(['mean', 'median', 'std', 'var', 'quantile', 'min', 'max']) + sorted(['abs', 'sum', 'prod']):
             action = menu.addAction(func)
             action.setData(func + '()')
             action.triggered.connect(self.add_text_to_mappings_editor)
-        for func in sorted(['abs', 'sum', 'prod']):
+        self.btAddFunction.setMenu(menu)
+        menu.addSection("Datatype Functions")
+        for func in sorted(['int', 'float', 'bool']) + ['fillna']:
             action = menu.addAction(func)
             action.setData(func + '()')
             action.triggered.connect(self.add_text_to_mappings_editor)

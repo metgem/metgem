@@ -1416,6 +1416,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                             'min': lambda *args: pd.DataFrame(args).min(),
                             'max': lambda *args: pd.DataFrame(args).max(),
                             'pi': np.pi, 'e': np.e,
+                            'int': lambda *args: pd.DataFrame(args).fillna(0).astype(int).squeeze(),
+                            'float': lambda *args: pd.DataFrame(args).astype(float).squeeze(),
+                            'bool': lambda *args: pd.DataFrame(args).astype(bool).squeeze(),
+                            'fillna': lambda v, *args: pd.DataFrame(args).fillna(v).squeeze(),
                              }
 
                 self.tvNodes.sourceModel().beginResetModel()
