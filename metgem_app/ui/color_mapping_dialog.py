@@ -618,7 +618,7 @@ class ColorMappingDialog(BaseColorMappingDialog):
         data = self._model.headerData(self._column_id, Qt.Horizontal, role=ColumnDataRole)
         if data is not None and not isinstance(data, pd.Series):
             data = pd.Series(data)
-        self._data = data
+        self._data = data.fillna(0).squeeze()
 
         if model is not None and column_id is not None:
             for i in range(model.columnCount()):

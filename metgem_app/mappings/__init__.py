@@ -31,4 +31,4 @@ class SizeMappingFunc(dict):
         self.__setitem__('mode', mode)
 
     def __call__(self, *args, **kwargs):
-        return self._func(*args, **kwargs)
+        return np.nan_to_num(self._func(*args, **kwargs), nan=self['ymin'], posinf=self['ymax'], neginf=self['ymin'])
