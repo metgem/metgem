@@ -57,6 +57,7 @@ class NodesWidget(QWidget, Ui_NodesWidget):
         self.btSetColumnsMovable.setDefaultAction(self.actionSetColumnsMovable)
         self.btFreezeFirstColumn.setDefaultAction(self.actionFreezeFirstColumn)
         self.btFreezeColumns.setDefaultAction(self.actionFreezeColumns)
+        self.btFilter.setDefaultAction(self.actionFilterByMZ)
 
         menu = QMenu()
         menu.addAction(self.actionViewSpectrum)

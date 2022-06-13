@@ -14,3 +14,4 @@ from .embedding import TSNEWorker, MDSWorker, IsomapWorker, UMAPWorker, PHATEWor
 from .project.save import SaveProjectWorker
 from .project.version import UnsupportedVersionError
 from .project.load import LoadProjectWorker
+from .filter import FilterWorker

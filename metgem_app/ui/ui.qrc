@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="icons">
+    <file>images/filter.svg</file>
     <file>images/cfm-id.png</file>
     <file>images/metfrag.png</file>
     <file>images/enable_move_columns.svg</file>

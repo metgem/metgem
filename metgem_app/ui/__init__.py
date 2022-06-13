@@ -22,3 +22,4 @@ from .plugins_manager_dialog import PluginsManagerDialog
 from .pen_parameters_dialog import PenParametersDialog
 from .export_db_results_dialog import ExportDBResultsDialog
 from .in_silico_db_dialog import MetFragDialog, CFMIDDialog
+from .filter_dialog import FilterDialog

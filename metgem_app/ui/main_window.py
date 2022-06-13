@@ -225,6 +225,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.nodes_widget.actionClusterize.triggered.connect(self.on_clusterize)
         self.nodes_widget.actionNumberize.triggered.connect(self.on_numberize)
         self.nodes_widget.actionDeleteColumns.triggered.connect(self.on_delete_nodes_columns)
+        self.nodes_widget.actionFilterByMZ.triggered.connect(self.on_filter)
 
         self.edges_widget.actionHighlightSelectedEdges.triggered.connect(self.highlight_selected_edges)
         self.edges_widget.actionHighlightNodesFromSelectedEdges.triggered.connect(
@@ -239,6 +240,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionAboutQt.triggered.connect(lambda: QMessageBox.aboutQt(self))
         self.actionProcessFile.triggered.connect(self.on_process_file_triggered)
         self.actionImportMetadata.triggered.connect(self.on_import_metadata_triggered)
+        self.actionImportIdentityAnnotations.triggered.connect(self.on_import_identity_annotations_triggered)
         self.actionImportGroupMapping.triggered.connect(self.on_import_group_mapping_triggered)
         self.actionCurrentParameters.triggered.connect(self.on_current_parameters_triggered)
         self.actionPreferences.triggered.connect(self.on_preferences_triggered)
@@ -1523,6 +1525,29 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     self._workers.start()
 
         self._dialog.finished.connect(do_numbering)
+        self._dialog.open()
+
+    @debug
+    def on_filter(self):
+        self._dialog = ui.FilterDialog()
+
+        def do_filter(result):
+            if result == QDialog.Accepted:
+                def set_filter(worker: workers_core.FilterWorker):
+                    result = worker.result()
+                    if not result:
+                        QMessageBox.warning(self, None, 'No node matched the given conditions.')
+                        return
+                    self.tvNodes.model().setSelection(result)
+
+                values, condition_criterium = self._dialog.getValues()
+                worker = workers_core.FilterWorker(self._network.mzs, self._network.spectra,
+                                                   values, condition_criterium)
+                if worker is not None:
+                    self._workers.append(worker)
+                    self._workers.append(set_filter)
+                    self._workers.start()
+        self._dialog.finished.connect(do_filter)
         self._dialog.open()
 
     # noinspection PyUnusedLocal
