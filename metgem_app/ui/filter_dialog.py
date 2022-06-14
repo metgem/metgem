@@ -1,6 +1,6 @@
 from qtpy.QtWidgets import (QFileDialog, QDialog,
                             QComboBox, QDoubleSpinBox, QMessageBox)
-from qtpy.QtCore import Qt
+from qtpy.QtCore import Qt, QSettings
 
 import pandas as pd
 
@@ -24,9 +24,9 @@ class ValueDoubleSpinBox(QDoubleSpinBox):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.setDecimals(4)
+        self.setDecimals(QSettings().value('Metadata/float_precision', 4, type=int))
         self.setMinimum(0)
-        self.setMaximum(2147483647)
+        self.setMaximum(1000000)
         self.setValue(0.)
 
 
