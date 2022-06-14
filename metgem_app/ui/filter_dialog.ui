@@ -20,6 +20,9 @@
    <iconset resource="ui.qrc">
     <normaloff>:/icons/images/filter.svg</normaloff>:/icons/images/filter.svg</iconset>
   </property>
+  <property name="modal">
+   <bool>true</bool>
+  </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="2" column="3">
     <spacer name="horizontalSpacer">

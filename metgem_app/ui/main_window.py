@@ -1529,7 +1529,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     @debug
     def on_filter(self):
-        self._dialog = ui.FilterDialog()
+        self._dialog = ui.FilterDialog(self)
 
         def do_filter(result):
             if result == QDialog.Accepted:
