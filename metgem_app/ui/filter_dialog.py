@@ -1,13 +1,11 @@
-from qtpy.QtWidgets import (QFileDialog, QDialog, QTableWidgetItem,
+from qtpy.QtWidgets import (QFileDialog, QDialog,
                             QComboBox, QDoubleSpinBox, QMessageBox)
-from qtpy.QtGui import QDoubleValidator
 from qtpy.QtCore import Qt
 
 import pandas as pd
-from typing import List
 
 from .filter_dialog_ui import Ui_FilterDialog
-from ..workers.core.filter import (FilterWorker, FRAGMENTS, NEUTRAL_LOSSES, MZ_PARENT,
+from ..workers.core.filter import (FRAGMENTS, NEUTRAL_LOSSES, MZ_PARENT,
                                    ALL_CONDITIONS, AT_LEAST_ONE_CONDITION)
 
 ALL_CONDITIONS_TEXT = "# Match all conditions"
