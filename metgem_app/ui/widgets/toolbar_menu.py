@@ -7,7 +7,8 @@ class ToolBarMenu(QToolButton):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setPopupMode(QToolButton.MenuButtonPopup)
-        self.setMenu(QMenu())
+        self._menu = QMenu()
+        self.setMenu(self._menu)
         self.triggered.connect(self.setDefaultAction)
 
     def addAction(self, action: QAction) -> QAction:
