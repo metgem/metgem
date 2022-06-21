@@ -468,6 +468,8 @@ class EdgesModel(QAbstractTableModel):
                     return
             else:
                 data = self.interactions.iloc[row, column]
+                if column <= 1:  # First two columns (source and target)
+                    data += 1
                 if role in (Qt.DisplayRole, LabelRole):
                     return str(data)
                 else:
