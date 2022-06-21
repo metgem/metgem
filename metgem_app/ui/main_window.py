@@ -240,7 +240,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionAboutQt.triggered.connect(lambda: QMessageBox.aboutQt(self))
         self.actionProcessFile.triggered.connect(self.on_process_file_triggered)
         self.actionImportMetadata.triggered.connect(self.on_import_metadata_triggered)
-        self.actionImportIdentityAnnotations.triggered.connect(self.on_import_identity_annotations_triggered)
         self.actionImportGroupMapping.triggered.connect(self.on_import_group_mapping_triggered)
         self.actionCurrentParameters.triggered.connect(self.on_current_parameters_triggered)
         self.actionPreferences.triggered.connect(self.on_preferences_triggered)
