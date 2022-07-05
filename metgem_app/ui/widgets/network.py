@@ -1,4 +1,3 @@
-import os
 import sys
 
 import numpy as np
@@ -76,7 +75,7 @@ class BaseFrame(QFrame, Ui_NetworkFrame):
         self._interactions = interactions if isinstance(interactions, pd.DataFrame) else pd.DataFrame()
 
         # Send Scale sliders to a toolbutton menu
-        menu = QMenu()
+        self._menu = menu = QMenu()
         action = QWidgetAction(self)
         action.setDefaultWidget(self.sliderScale)
         menu.addAction(action)

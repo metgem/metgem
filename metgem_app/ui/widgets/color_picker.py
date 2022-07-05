@@ -42,7 +42,7 @@ class ColorPicker(QToolButton):
             self.on_color_selected(current_color)
         settings.endGroup()
 
-        menu = QMenu()
+        self._menu = menu = QMenu()
         menu.addAction(dialog_action)
 
         self.setMenu(menu)

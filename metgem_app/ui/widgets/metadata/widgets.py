@@ -17,31 +17,37 @@ class NodesWidget(QWidget, Ui_NodesWidget):
         self._sort_indicator_order = Qt.AscendingOrder
         hh.setSortIndicator(-1, Qt.AscendingOrder)
 
+        self._menus = []
         menu = QMenu()
+        self._menus.append(menu)
         menu.addAction(self.actionUseColumnForLabels)
         menu.addAction(self.actionResetLabelMapping)
         self.btUseColumnForLabels.setMenu(menu)
         self.btUseColumnForLabels.setDefaultAction(self.actionUseColumnForLabels)
 
         menu = QMenu()
+        self._menus.append(menu)
         menu.addAction(self.actionUseColumnsForPieCharts)
         menu.addAction(self.actionResetPieColorMapping)
         self.btUseColumnsForPieCharts.setMenu(menu)
         self.btUseColumnsForPieCharts.setDefaultAction(self.actionUseColumnsForPieCharts)
 
         menu = QMenu()
+        self._menus.append(menu)
         menu.addAction(self.actionUseColumnForNodesSizes)
         menu.addAction(self.actionResetSizeMapping)
         self.btUseColumnForNodesSizes.setMenu(menu)
         self.btUseColumnForNodesSizes.setDefaultAction(self.actionUseColumnForNodesSizes)
 
         menu = QMenu()
+        self._menus.append(menu)
         menu.addAction(self.actionUseColumnForNodesColors)
         menu.addAction(self.actionResetColorMapping)
         self.btUseColumnForNodesColors.setMenu(menu)
         self.btUseColumnForNodesColors.setDefaultAction(self.actionUseColumnForNodesColors)
 
         menu = QMenu()
+        self._menus.append(menu)
         menu.addAction(self.actionUseColumnForNodesPixmaps)
         menu.addAction(self.actionResetPixmapMapping)
         self.btUseColumnForNodesPixmaps.setMenu(menu)
@@ -60,12 +66,14 @@ class NodesWidget(QWidget, Ui_NodesWidget):
         self.btFilter.setDefaultAction(self.actionFilterByMZ)
 
         menu = QMenu()
+        self._menus.append(menu)
         menu.addAction(self.actionViewSpectrum)
         menu.addAction(self.actionViewCompareSpectrum)
         self.btShowSpectrum.setMenu(menu)
         self.btShowSpectrum.setDefaultAction(self.actionViewSpectrum)
 
         menu = QMenu()
+        self._menus.append(menu)
         menu.addAction(self.actionFindStandards)
         menu.addAction(self.actionFindAnalogs)
         menu.addSeparator()
