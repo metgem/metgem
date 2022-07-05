@@ -1,5 +1,5 @@
 from qtpy.QtCore import Qt
-from qtpy.QtWidgets import QDialog
+from qtpy.QtWidgets import QDialog, QApplication
 
 try:
     # noinspection PyUnresolvedReferences
@@ -31,6 +31,7 @@ class ProgressDialog(QDialog, Ui_Dialog):
         self.progressBar.setValue(val)
         if HAS_WINEXTRAS:
             self._button.progress().setValue(val)
+        QApplication.processEvents()
 
     def format(self):
         return self.windowTitle()
