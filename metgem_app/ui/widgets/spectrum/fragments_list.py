@@ -69,6 +69,8 @@ class FragmentsListWidget(QWidget, Ui_Form):
         if main_window is None:
             dock_widget = findParent(QtAds.CDockWidget, self)
             main_window = dock_widget.dockManager().parent() if dock_widget else None
+            if not isinstance(main_window, QMainWindow):
+                main_window = findParent(QMainWindow, main_window)
 
         if main_window is not None and mz1 is not None and data1 is not None and mz2 is not None and data2 is not None:
             data1 = square_root_and_normalize_data(data1)
