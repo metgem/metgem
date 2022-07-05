@@ -15,7 +15,7 @@ import sqlalchemy
 from qtpy.QtCore import (QSettings, Qt, QCoreApplication, QRectF, QAbstractTableModel)
 from qtpy.QtGui import QPainter, QImage, QColor, QKeyEvent, QIcon, QFontMetrics, QFont, QKeySequence, QCursor, QBrush
 from qtpy.QtWidgets import (QDialog, QFileDialog, QMessageBox, QWidget, QMenu, QActionGroup, QMainWindow,
-                             QAction, qApp, QTableView, QComboBox, QToolBar,
+                             QAction, QTableView, QComboBox, QToolBar,
                              QApplication, QGraphicsView, QLineEdit, QListWidget, QLabel, QToolButton)
 
 from PySide2Ads.QtAds import (CDockManager, CDockWidget,
@@ -263,7 +263,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionSaveAs.triggered.connect(self.on_save_project_as_triggered)
 
         self.actionViewMiniMap.triggered.connect(self.on_switch_minimap_visibility)
-        qApp.focusChanged.connect(self.on_focus_changed)
+        QCoreApplication.instance().focusChanged.connect(self.on_focus_changed)
         self.actionViewSpectrum.triggered.connect(lambda: self.on_show_spectrum_triggered('show'))
         self.actionViewCompareSpectrum.triggered.connect(lambda: self.on_show_spectrum_triggered('compare'))
         # noinspection PyPep8
@@ -392,7 +392,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 dock.setObjectName("jupyter")
                 dock.setIcon(QIcon(":/icons/images/python.svg"))
                 dock.setWidget(self.jupyter_widget)
-                self.jupyter_widget.push(app=qApp, win=self)
+                self.jupyter_widget.push(app=QCoreApplication.instance(), win=self)
                 self.dock_manager.addDockWidget(TopDockWidgetArea, dock)
                 self.dock_manager.addToggleViewActionToMenu(dock.toggleViewAction())
 

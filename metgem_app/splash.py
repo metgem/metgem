@@ -1,8 +1,8 @@
 import os
 
-from qtpy.QtCore import Qt
+from qtpy.QtCore import Qt, QCoreApplication
 from qtpy.QtGui import QPixmap, QPainter
-from qtpy.QtWidgets import QSplashScreen, QProgressBar, QLabel, qApp
+from qtpy.QtWidgets import QSplashScreen, QProgressBar, QLabel
 
 
 class SplashScreen(QSplashScreen):
@@ -66,7 +66,7 @@ class SplashScreen(QSplashScreen):
 
     def show(self):
         super().show()
-        qApp.processEvents()
+        QCoreApplication.processEvents()
 
     def showMessage(self, message: str, alignment: int = Qt.AlignBottom | Qt.AlignLeft, color=Qt.white):
         self.__message = message
@@ -74,7 +74,7 @@ class SplashScreen(QSplashScreen):
         self.__color = color
         self.messageChanged.emit(message)
         self.repaint()
-        qApp.processEvents()
+        QCoreApplication.processEvents()
 
     def drawContents(self, painter: QPainter):
         painter.setPen(self.__color)

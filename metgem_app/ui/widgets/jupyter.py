@@ -1,5 +1,5 @@
 try:
-    from qtpy.QtWidgets import qApp
+    from qtpy.QtCore import QCoreApplication
     from qtconsole.rich_jupyter_widget import RichJupyterWidget
     from qtconsole.inprocess import QtInProcessKernelManager
     import tornado
@@ -20,7 +20,7 @@ else:
             self.kernel_client.start_channels()
 
             self.exit_requested.connect(self.stop)
-            qApp.aboutToQuit.connect(self.stop)
+            QCoreApplication.instance().aboutToQuit.connect(self.stop)
 
         def stop(self):
             self.kernel_client.stop_channels()
