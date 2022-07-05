@@ -19,7 +19,7 @@ class NetworkWorker(BaseWorker):
     def run(self):
         layout = np.empty((self.max, 2))
 
-        forceatlas2 = ForceAtlas2(adjustSizes=True,
+        forceatlas2 = ForceAtlas2(adjustSizes=False,
                                   scalingRatio=RADIUS,
                                   verbose=False)
 
@@ -44,7 +44,7 @@ class NetworkWorker(BaseWorker):
                 lyt = ig.Layout([(0, -2*radii[0]), (0, 2*radii[1])])
                 border = 2 * max(radii)
             else:
-                lyt = forceatlas2.forceatlas2_igraph_layout(graph, pos=None, sizes=radii,
+                lyt = forceatlas2.forceatlas2_igraph_layout(graph, pos=None, #sizes=radii,
                                                             iterations=1000, weight_attr='__weight')
                 border = 5 * max(radii)
             

@@ -29,7 +29,7 @@ dependencies:
     - py2cytoscape>=0.7.0
     - libmetgem>=0.6.3
     - pyside2mn>=0.6.0
-    - forceatlas2>=0.3.6
+    - fa2>=0.3.5
     - pyemf>=2.1.2alpha
     - pyside2ads>=3.7.2
     - numba>=0.46.0
