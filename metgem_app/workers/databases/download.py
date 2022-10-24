@@ -40,21 +40,24 @@ class ListDatabasesWorker(BaseWorker):
                     else:
                         gen = plugin.get_items()
 
-                    for item in gen:
-                        try:
-                            title, ids, desc = item
-                        except (ValueError, AssertionError):
-                            pass
-                        else:
-                            if not isinstance(title, str) or not isinstance(ids, list) or not isinstance(desc, str):
-                                continue
-
-                            for id_ in ids:
-                                if not isinstance(id_, str):
+                    try:
+                        for item in gen:
+                            try:
+                                title, ids, desc = item
+                            except (ValueError, AssertionError):
+                                pass
+                            else:
+                                if not isinstance(title, str) or not isinstance(ids, list) or not isinstance(desc, str):
                                     continue
 
-                            item = {'name': title, 'ids': ids, 'desc': desc, 'origin': origin}
-                            self.itemReady.emit(item)
+                                for id_ in ids:
+                                    if not isinstance(id_, str):
+                                        continue
+
+                                item = {'name': title, 'ids': ids, 'desc': desc, 'origin': origin}
+                                self.itemReady.emit(item)
+                    except:  # If a plugin raise an error, continue to next plugin
+                        continue
 
         self._result = items
         self.finished.emit()
