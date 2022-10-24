@@ -32,7 +32,7 @@ def exceptionHandler(exctype, value, trace):
         msg = exctype.__name__
     logger = logging.getLogger()
     logger.error(msg, exc_info=(exctype, value, trace))
-    msg = QMessageBox(QCoreApplication.activeWindow())
+    msg = QMessageBox(QCoreApplication.instance().activeWindow())
     msg.setWindowTitle("Unhandled exception")
     msg.setIcon(QMessageBox.Warning)
     msg.setText(("It seems you have found a bug in {}. Please report details.\n"
