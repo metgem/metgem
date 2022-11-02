@@ -47,7 +47,7 @@ class WorkerQueue(deque):
 
     def connect_events(self, worker):
         use_thread = HAS_THREADS and not isinstance(worker, GenericWorker)
-        use_thread = False
+
         if use_thread:
             thread = QThread(self.parent())
             worker.moveToThread(thread)
