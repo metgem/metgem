@@ -1,5 +1,3 @@
-import os
-
 import pandas as pd
 from libmetgem.filter import filter_data_multi
 from libmetgem.mgf import read as read_mgf
