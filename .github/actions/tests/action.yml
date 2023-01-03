@@ -14,5 +14,5 @@ runs:
         hash=${{ github.sha }}
         hash=${hash::6}
         log=tests-${{ runner.os }}-$hash.log
-        echo "::set-output name=log::$log"
+        echo "{log}={$log}" >> $GITHUB_OUTPUT
         metgem_packaging/dist/MetGem/MetGem --pytest 1>$log 2>&1
