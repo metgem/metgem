@@ -146,7 +146,7 @@ jobs:
               fi
             done
           fi
-          echo "::set-output name=needs-build::$needs_build"
+          echo "{needs-build}={$needs_build}" >> $GITHUB_OUTPUT
           
   generate-matrix:
     runs-on: ubuntu-latest
@@ -171,9 +171,9 @@ jobs:
             os=$(printf ', "%s"' "${os[@]}")
             os="[${os:2}]"
             echo "[INFO] OS selected: $os"
-            echo "::set-output name=os::$os"
+            echo "{os}={$os}" >> $GITHUB_OUTPUT
           else
-            echo '::set-output name=os::["ubuntu","windows","macos"]'
+            echo '{os}={["ubuntu","windows","macos"]}' >> $GITHUB_OUTPUT
           fi
           
   update-nightly-tag:
