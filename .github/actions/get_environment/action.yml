@@ -38,7 +38,7 @@ runs:
             echo "Use cached explicit environment"
           fi
         fi
-        echo "{environment}={$environment}" >> $GITHUB_OUTPUT
-        echo "{explicit}={$explicit}" >> $GITHUB_OUTPUT
-        echo "{python-version}={$python}" >> $GITHUB_OUTPUT
+        echo "environment=$environment" >> $GITHUB_OUTPUT
+        echo "explicit=$explicit" >> $GITHUB_OUTPUT
+        echo "python-version=$python" >> $GITHUB_OUTPUT
       

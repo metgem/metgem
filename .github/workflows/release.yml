@@ -140,7 +140,7 @@ jobs:
             os=$(printf ', "%s"' "${os[@]}")
             os="[${os:2}]"
             echo "[INFO] OS selected: $os"
-            echo "{os}={$os}" >> $GITHUB_OUTPUT
+            echo "os=$os" >> $GITHUB_OUTPUT
           else
-            echo '{os}={["ubuntu","windows","macos"]}' >> $GITHUB_OUTPUT
+            echo 'os=["ubuntu","windows","macos"]' >> $GITHUB_OUTPUT
           fi
