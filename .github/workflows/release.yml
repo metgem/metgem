@@ -47,11 +47,11 @@ jobs:
         os: ${{ fromJSON(needs.generate-matrix.outputs.os) }}
       fail-fast: false
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Cache conda
         if: ${{ !env.ACT }}
         id: cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         env:
           # Increase this value to reset cache if environment.yml has not changed
           CACHE_NUMBER: 2
@@ -95,7 +95,7 @@ jobs:
         uses: ./.github/actions/tests
       - name: Upload Tests Artifacts
         if: always()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: tests
           path: ${{ steps.tests.outputs.log }}

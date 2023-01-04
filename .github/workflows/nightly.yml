@@ -49,11 +49,11 @@ jobs:
       fail-fast: false
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Cache conda
       id: cache
       if: ${{ !env.ACT }}
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       env:
         # Increase this value to reset cache if environment.yml has not changed
         CACHE_NUMBER: 2
@@ -105,7 +105,7 @@ jobs:
         limit-access-to-actor: true
     - name: Upload Tests Artifacts
       if: ${{ always() && !env.ACT }}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: tests
         path: ${{ steps.tests.outputs.log }}

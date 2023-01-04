@@ -20,10 +20,10 @@ jobs:
       fail-fast: false
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Cache conda
       id: cache
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       env:
         # Increase this value to reset cache if environment.yml has not changed
         CACHE_NUMBER: 2
@@ -48,7 +48,7 @@ jobs:
       run: conda list --explicit > ~/conda-env-explicit.txt
     - name: Upload Artifacts
       if: always()
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: conda-env-explicit-${{ runner.os }}
         path: ~/conda-env-explicit.txt
