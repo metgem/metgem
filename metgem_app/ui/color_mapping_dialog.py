@@ -1,9 +1,8 @@
-import os
 import random
 from itertools import zip_longest
 from typing import List, Union, Optional, Tuple
 
-import matplotlib.cm as mplcm
+import matplotlib as mpl
 import numpy as np
 import pandas as pd
 from qtpy.QtCore import Qt, QSettings, QSize, QAbstractTableModel, QModelIndex, QObject, QEvent, QRect, QRectF
@@ -67,10 +66,10 @@ def get_colors(n, cmap='auto'):
         return generate_colors(n)
     else:
         try:
-            cm = mplcm.get_cmap(cmap)
+            cm = mpl.colormaps.get_cmap(cmap)
         except ValueError:
             return []
-        if (isinstance(cm, (mplcm.colors.ListedColormap, mplcm.colors.LinearSegmentedColormap)) and cm.N < 256) \
+        if (isinstance(cm, (mpl.colors.ListedColormap, mpl.colors.LinearSegmentedColormap)) and cm.N < 256) \
                 or n == 1:
             return [QColor(*cm(i, bytes=True)) for i in range(cm.N)]
         else:
@@ -92,8 +91,8 @@ def cmap2pixmap(cmap, steps=50):
         colors = generate_colors(steps)
     else:
         try:
-            norm = mplcm.colors.Normalize(vmin=0., vmax=1.)
-            sm = mplcm.ScalarMappable(norm=norm, cmap=cmap)
+            norm = mpl.colors.Normalize(vmin=0., vmax=1.)
+            sm = mpl.cm.ScalarMappable(norm=norm, cmap=cmap)
             inds = np.linspace(0, 1, steps)
             colors = [QColor(*c) for c in sm.to_rgba(inds, bytes=True)]
         except ValueError:
@@ -343,7 +342,7 @@ class BaseColorMappingDialog(QDialog, Ui_ColorMappingDialog):
         self.setWindowFlags(Qt.Tool | Qt.CustomizeWindowHint | Qt.WindowCloseButtonHint)
 
         current_cmap = QSettings().value('ColorMap', 'auto')
-        cmaps = ['auto'] + sorted([k for k in mplcm.cmap_d.keys() if not k.endswith('_r')], key=lambda s: s.casefold())
+        cmaps = ['auto'] + sorted([k for k in mpl.colormaps.keys() if not k.endswith('_r')], key=lambda s: s.casefold())
         for i, cmap in enumerate(cmaps):
             pixmap = cmap2pixmap(cmap)
             self.cbColorMap.addItem(QIcon(pixmap), cmap)
