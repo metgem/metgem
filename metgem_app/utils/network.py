@@ -16,6 +16,7 @@ class Network(QObject):
         super().__init__()
         self._interactions = pd.DataFrame()
         self._infos = None
+        self._identity_annotations = pd.DataFrame()
         self.db_results = {}
         self.columns_mappings = {}
         self.lazyloaded = False

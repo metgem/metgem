@@ -170,6 +170,7 @@
    <addaction name="separator"/>
    <addaction name="actionProcessFile"/>
    <addaction name="actionImportMetadata"/>
+   <addaction name="actionImportIdentityAnnotations"/>
    <addaction name="actionImportGroupMapping"/>
    <addaction name="separator"/>
    <addaction name="actionAddNetworkView"/>
@@ -1292,6 +1293,24 @@
    </property>
    <property name="toolTip">
     <string>CFM-ID</string>
+   </property>
+  </action>
+  <action name="actionImportIdentityAnnotations">
+   <property name="icon">
+    <iconset resource="ui.qrc">
+     <normaloff>:/icons/images/import-annotations.svg</normaloff>:/icons/images/import-annotations.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Import &amp;Identity Annotations...</string>
+   </property>
+   <property name="toolTip">
+    <string>Import nodes MS Annotations</string>
+   </property>
+   <property name="statusTip">
+    <string>Import nodes metadata</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+I</string>
    </property>
   </action>
  </widget>

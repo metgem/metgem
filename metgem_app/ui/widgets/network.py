@@ -164,6 +164,16 @@ class BaseFrame(QFrame, Ui_NetworkFrame):
     def set_annotations_data(self, buffer: bytes) -> None:
         self.view().loadAnnotations(buffer)
 
+    def set_identity_annotations_data(self, annotations: pd.DataFrame):
+        scene = self.scene()
+        if not scene:
+            return
+        scene.removeAllIdentityEdges()
+        nodes = scene.nodes()
+        edges_attr = [(10000+i, nodes[row['ID1']-1], nodes[row['ID2']-1], row['Score'])
+                      for i, row in annotations.iterrows()]
+        scene.createIdentityEdges(*zip(*edges_attr))
+
     def create_worker(self):
         raise NotImplementedError
 
@@ -180,7 +190,7 @@ class BaseFrame(QFrame, Ui_NetworkFrame):
         if not nodes:
             if self._graph.vs:  # Network views
                 nodes = scene.createNodes(self._graph.vs['name'], colors=colors, radii=radii)
-            elif self._network.scores.size > 0: # Embedding views
+            elif self._network.scores.size > 0:  # Embedding views
                 nodes = scene.createNodes(np.arange(self._network.scores.shape[0]), colors=colors, radii=radii)
 
         if self.use_edges:

@@ -240,6 +240,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionAboutQt.triggered.connect(lambda: QMessageBox.aboutQt(self))
         self.actionProcessFile.triggered.connect(self.on_process_file_triggered)
         self.actionImportMetadata.triggered.connect(self.on_import_metadata_triggered)
+        self.actionImportIdentityAnnotations.triggered.connect(self.on_import_identity_annotations_triggered)
         self.actionImportGroupMapping.triggered.connect(self.on_import_group_mapping_triggered)
         self.actionCurrentParameters.triggered.connect(self.on_current_parameters_triggered)
         self.actionPreferences.triggered.connect(self.on_preferences_triggered)
@@ -1743,7 +1744,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
                 self.reset_project()
 
-                process_file, use_metadata, metadata_file, metadata_options, options, views = self._dialog.getValues()
+                process_file, use_metadata, metadata_file, metadata_options,\
+                    use_ms_annotations, ms_annotations_file,\
+                    options, views = self._dialog.getValues()
 
                 self._network.options = options
                 self._workers.append(self.prepare_read_data_worker(process_file))
@@ -1751,6 +1754,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self._workers.append(store_scores)
                 if use_metadata:
                     self._workers.append(self.prepare_read_metadata_worker(metadata_file, metadata_options))
+                if use_ms_annotations:
+                    self._workers.append(self.prepare_read_identity_annotations_worker(ms_annotations_file))
 
                 for id_ in views:
                     try:
@@ -1783,6 +1788,24 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if result == QDialog.Accepted:
                 metadata_filename, options = self._dialog.getValues()
                 worker = self.prepare_read_metadata_worker(metadata_filename, options)
+                if worker is not None:
+                    self._workers.append(worker)
+                    self._workers.start()
+
+        self._dialog.finished.connect(do_import)
+        self._dialog.open()
+
+    # noinspection PyUnusedLocal
+    @debug
+    def on_import_identity_annotations_triggered(self, *args):
+        self._dialog = QFileDialog(self)
+        self._dialog.setFileMode(QFileDialog.ExistingFile)
+        self._dialog.setNameFilters(["MS Annotations Files (*_edges_msannotation.csv)", "All files (*)"])
+
+        def do_import(result):
+            if result == QDialog.Accepted:
+                annotations_filename = self._dialog.selectedFiles()[0]
+                worker = self.prepare_read_identity_annotations_worker(annotations_filename)
                 if worker is not None:
                     self._workers.append(worker)
                     self._workers.start()
@@ -2659,6 +2682,34 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                             f"\"{message}\".\n"
                                             "Your metadata file might be corrupted/invalid.")
 
+        worker = workers_core.ReadMetadataWorker(filename, options)
+        worker.finished.connect(file_read)
+        worker.error.connect(error)
+
+        return worker
+
+    @debug
+    def prepare_read_identity_annotations_worker(self, filename):
+        def file_read():
+            nonlocal worker
+            annotations = self._network._identity_annotations = worker.result()
+            for dock in self.network_docks.values():
+                scene = dock.widget().scene()
+                scene.removeAllIdentityEdges()
+                nodes = scene.nodes()
+                edges_attr = [(-i, nodes[row['ID1']-1], nodes[row['ID2']-1], row['Score'])
+                      for i, row in annotations.iterrows()]
+                scene.createIdentityEdges(*zip(*edges_attr))
+
+        def error(e):
+            message = str(e).strip("\n")
+            QMessageBox.warning(self, None,
+                                "Identity annotations were not imported because the following error occurred:\n"
+                                f"\"{message}\".\n"
+                                "Your annotations file might be corrupted/invalid.")
+
+        options = workers_opts.ReadMetadataOptions()
+        options.sep = ','
         worker = workers_core.ReadMetadataWorker(filename, options)
         worker.finished.connect(file_read)
         worker.error.connect(error)

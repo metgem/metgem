@@ -45,6 +45,7 @@ class ProcessDataDialog(QDialog, Ui_ProcessFileDialog):
         self.setupUi(self)
         self.btBrowseProcessFile.setFocus()
         self.gbMetadata.setChecked(False)
+        self.gbMSAnnotations.setChecked(False)
 
         # Create palette used when validating input files
         self._error_palette = QPalette()
@@ -96,7 +97,8 @@ class ProcessDataDialog(QDialog, Ui_ProcessFileDialog):
         # Connect events
         self.btBrowseProcessFile.clicked.connect(lambda: self.browse('process'))
         self.btBrowseMetadataFile.clicked.connect(lambda: self.browse('metadata'))
-        self.btOptions.clicked.connect(lambda: self.on_show_options_dialog())
+        self.btBrowseMSAnnotationsFile.clicked.connect(lambda: self.browse('annotations'))
+        self.btMetadataOptions.clicked.connect(lambda: self.on_show_options_dialog())
         self.btRemoveViews.clicked.connect(self.on_remove_views)
         self.btEditView.clicked.connect(self.on_edit_view)
         self.btClear.clicked.connect(self.on_clear_view)
@@ -216,11 +218,14 @@ class ProcessDataDialog(QDialog, Ui_ProcessFileDialog):
         if r == QDialog.Accepted:
             process_file = self.editProcessFile.text()
             metadata_file = self.editMetadataFile.text()
+            annotations_file = self.editMSAnnotationsFile.text()
 
             process_ok = len(process_file) > 0 and os.path.exists(process_file)\
                 and os.path.splitext(process_file)[1].lower() in ('.mgf', '.msp')
             metadata_ok = not self.gbMetadata.isChecked()\
                 or (os.path.exists(metadata_file) and os.path.isfile(metadata_file))
+            annotations_ok = not self.gbMSAnnotations.isChecked() \
+                or (os.path.exists(annotations_file) and os.path.isfile(annotations_file))
 
             if not process_ok:
                 self.editProcessFile.setPalette(self._error_palette)
@@ -228,7 +233,10 @@ class ProcessDataDialog(QDialog, Ui_ProcessFileDialog):
             if not metadata_ok:
                 self.editMetadataFile.setPalette(self._error_palette)
 
-            if not process_ok or not metadata_ok:
+            if not annotations_ok:
+                self.editMSAnnotationsFile.setPalette(self._error_palette)
+
+            if not process_ok or not metadata_ok or not annotations_ok:
                 return
 
         super().done(r)
@@ -249,15 +257,21 @@ class ProcessDataDialog(QDialog, Ui_ProcessFileDialog):
                                    "Microsoft Excel spreadsheets (*.xls *.xlsx, *.xlsm *.xlsb)",
                                    "OpenDocument spreadsheets (*.ods)",
                                    "All files (*)"])
+        elif type_ == 'annotations':
+            dialog.setNameFilters(["MS Annotations File (*_edges_msannotation.csv)",
+                                   "All files (*)"])
 
         def on_dialog_finished(result):
             if result == QDialog.Accepted:
                 filename = dialog.selectedFiles()[0]
-                if type_ == 'process':
+                if type_ == 'metadata':
+                    self.on_show_options_dialog(filename)
+                elif type_ == 'annotations':
+                    self.editMSAnnotationsFile.setText(filename)
+                    self.editMSAnnotationsFile.setPalette(self.style().standardPalette())
+                else:
                     self.editProcessFile.setText(filename)
                     self.editProcessFile.setPalette(self.style().standardPalette())
-                else:
-                    self.on_show_options_dialog(filename)
 
         dialog.finished.connect(on_dialog_finished)
         dialog.open()
@@ -266,7 +280,11 @@ class ProcessDataDialog(QDialog, Ui_ProcessFileDialog):
         """Returns files to process and options"""
 
         metadata_file = self.editMetadataFile.text() if os.path.isfile(self.editMetadataFile.text()) else None
+        ms_annotations_file = self.editMSAnnotationsFile.text()\
+            if os.path.isfile(self.editMSAnnotationsFile.text()) else None
         self._options.cosine = self.cosine_widget.getValues()
         views = [self.lstViews.item(row).data(ProcessDataDialog.IdRole) for row in range(self.lstViews.count())]
-        return (self.editProcessFile.text(), self.gbMetadata.isChecked(),  metadata_file,
-                self._metadata_options, self._options, views)
+        return (self.editProcessFile.text(),
+                self.gbMetadata.isChecked(), metadata_file, self._metadata_options,
+                self.gbMSAnnotations.isChecked(), ms_annotations_file,
+                self._options, views)

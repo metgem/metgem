@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="icons">
+    <file>images/import-annotations.svg</file>
     <file>images/filter.svg</file>
     <file>images/cfm-id.png</file>
     <file>images/metfrag.png</file>
