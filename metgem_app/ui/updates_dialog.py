@@ -1,7 +1,7 @@
 import webbrowser
 
-from qtpy.QtCore import QCoreApplication, QSettings, Qt
-from qtpy.QtWidgets import QDialog, QDialogButtonBox
+from PySide6.QtCore import QCoreApplication, QSettings, Qt
+from PySide6.QtWidgets import QDialog, QDialogButtonBox
 
 from .updates_dialog_ui import Ui_UpdateDialog
 

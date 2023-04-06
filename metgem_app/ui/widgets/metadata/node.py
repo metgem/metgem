@@ -1,5 +1,5 @@
-from PySide2.QtCore import Qt, QTimer, QModelIndex
-from PySide2.QtGui import QPalette
+from PySide6.QtCore import Qt, QTimer, QModelIndex
+from PySide6.QtGui import QPalette
 
 from ..delegates import StandardsResultsDelegate
 from .freeze_table import FreezeTableMixin

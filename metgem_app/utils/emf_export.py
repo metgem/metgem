@@ -19,7 +19,7 @@
 # https://github.com/veusz/veusz/blob/master/veusz/document/emf_export.py
 
 try:
-    import pyemf
+    import pyemf3
 except ImportError:
     HAS_EMF_EXPORT = False
 else:
@@ -27,8 +27,8 @@ else:
 
 import struct
 
-from qtpy.QtCore import QByteArray, QBuffer, QIODevice, Qt, QRectF
-from qtpy.QtGui import QPaintEngine, QPainterPath, QPaintDevice
+from PySide6.QtCore import QByteArray, QBuffer, QIODevice, Qt, QRectF
+from PySide6.QtGui import QPaintEngine, QPainterPath, QPaintDevice
 
 if HAS_EMF_EXPORT:
     inch_mm = 25.4
@@ -41,7 +41,7 @@ if HAS_EMF_EXPORT:
 
 
     # noinspection PyProtectedMember
-    class _EXTCREATEPEN(pyemf.emr._EXTCREATEPEN):
+    class EXTCREATEPEN(pyemf3.emr.EXTCREATEPEN):
         """Extended pen creation record with custom line style."""
 
         typedef = [
@@ -57,7 +57,7 @@ if HAS_EMF_EXPORT:
             ('i', 'brushhatch', 0),
             ('i', 'numstyleentries')]
 
-        def __init__(self, style=pyemf.PS_SOLID, width=1, color=0,
+        def __init__(self, style=pyemf3.PS_SOLID, width=1, color=0,
                      styleentries=[]):
             """Create pen.
             styleentries is a list of dash and space lengths."""
@@ -65,10 +65,10 @@ if HAS_EMF_EXPORT:
             super().__init__()
             self.style = style
             self.penwidth = width
-            self.color = pyemf._normalizeColor(color)
+            self.color = pyemf3._normalizeColor(color)
             self.brushstyle = 0x0  # solid
 
-            if style & pyemf.PS_STYLE_MASK != pyemf.PS_USERSTYLE:
+            if style & pyemf3.PS_STYLE_MASK != pyemf3.PS_USERSTYLE:
                 styleentries = []
 
             self.numstyleentries = len(styleentries)
@@ -94,12 +94,12 @@ if HAS_EMF_EXPORT:
             self.dpi = dpi
 
         def begin(self, paintdevice):
-            self.emf = pyemf.EMF(self.rect.width(), self.rect.height(), int(self.dpi * scale))
+            self.emf = pyemf3.EMF(self.rect.width(), self.rect.height(), int(self.dpi * scale))
             self.emf.dc.setPixelSize([[int(self.rect.x() * self.dpi), int(self.rect.y() * self.dpi)],
                                       [int(self.rect.width() * self.dpi), int(self.rect.height() * self.dpi)]])
-            self.pen = self.emf.GetStockObject(pyemf.BLACK_PEN)
+            self.pen = self.emf.GetStockObject(pyemf3.BLACK_PEN)
             self.pencolor = (0, 0, 0)
-            self.brush = self.emf.GetStockObject(pyemf.NULL_BRUSH)
+            self.brush = self.emf.GetStockObject(pyemf3.NULL_BRUSH)
 
             self.paintdevice = paintdevice
             return True
@@ -120,11 +120,11 @@ if HAS_EMF_EXPORT:
                 self.emf.Polyline(pts)
             else:
                 self.emf.SetPolyFillMode({QPaintEngine.WindingMode:
-                                              pyemf.WINDING,
+                                              pyemf3.WINDING,
                                           QPaintEngine.OddEvenMode:
-                                              pyemf.ALTERNATE,
+                                              pyemf3.ALTERNATE,
                                           QPaintEngine.ConvexMode:
-                                              pyemf.WINDING}.get(mode))
+                                              pyemf3.WINDING}.get(mode))
                 self.emf.Polygon(pts)
 
         def drawEllipse(self, rect):
@@ -162,7 +162,7 @@ if HAS_EMF_EXPORT:
             dataindex, = struct.unpack('<i', bmp[0xa:0xe])
             datasize, = struct.unpack('<i', bmp[0x22:0x26])
 
-            epix = pyemf.emr._STRETCHDIBITS()
+            epix = pyemf3.emr._STRETCHDIBITS()
             epix.rclBounds_left = int(r.left() * scale)
             epix.rclBounds_top = int(r.top() * scale)
             epix.rclBounds_right = int(r.right() * scale)
@@ -252,28 +252,28 @@ if HAS_EMF_EXPORT:
             """Update the pen to the currently selected one."""
 
             # line style
-            style = {Qt.NoPen: pyemf.PS_NULL,
-                     Qt.SolidLine: pyemf.PS_SOLID,
-                     Qt.DashLine: pyemf.PS_DASH,
-                     Qt.DotLine: pyemf.PS_DOT,
-                     Qt.DashDotLine: pyemf.PS_DASHDOT,
-                     Qt.DashDotDotLine: pyemf.PS_DASHDOTDOT,
-                     Qt.CustomDashLine: pyemf.PS_USERSTYLE}[pen.style()]
+            style = {Qt.NoPen: pyemf3.PS_NULL,
+                     Qt.SolidLine: pyemf3.PS_SOLID,
+                     Qt.DashLine: pyemf3.PS_DASH,
+                     Qt.DotLine: pyemf3.PS_DOT,
+                     Qt.DashDotLine: pyemf3.PS_DASHDOT,
+                     Qt.DashDotDotLine: pyemf3.PS_DASHDOTDOT,
+                     Qt.CustomDashLine: pyemf3.PS_USERSTYLE}[pen.style()]
 
-            if style != pyemf.PS_NULL:
+            if style != pyemf3.PS_NULL:
                 # set cap style
-                style |= {Qt.FlatCap: pyemf.PS_ENDCAP_FLAT,
-                          Qt.SquareCap: pyemf.PS_ENDCAP_SQUARE,
-                          Qt.RoundCap: pyemf.PS_ENDCAP_ROUND}[pen.capStyle()]
+                style |= {Qt.FlatCap: pyemf3.PS_ENDCAP_FLAT,
+                          Qt.SquareCap: pyemf3.PS_ENDCAP_SQUARE,
+                          Qt.RoundCap: pyemf3.PS_ENDCAP_ROUND}[pen.capStyle()]
 
                 # set join style
-                style |= {Qt.MiterJoin: pyemf.PS_JOIN_MITER,
-                          Qt.BevelJoin: pyemf.PS_JOIN_BEVEL,
-                          Qt.RoundJoin: pyemf.PS_JOIN_ROUND,
-                          Qt.SvgMiterJoin: pyemf.PS_JOIN_MITER}[pen.joinStyle()]
+                style |= {Qt.MiterJoin: pyemf3.PS_JOIN_MITER,
+                          Qt.BevelJoin: pyemf3.PS_JOIN_BEVEL,
+                          Qt.RoundJoin: pyemf3.PS_JOIN_ROUND,
+                          Qt.SvgMiterJoin: pyemf3.PS_JOIN_MITER}[pen.joinStyle()]
 
                 # use proper widths of lines
-                style |= pyemf.PS_GEOMETRIC
+                style |= pyemf3.PS_GEOMETRIC
 
             width = int(pen.widthF() * scale)
             qc = pen.color()
@@ -284,7 +284,7 @@ if HAS_EMF_EXPORT:
                 # make an extended pen if we need a custom dash pattern
                 dash = [int(pen.widthF() * scale * f) for f in pen.dashPattern()]
                 newpen = self.emf._appendHandle(
-                    _EXTCREATEPEN(style,
+                    EXTCREATEPEN(style,
                                   width=width, color=color,
                                   styleentries=dash))
             else:
@@ -307,16 +307,16 @@ if HAS_EMF_EXPORT:
             if style == Qt.SolidPattern:
                 newbrush = self.emf.CreateSolidBrush(color)
             elif style == Qt.NoBrush:
-                newbrush = self.emf.GetStockObject(pyemf.NULL_BRUSH)
+                newbrush = self.emf.GetStockObject(pyemf3.NULL_BRUSH)
             else:
                 try:
-                    hatch = {Qt.HorPattern: pyemf.HS_HORIZONTAL,
-                             Qt.VerPattern: pyemf.HS_VERTICAL,
-                             Qt.CrossPattern: pyemf.HS_CROSS,
-                             Qt.BDiagPattern: pyemf.HS_BDIAGONAL,
-                             Qt.FDiagPattern: pyemf.HS_FDIAGONAL,
+                    hatch = {Qt.HorPattern: pyemf3.HS_HORIZONTAL,
+                             Qt.VerPattern: pyemf3.HS_VERTICAL,
+                             Qt.CrossPattern: pyemf3.HS_CROSS,
+                             Qt.BDiagPattern: pyemf3.HS_BDIAGONAL,
+                             Qt.FDiagPattern: pyemf3.HS_FDIAGONAL,
                              Qt.DiagCrossPattern:
-                                 pyemf.HS_DIAGCROSS}[brush.style()]
+                                 pyemf3.HS_DIAGCROSS}[brush.style()]
                 except KeyError:
                     newbrush = self.emf.CreateSolidBrush(color)
                 else:
@@ -333,8 +333,8 @@ if HAS_EMF_EXPORT:
             if operation != Qt.NoClip:
                 self._createPath(path)
                 clipmode = {
-                    Qt.ReplaceClip: pyemf.RGN_COPY,
-                    Qt.IntersectClip: pyemf.RGN_AND,
+                    Qt.ReplaceClip: pyemf3.RGN_COPY,
+                    Qt.IntersectClip: pyemf3.RGN_AND,
                 }[operation]
             else:
                 # is this the only wave to get rid of clipping?
@@ -347,7 +347,7 @@ if HAS_EMF_EXPORT:
                 self.emf.LineTo(0, h)
                 self.emf.CloseFigure()
                 self.emf.EndPath()
-                clipmode = pyemf.RGN_COPY
+                clipmode = pyemf3.RGN_COPY
 
             self.emf.SelectClipPath(mode=clipmode)
 

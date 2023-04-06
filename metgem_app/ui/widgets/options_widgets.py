@@ -1,6 +1,6 @@
 import os
 
-from qtpy.QtWidgets import QGroupBox
+from PySide6.QtWidgets import QGroupBox
 
 from ...workers.options import (CosineComputationOptions,
                                 QueryDatabasesOptions,

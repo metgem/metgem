@@ -4,8 +4,8 @@ from ..database import SpectraLibrary, Bank
 from ..config import SQL_PATH, get_debug_flag
 from .query_databases_dialog_ui import Ui_Dialog
 
-from qtpy.QtCore import Qt, QSettings
-from qtpy.QtWidgets import QListWidgetItem, QDialog
+from PySide6.QtCore import Qt, QSettings
+from PySide6.QtWidgets import QListWidgetItem, QDialog
 
 
 class QueryDatabasesDialog(QDialog, Ui_Dialog):

@@ -1,5 +1,5 @@
-from qtpy.QtCore import Qt
-from qtpy.QtWidgets import QDialog
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QDialog
 
 from ..workers.options import NumberizeOptions
 from .numberize_dialog_ui import Ui_Dialog

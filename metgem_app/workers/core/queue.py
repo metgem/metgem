@@ -1,7 +1,7 @@
 from collections import deque
 
 try:
-    from qtpy.QtCore import QThread
+    from PySide6.QtCore import QThread
     HAS_THREADS = True
 except ImportError:
     HAS_THREADS = False

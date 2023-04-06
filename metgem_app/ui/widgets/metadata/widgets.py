@@ -1,5 +1,5 @@
-from qtpy.QtWidgets import QMenu, QWidget
-from qtpy.QtCore import Qt
+from PySide6.QtWidgets import QMenu, QWidget
+from PySide6.QtCore import Qt
 
 from .nodes_ui import Ui_NodesWidget
 from .edges_ui import Ui_EdgesWidget

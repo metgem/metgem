@@ -2,9 +2,9 @@ import os
 import sys
 from typing import Dict, List
 
-from qtpy.QtCore import Qt, QDir
-from qtpy.QtGui import QPalette, QColor
-from qtpy.QtWidgets import QCompleter, QFileSystemModel, QDialog, QFileDialog, QListWidget
+from PySide6.QtCore import Qt, QDir
+from PySide6.QtGui import QPalette, QColor
+from PySide6.QtWidgets import QCompleter, QFileSystemModel, QDialog, QFileDialog, QListWidget
 
 from .progress_dialog import ProgressDialog
 from ..workers.core import WorkerQueue

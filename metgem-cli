@@ -95,6 +95,7 @@ def cli(ctx, input, output, ms1_data, min_intensity, parent_filter_tolerance,
     ctx.obj = Project(fname=output, network=network)
 
 
+# noinspection PyUnusedLocal
 @cli.result_callback()
 @click.pass_obj
 def save_project(project, *args, **kwargs):

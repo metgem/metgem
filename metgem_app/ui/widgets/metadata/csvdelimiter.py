@@ -1,5 +1,5 @@
-from qtpy.QtCore import Signal
-from qtpy.QtWidgets import QComboBox, QLineEdit
+from PySide6.QtCore import Signal
+from PySide6.QtWidgets import QComboBox, QLineEdit
 
 from ....models.metadata import CsvDelimiterModel
 

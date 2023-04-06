@@ -63,7 +63,7 @@ def rc(ctx, force=False):
     if skip:
         print('[RC] resource file is up-to-date, skipping build.')
     else:
-        subprocess.run(['pyside2-rcc', '-o', rc, ' '.join(qrcs)],
+        subprocess.run([r'C:\Users\elie\AppData\Local\mambaforge\envs\metgem-pyside6\Library\lib\qt6\rcc', '-g', 'python', '-o', rc, ' '.join(qrcs)],
                        shell=sys.platform == 'win32')
         print('[RC] Resource file updated.')
 
@@ -78,7 +78,7 @@ def uic(ctx, filename=''):
     for fn in tqdm.tqdm(files):
         fn = os.path.realpath(fn)
         out = fn[:-3] + '_ui.py'
-        subprocess.run(['pyside2-uic', fn, '-o', out],
+        subprocess.run([r'C:\Users\elie\AppData\Local\mambaforge\envs\metgem-pyside6\Library\lib\qt6\uic', '-g', 'python', fn, '-o', out],
                        shell=sys.platform == 'win32',
                        stdout=subprocess.DEVNULL,
                        stderr=subprocess.STDOUT)

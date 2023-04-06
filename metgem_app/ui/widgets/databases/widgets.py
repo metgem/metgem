@@ -1,5 +1,5 @@
-from PySide2.QtGui import QPainter
-from PySide2.QtWidgets import QLabel
+from PySide6.QtGui import QPainter
+from PySide6.QtWidgets import QLabel
 
 from metgem_app.ui.widgets.delegates import StarRating
 

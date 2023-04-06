@@ -31,7 +31,7 @@ if IS_PORTABLE:
     USER_PATH = os.path.join(APP_PATH, 'data')
     try:
         # Network visualisation
-        from qtpy.QtCore import QSettings
+        from PySide6.QtCore import QSettings
         QSettings.setDefaultFormat(QSettings.IniFormat)
         QSettings.setPath(QSettings.IniFormat, QSettings.UserScope, USER_PATH)
     except ImportError:

@@ -2,9 +2,9 @@ import datetime
 import os
 import webbrowser
 
-from qtpy.QtCore import QSize, QSettings, Qt
-from qtpy.QtGui import QAbstractTextDocumentLayout, QPalette, QTextDocument
-from qtpy.QtWidgets import QWidget, QListWidgetItem, QStyledItemDelegate, QStyleOptionViewItem, QApplication, QStyle
+from PySide6.QtCore import QSize, QSettings, Qt
+from PySide6.QtGui import QAbstractTextDocumentLayout, QPalette, QTextDocument
+from PySide6.QtWidgets import QWidget, QListWidgetItem, QStyledItemDelegate, QStyleOptionViewItem, QApplication, QStyle
 
 from .welcome_widget_ui import Ui_WelcomeScreen
 

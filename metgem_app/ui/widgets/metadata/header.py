@@ -1,6 +1,6 @@
-from PySide2.QtCore import QRect, Qt
-from PySide2.QtGui import QPainter
-from PySide2.QtWidgets import QHeaderView
+from PySide6.QtCore import QRect, Qt
+from PySide6.QtGui import QPainter
+from PySide6.QtWidgets import QHeaderView
 
 from ....models.metadata import ColorMarkRole
 

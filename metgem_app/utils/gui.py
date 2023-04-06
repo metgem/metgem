@@ -1,7 +1,7 @@
-from qtpy.QtCore import QObject, Signal, QTimer
-from qtpy import QtWidgets
-from qtpy import QtCore
-import shiboken2
+from PySide6.QtCore import QObject, Signal, QTimer
+from PySide6 import QtWidgets
+from PySide6 import QtCore
+import shiboken6
 
 
 def wrap_instance(obj, base=None):
@@ -17,10 +17,10 @@ def wrap_instance(obj, base=None):
     assert (base is None) or issubclass(base, QObject), (
         "Argument 'base' must be of type <QObject>")
 
-    ptr = int(shiboken2.getCppPointer(obj)[0])
+    ptr = int(shiboken6.getCppPointer(obj)[0])
 
     if base is None:
-        q_object = shiboken2.wrapInstance(ptr, QObject)
+        q_object = shiboken6.wrapInstance(ptr, QObject)
         meta_object = q_object.metaObject()
 
         while True:
@@ -37,7 +37,7 @@ def wrap_instance(obj, base=None):
 
             break
 
-    return shiboken2.wrapInstance(ptr, base)
+    return shiboken6.wrapInstance(ptr, base)
 
 
 class SignalBlocker:

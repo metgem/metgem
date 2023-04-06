@@ -44,9 +44,9 @@
 
 import math
 
-from qtpy.QtCore import QPointF, QSize, Qt
-from qtpy.QtGui import QPainter, QPolygonF, QColor
-from qtpy.QtWidgets import (QAbstractItemView, QApplication, QStyle,
+from PySide6.QtCore import QPointF, QSize, Qt
+from PySide6.QtGui import QPainter, QPolygonF, QColor
+from PySide6.QtWidgets import (QAbstractItemView, QApplication, QStyle,
                             QStyledItemDelegate, QTableWidget, QTableWidgetItem)
 
 

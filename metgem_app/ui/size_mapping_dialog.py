@@ -2,10 +2,10 @@ import os
 from typing import Any, Optional, Union
 
 import numpy as np
-from qtpy.QtCore import (Qt, QRectF, QLineF, QPointF, QAbstractTableModel, Signal,
+from PySide6.QtCore import (Qt, QRectF, QLineF, QPointF, QAbstractTableModel, Signal,
                           QSize, QModelIndex)
-from qtpy.QtGui import QPainter, QPen, QPainterPath, QShowEvent, QBrush, QColor
-from qtpy.QtWidgets import (QGraphicsScene, QGraphicsEllipseItem, QGraphicsItem,
+from PySide6.QtGui import QPainter, QPen, QPainterPath, QShowEvent, QBrush, QColor
+from PySide6.QtWidgets import (QGraphicsScene, QGraphicsEllipseItem, QGraphicsItem,
                              QGraphicsPathItem, QGraphicsSceneMouseEvent, QStyleOptionGraphicsItem,
                              QWidget, QStyle, QListWidgetItem, QMessageBox, QDialog)
 

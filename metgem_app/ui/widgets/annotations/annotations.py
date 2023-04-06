@@ -1,10 +1,10 @@
 import math
 from typing import Optional
 
-from qtpy.QtCore import Qt, QRectF, QPointF, QSizeF
-from qtpy.QtGui import (QPainterPath, QPainterPathStroker, QPainter,
+from PySide6.QtCore import Qt, QRectF, QPointF, QSizeF
+from PySide6.QtGui import (QPainterPath, QPainterPathStroker, QPainter,
                          QBrush, QColor, QPolygonF, QPen)
-from qtpy.QtWidgets import (QGraphicsLineItem, QGraphicsRectItem, QGraphicsSimpleTextItem,
+from PySide6.QtWidgets import (QGraphicsLineItem, QGraphicsRectItem, QGraphicsSimpleTextItem,
                              QGraphicsItem, QGraphicsEllipseItem, QStyleOptionGraphicsItem, QWidget)
 
 

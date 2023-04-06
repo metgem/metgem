@@ -2,9 +2,9 @@ from typing import List, Union
 
 import numpy as np
 import pandas as pd
-from qtpy.QtCore import (QStringListModel, QModelIndex, Qt, QSortFilterProxyModel, QAbstractTableModel, QSettings,
+from PySide6.QtCore import (QStringListModel, QModelIndex, Qt, QSortFilterProxyModel, QAbstractTableModel, QSettings,
                          QAbstractItemModel)
-from qtpy.QtGui import QIcon
+from PySide6.QtGui import QIcon
 
 try:
     import os

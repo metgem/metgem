@@ -1,7 +1,7 @@
 import numpy as np
-from qtpy.QtCore import Qt, QModelIndex, QItemSelection, QItemSelectionModel
-from qtpy.QtGui import QStandardItemModel, QIcon, QStandardItem
-from qtpy.QtWidgets import QAbstractItemView, QDialog
+from PySide6.QtCore import Qt, QModelIndex, QItemSelection, QItemSelectionModel
+from PySide6.QtGui import QStandardItemModel, QIcon, QStandardItem
+from PySide6.QtWidgets import QAbstractItemView, QDialog
 
 from .widgets.delegates.quality import LibraryQualityDelegate
 from ..database import Spectrum

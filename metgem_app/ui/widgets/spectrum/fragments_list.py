@@ -1,10 +1,10 @@
 import itertools
 import numpy as np
-from PySide2.QtWidgets import QMainWindow
+from PySide6.QtWidgets import QMainWindow
 
-from qtpy.QtCore import Qt, QSettings
-from qtpy.QtWidgets import QWidget, QTableWidgetItem
-from PySide2Ads import QtAds
+from PySide6.QtCore import Qt, QSettings
+from PySide6.QtWidgets import QWidget, QTableWidgetItem
+from PySide6QtAds import CDockWidget
 
 from libmetgem import MZ, square_root_and_normalize_data
 from libmetgem.cosine import compare_spectra, SpectraMatchState
@@ -67,7 +67,7 @@ class FragmentsListWidget(QWidget, Ui_Form):
         data2 = self._spectra_widget.spectrum2
         main_window = findParent(QMainWindow, self)
         if main_window is None:
-            dock_widget = findParent(QtAds.CDockWidget, self)
+            dock_widget = findParent(CDockWidget, self)
             main_window = dock_widget.dockManager().parent() if dock_widget else None
             if not isinstance(main_window, QMainWindow):
                 main_window = findParent(QMainWindow, main_window)

@@ -1,7 +1,7 @@
 import base64
 
-from qtpy.QtCore import QCoreApplication
-from qtpy.QtWidgets import QTextBrowser, QDialog
+from PySide6.QtCore import QCoreApplication
+from PySide6.QtWidgets import QTextBrowser, QDialog
 
 from ..config import LICENSE_TEXT
 from .about_dialog_ui import Ui_AboutDialog
@@ -67,8 +67,8 @@ class AboutDialog(QDialog, Ui_AboutDialog):
             "<li><a href=\"http://cython.org/\">Cython</a>: Apache v2</li>"
             "<li><a href=\"https://www.openmp.org/\">OpenMP</a>: MIT</li>"
             "<li><a href=\"https://www.qt.io/\">Qt</a>: GPLv2 + GPLv3 + LGPLv2.1 + LGPLv3</li>"
-            "<li><a href=\"http://www.pyside.org/\">PySide2</a>: LGPLv2.1</li>"
-            "<li><a href=\"https://www.pyside.org\">Shiboken2</a>: LGPLv3</li>"
+            "<li><a href=\"http://www.pyside.org/\">PySide6</a>: LGPLv2.1</li>"
+            "<li><a href=\"https://www.pyside.org\">Shiboken6</a>: LGPLv3</li>"
             "<li><a href=\"https://pandas.pydata.org/\">Pandas</a>: 3-clause BSD</li>"
             "<li><a href=\"https://arrow.apache.org/\">PyArrow</a>: Apache v2</li>"
             "<li><a href=\"http://scikit-learn.org/\">Scikit-learn</a>: 3-clause BSD</li>"
@@ -94,9 +94,9 @@ class AboutDialog(QDialog, Ui_AboutDialog):
             "<li><a href=\"https://mplcursors.readthedocs.io/\">mplcursors</a>: MIT</li>"
             "<li><a href=\"https://github.com/githubuser0xFFFF/Qt-Advanced-Docking-System/\">"
             "Qt-Advanced-Docking-System</a>: LGPL v2.1</li>"
-            "<li><a href=\"https://github.com/metgem/PySide2Ads/\">PySide2Ads</a>: LGPL v2.1</li>"
-            "<li><a href=\"https://github.com/metgem/pyemf/\">pyemf</a>: GPL v2</li>"
-            "<li><a href=\"https://github.com/metgem/PySide2MolecularNetwork/\">PySide2MolecularNetwork</a>: GPLv3</li>"
+            "<li><a href=\"https://github.com/mborgerson/pyside6_qtads/\">PySide6QtAds</a>: LGPL v2.1</li>"
+            "<li><a href=\"https://github.com/jeremysanders/pyemf3/\">pyemf3</a>: GPL v2</li>"
+            "<li><a href=\"https://github.com/metgem/QtMolecularNetwork/\">QtMolecularNetwork</a>: GPLv3</li>"
             "<li><a href=\"https://github.com/metgem/libmetgem/\">libmetgem</a>: GPL v3</li>"
             "<li><a href=\"http://numba.pydata.org/\">numba</a>: 2-clause BSD</li>"
             "<li><a href=\"https://umap-learn.readthedocs.io/\">umap-learn</a>: 3-clause BSD</li>"

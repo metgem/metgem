@@ -1,7 +1,7 @@
 from enum import Enum
 
 # noinspection PyUnresolvedReferences
-from qtpy.QtCore import QSettings
+from PySide6.QtCore import QSettings
 
 from matplotlib.ticker import FuncFormatter, AutoMinorLocator
 

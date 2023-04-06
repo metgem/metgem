@@ -1,6 +1,6 @@
 from typing import Any
 
-from qtpy.QtCore import QAbstractListModel, Qt, QModelIndex, QAbstractTableModel
+from PySide6.QtCore import QAbstractListModel, Qt, QModelIndex, QAbstractTableModel
 
 from ..database import Bank, Spectrum, Base
 

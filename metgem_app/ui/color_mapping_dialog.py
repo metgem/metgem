@@ -5,15 +5,15 @@ from typing import List, Union, Optional, Tuple
 import matplotlib as mpl
 import numpy as np
 import pandas as pd
-from qtpy.QtCore import Qt, QSettings, QSize, QAbstractTableModel, QModelIndex, QObject, QEvent, QRect, QRectF
-from qtpy.QtGui import QColor, QStandardItemModel, QIcon, QDropEvent, QKeyEvent, QBrush, QImage, QPixmap, QPainter, \
-    QTransform, QPen, QPolygonF, QGradient, QPalette
-from qtpy.QtWidgets import (QDialog, QColorDialog, QListWidgetItem, QFileDialog, QMessageBox, QInputDialog,
+from PySide6.QtCore import Qt, QSettings, QSize, QAbstractTableModel, QModelIndex, QObject, QEvent, QRect, QRectF
+from PySide6.QtGui import (QColor, QStandardItemModel, QIcon, QDropEvent, QKeyEvent, QBrush, QImage, QPixmap,
+                           QPainter, QTransform, QPen, QPolygonF, QGradient, QPalette)
+from PySide6.QtWidgets import (QDialog, QColorDialog, QListWidgetItem, QFileDialog, QMessageBox, QInputDialog,
                              QAbstractItemView, QDialogButtonBox, QFormLayout, QDoubleSpinBox, QAbstractSpinBox, QLabel,
                              QStyledItemDelegate, QStyleOptionViewItem, QWidget, QHBoxLayout, QButtonGroup,
                              QToolButton)
 
-from PySide2MolecularNetwork.node import NODE_POLYGON_MAP, NodePolygon
+from PySide6MolecularNetwork.node import NODE_POLYGON_MAP, NodePolygon
 from ..models.metadata import ColorMarkRole, ColumnDataRole
 from ..utils import pairwise
 from .color_mapping_dialog_ui import Ui_ColorMappingDialog
@@ -141,6 +141,7 @@ class ColorDialog(QColorDialog):
             initial_polygon: NodePolygon = NodePolygon.Circle,
             initial_brushstyle: Qt.BrushStyle = Qt.NoBrush,
             parent: Optional[QWidget] = None, title: str = '',
+
             options: Union[QColorDialog.ColorDialogOptions,
                            QColorDialog.ColorDialogOption] = QColorDialog.ColorDialogOptions()) \
             -> (QColor, NodePolygon):
@@ -198,17 +199,17 @@ class RangeInputDialog(QDialog):
 
         self.sbLowValue = QDoubleSpinBox(self)
         self.sbLowValue.setMinimum(0)
-        self.sbLowValue.setStepType(QAbstractSpinBox.AdaptiveDecimalStepType)
+        self.sbLowValue.setStepType(QAbstractSpinBox.StepType.AdaptiveDecimalStepType)
         if low is not None:
             self.sbLowValue.setValue(low)
 
         self.sbHighValue = QDoubleSpinBox(self)
         self.sbHighValue.setMinimum(0)
-        self.sbLowValue.setStepType(QAbstractSpinBox.AdaptiveDecimalStepType)
+        self.sbLowValue.setStepType(QAbstractSpinBox.StepType.AdaptiveDecimalStepType)
         if high is not None:
             self.sbHighValue.setValue(high)
 
-        button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel, self)
+        button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel, self)
 
         layout = QFormLayout(self)
         layout.addRow("Low value", self.sbLowValue)
@@ -230,6 +231,7 @@ class WidgetItem(QListWidgetItem):
         self.setTextAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
 
 
+# noinspection PyUnresolvedReferences
 class ColorMixin:
     __metaclass__ = WidgetItem
 
@@ -360,7 +362,7 @@ class BaseColorMappingDialog(QDialog, Ui_ColorMappingDialog):
         self.btRemoveColors.clicked.connect(self.remove_selected_colors)
         self.btGenerateColors.clicked.connect(lambda: self.generate_new_colors(self.cbColorMap.currentText()))
         self.btAutoAssignColors.clicked.connect(self.auto_assign_colors)
-        self.cbColorMap.currentIndexChanged[str].connect(self.generate_new_colors)
+        self.cbColorMap.currentIndexChanged.connect(lambda x: self.generate_new_colors(self.cbColorMap.itemText(x)))
         self.btRemoveSelectedColumnsColors.clicked.connect(self.remove_selected_columns_colors)
         self.btLoadColorList.clicked.connect(self.load_color_list)
         self.btSaveColorList.clicked.connect(self.save_color_list)
@@ -368,12 +370,13 @@ class BaseColorMappingDialog(QDialog, Ui_ColorMappingDialog):
     def get_color(self, item: ColorListWidgetItem = None):
         current_color = item.data(Qt.BackgroundRole).color() \
             if item is not None and item.data(Qt.BackgroundRole) is not None else QColor()
-        color = QColorDialog.getColor(initial=current_color, parent=self, options=QColorDialog.ShowAlphaChannel)
+        color = QColorDialog.getColor(initial=current_color, parent=self,
+                                      options=QColorDialog.ColorDialogOption.ShowAlphaChannel)
         if color.isValid():
             item.setBackground(color)
 
     def add_color(self):
-        color = QColorDialog.getColor(parent=self, options=QColorDialog.ShowAlphaChannel)
+        color = QColorDialog.getColor(parent=self, options=QColorDialog.ColorDialogOption.ShowAlphaChannel)
         if color.isValid():
             item = ColorListWidgetItem()
             item.setBackground(color)
@@ -582,7 +585,7 @@ class PieColorMappingDialog(BaseColorMappingDialog):
             new_item.setSelected(True)
 
     def done(self, r):
-        if r == QDialog.Accepted:
+        if r == QDialog.DialogCode.Accepted:
             colors = [self.lstColors.item(row).data(Qt.BackgroundRole).color().name()
                       for row in range(self.lstColors.count())]
             QSettings().setValue('NetworkView/pie_colors', colors)
@@ -631,8 +634,8 @@ class ColorMappingDialog(BaseColorMappingDialog):
                 if index.column() != column_id:
                     self.lstColumns.addItem(item)
 
-        self.lstUsedColumns.setSelectionMode(QAbstractItemView.ContiguousSelection)
-        self.lstColumns.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.lstUsedColumns.setSelectionMode(QAbstractItemView.SelectionMode.ContiguousSelection)
+        self.lstColumns.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         self.populate_bins(mapping)
 
         colors = QSettings().value('NetworkView/node_colors',
@@ -788,11 +791,11 @@ class ColorMappingDialog(BaseColorMappingDialog):
         if color.isValid():
             return color, polygon_id, brushstyle
 
-    def export_color_item(self, item: QListWidgetItem) -> List[str]:
+    def export_color_item(self, item: QListWidgetItem) -> Tuple[str, str, ]:
         color = item.data(Qt.BackgroundRole).color()
         polygon_id = item.data(BaseColorMappingDialog.PolygonRole)
         polygon_id = polygon_id if polygon_id is not None else NodePolygon.Circle
-        brushstyle = item.data(BaseColorMappingDialog.BrushStyleRole)
+        brushstyle: Qt.BrushStyle = item.data(BaseColorMappingDialog.BrushStyleRole)
         brushstyle = brushstyle if brushstyle is not None else Qt.NoBrush
 
         if color is not None and color.isValid():

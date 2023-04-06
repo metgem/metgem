@@ -2,17 +2,17 @@ import glob
 import os
 import random
 
-from qtpy.QtCore import Qt, QSettings, QPointF, QCoreApplication
-from qtpy.QtGui import QShowEvent
-from qtpy.QtWidgets import QDialog, QListWidgetItem
+from PySide6.QtCore import Qt, QSettings, QPointF, QCoreApplication
+from PySide6.QtGui import QShowEvent
+from PySide6.QtWidgets import QDialog, QListWidgetItem
 
 from ..utils.gui import SignalBlocker
 from ..config import STYLES_PATH, APP_PATH, get_python_rendering_flag
 
 if get_python_rendering_flag():
-    from PySide2MolecularNetwork._pure import style_from_css, NetworkScene
+    from PySide6MolecularNetwork._pure import style_from_css, NetworkScene
 else:
-    from PySide2MolecularNetwork import style_from_css, NetworkScene
+    from PySide6MolecularNetwork import style_from_css, NetworkScene
 
 from .settings_dialog_ui import Ui_SettingsDialog
 

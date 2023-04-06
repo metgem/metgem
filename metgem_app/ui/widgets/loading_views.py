@@ -1,8 +1,8 @@
 import os
 
-from qtpy.QtCore import QSize, Qt
-from qtpy.QtGui import QMovie, QPainter
-from qtpy.QtWidgets import QListView, QListWidget, QTableView, QTableWidget, QTreeView, QTreeWidget
+from PySide6.QtCore import QSize, Qt
+from PySide6.QtGui import QMovie, QPainter
+from PySide6.QtWidgets import QListView, QListWidget, QTableView, QTableWidget, QTreeView, QTreeWidget
 
 LOADING_MOVIE = os.path.join(os.path.dirname(__file__), 'images', 'loading.gif')
 

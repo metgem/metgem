@@ -1,5 +1,5 @@
-from qtpy.QtGui import QMouseEvent, QShowEvent
-from qtpy.QtWidgets import QSlider
+from PySide6.QtGui import QMouseEvent, QShowEvent
+from PySide6.QtWidgets import QSlider
 
 
 class Slider(QSlider):

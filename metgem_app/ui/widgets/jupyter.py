@@ -1,5 +1,5 @@
 try:
-    from qtpy.QtCore import QCoreApplication
+    from PySide6.QtCore import QCoreApplication
     from qtconsole.rich_jupyter_widget import RichJupyterWidget
     from qtconsole.inprocess import QtInProcessKernelManager
     import tornado

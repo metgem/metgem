@@ -2,9 +2,9 @@ import csv
 import os
 import sys
 
-from qtpy.QtCore import Qt, QDir, QItemSelectionModel, QItemSelection
-from qtpy.QtGui import QPalette, QColor, QIcon
-from qtpy.QtWidgets import QCompleter, QFileSystemModel, QDialog, QFileDialog, QTableWidgetItem, QMessageBox
+from PySide6.QtCore import Qt, QDir, QItemSelectionModel, QItemSelection
+from PySide6.QtGui import QPalette, QColor, QIcon
+from PySide6.QtWidgets import QCompleter, QFileSystemModel, QDialog, QFileDialog, QTableWidgetItem, QMessageBox
 
 from .progress_dialog import ProgressDialog
 from ..utils.gui import SignalBlocker

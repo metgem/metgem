@@ -6,7 +6,7 @@ from ...database import SpectraLibrary, Spectrum
 from ...models.metadata import DbResultsRole
 from .errors import NoDataError
 
-from qtpy.QtCore import Qt
+from PySide6.QtCore import Qt
 
 
 def yield_results(results: list, num_hits: int):

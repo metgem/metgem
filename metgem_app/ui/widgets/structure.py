@@ -1,8 +1,9 @@
 # noinspection PyUnresolvedReferences
-from qtpy.QtCore import QPoint, Qt
-from qtpy.QtCore import QByteArray, QSize
-from qtpy.QtSvg import QSvgWidget
-from qtpy.QtWidgets import QVBoxLayout, QPushButton, QWidget, QMenu, QAction, QApplication
+from PySide6.QtCore import QPoint, Qt
+from PySide6.QtCore import QByteArray, QSize
+from PySide6.QtSvgWidgets import QSvgWidget
+from PySide6.QtGui import QAction
+from PySide6.QtWidgets import QVBoxLayout, QPushButton, QMenu, QApplication
 
 try:
     # noinspection PyUnresolvedReferences

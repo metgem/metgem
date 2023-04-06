@@ -1,6 +1,6 @@
 import typing
 
-from qtpy.QtCore import QAbstractTableModel, Qt, QModelIndex
+from PySide6.QtCore import QAbstractTableModel, Qt, QModelIndex
 
 
 class PluginsModel(QAbstractTableModel):

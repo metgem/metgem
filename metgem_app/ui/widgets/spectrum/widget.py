@@ -7,8 +7,8 @@ from matplotlib.backend_tools import ToolBase
 from matplotlib.backends.backend_qt5agg import FigureManagerQT as FigureManager
 
 # noinspection PyUnresolvedReferences
-from qtpy.QtCore import Qt
-from qtpy.QtWidgets import QWidget, QHBoxLayout, QSizePolicy, QVBoxLayout, QLabel
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QWidget, QHBoxLayout, QSizePolicy, QVBoxLayout, QLabel
 
 from .canvas import SpectrumCanvas
 

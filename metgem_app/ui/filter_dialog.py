@@ -1,6 +1,6 @@
-from qtpy.QtWidgets import (QFileDialog, QDialog,
+from PySide6.QtWidgets import (QFileDialog, QDialog,
                             QComboBox, QDoubleSpinBox, QMessageBox)
-from qtpy.QtCore import Qt, QSettings
+from PySide6.QtCore import Qt, QSettings
 
 import pandas as pd
 

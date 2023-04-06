@@ -12,20 +12,21 @@ import pandas as pd
 import requests
 import sqlalchemy
 
-from qtpy.QtCore import (QSettings, Qt, QCoreApplication, QRectF, QAbstractTableModel)
-from qtpy.QtGui import QPainter, QImage, QColor, QKeyEvent, QIcon, QFontMetrics, QFont, QKeySequence, QCursor, QBrush
-from qtpy.QtWidgets import (QDialog, QFileDialog, QMessageBox, QWidget, QMenu, QActionGroup, QMainWindow,
-                             QAction, QTableView, QComboBox, QToolBar,
-                             QApplication, QGraphicsView, QLineEdit, QListWidget, QLabel, QToolButton)
+from PySide6.QtCore import (QSettings, Qt, QCoreApplication, QRectF, QAbstractTableModel)
+from PySide6.QtGui import (QPainter, QImage, QColor, QKeyEvent, QIcon, QFontMetrics, QFont,
+                           QKeySequence, QCursor, QBrush, QAction, QActionGroup)
+from PySide6.QtWidgets import (QDialog, QFileDialog, QMessageBox, QWidget, QMenu, QMainWindow,
+                               QTableView, QComboBox, QToolBar,
+                               QApplication, QGraphicsView, QLineEdit, QListWidget, QLabel, QToolButton)
 
-from PySide2Ads.QtAds import (CDockManager, CDockWidget,
-                           BottomDockWidgetArea, CenterDockWidgetArea,
-                           TopDockWidgetArea, LeftDockWidgetArea)
+from PySide6QtAds import (CDockManager, CDockWidget,
+                          BottomDockWidgetArea, CenterDockWidgetArea,
+                          TopDockWidgetArea, LeftDockWidgetArea)
 from libmetgem import human_readable_data
 
 try:
     # noinspection PyUnresolvedReferences
-    from qtpy.QtSvg import QSvgGenerator
+    from PySide6.QtSvg import QSvgGenerator
 except ImportError:
     HAS_SVG = False
 else:
@@ -41,18 +42,20 @@ from ..workers import options as workers_opts
 from ..ui import widgets
 from ..logger import logger, debug
 from ..utils.network import Network, generate_id
-from ..utils.emf_export import HAS_EMF_EXPORT, EMFPaintDevice
+from ..utils.emf_export import HAS_EMF_EXPORT
+if HAS_EMF_EXPORT:
+    from ..utils.emf_export import EMFPaintDevice
 from ..utils.gui import enumerateMenu, SignalGrouper, SignalBlocker
 from ..config import get_python_rendering_flag
 from ..utils import hasinstance
 from .main_window_ui import Ui_MainWindow
 from .widgets.search_ui import Ui_Form as Ui_SearchWidget
 
-from PySide2MolecularNetwork.node import NodePolygon
+from PySide6MolecularNetwork.node import NodePolygon
 if get_python_rendering_flag():
-    from PySide2MolecularNetwork._pure import style_from_css, style_to_cytoscape, disable_opengl
+    from PySide6MolecularNetwork._pure import style_from_css, style_to_cytoscape, disable_opengl
 else:
-    from PySide2MolecularNetwork import style_from_css, style_to_cytoscape, disable_opengl
+    from PySide6MolecularNetwork import style_from_css, style_to_cytoscape, disable_opengl
 
 COLUMN_MAPPING_PIE_CHARTS = 0
 COLUMN_MAPPING_LABELS = 1
@@ -282,7 +285,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                                                   for d in self.network_docks.values()])
         color_button.colorSelected.connect(self.on_set_selected_nodes_color)
         color_button.colorReset.connect(self.on_reset_selected_nodes_color)
-        size_combo.currentIndexChanged['QString'].connect(self.on_set_selected_nodes_size)
+        size_combo.currentIndexChanged.connect(lambda x: self.on_set_selected_nodes_size(size_combo.itemText(x)))
         size_action.triggered.connect(lambda: self.on_set_selected_nodes_size(size_combo.currentText()))
         self.actionNeighbors.triggered.connect(
             lambda: self.on_select_first_neighbors_triggered(self.current_view.scene().selectedNodes())

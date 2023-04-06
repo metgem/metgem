@@ -3,12 +3,12 @@ import tempfile
 from typing import Iterable
 
 import pandas as pd
-from qtpy.QtCore import QUrl, Qt
-from qtpy.QtGui import QCloseEvent, QIcon
-from qtpy.QtWebEngineWidgets import QWebEnginePage, QWebEngineProfile
-from PySide2.QtWebEngineWidgets import QWebEngineDownloadItem, QWebEngineScript
-from qtpy.QtWebEngineCore import QWebEngineUrlRequestInterceptor, QWebEngineUrlRequestInfo
-from qtpy.QtWidgets import QDialog
+from PySide6.QtCore import QUrl, Qt
+from PySide6.QtGui import QCloseEvent, QIcon
+from PySide6.QtWebEngineWidgets import QWebEnginePage, QWebEngineProfile
+from PySide6.QtWebEngineWidgets import QWebEngineDownloadItem, QWebEngineScript
+from PySide6.QtWebEngineCore import QWebEngineUrlRequestInterceptor, QWebEngineUrlRequestInfo
+from PySide6.QtWidgets import QDialog
 from .in_silico_db_dialog_ui import Ui_InSilicoDBDialog
 
 

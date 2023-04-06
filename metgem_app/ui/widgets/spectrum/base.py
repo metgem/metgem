@@ -1,8 +1,8 @@
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 
-from qtpy.QtCore import Signal, Qt
-from qtpy.QtWidgets import QSizePolicy
+from PySide6.QtCore import Signal, Qt
+from PySide6.QtWidgets import QSizePolicy
 
 from libmetgem import MZ, INTENSITY
 

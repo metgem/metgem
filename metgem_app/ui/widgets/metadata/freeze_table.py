@@ -1,7 +1,7 @@
 from typing import List, Any
 
-from qtpy.QtCore import Qt, QModelIndex, QAbstractItemModel, QIdentityProxyModel
-from qtpy.QtWidgets import QTableView, QAbstractItemView, QHeaderView
+from PySide6.QtCore import Qt, QModelIndex, QAbstractItemModel, QIdentityProxyModel
+from PySide6.QtWidgets import QTableView, QAbstractItemView, QHeaderView
 
 from ....models.link_item_selection_model import LinkItemSelectionModel
 
@@ -257,7 +257,7 @@ class FreezeTableMixin:
         current = QTableView.moveCursor(self, cursorAction, modifiers)
         x = self.visualRect(current).topLeft().x()
         frozen_width = self._frozen_table.columnWidth(0) + self._frozen_table.columnWidth(1)
-        if cursorAction == self.MoveLeft and current.column() > 1 and x < frozen_width:
+        if cursorAction == QTableView.CursorAction.MoveLeft and current.column() > 1 and x < frozen_width:
             new_value = self.horizontalScrollBar().value() + x - frozen_width
             self.horizontalScrollBar().setValue(new_value)
         return current

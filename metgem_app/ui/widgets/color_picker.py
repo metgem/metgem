@@ -1,6 +1,6 @@
-from qtpy.QtCore import Qt, QSettings, Signal
-from qtpy.QtGui import QIcon, QPainter, QBrush, QColor
-from qtpy.QtWidgets import QToolButton, QWidgetAction, QColorDialog, QMenu, QAction, QAbstractButton, QDialogButtonBox
+from PySide6.QtCore import Qt, QSettings, Signal
+from PySide6.QtGui import QIcon, QPainter, QBrush, QColor, QAction
+from PySide6.QtWidgets import QToolButton, QWidgetAction, QColorDialog, QMenu, QAbstractButton, QDialogButtonBox
 
 
 class ColorPicker(QToolButton):
@@ -13,19 +13,21 @@ class ColorPicker(QToolButton):
         self._color_group = color_group
 
         dialog_action = QWidgetAction(self)
-        self._dialog = QColorDialog(self)
+        self._dialog: QColorDialog = QColorDialog(self)
 
         self.btReset = None
-        button_box = self._dialog.findChild(QDialogButtonBox, "")
+        # noinspection PyTypeChecker
+        button_box: QDialogButtonBox = self._dialog.findChild(QDialogButtonBox, "")
         if button_box is not None:
-            self.btReset = button_box.addButton(QDialogButtonBox.Reset)
+            self.btReset = button_box.addButton(QDialogButtonBox.StandardButton.Reset)
 
         self._dialog.setWindowFlags(Qt.Widget)
-        self._dialog.setOptions(self._dialog.options() | QColorDialog.DontUseNativeDialog)
+        self._dialog.setOptions(self._dialog.options() | QColorDialog.ColorDialogOption.DontUseNativeDialog)
         dialog_action.setDefaultWidget(self._dialog)
 
         # Hide pick screen color button
-        button = self._dialog.findChild(QAbstractButton)
+        # noinspection PyTypeChecker
+        button: QAbstractButton = self._dialog.findChild(QAbstractButton)
         if button:
             button.hide()
 
@@ -46,7 +48,7 @@ class ColorPicker(QToolButton):
         menu.addAction(dialog_action)
 
         self.setMenu(menu)
-        self.setPopupMode(QToolButton.MenuButtonPopup)
+        self.setPopupMode(QToolButton.ToolButtonPopupMode.MenuButtonPopup)
         self.setDefaultAction(self.last_color_action)
 
         # Connect events

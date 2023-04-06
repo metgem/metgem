@@ -1,8 +1,8 @@
 from typing import Union
 
-from qtpy.QtCore import QPointF, Qt
-from qtpy.QtGui import QPainterPath, QPixmap, QPainter, QPen, QIcon, QColor
-from qtpy.QtWidgets import QListWidgetItem, QDialog
+from PySide6.QtCore import QPointF, Qt
+from PySide6.QtGui import QPainterPath, QPixmap, QPainter, QPen, QIcon, QColor
+from PySide6.QtWidgets import QListWidgetItem, QDialog
 from .pen_parameters_dialog_ui import Ui_Dialog
 
 

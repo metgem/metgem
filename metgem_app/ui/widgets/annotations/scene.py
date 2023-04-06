@@ -1,13 +1,13 @@
-from qtpy.QtCore import Signal
-from qtpy.QtWidgets import QGraphicsItem
+from PySide6.QtCore import Signal
+from PySide6.QtWidgets import QGraphicsItem
 
 from ....config import get_python_rendering_flag
 
-from PySide2MolecularNetwork.graphicsitem import GraphicsItemLayer
+from PySide6MolecularNetwork.graphicsitem import GraphicsItemLayer
 if get_python_rendering_flag():
-    from PySide2MolecularNetwork._pure import NetworkScene
+    from PySide6MolecularNetwork._pure import NetworkScene
 else:
-    from PySide2MolecularNetwork import NetworkScene
+    from PySide6MolecularNetwork import NetworkScene
 
 
 class AnnotationsNetworkScene(NetworkScene):

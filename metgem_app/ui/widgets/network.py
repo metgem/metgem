@@ -3,9 +3,9 @@ import sys
 import numpy as np
 import igraph as ig
 import pandas as pd
-from qtpy.QtCore import Signal, Qt, QObject
-from qtpy.QtGui import QPen
-from qtpy.QtWidgets import QFrame, QMenu, QWidgetAction, QWidget, QGraphicsLineItem
+from PySide6.QtCore import Signal, Qt, QObject
+from PySide6.QtGui import QPen
+from PySide6.QtWidgets import QFrame, QMenu, QWidgetAction, QWidget, QGraphicsLineItem
 
 from .annotations import AnnotationsNetworkScene
 from ..edit_options_dialog import (EditNetworkOptionsDialog, EditTSNEOptionsDialog,

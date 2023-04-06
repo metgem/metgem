@@ -2,9 +2,9 @@ from keyword import iskeyword
 from typing import Tuple, List
 
 import yaml
-from qtpy.QtCore import Qt
-from qtpy.QtGui import QValidator
-from qtpy.QtWidgets import (QTableWidgetItem, QFileDialog, QMessageBox, QStyledItemDelegate,
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QValidator
+from PySide6.QtWidgets import (QTableWidgetItem, QFileDialog, QMessageBox, QStyledItemDelegate,
                             QMenu, QTableWidget, QTableView, QDialog, QLineEdit)
 
 from .add_columns_by_formulae_ui import Ui_AddColumnsByFormulaeDialog
@@ -17,11 +17,11 @@ class AliasValidator(QValidator):
     def validate(self, input: str, pos: int) -> Tuple[QValidator.State, str, int]:
         if input.isidentifier() or not input:
             if iskeyword(input):
-                return QValidator.Intermediate, input, pos
+                return QValidator.State.Intermediate, input, pos
             else:
-                return QValidator.Acceptable, input, pos
+                return QValidator.State.Acceptable, input, pos
         else:
-            return QValidator.Invalid, input, pos
+            return QValidator.State.Invalid, input, pos
 
 
 class AliasDelegate(QStyledItemDelegate):
@@ -35,16 +35,16 @@ class AliasDelegate(QStyledItemDelegate):
 # noinspection PyShadowingBuiltins
 class ColumnNameValidator(QValidator):
 
-    def __init__(self, columns=List[str], *args, **kwargs):
+    def __init__(self, columns=list[str], *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self._columns = columns
 
     def validate(self, input: str, pos: int) -> Tuple[QValidator.State, str, int]:
         if input not in self._columns or not input:
-            return QValidator.Acceptable, input, pos
+            return QValidator.State.Acceptable, input, pos
         else:
-            return QValidator.Intermediate, input, pos
+            return QValidator.State.Intermediate, input, pos
 
 
 class ColumnNameDelegate(QStyledItemDelegate):
@@ -55,7 +55,8 @@ class ColumnNameDelegate(QStyledItemDelegate):
         self._columns = columns
 
     def createEditor(self, parent, option, index):
-        editor = super().createEditor(parent, option, index)
+        # noinspection PyTypeChecker
+        editor: QLineEdit = super().createEditor(parent, option, index)
         editor.setValidator(ColumnNameValidator(self._columns))
         return editor
 
@@ -84,7 +85,7 @@ class AddColumnsByFormulaeDialog(QDialog, Ui_AddColumnsByFormulaeDialog):
         # Allow re-ordering of rows in mappings table
         self.tblMappings.verticalHeader().setSectionsMovable(True)
         self.tblMappings.verticalHeader().setDragEnabled(True)
-        self.tblMappings.verticalHeader().setDragDropMode(QTableView.InternalMove)
+        self.tblMappings.verticalHeader().setDragDropMode(QTableView.DragDropMode.InternalMove)
 
         validator = AliasValidator()
         for i in range(model.columnCount()):
@@ -92,7 +93,7 @@ class AddColumnsByFormulaeDialog(QDialog, Ui_AddColumnsByFormulaeDialog):
             item = QTableWidgetItem(title)
             item.setFlags(item.flags() ^ Qt.ItemIsEditable)
             self.tblAlias.setItem(i, AddColumnsByFormulaeDialog.COLUMN_TITLE, item)
-            if validator.validate(title, 0)[0] == QValidator.Acceptable:
+            if validator.validate(title, 0)[0] == QValidator.State.Acceptable:
                 item = QTableWidgetItem(title)
                 self.tblAlias.setItem(i, AddColumnsByFormulaeDialog.COLUMN_ALIAS, item)
 
@@ -252,7 +253,7 @@ class AddColumnsByFormulaeDialog(QDialog, Ui_AddColumnsByFormulaeDialog):
                 QMessageBox.warning(self, None, "Save failed (I/O Error).")
 
     def add_text_to_mappings_editor(self):
-        if self.tblMappings.state() == QTableWidget.EditingState:
+        if self.tblMappings.state() == QTableWidget.State.EditingState:
             index = self.tblMappings.currentIndex()
             if not index.isValid():
                 return

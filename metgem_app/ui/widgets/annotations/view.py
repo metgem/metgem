@@ -1,10 +1,10 @@
 import struct
 from typing import Union
 
-from qtpy.QtCore import Qt, QLineF, QRectF, QPointF
-from qtpy.QtGui import QFont, QMouseEvent, QIcon, QPen
-from qtpy.QtWidgets import (QGraphicsView, QGraphicsLineItem, QGraphicsSceneMouseEvent,
-                             QDialog, QUndoStack, QUndoView, QMenu, QWidgetAction, QGraphicsItem, QGraphicsEllipseItem)
+from PySide6.QtCore import Qt, QLineF, QRectF, QPointF
+from PySide6.QtGui import QFont, QMouseEvent, QIcon, QPen, QUndoStack
+from PySide6.QtWidgets import (QGraphicsView, QGraphicsLineItem, QGraphicsSceneMouseEvent,
+                             QDialog, QUndoView, QMenu, QWidgetAction, QGraphicsItem, QGraphicsEllipseItem)
 
 from .scene import AnnotationsNetworkScene
 from .commands import EditTextCommand, EditArrowCommand, MoveCommand, ResizeCommand, DeleteCommand, AddCommand
@@ -13,9 +13,9 @@ from .dialogs import TextItemInputDialog
 from ....config import get_python_rendering_flag
 
 if get_python_rendering_flag():
-    from PySide2MolecularNetwork._pure import NetworkView
+    from PySide6MolecularNetwork._pure import NetworkView
 else:
-    from PySide2MolecularNetwork import NetworkView
+    from PySide6MolecularNetwork import NetworkView
 
 MODE_LINE = 0
 MODE_RECT = 1

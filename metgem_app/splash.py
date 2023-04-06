@@ -1,8 +1,8 @@
 import os
 
-from qtpy.QtCore import Qt, QCoreApplication
-from qtpy.QtGui import QPixmap, QPainter
-from qtpy.QtWidgets import QSplashScreen, QProgressBar, QLabel
+from PySide6.QtCore import Qt, QCoreApplication
+from PySide6.QtGui import QPixmap, QPainter
+from PySide6.QtWidgets import QSplashScreen, QProgressBar, QLabel
 
 
 class SplashScreen(QSplashScreen):
@@ -58,10 +58,10 @@ class SplashScreen(QSplashScreen):
     def setVersion(self, version):
         text = f"Version {version}"
         self.version.setText(text)
-        self.version.move(self.splash_pix.width() - self.fontMetrics().width(text) - 332,
+        self.version.move(self.splash_pix.width() - self.fontMetrics().horizontalAdvance(text) - 332,
                           self.splash_pix.height() - 265)
         geom = self.pbar.geometry()
-        geom.setWidth(geom.width() - self.fontMetrics().width(text) - 10)
+        geom.setWidth(geom.width() - self.fontMetrics().horizontalAdvance(text) - 10)
         self.pbar.setGeometry(geom)
 
     def show(self):

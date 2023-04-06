@@ -1,6 +1,6 @@
-from qtpy.QtCore import Qt, QObject, QEvent, QModelIndex, Signal
-from qtpy.QtGui import QStandardItemModel, QStandardItem, QIcon
-from qtpy.QtWidgets import (QStyledItemDelegate, QComboBox, QTreeView,
+from PySide6.QtCore import Qt, QObject, QEvent, QModelIndex, Signal
+from PySide6.QtGui import QStandardItemModel, QStandardItem, QIcon
+from PySide6.QtWidgets import (QStyledItemDelegate, QComboBox, QTreeView,
                              QWidget, QHBoxLayout, QSizePolicy, QToolButton)
 
 from ....models.metadata import StandardsRole, AnalogsRole, DbResultsRole

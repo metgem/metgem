@@ -1,8 +1,8 @@
 import os
 
-from qtpy.QtCore import Qt, QSize
-from qtpy.QtGui import QPalette, QColor
-from qtpy.QtWidgets import QFileDialog, QDialog, QMenu, QListWidgetItem, QMessageBox
+from PySide6.QtCore import Qt, QSize
+from PySide6.QtGui import QPalette, QColor
+from PySide6.QtWidgets import QFileDialog, QDialog, QMenu, QListWidgetItem, QMessageBox
 
 from ..utils.network import generate_id
 from ..utils.gui import enumerateMenu

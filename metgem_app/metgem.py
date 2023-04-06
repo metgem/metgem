@@ -53,10 +53,10 @@ def run():
 
     args = parser.parse_args()
 
-    from qtpy.QtWidgets import QApplication
-    from qtpy.QtCore import QCoreApplication
+    from PySide6.QtWidgets import QApplication
+    from PySide6.QtCore import QCoreApplication
     # QtWebEngineWidgets must be imported before a QApplication is created
-    from qtpy.QtWebEngineWidgets import QWebEngineView, QWebEnginePage, QWebEngineProfile
+    # from PySide6.QtWebEngineWidgets import QWebEngineView, QWebEnginePage, QWebEngineProfile
 
     app = QApplication(sys.argv)
 
@@ -79,7 +79,7 @@ def run():
     splash.setValue(10)
 
     splash.showMessage("Loading numba library...")
-    import numba
+    # import numba
     splash.setValue(20)
 
     splash.showMessage("Loading pandas library...")

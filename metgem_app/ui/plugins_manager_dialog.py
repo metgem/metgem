@@ -1,8 +1,8 @@
 import os
 
-from qtpy.QtCore import Qt, QItemSelection, QSortFilterProxyModel
-from qtpy.QtGui import QIcon
-from qtpy.QtWidgets import QDialog, QLabel, QHeaderView, QMessageBox, QDialogButtonBox
+from PySide6.QtCore import Qt, QItemSelection, QSortFilterProxyModel
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import QDialog, QLabel, QHeaderView, QMessageBox, QDialogButtonBox
 
 from . import ProgressDialog
 from ..config import PLUGINS_PATH

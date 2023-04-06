@@ -1,5 +1,5 @@
-from PySide2.QtCore import Qt, QObject, QEvent
-from PySide2.QtWidgets import QTableView, QAbstractButton
+from PySide6.QtCore import Qt, QObject, QEvent
+from PySide6.QtWidgets import QTableView, QAbstractButton
 
 from ..delegates import EnsureStringItemDelegate
 

@@ -1,7 +1,7 @@
 import os
 
-from qtpy.QtCore import Qt
-from qtpy.QtWidgets import QAbstractItemView, QDialog
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QAbstractItemView, QDialog
 
 from ..models.databases import BanksModel, SpectraModel
 from ..database import SpectraLibrary, Spectrum

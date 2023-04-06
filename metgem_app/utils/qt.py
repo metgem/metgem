@@ -1,7 +1,7 @@
 try:
-    from qtpy.QtCore import QObject, Signal
-    from qtpy.QtCore import Qt
-    from qtpy.QtGui import QColor
+    from PySide6.QtCore import QObject, Signal
+    from PySide6.QtCore import Qt
+    from PySide6.QtGui import QColor
 except (ImportError, RuntimeError):
     from typing import Callable
 

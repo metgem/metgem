@@ -1,9 +1,9 @@
 import ftplib
 import os
 
-from qtpy.QtCore import Qt, QSize
-from qtpy.QtGui import QIcon
-from qtpy.QtWidgets import QTreeWidgetItem, QDialogButtonBox, QMessageBox, QDialog
+from PySide6.QtCore import Qt, QSize
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import QTreeWidgetItem, QDialogButtonBox, QMessageBox, QDialog
 from requests.exceptions import ConnectionError, RequestException
 
 from .progress_dialog import ProgressDialog

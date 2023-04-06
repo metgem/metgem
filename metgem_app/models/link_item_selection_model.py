@@ -18,7 +18,7 @@
 
 # Python Port of KLinkItemSelectionModel and KModelIndexProxyMapper from KDAB
 
-from qtpy.QtCore import (QModelIndex, Signal, QItemSelectionModel, QItemSelection, QObject,
+from PySide6.QtCore import (QModelIndex, Signal, QItemSelectionModel, QItemSelection, QObject,
                           QAbstractItemModel, QAbstractProxyModel)
 
 from typing import Union

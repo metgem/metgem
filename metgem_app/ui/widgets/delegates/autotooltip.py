@@ -1,7 +1,8 @@
-from qtpy.QtWidgets import QItemDelegate, QToolTip
-from qtpy.QtCore import QEvent, Qt
+from PySide6.QtWidgets import QItemDelegate, QToolTip
+from PySide6.QtCore import QEvent, Qt
 
 
+# noinspection PyUnresolvedReferences
 class AutoToolTipItemDelegateMixin:
     """
     QItemDelegate subclass that shows tooltip based on item text and
@@ -35,8 +36,8 @@ class AutoToolTipItemDelegate(AutoToolTipItemDelegateMixin, QItemDelegate):
 
 if __name__ == "__main__":
     import sys
-    from qtpy.QtWidgets import QApplication, QListView
-    from qtpy.QtGui import QStandardItemModel, QStandardItem
+    from PySide6.QtWidgets import QApplication, QListView
+    from PySide6.QtGui import QStandardItemModel, QStandardItem
 
     app = QApplication(sys.argv)
 
