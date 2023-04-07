@@ -3,9 +3,9 @@ from typing import Optional
 
 from PySide6.QtCore import Qt, QRectF, QPointF, QSizeF
 from PySide6.QtGui import (QPainterPath, QPainterPathStroker, QPainter,
-                         QBrush, QColor, QPolygonF, QPen)
+                           QBrush, QColor, QPolygonF, QPen)
 from PySide6.QtWidgets import (QGraphicsLineItem, QGraphicsRectItem, QGraphicsSimpleTextItem,
-                             QGraphicsItem, QGraphicsEllipseItem, QStyleOptionGraphicsItem, QWidget)
+                               QGraphicsItem, QGraphicsEllipseItem, QStyleOptionGraphicsItem, QWidget)
 
 
 class ArrowItem(QGraphicsLineItem):

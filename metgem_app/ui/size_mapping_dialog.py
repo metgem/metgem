@@ -1,4 +1,3 @@
-import os
 from typing import Any, Optional, Union
 
 import numpy as np
@@ -149,7 +148,7 @@ class Handle(QGraphicsEllipseItem):
     def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: Optional[QWidget] = None):
         painter.setBrush(self.brush())
 
-        if option.state & QStyle.State_Selected:
+        if option.state & QStyle.StateFlag.State_Selected:
             painter.setPen(QPen(self.pen().color(), self.pen().width() * 3))
         else:
             painter.setPen(self.pen())

@@ -1,4 +1,4 @@
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Signal, QModelIndex
 from PySide6.QtWidgets import QComboBox, QLineEdit
 
 from ....models.metadata import CsvDelimiterModel
@@ -22,7 +22,7 @@ class CsvDelimiterCombo(QComboBox):
             widget.textChanged.connect(self.on_other_edit_text_changed)
             self._other_edit = widget
 
-    def delimiter(self, index=None):
+    def delimiter(self, index: QModelIndex = None):
         model = self.model()
         if index is None:
             index = self.currentIndex()

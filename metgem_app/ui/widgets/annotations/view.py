@@ -4,7 +4,7 @@ from typing import Union
 from PySide6.QtCore import Qt, QLineF, QRectF, QPointF
 from PySide6.QtGui import QFont, QMouseEvent, QIcon, QPen, QUndoStack
 from PySide6.QtWidgets import (QGraphicsView, QGraphicsLineItem, QGraphicsSceneMouseEvent,
-                             QDialog, QUndoView, QMenu, QWidgetAction, QGraphicsItem, QGraphicsEllipseItem)
+                               QDialog, QUndoView, QMenu, QWidgetAction, QGraphicsItem, QGraphicsEllipseItem)
 
 from .scene import AnnotationsNetworkScene
 from .commands import EditTextCommand, EditArrowCommand, MoveCommand, ResizeCommand, DeleteCommand, AddCommand
@@ -42,7 +42,7 @@ class AnnotationsNetworkView(NetworkView):
         self._item_old_line_or_rect = None
         self._mode = None
         self._dialog = None
-        self.setDragMode(QGraphicsView.RubberBandDrag)
+        self.setDragMode(QGraphicsView.DragMode.RubberBandDrag)
 
     def setScene(self, scene: AnnotationsNetworkScene):
         scene.editAnnotationItemRequested.connect(self.on_edit_annotation_item_requested)
@@ -84,10 +84,10 @@ class AnnotationsNetworkView(NetworkView):
     def setDrawMode(self, mode):
         self._mode = mode
         if mode is None:
-            self.setDragMode(QGraphicsView.RubberBandDrag)
+            self.setDragMode(QGraphicsView.DragMode.RubberBandDrag)
             self._orig_point = None
         else:
-            self.setDragMode(QGraphicsView.NoDrag)
+            self.setDragMode(QGraphicsView.DragMode.NoDrag)
 
     def mode(self):
         return self._mode
@@ -196,7 +196,7 @@ class AnnotationsNetworkView(NetworkView):
         # Edit text item
         if isinstance(item, TextItem):
             def edit_text_item(result):
-                if result == QDialog.Accepted:
+                if result == QDialog.DialogCode.Accepted:
                     old_text = item.text()
                     old_font = item.font()
                     text, font_size = self._dialog.getValues()
@@ -223,7 +223,7 @@ class AnnotationsNetworkView(NetworkView):
                 # Add a text item at mouse position
                 elif self._mode == MODE_TEXT:
                     def add_text_item(result):
-                        if result == QDialog.Accepted:
+                        if result == QDialog.DialogCode.Accepted:
                             text, font_size = self._dialog.getValues()
                             font = QFont()
                             font.setPointSize(font_size)

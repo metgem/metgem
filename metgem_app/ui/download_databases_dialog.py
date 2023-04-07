@@ -35,12 +35,12 @@ class DownloadDatabasesDialog(QDialog, Ui_Dialog):
         self._workers = WorkerQueue(self, ProgressDialog(self))
 
         # Add download button
-        self.btDownload = self.buttonBox.addButton("&Download", QDialogButtonBox.ActionRole)
+        self.btDownload = self.buttonBox.addButton("&Download", QDialogButtonBox.ButtonRole.ActionRole)
         self.btDownload.setIcon(QIcon(":/icons/images/download-package.svg"))
         self.btDownload.setEnabled(False)
 
         # Set Close button as default
-        bt_close = self.buttonBox.button(QDialogButtonBox.Close)
+        bt_close = self.buttonBox.button(QDialogButtonBox.StandardButton.Close)
         if bt_close is not None:
             bt_close.setDefault(True)
 
@@ -179,7 +179,7 @@ class DownloadDatabasesDialog(QDialog, Ui_Dialog):
             os.makedirs(self.base_path, exist_ok=True)
         except PermissionError:
             QMessageBox.critical(self, None,
-                                'Unable to download databases because the destination folder is not writable.')
+                                 'Unable to download databases because the destination folder is not writable.')
             return False
 
         ids = self.get_ids(selected_only=True)

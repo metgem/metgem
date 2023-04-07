@@ -8,3 +8,4 @@ dependencies:
     - pytest-qt
     - pytest-mock
     - tqdm
+    - versioneer

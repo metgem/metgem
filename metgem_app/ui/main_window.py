@@ -222,8 +222,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             lambda: self.on_show_spectrum_from_table_triggered('compare'))
         self.nodes_widget.actionFindStandards.triggered.connect(lambda: self.on_query_databases('standards'))
         self.nodes_widget.actionFindAnalogs.triggered.connect(lambda: self.on_query_databases('analogs'))
-        self.nodes_widget.actionMetFrag.triggered.connect(lambda: self.on_query_in_silico_db('metfrag'))
-        self.nodes_widget.actionCFMID.triggered.connect(lambda: self.on_query_in_silico_db('cfm-id'))
+        # self.nodes_widget.actionMetFrag.triggered.connect(lambda: self.on_query_in_silico_db('metfrag'))
+        # self.nodes_widget.actionCFMID.triggered.connect(lambda: self.on_query_in_silico_db('cfm-id'))
         self.nodes_widget.actionAddColumnsByFormulae.triggered.connect(self.on_add_columns_by_formulae)
         self.nodes_widget.actionClusterize.triggered.connect(self.on_clusterize)
         self.nodes_widget.actionNumberize.triggered.connect(self.on_numberize)
@@ -1366,9 +1366,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             menu.addSeparator()
             menu.addAction(self.nodes_widget.actionFindStandards)
             menu.addAction(self.nodes_widget.actionFindAnalogs)
-            menu.addSeparator()
-            menu.addAction(self.nodes_widget.actionMetFrag)
-            menu.addAction(self.nodes_widget.actionCFMID)
+            # menu.addSeparator()
+            # menu.addAction(self.nodes_widget.actionMetFrag)
+            # menu.addAction(self.nodes_widget.actionCFMID)
             menu.popup(QCursor.pos())
 
     @debug

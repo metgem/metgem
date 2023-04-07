@@ -1,6 +1,5 @@
 # noinspection PyUnresolvedReferences
-from PySide6.QtCore import QPoint, Qt
-from PySide6.QtCore import QByteArray, QSize
+from PySide6.QtCore import QByteArray, QSize, QPoint, Qt
 from PySide6.QtSvgWidgets import QSvgWidget
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QVBoxLayout, QPushButton, QMenu, QApplication

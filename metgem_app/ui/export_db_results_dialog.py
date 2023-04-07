@@ -71,7 +71,7 @@ class ExportDBResultsDialog(QDialog, Ui_Dialog):
             return False
 
     def done(self, r):
-        if r == QDialog.Accepted:
+        if r == QDialog.DialogCode.Accepted:
             if self.validate_export_filename() and self.validate_separator():
                 super().done(r)
         else:
@@ -79,11 +79,11 @@ class ExportDBResultsDialog(QDialog, Ui_Dialog):
 
     def browse(self):
         self._dialog = QFileDialog(self)
-        self._dialog.setAcceptMode(QFileDialog.AcceptSave)
+        self._dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
         self._dialog.setNameFilters(["Comma separated values (*.csv *.tsv *.txt)"])
 
         def set_filename(result):
-            if result == QDialog.Accepted:
+            if result == QDialog.DialogCode.Accepted:
                 filename = self._dialog.selectedFiles()[0]
                 self.editExportFile.setText(filename)
 

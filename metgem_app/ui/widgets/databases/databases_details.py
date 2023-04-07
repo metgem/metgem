@@ -19,8 +19,8 @@ class SpectrumDetailsWidget(QWidget, Ui_DatabasesDetails):
         for _ in range(self.tabWidget.count()):
             w = self.tabWidget.widget(0)
             dock = CDockWidget(self.tabWidget.tabText(0))
-            dock.setFeature(CDockWidget.DockWidgetFloatable, False)
-            dock.setFeature(CDockWidget.DockWidgetClosable, False)
+            dock.setFeature(CDockWidget.DockWidgetFeature.DockWidgetFloatable, False)
+            dock.setFeature(CDockWidget.DockWidgetFeature.DockWidgetClosable, False)
             dock.setIcon(self.tabWidget.tabIcon(0))
             self.docks.append(dock)
             if dock_area is None:

@@ -19,7 +19,7 @@ class AboutDialog(QDialog, Ui_AboutDialog):
         self.setWindowTitle(f"About {appname}")
         self.setTitle(appname)
         self.setVersion(f"Version {QCoreApplication.applicationVersion()}")
-        self.setAbout("<p>(C) 2018-2021, CNRS/ICSN</p>"
+        self.setAbout("<p>(C) 2018-2023, CNRS/ICSN</p>"
                       f"<p><a href='https://metgem.github.io/'>{appname}</a></p>"
                       "<p><a href='https://github.com/metgem'>Source Code</a></p>")
 

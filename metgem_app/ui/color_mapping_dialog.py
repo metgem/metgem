@@ -791,7 +791,7 @@ class ColorMappingDialog(BaseColorMappingDialog):
         if color.isValid():
             return color, polygon_id, brushstyle
 
-    def export_color_item(self, item: QListWidgetItem) -> Tuple[str, str, ]:
+    def export_color_item(self, item: QListWidgetItem) -> Tuple[str, str, Qt.BrushStyle]:
         color = item.data(Qt.BackgroundRole).color()
         polygon_id = item.data(BaseColorMappingDialog.PolygonRole)
         polygon_id = polygon_id if polygon_id is not None else NodePolygon.Circle
@@ -802,7 +802,7 @@ class ColorMappingDialog(BaseColorMappingDialog):
             return color.name(), polygon_id.name, brushstyle
 
     def done(self, r):
-        if r == QDialog.Accepted:
+        if r == QDialog.DialogCode.Accepted:
             colors = [self.lstColors.item(row).data(Qt.BackgroundRole).color().name()
                       for row in range(self.lstColors.count())]
             QSettings().setValue('NetworkView/node_colors', colors)
@@ -821,7 +821,7 @@ class ColorMappingDialog(BaseColorMappingDialog):
             initial_polygon=current_polygon,
             initial_brushstyle=current_brushstyle,
             parent=self,
-            options=QColorDialog.ShowAlphaChannel)
+            options=QColorDialog.ColorDialogOption.ShowAlphaChannel)
 
         if color.isValid():
             item.setBackground(color)
@@ -831,7 +831,7 @@ class ColorMappingDialog(BaseColorMappingDialog):
     def add_color(self):
         color, polygon_id, brushstyle = ColorDialog.getColorPolygonAndBrushStyle(
             parent=self,
-            options=QColorDialog.ShowAlphaChannel)
+            options=QColorDialog.ColorDialogOption.ShowAlphaChannel)
 
         if color.isValid():
             item = ColorListWidgetItem()

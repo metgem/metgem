@@ -1,7 +1,7 @@
 import os
 
 from PySide6.QtCore import QSize, Qt
-from PySide6.QtGui import QMovie, QPainter
+from PySide6.QtGui import QMovie, QPainter, QFontMetrics
 from PySide6.QtWidgets import QListView, QListWidget, QTableView, QTableWidget, QTreeView, QTreeWidget
 
 LOADING_MOVIE = os.path.join(os.path.dirname(__file__), 'images', 'loading.gif')
@@ -52,10 +52,10 @@ class LoadingViewMixin:
             painter = QPainter(self.viewport())
             pixmap = self._movie.currentPixmap()
 
-            fm = self.fontMetrics()
+            fm: QFontMetrics = self.fontMetrics()
             if self._loading_flags == Qt.AlignLeft:
                 pix_pos = self.rect().translated(
-                    self.width() / 2 - fm.width(self._loading_text) / 2 - pixmap.width() - 3,
+                    self.width() / 2 - fm.horizontalAdvance(self._loading_text) / 2 - pixmap.width() - 3,
                     self.height() / 2 - pixmap.height() / 2).topLeft()
                 text_rect = self.rect()
             else:

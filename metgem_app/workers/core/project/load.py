@@ -8,7 +8,7 @@ from ....utils.network import Network, generate_id
 from ...struct import StandardsResult
 
 from ...base import BaseWorker
-from ...options import AttrDict, AVAILABLE_NETWORK_OPTIONS, CosineComputationOptions, AVAILABLE_OPTIONS, \
+from ...options import AttrDict, AVAILABLE_NETWORK_OPTIONS, AVAILABLE_OPTIONS, \
     NetworkVisualizationOptions, TSNEVisualizationOptions
 
 from .mnz import MnzFile

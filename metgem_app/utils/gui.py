@@ -80,7 +80,7 @@ class SignalGrouper(QObject):
         self.senders.add(self.sender())
         
 
-def enumerateMenu(menu: 'QMenu'):
+def enumerateMenu(menu: QtWidgets.QMenu):
     for action in menu.actions():
         if action.menu() is not None:
             yield from enumerateMenu(action.menu())

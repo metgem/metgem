@@ -1,12 +1,13 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QDialog
 
-try:
-    # noinspection PyUnresolvedReferences
-    from PySide6.QtWinExtras import QWinTaskbarButton, QWinTaskbarProgress
-    HAS_WINEXTRAS = True
-except ImportError:
-    HAS_WINEXTRAS = False
+# TODO: Qt6 has no equivalent for QWinTaskbarProgress
+# try:
+#     # noinspection PyUnresolvedReferences
+#     from PySide6.QtWinExtras import QWinTaskbarButton, QWinTaskbarProgress
+#     HAS_WINEXTRAS = True
+# except ImportError:
+#     HAS_WINEXTRAS = False
 
 from .progress_dialog_ui import Ui_Dialog
 
@@ -18,10 +19,10 @@ class ProgressDialog(QDialog, Ui_Dialog):
 
         self.setupUi(self)
         self.setWindowFlags(Qt.Tool | Qt.CustomizeWindowHint | Qt.WindowCloseButtonHint)
-        if HAS_WINEXTRAS:
-            self._button = QWinTaskbarButton(self)
-            self._button.setWindow(self.windowHandle())
-            self._button.setOverlayIcon(self.windowIcon())
+        # if HAS_WINEXTRAS:
+        #     self._button = QWinTaskbarButton(self)
+        #     self._button.setWindow(self.windowHandle())
+        #     self._button.setOverlayIcon(self.windowIcon())
 
     def value(self):
         return self.progressBar.value()
@@ -29,8 +30,8 @@ class ProgressDialog(QDialog, Ui_Dialog):
     def setValue(self, value):
         val = min(value, self.progressBar.maximum())
         self.progressBar.setValue(val)
-        if HAS_WINEXTRAS:
-            self._button.progress().setValue(val)
+        # if HAS_WINEXTRAS:
+        #     self._button.progress().setValue(val)
 
     def format(self):
         return self.windowTitle()
@@ -43,21 +44,21 @@ class ProgressDialog(QDialog, Ui_Dialog):
 
     def setMinimum(self, minimum):
         self.progressBar.setMinimum(minimum)
-        if HAS_WINEXTRAS:
-            self._button.progress().setMinimum(minimum)
+        # if HAS_WINEXTRAS:
+        #     self._button.progress().setMinimum(minimum)
 
     def maximum(self):
         return self.progressBar.maximum()
 
     def setMaximum(self, maximum):
         self.progressBar.setMaximum(maximum)
-        if HAS_WINEXTRAS:
-            self._button.progress().setMaximum(maximum)
+        # if HAS_WINEXTRAS:
+        #     self._button.progress().setMaximum(maximum)
 
     def setRange(self, minimum, maximum):
-        self.progresBar.setRange(minimum, maximum)
-        if HAS_WINEXTRAS:
-            self._button.progress().setRange(minimum, maximum)
+        self.progressBar.setRange(minimum, maximum)
+        # if HAS_WINEXTRAS:
+        #     self._button.progress().setRange(minimum, maximum)
 
     def reject(self):
         return super().reject()
@@ -67,5 +68,5 @@ class ProgressDialog(QDialog, Ui_Dialog):
 
     def show(self):
         super().show()
-        if HAS_WINEXTRAS:
-            self._button.progress().show()
+        # if HAS_WINEXTRAS:
+        #     self._button.progress().show()

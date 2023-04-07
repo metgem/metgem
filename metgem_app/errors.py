@@ -34,13 +34,13 @@ def exceptionHandler(exctype, value, trace):
     logger.error(msg, exc_info=(exctype, value, trace))
     msg = QMessageBox(QCoreApplication.instance().activeWindow())
     msg.setWindowTitle("Unhandled exception")
-    msg.setIcon(QMessageBox.Warning)
+    msg.setIcon(QMessageBox.Icon.Warning)
     msg.setText(("It seems you have found a bug in {}. Please report details.\n"
                  "You should restart the application now.").format(QCoreApplication.applicationName()))
     msg.setInformativeText(str(value))
     msg.setDetailedText(''.join(traceback.format_exception(exctype, value, trace)))
-    bt_restart = msg.addButton("Restart now", QMessageBox.ResetRole)
-    msg.addButton(QMessageBox.Ignore)
+    bt_restart = msg.addButton("Restart now", QMessageBox.ButtonRole.ResetRole)
+    msg.addButton(QMessageBox.StandardButton.Ignore)
     msg.raise_()
     msg.exec_()
     if msg.clickedButton() == bt_restart:  # Restart application

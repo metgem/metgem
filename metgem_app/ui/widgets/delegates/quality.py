@@ -47,7 +47,7 @@ import math
 from PySide6.QtCore import QPointF, QSize, Qt
 from PySide6.QtGui import QPainter, QPolygonF, QColor
 from PySide6.QtWidgets import (QAbstractItemView, QApplication, QStyle,
-                            QStyledItemDelegate, QTableWidget, QTableWidgetItem)
+                               QStyledItemDelegate, QTableWidget, QTableWidgetItem)
 
 
 class StarRating:
@@ -110,7 +110,7 @@ class LibraryQualityDelegate(QStyledItemDelegate):
         except (ValueError, TypeError):
             super().paint(painter, option, index)
         else:
-            if option.state & QStyle.State_Selected:
+            if option.state & QStyle.StateFlag.State_Selected:
                 painter.fillRect(option.rect, option.palette.highlight())
 
             self._star_rating.paint(painter, option.rect, rating)
@@ -130,7 +130,7 @@ if __name__ == '__main__':
 
     w = QTableWidget(3, 2)
     w.setItemDelegateForColumn(1, LibraryQualityDelegate())
-    w.setSelectionBehavior(QAbstractItemView.SelectRows)
+    w.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
 
     headerLabels = ("Molecule", "Quality")
     w.setHorizontalHeaderLabels(headerLabels)

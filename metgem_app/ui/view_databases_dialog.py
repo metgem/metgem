@@ -73,11 +73,11 @@ class ViewDatabasesDialog(QDialog, Ui_Dialog):
 
     def on_goto_previous(self):
         first, last = self.visible_rows()
-        self.select_row(first-(last-first+1), QAbstractItemView.PositionAtTop)
+        self.select_row(first-(last-first+1), QAbstractItemView.ScrollHint.PositionAtTop)
 
     def on_goto_next(self):
         first, last = self.visible_rows()
-        self.select_row(last+1, QAbstractItemView.PositionAtTop)
+        self.select_row(last+1, QAbstractItemView.ScrollHint.PositionAtTop)
 
     def on_goto_last(self):
         self.select_row(self.tvSpectra.model().rowCount()-1)
@@ -125,7 +125,7 @@ class ViewDatabasesDialog(QDialog, Ui_Dialog):
         last = last if last > 0 else max_
         return first, last
 
-    def select_row(self, row, scroll_hint: QAbstractItemView.ScrollHint = QAbstractItemView.EnsureVisible):
+    def select_row(self, row, scroll_hint: QAbstractItemView.ScrollHint = QAbstractItemView.ScrollHint.EnsureVisible):
         model = self.tvSpectra.model()
         if model is None:
             return

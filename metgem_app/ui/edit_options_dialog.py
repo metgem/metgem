@@ -24,7 +24,7 @@ class EditOptionsDialogBase(QDialog):
             if options:
                 self.options_widget.setValues(options)
                 
-        self.buttonBox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.buttonBox = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
         layout.addWidget(self.buttonBox)
         self.setLayout(layout) 
         self.resize(self.options_widget.sizeHint())

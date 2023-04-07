@@ -184,7 +184,7 @@ class ProcessDataDialog(QDialog, Ui_ProcessFileDialog):
                 dialog = widget_class.dialog_class(self, options=options)
 
                 def set_options(result):
-                    if result == QDialog.Accepted:
+                    if result == QDialog.DialogCode.Accepted:
                         options = dialog.getValues()
                         self._options[id_] = options
 
@@ -203,7 +203,7 @@ class ProcessDataDialog(QDialog, Ui_ProcessFileDialog):
         dialog = ImportMetadataDialog(self, filename=filename)
 
         def set_options(result):
-            if result == QDialog.Accepted:
+            if result == QDialog.DialoCode.Accepted:
                 filename, options = dialog.getValues()
                 self.editMetadataFile.setText(filename)
                 self.editMetadataFile.setPalette(self.style().standardPalette())
@@ -213,7 +213,7 @@ class ProcessDataDialog(QDialog, Ui_ProcessFileDialog):
         dialog.open()
 
     def done(self, r):
-        if r == QDialog.Accepted:
+        if r == QDialog.DialogCode.Accepted:
             process_file = self.editProcessFile.text()
             metadata_file = self.editMetadataFile.text()
 
@@ -237,7 +237,7 @@ class ProcessDataDialog(QDialog, Ui_ProcessFileDialog):
         """Open a dialog to choose either .mgf or metadata.txt file"""
 
         dialog = QFileDialog(self)
-        dialog.setFileMode(QFileDialog.ExistingFile)
+        dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
 
         if type_ == 'process':
             dialog.setNameFilters(["All supported formats (*.mgf *.msp)",
@@ -251,7 +251,7 @@ class ProcessDataDialog(QDialog, Ui_ProcessFileDialog):
                                    "All files (*)"])
 
         def on_dialog_finished(result):
-            if result == QDialog.Accepted:
+            if result == QDialog.DialogCode.Accepted:
                 filename = dialog.selectedFiles()[0]
                 if type_ == 'process':
                     self.editProcessFile.setText(filename)

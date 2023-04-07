@@ -24,21 +24,21 @@ class PluginsManagerDialog(QDialog, Ui_PluginsManager):
 
         self.tabWidget.setCurrentIndex(0)
 
-        self.tvAvailable.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+        self.tvAvailable.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
         model = QSortFilterProxyModel()
         model.setSourceModel(AvailablePluginsModel())
         self.tvAvailable.setModel(model)
         self.tvAvailable.selectionModel().selectionChanged.connect(
             lambda selected, _: self.update_description(self.lblADescription, selected))
 
-        self.tvUpdates.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+        self.tvUpdates.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
         model = QSortFilterProxyModel()
         model.setSourceModel(UpdatesPluginsModel())
         self.tvUpdates.setModel(model)
         self.tvUpdates.selectionModel().selectionChanged.connect(
             lambda selected, _: self.update_description(self.lblUDescription, selected))
 
-        self.tvInstalled.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+        self.tvInstalled.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
         model = QSortFilterProxyModel()
         model.setSourceModel(InstalledPluginsModel())
         self.tvInstalled.setModel(model)
@@ -51,7 +51,7 @@ class PluginsManagerDialog(QDialog, Ui_PluginsManager):
         for button in (self.btASearch, self.btUSearch, self.btISearch):
             button.clicked.connect(self.on_do_search)
 
-        self.btReloadPlugins = self.buttonBox.addButton("Reload Plugins", QDialogButtonBox.ActionRole)
+        self.btReloadPlugins = self.buttonBox.addButton("Reload Plugins", QDialogButtonBox.ButtonRole.ActionRole)
         self.btReloadPlugins.setIcon(QIcon(":/icons/images/refresh.svg"))
         self.btReloadPlugins.clicked.connect(self.reload_plugins)
 

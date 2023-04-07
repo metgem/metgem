@@ -119,7 +119,7 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
         self.gvStylePreview.scene().setNetworkStyle(style)
 
     def done(self, r):
-        if r == QDialog.Accepted:
+        if r == QDialog.DialogCode.Accepted:
             settings = QSettings()
             settings.setValue('Metadata/neutral_tolerance', self.spinNeutralTolerance.value())
             settings.setValue('Metadata/float_precision', self.spinFloatPrecision.value())

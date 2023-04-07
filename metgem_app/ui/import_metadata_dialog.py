@@ -62,7 +62,7 @@ class ImportMetadataDialog(QDialog, Ui_ImportMetadataDialog):
             self.editMetadataFile.setText(filename)
 
     def done(self, r):
-        if r == QDialog.Accepted:
+        if r == QDialog.DialogCode.Accepted:
             metadata_file = self.editMetadataFile.text()
             if os.path.exists(metadata_file) and os.path.isfile(metadata_file):
                 super().done(r)
@@ -73,14 +73,14 @@ class ImportMetadataDialog(QDialog, Ui_ImportMetadataDialog):
 
     def browse(self):
         self._dialog = QFileDialog(self)
-        self._dialog.setFileMode(QFileDialog.ExistingFile)
+        self._dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
         self._dialog.setNameFilters(["Metadata File (*.csv *.tsv *.txt *.xls *.xlsx *.xlsm *.xlsb *.ods)",
                                "Microsoft Excel spreadsheets (*.xls *.xlsx, *.xlsm *.xlsb)",
                                "OpenDocument spreadsheets (*.ods)",
                                "All files (*)"])
 
         def set_filename(result):
-            if result == QDialog.Accepted:
+            if result == QDialog.DialogCode.Accepted:
                 filename = self._dialog.selectedFiles()[0]
                 with SignalBlocker(self.editMetadataFile):
                     self.editMetadataFile.setText(filename)

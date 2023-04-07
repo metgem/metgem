@@ -78,7 +78,9 @@ class StandardsResultsComboBox(QComboBox):
         return False
 
     def showPopup(self):
-        self.view().expandAll()
+        # noinspection PyTypeChecker
+        view: QTreeView = self.view()
+        view.expandAll()
         super().showPopup()
 
     def hidePopup(self):
@@ -129,7 +131,7 @@ class StandardsResultsDelegate(QStyledItemDelegate):
 
             return editor
 
-    def setEditorData(self, editor, index):
+    def setEditorData(self, editor: QComboBox, index):
         value = index.data(Qt.EditRole)
         standards = index.data(StandardsRole)
         if standards is not None and not isinstance(standards, str):
@@ -138,7 +140,7 @@ class StandardsResultsDelegate(QStyledItemDelegate):
             editor.setCurrentIndex(value)
             editor.setRootModelIndex(QModelIndex())
 
-    def setModelData(self, editor, model, index):
+    def setModelData(self, editor: QComboBox, model, index):
         if editor.currentIndex() > 0:
             model.setData(index, editor.currentIndex(), Qt.EditRole)
 

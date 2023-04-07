@@ -108,7 +108,7 @@ class ViewStandardsResultsDialog(QDialog, Ui_Dialog):
             return
         super().keyPressEvent(event)
 
-    def select_row(self, row, scroll_hint: QAbstractItemView.ScrollHint = QAbstractItemView.EnsureVisible):
+    def select_row(self, row, scroll_hint: QAbstractItemView.ScrollHint = QAbstractItemView.ScrollHint.EnsureVisible):
         if 0 <= row < self.widgetSpectrumDetails.model().rowCount():
             index = self.widgetSpectrumDetails.model().index(row, 0)
             if index.data(role=SpectraModel.TypeRole) == 'standards':

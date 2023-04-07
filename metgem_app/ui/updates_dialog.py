@@ -27,10 +27,11 @@ class UpdatesDialog(QDialog, Ui_UpdateDialog):
         self.lblCurrentVersion.setText(QCoreApplication.applicationVersion())
         self.lblNewVersion.setText(version)
 
-        self.buttonBox.setStandardButtons(QDialogButtonBox.NoButton)
-        self.btDownload = self.buttonBox.addButton("Download Now", QDialogButtonBox.AcceptRole) if self._url else None
-        self.btIgnoreUpdate = self.buttonBox.addButton("Ignore This Update", QDialogButtonBox.AcceptRole)
-        self.btRemindMeLater = self.buttonBox.addButton("Remind Me Later", QDialogButtonBox.AcceptRole)
+        self.buttonBox.setStandardButtons(QDialogButtonBox.StandardButton.NoButton)
+        self.btDownload = self.buttonBox.addButton("Download Now", QDialogButtonBox.ButtonRole.AcceptRole) \
+            if self._url else None
+        self.btIgnoreUpdate = self.buttonBox.addButton("Ignore This Update", QDialogButtonBox.ButtonRole.AcceptRole)
+        self.btRemindMeLater = self.buttonBox.addButton("Remind Me Later", QDialogButtonBox.ButtonRole.AcceptRole)
         self.btRemindMeLater.setDefault(True)
         self.buttonBox.clicked.connect(self.handle_button_click)
 

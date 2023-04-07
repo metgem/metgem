@@ -1,5 +1,3 @@
-import os
-
 from PySide6.QtWidgets import QGroupBox
 
 from ...workers.options import (CosineComputationOptions,
@@ -157,7 +155,7 @@ class UMAPOptionsWidget(QGroupBox, Ui_gbUMAPOptions):
         self.spinMinScoresAboveThreshold.setValue(options.min_scores_above_threshold)
         if options.n_epochs is not None:
             self.spinNumIterations.setValue(options.n_epochs)
-            self.cbNumbIterations.setChecked(True)
+            self.cbNumIterations.setChecked(True)
             self.spinNumIterations.setEnabled(True)
         else:
             self.cbNumIterations.setChecked(False)
