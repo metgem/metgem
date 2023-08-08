@@ -67,9 +67,10 @@ class CosineComputationOptions(Options):
 
     Attributes:
         mz_tolerance (float): in Da.
-        min_intensity (int): relative minimum intensity in percentage.
-        parent_filter_tolerance (int): in Da.
         min_matched_peaks (int): Minimum number of common peaks between two spectra.
+        min_mz (int): Minimum m/z to keep in spectra
+        parent_filter_tolerance (int): in Da.
+        min_intensity (int): relative minimum intensity in percentage.
         min_matched_peaks_search (int): Window rank filter's parameters: for each peak in the spectrum,
             it is kept only if it is in top `min_matched_peaks_search` in the +/-`matched_peaks_window` window.
         matched_peaks_window (int): in Da.
@@ -90,6 +91,8 @@ class CosineComputationOptions(Options):
                          use_min_intensity_filter=False,
                          use_parent_filter=True,
                          use_window_rank_filter=True,
+                         use_min_mz_filter=True,
+                         min_mz=50,
                          **kwargs)
 
 

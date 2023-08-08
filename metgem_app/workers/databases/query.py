@@ -33,9 +33,11 @@ class QueryDatabasesWorker(BaseWorker):
         results = {}
 
         use_filtering = self.options.use_filtering
+        use_min_mz_filter = self.options.use_min_mz_filter if use_filtering else False
         use_min_intensity_filter = self.options.use_min_intensity_filter if use_filtering else False
         use_parent_filter = self.options.use_parent_filter if use_filtering else False
         use_window_rank_filter = self.options.use_window_rank_filter if use_filtering else False
+        min_mz = self.options.min_mz if use_min_mz_filter else 0
         min_intensity = self.options.min_intensity if use_min_intensity_filter else 0
         parent_filter_tolerance = self.options.parent_filter_tolerance if use_parent_filter else 0
         matched_peaks_window = self.options.matched_peaks_window if use_window_rank_filter else 0
@@ -47,7 +49,7 @@ class QueryDatabasesWorker(BaseWorker):
                    self.options.mz_tolerance, self.options.min_matched_peaks, min_intensity,
                    parent_filter_tolerance, matched_peaks_window,
                    min_matched_peaks_search, self.options.min_cosine, analog_mz_tolerance,
-                   bool(self.options.positive_polarity), callback=callback)
+                   bool(self.options.positive_polarity), mz_min=min_mz, callback=callback)
 
         if qr is None:  # User canceled the process
             self.canceled.emit()
