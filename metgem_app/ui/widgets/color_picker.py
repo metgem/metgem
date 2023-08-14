@@ -87,15 +87,16 @@ class ColorPicker(QToolButton):
         """Show selected color on top-left edge of icon"""
 
         current_icon = self.icon()
+        current_icon_size = self.iconSize() * 2
         icon = QIcon()
-        for size in current_icon.availableSizes():
-            pixmap = current_icon.pixmap(size)
-            painter = QPainter(pixmap)
-            painter.setPen(Qt.NoPen)
-            painter.setBrush(QBrush(self._dialog.currentColor()))
-            painter.drawEllipse(0, 0, int(size.width() / 4), int(size.height() / 4))
-            painter.end()
-            icon.addPixmap(pixmap)
+
+        pixmap = current_icon.pixmap(current_icon_size)
+        painter = QPainter(pixmap)
+        painter.setPen(Qt.NoPen)
+        painter.setBrush(QBrush(self._dialog.currentColor()))
+        painter.drawEllipse(0, 0, int(current_icon_size.width() / 4), int(current_icon_size.height() / 4))
+        painter.end()
+        icon.addPixmap(pixmap)
         super().setIcon(icon)
 
     def on_use_last_color(self):
