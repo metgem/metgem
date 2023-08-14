@@ -11,18 +11,8 @@ sys.path.insert(0, os.path.join(SPECPATH, '..'))
 # noinspection PyUnresolvedReferences
 sys.path.insert(0, os.path.join(SPECPATH, 'build', 'lib'))
 
-from PyInstaller.utils.hooks.qt import qt_plugins_binaries
+# from PyInstaller.utils.hooks.qt import qt_plugins_binaries
 from PyInstaller.utils.hooks import get_module_file_attribute
-
-# On Anaconda distributions, qt_plugins_binaries can't be found because QLibraryInfo returns wrong path
-import PyInstaller.utils.hooks.qt
-
-location = PyInstaller.utils.hooks.qt.pyside2_library_info.location
-for k in location.keys():
-    if not os.path.exists(location[k]) and "Library" in location[k]:
-        s = location[k].split("Library")[1]
-        location[k] = os.path.join(sys.prefix, "Library" + s)
-
 
 # noinspection PyUnresolvedReferences
 def clean_datas(a: Analysis):
@@ -107,7 +97,7 @@ excludes.extend(['FixTk', 'tcl', 'tk', '_tkinter', 'tkinter', 'Tkinter', 'matplo
 excludes.extend(['lib2to3'])
 
 # Try to locate Qt base directory
-qt_base_dir = os.path.join(os.path.dirname(get_module_file_attribute('PySide2')), 'Qt')
+qt_base_dir = os.path.join(os.path.dirname(get_module_file_attribute('PySide6')), 'Qt')
 if not os.path.exists(qt_base_dir):
     qt_base_dir = os.path.join(sys.prefix, 'Library')
 
@@ -117,25 +107,15 @@ if sys.platform.startswith('win'):
     pathex.append(os.path.join(sys.prefix, 'Library', 'bin'))
     pathex.append(os.path.join('C:', 'Program Files', 'OpenSSL', 'bin'))
 
-# Get Qt styles dll
-binaries.extend(qt_plugins_binaries('styles', namespace='PySide2'))
-binaries.extend(qt_plugins_binaries('platforms', namespace='PySide2'))
-binaries.extend(qt_plugins_binaries('iconengines', namespace='PySide2'))
-binaries.extend(qt_plugins_binaries('imageformats', namespace='PySide2'))
-
 # Adds Qt OpenGL
-hiddenimports.extend(['PySide2.QtOpenGL'])
-if sys.platform.startswith('win'):
-    binaries.extend([(os.path.join(qt_base_dir, 'bin', dll), r'PySide2\Qt\bin')
-                     for dll in ('libEGL.dll', 'libGLESv2.dll')])
+hiddenimports.extend(['PySide6.QtOpenGL'])
 
 # Add Qt Dbus on macOS
 if sys.platform.startswith('darwin'):
-    hiddenimports.extend(['PySide2.QtDBus'])
+    hiddenimports.extend(['PySide6.QtDBus'])
     
 # Add missing modules
-hiddenimports.extend(['sqlalchemy.ext.baked', 'sqlalchemy.sql.default_comparator',
-                      'scipy.spatial.transform._rotation_groups'])
+hiddenimports.extend(['pyarrow.vendored'])
 
 # Add pybel
 try:
