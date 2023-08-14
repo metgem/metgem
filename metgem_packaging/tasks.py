@@ -124,6 +124,7 @@ def add_rpath(ctx):
 # noinspection PyShadowingNames,PyUnusedLocal
 @task
 def embed_manifest(ctx, debug):
+    # noinspection PyUnresolvedReferences
     from PyInstaller.utils.win32 import winmanifest
     folder = NAME + "_debug" if debug else NAME
     exe = "{0}\{1}\{2}.exe".format(DIST, folder, NAME)
