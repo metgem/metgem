@@ -44,7 +44,7 @@ class ProcessResourceCommand(cmd.Command):
             skip = not any([os.path.getmtime(qrc) > rc_mtime for qrc in qrcs])
 
         if not skip:
-            subprocess.run(['pyside2-rcc', '-o', rc, ' '.join(qrcs)], shell=sys.platform == 'win32')
+            subprocess.run(['pyside6-rcc', '-o', rc, ' '.join(qrcs)], shell=sys.platform == 'win32')
 
 
 class ProcessUICommand(cmd.Command):
@@ -62,7 +62,7 @@ class ProcessUICommand(cmd.Command):
         for fn in glob.glob(os.path.join('metgem_app', 'ui', '**', '*.ui'), recursive=True):
             fn = os.path.realpath(fn)
             out = fn[:-3] + '_ui.py'
-            subprocess.run(['pyside2-uic', fn, '-o', out], shell=sys.platform == 'win32')
+            subprocess.run(['pyside6-uic', fn, '-o', out], shell=sys.platform == 'win32')
 
 
 class BuildPyCommand(build_py):
