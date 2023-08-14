@@ -76,9 +76,9 @@ class NodesWidget(QWidget, Ui_NodesWidget):
         self._menus.append(menu)
         menu.addAction(self.actionFindStandards)
         menu.addAction(self.actionFindAnalogs)
-        menu.addSeparator()
-        menu.addAction(self.actionMetFrag)
-        menu.addAction(self.actionCFMID)
+        # menu.addSeparator()
+        # menu.addAction(self.actionMetFrag)
+        # menu.addAction(self.actionCFMID)
         self.btFindStandards.setMenu(menu)
         self.btFindStandards.setDefaultAction(self.actionFindStandards)
 

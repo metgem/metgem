@@ -1392,9 +1392,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             menu.addSeparator()
             menu.addAction(self.actionFindStandards)
             menu.addAction(self.actionFindAnalogs)
-            menu.addSeparator()
-            menu.addAction(self.actionMetFrag)
-            menu.addAction(self.actionCFMID)
+            # menu.addSeparator()
+            # menu.addAction(self.actionMetFrag)
+            # menu.addAction(self.actionCFMID)
             menu.popup(view.mapToGlobal(pos))
 
     # noinspection PyUnusedLocal
