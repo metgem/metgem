@@ -50,6 +50,7 @@ def run():
     parser.add_argument('--disable-opengl', action='store_true', help="Disable use of OpenGL for older computers.")
     parser.add_argument('--python-rendering', action='store_true',
                         help="Force use of slower Python rendering for networks.")
+    parser.add_argument('--no-exception-handler', action='store_true', help="Disable Graphical Exception Handler.")
 
     args = parser.parse_args()
 
@@ -156,8 +157,9 @@ def run():
     from .ui import MainWindow
     window = MainWindow()
 
-    from .errors import exceptionHandler
-    sys.excepthook = exceptionHandler
+    if not args.no_exception_handler:
+        from .errors import exceptionHandler
+        sys.excepthook = exceptionHandler
 
     window.show()
     splash.finish(window)
