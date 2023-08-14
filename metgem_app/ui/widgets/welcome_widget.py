@@ -1,5 +1,4 @@
 import datetime
-import os
 import webbrowser
 
 from PySide6.QtCore import QSize, QSettings, Qt
@@ -32,18 +31,18 @@ class HTMLDelegate(QStyledItemDelegate):
 
         options.text = ""
         style = QApplication.style() if options.widget is None else options.widget.style()
-        style.drawControl(QStyle.CE_ItemViewItem, options, painter)
+        style.drawControl(QStyle.ControlElement.CE_ItemViewItem, options, painter)
 
         ctx = QAbstractTextDocumentLayout.PaintContext()
 
-        if option.state & QStyle.State_Selected:
+        if option.state & QStyle.StateFlag.State_Selected:
             ctx.palette.setColor(QPalette.Text, option.palette.color(
                     QPalette.Active, QPalette.HighlightedText))
         else:
             ctx.palette.setColor(QPalette.Text, option.palette.color(
                     QPalette.Active, QPalette.Text))
 
-        text_rect = style.subElementRect(QStyle.SE_ItemViewItemText, options, None)
+        text_rect = style.subElementRect(QStyle.SubElement.SE_ItemViewItemText, options, None)
 
         painter.save()
         painter.translate(text_rect.topLeft())
