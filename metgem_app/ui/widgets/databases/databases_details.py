@@ -34,7 +34,7 @@ class SpectrumDetailsWidget(QWidget, Ui_DatabasesDetails):
             self.tabWidget.setParent(None)
             self.tabWidget.deleteLater()
             self.layout().addWidget(self.dock_manager)
-            self.layout().setMargin(0)
+            self.layout().setContentsMargins(0, 0, 0, 0)
             self.widgetSpectrum.canvas.showEvent = lambda _: None  # prevent matplotlib bug
 
         self.widgetFragmentsList.spectra_widget = self.widgetSpectrum
