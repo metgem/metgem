@@ -57,13 +57,13 @@ def run():
     from PySide6.QtWidgets import QApplication
     from PySide6.QtCore import QCoreApplication
     # QtWebEngineWidgets must be imported before a QApplication is created
-    # from PySide6.QtWebEngineWidgets import QWebEngineView, QWebEnginePage, QWebEngineProfile
+    # TODO: from PySide6.QtWebEngineWidgets import QWebEngineView, QWebEnginePage, QWebEngineProfile
 
     app = QApplication(sys.argv)
 
     # PyInstaller hack for qt to find plugins
     if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
-        QApplication.addLibraryPath(os.path.join(sys._MEIPASS, "PySide2", "plugins"))
+        QApplication.addLibraryPath(os.path.join(sys._MEIPASS, "PySide6", "plugins"))
 
     QCoreApplication.setOrganizationDomain(DOMAIN)
     QCoreApplication.setOrganizationName(ORGANIZATION)
