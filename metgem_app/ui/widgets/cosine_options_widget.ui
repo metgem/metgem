@@ -87,7 +87,7 @@
         <item>
          <widget class="QSpinBox" name="spinMinMZ">
           <property name="suffix">
-           <string>Th</string>
+           <string> Th</string>
           </property>
           <property name="maximum">
            <number>100000</number>

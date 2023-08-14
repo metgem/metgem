@@ -13,19 +13,117 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <property name="styleSheet">
-   <string notr="true">background-color: palette(dark);</string>
-  </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <item>
     <layout class="QGridLayout" name="gridLayout_4">
-     <item row="0" column="0" colspan="6">
-      <widget class="QLabel" name="label">
+     <item row="5" column="5">
+      <widget class="QPushButton" name="btClearRecentProjects">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="cursor">
+        <cursorShape>PointingHandCursor</cursorShape>
+       </property>
+       <property name="toolTip">
+        <string>Clear the recent projects list</string>
+       </property>
+       <property name="statusTip">
+        <string>Clear the recent projects list</string>
+       </property>
        <property name="styleSheet">
-        <string notr="true">font-size: 20pt; color: palette(base);</string>
+        <string notr="true">QPushButton
+{
+	text-decoration: underline;
+	border: none;
+}</string>
        </property>
        <property name="text">
-        <string>Start</string>
+        <string>Clear</string>
+       </property>
+       <property name="flat">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="4">
+      <spacer name="horizontalSpacer_5">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Maximum</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="2" column="3" colspan="3">
+      <spacer name="horizontalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Expanding</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="2" column="2">
+      <widget class="QPushButton" name="btOpenProject">
+       <property name="cursor">
+        <cursorShape>PointingHandCursor</cursorShape>
+       </property>
+       <property name="toolTip">
+        <string>Load a previously saved project file</string>
+       </property>
+       <property name="statusTip">
+        <string>Load a previously saved project file</string>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QPushButton
+{
+	text-decoration: underline;
+}</string>
+       </property>
+       <property name="text">
+        <string>Open Project</string>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>32</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="flat">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0" rowspan="2" colspan="4">
+      <widget class="QLabel" name="label_4">
+       <property name="styleSheet">
+        <string notr="true">font-size: 20pt;</string>
+       </property>
+       <property name="text">
+        <string>Recent Projects</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
@@ -39,21 +137,6 @@
        </property>
        <property name="autoFillBackground">
         <bool>true</bool>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">QListWidget
-{
-	text-decoration: underline;
-	color: palette(midlight);
-	background-color: palette(mid);
-	selection-background-color: palette(mid);
-}
-
-QToolTip
-{
-	color: palette(tooltiptext);
-	background-color: palette(tooltip);
-}</string>
        </property>
        <property name="frameShape">
         <enum>QFrame::Box</enum>
@@ -72,6 +155,9 @@ QToolTip
        </property>
        <property name="textElideMode">
         <enum>Qt::ElideMiddle</enum>
+       </property>
+       <property name="spacing">
+        <number>1</number>
        </property>
        <property name="uniformItemSizes">
         <bool>true</bool>
@@ -131,80 +217,6 @@ QToolTip
        </item>
       </widget>
      </item>
-     <item row="4" column="0" rowspan="2" colspan="4">
-      <widget class="QLabel" name="label_4">
-       <property name="styleSheet">
-        <string notr="true">font-size: 20pt; color: palette(base);</string>
-       </property>
-       <property name="text">
-        <string>Recent Projects</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="4">
-      <spacer name="horizontalSpacer_5">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeType">
-        <enum>QSizePolicy::Maximum</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item row="5" column="5">
-      <widget class="QPushButton" name="btClearRecentProjects">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>16777215</width>
-         <height>32</height>
-        </size>
-       </property>
-       <property name="cursor">
-        <cursorShape>PointingHandCursor</cursorShape>
-       </property>
-       <property name="toolTip">
-        <string>Clear the recent projects list</string>
-       </property>
-       <property name="statusTip">
-        <string>Clear the recent projects list</string>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">QPushButton
-{
-	text-decoration: underline;
-	color: palette(base);
-	border: none;
-}
-
-QToolTip
-{
-	color: palette(tooltiptext);
-	background-color: palette(tooltip);
-}</string>
-       </property>
-       <property name="text">
-        <string>Clear</string>
-       </property>
-       <property name="flat">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
      <item row="3" column="1" colspan="5">
       <spacer name="verticalSpacer">
        <property name="orientation">
@@ -221,23 +233,77 @@ QToolTip
        </property>
       </spacer>
      </item>
-     <item row="4" column="5">
-      <spacer name="verticalSpacer_3">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
-       </property>
-       <property name="sizeType">
-        <enum>QSizePolicy::Maximum</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
+     <item row="2" column="1">
+      <widget class="QLabel" name="label_19">
+       <property name="maximumSize">
         <size>
-         <width>20</width>
-         <height>5</height>
+         <width>32</width>
+         <height>32</height>
         </size>
        </property>
-      </spacer>
+       <property name="baseSize">
+        <size>
+         <width>32</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="pixmap">
+        <pixmap resource="../../../../metgem/metgem_app/ui/ui.qrc">:/icons/images/document-open.svg</pixmap>
+       </property>
+       <property name="scaledContents">
+        <bool>true</bool>
+       </property>
+      </widget>
      </item>
-     <item row="1" column="1" colspan="2">
+     <item row="0" column="0" colspan="6">
+      <widget class="QLabel" name="label">
+       <property name="styleSheet">
+        <string notr="true">font-size: 20pt;</string>
+       </property>
+       <property name="text">
+        <string>Start</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLabel" name="label_20">
+       <property name="maximumSize">
+        <size>
+         <width>32</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="pixmap">
+        <pixmap resource="../../../../metgem/metgem_app/ui/ui.qrc">:/icons/images/import-mgf.svg</pixmap>
+       </property>
+       <property name="scaledContents">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_16">
+       <property name="maximumSize">
+        <size>
+         <width>10</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="2">
       <widget class="QPushButton" name="btImportData">
        <property name="cursor">
         <cursorShape>PointingHandCursor</cursorShape>
@@ -252,23 +318,11 @@ QToolTip
         <string notr="true">QPushButton
 {
 	text-decoration: underline;
-	color: palette(midlight);
-	border: none;
-}
-
-QToolTip
-{
-	color: palette(tooltiptext);
-	background-color: palette(tooltip);
 }</string>
        </property>
        <property name="text">
         <string>Import Data</string>
        </property>
-       <property name="icon">
-        <iconset resource="../ui.qrc">
-         <normaloff>:/icons/images/import-mgf.svg</normaloff>:/icons/images/import-mgf.svg</iconset>
-       </property>
        <property name="iconSize">
         <size>
          <width>32</width>
@@ -280,77 +334,21 @@ QToolTip
        </property>
       </widget>
      </item>
-     <item row="2" column="1" colspan="2">
-      <widget class="QPushButton" name="btOpenProject">
-       <property name="cursor">
-        <cursorShape>PointingHandCursor</cursorShape>
-       </property>
-       <property name="toolTip">
-        <string>Load a previously saved project file</string>
-       </property>
-       <property name="statusTip">
-        <string>Load a previously saved project file</string>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">QPushButton
-{
-	text-decoration: underline;
-	color: palette(midlight);
-	border: none;
-}
-
-QToolTip
-{
-	color: palette(tooltiptext);
-	background-color: palette(tooltip);
-}</string>
-       </property>
-       <property name="text">
-        <string>Open Project</string>
-       </property>
-       <property name="icon">
-        <iconset resource="../ui.qrc">
-         <normaloff>:/icons/images/document-open.svg</normaloff>:/icons/images/document-open.svg</iconset>
-       </property>
-       <property name="iconSize">
-        <size>
-         <width>32</width>
-         <height>32</height>
-        </size>
-       </property>
-       <property name="flat">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="3" colspan="3">
-      <spacer name="horizontalSpacer_2">
+     <item row="4" column="4">
+      <spacer name="verticalSpacer_3">
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Vertical</enum>
        </property>
        <property name="sizeType">
-        <enum>QSizePolicy::Expanding</enum>
+        <enum>QSizePolicy::Maximum</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
-         <width>0</width>
-         <height>0</height>
+         <width>20</width>
+         <height>5</height>
         </size>
        </property>
       </spacer>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="label_16">
-       <property name="maximumSize">
-        <size>
-         <width>10</width>
-         <height>16777215</height>
-        </size>
-       </property>
-       <property name="text">
-        <string/>
-       </property>
-      </widget>
      </item>
     </layout>
    </item>
@@ -374,15 +372,8 @@ QToolTip
        <property name="statusTip">
         <string>https://dx.doi.org/10.1021/acs.analchem.9b02802</string>
        </property>
-       <property name="styleSheet">
-        <string notr="true">QToolTip
-{
-	color: palette(tooltiptext);
-	background-color: palette(tooltip);
-}</string>
-       </property>
        <property name="text">
-        <string>&lt;a href=&quot;https://dx.doi.org/10.1021/acs.analchem.9b02802&quot; style=&quot;text-decoration: underline; color: palette(midlight);&quot;&gt;Anal. Chem. 2019, 91, 18, 11489-11492&lt;/a&gt;</string>
+        <string>&lt;a href=&quot;https://dx.doi.org/10.1021/acs.analchem.9b02802&quot; style=&quot;text-decoration: underline; color: palette(text);&quot;&gt;Anal. Chem. 2019, 91, 18, 11489-11492&lt;/a&gt;</string>
        </property>
        <property name="textFormat">
         <enum>Qt::RichText</enum>
@@ -404,7 +395,7 @@ QToolTip
         <string/>
        </property>
        <property name="pixmap">
-        <pixmap resource="../ui.qrc">:/icons/images/git.svg</pixmap>
+        <pixmap resource="../../../../metgem/metgem_app/ui/ui.qrc">:/icons/images/git.svg</pixmap>
        </property>
        <property name="scaledContents">
         <bool>true</bool>
@@ -429,7 +420,7 @@ QToolTip
         <string/>
        </property>
        <property name="pixmap">
-        <pixmap resource="../ui.qrc">:/icons/images/browser.svg</pixmap>
+        <pixmap resource="../../../../metgem/metgem_app/ui/ui.qrc">:/icons/images/browser.svg</pixmap>
        </property>
        <property name="scaledContents">
         <bool>true</bool>
@@ -442,7 +433,7 @@ QToolTip
         <string/>
        </property>
        <property name="pixmap">
-        <pixmap resource="../ui.qrc">:/icons/images/help.svg</pixmap>
+        <pixmap resource="../../../../metgem/metgem_app/ui/ui.qrc">:/icons/images/help.svg</pixmap>
        </property>
       </widget>
      </item>
@@ -464,15 +455,8 @@ QToolTip
        <property name="statusTip">
         <string>https://github.com/metgem/metgem</string>
        </property>
-       <property name="styleSheet">
-        <string notr="true">QToolTip
-{
-	color: palette(tooltiptext);
-	background-color: palette(tooltip);
-}</string>
-       </property>
        <property name="text">
-        <string>&lt;a href=&quot;https://github.com/metgem/metgem&quot; style=&quot;text-decoration: underline; color: palette(midlight);&quot;&gt;Source Code&lt;/a&gt;</string>
+        <string>&lt;a href=&quot;https://github.com/metgem/metgem&quot; style=&quot;text-decoration: underline; color: palette(text);&quot;&gt;Source Code&lt;/a&gt;</string>
        </property>
        <property name="textFormat">
         <enum>Qt::RichText</enum>
@@ -500,7 +484,7 @@ QToolTip
         <string/>
        </property>
        <property name="pixmap">
-        <pixmap resource="../ui.qrc">:/icons/images/academic.svg</pixmap>
+        <pixmap resource="../../../../metgem/metgem_app/ui/ui.qrc">:/icons/images/academic.svg</pixmap>
        </property>
        <property name="scaledContents">
         <bool>true</bool>
@@ -525,7 +509,7 @@ QToolTip
         <string/>
        </property>
        <property name="pixmap">
-        <pixmap resource="../ui.qrc">:/icons/images/academic.svg</pixmap>
+        <pixmap resource="../../../../metgem/metgem_app/ui/ui.qrc">:/icons/images/academic.svg</pixmap>
        </property>
        <property name="scaledContents">
         <bool>true</bool>
@@ -540,15 +524,8 @@ QToolTip
        <property name="statusTip">
         <string>https://metgem.readthedocs.io</string>
        </property>
-       <property name="styleSheet">
-        <string notr="true">QToolTip
-{
-	color: palette(tooltiptext);
-	background-color: palette(tooltip);
-}</string>
-       </property>
        <property name="text">
-        <string>&lt;a href=&quot;https://metgem.readthedocs.io&quot; style=&quot;text-decoration: underline; color: palette(midlight);&quot;&gt;User Manual&lt;/a&gt;</string>
+        <string>&lt;a href=&quot;https://metgem.readthedocs.io&quot; style=&quot;text-decoration: underline; color: palette(text);&quot;&gt;User Manual&lt;/a&gt;</string>
        </property>
        <property name="textFormat">
         <enum>Qt::RichText</enum>
@@ -576,15 +553,8 @@ QToolTip
        <property name="statusTip">
         <string>https://metgem.readthedocs.io/getting_started.html</string>
        </property>
-       <property name="styleSheet">
-        <string notr="true">QToolTip
-{
-	color: palette(tooltiptext);
-	background-color: palette(tooltip);
-}</string>
-       </property>
        <property name="text">
-        <string>&lt;a href=&quot;https://metgem.readthedocs.io/getting_started.html&quot; style=&quot;text-decoration: underline; color: palette(midlight);&quot;&gt;Getting Started&lt;/a&gt;</string>
+        <string>&lt;a href=&quot;https://metgem.readthedocs.io/getting_started.html&quot; style=&quot;text-decoration: underline; color: palette(text);&quot;&gt;Getting Started&lt;/a&gt;</string>
        </property>
        <property name="textFormat">
         <enum>Qt::RichText</enum>
@@ -599,15 +569,8 @@ QToolTip
        <property name="statusTip">
         <string>https://metgem.github.io</string>
        </property>
-       <property name="styleSheet">
-        <string notr="true">QToolTip
-{
-	color: palette(tooltiptext);
-	background-color: palette(tooltip);
-}</string>
-       </property>
        <property name="text">
-        <string>&lt;a href=&quot;https://metgem.github.io&quot; style=&quot;text-decoration: underline; color: palette(midlight);&quot;&gt;MetGem Website&lt;/a&gt;</string>
+        <string>&lt;a href=&quot;https://metgem.github.io&quot; style=&quot;text-decoration: underline; color: palette(text);&quot;&gt;MetGem Website&lt;/a&gt;</string>
        </property>
        <property name="textFormat">
         <enum>Qt::RichText</enum>
@@ -623,7 +586,7 @@ QToolTip
         <string/>
        </property>
        <property name="pixmap">
-        <pixmap resource="../ui.qrc">:/icons/images/help.svg</pixmap>
+        <pixmap resource="../../../../metgem/metgem_app/ui/ui.qrc">:/icons/images/help.svg</pixmap>
        </property>
       </widget>
      </item>
@@ -632,15 +595,8 @@ QToolTip
        <property name="statusTip">
         <string>https://dx.doi.org/10.1021/acs.analchem.8b03099</string>
        </property>
-       <property name="styleSheet">
-        <string notr="true">QToolTip
-{
-	color: palette(tooltiptext);
-	background-color: palette(tooltip);
-}</string>
-       </property>
        <property name="text">
-        <string>&lt;a href=&quot;https://dx.doi.org/10.1021/acs.analchem.8b03099&quot;style=&quot;text-decoration: underline; color: palette(midlight);&quot;&gt;Anal. Chem. 2018, 90, 23, 13900-13908&lt;/a&gt;</string>
+        <string>&lt;a href=&quot;https://dx.doi.org/10.1021/acs.analchem.8b03099&quot;style=&quot;text-decoration: underline; color: palette(text);&quot;&gt;Anal. Chem. 2018, 90, 23, 13900-13908&lt;/a&gt;</string>
        </property>
        <property name="textFormat">
         <enum>Qt::RichText</enum>
@@ -669,7 +625,7 @@ QToolTip
      <item row="0" column="0" colspan="3">
       <widget class="QLabel" name="label_2">
        <property name="styleSheet">
-        <string notr="true">font-size: 20pt; color: palette(base);</string>
+        <string notr="true">font-size: 20pt;</string>
        </property>
        <property name="text">
         <string>Community</string>
@@ -682,7 +638,7 @@ QToolTip
      <item row="6" column="0" colspan="3">
       <widget class="QLabel" name="label_18">
        <property name="styleSheet">
-        <string notr="true">font-size: 20pt; color: palette(base);</string>
+        <string notr="true">font-size: 20pt;</string>
        </property>
        <property name="text">
         <string>Publications</string>
@@ -695,7 +651,7 @@ QToolTip
      <item row="7" column="0" colspan="3">
       <widget class="QLabel" name="label_13">
        <property name="styleSheet">
-        <string notr="true">color: palette(midlight);</string>
+        <string notr="true">font-style: italic;</string>
        </property>
        <property name="text">
         <string>If you use MetGem for your research, please cite</string>
@@ -727,18 +683,6 @@ QToolTip
        <property name="statusTip">
         <string>Show news about MetGem: this needs internet to retrieve information from MetGem's website</string>
        </property>
-       <property name="styleSheet">
-        <string notr="true">QCheckBox
-{
-	color: palette(base);
-}
-
-QToolTip
-{
-	color: palette(tooltiptext);
-	background-color: palette(tooltip);
-}</string>
-       </property>
        <property name="text">
         <string>Enabled</string>
        </property>
@@ -747,7 +691,7 @@ QToolTip
      <item row="0" column="0" rowspan="2">
       <widget class="QLabel" name="lblNews">
        <property name="styleSheet">
-        <string notr="true">font-size: 20pt; color: palette(base);</string>
+        <string notr="true">font-size: 20pt;</string>
        </property>
        <property name="text">
         <string>News</string>
@@ -764,20 +708,6 @@ QToolTip
        </property>
        <property name="autoFillBackground">
         <bool>true</bool>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">QListWidget
-{
-	color: palette(midlight);
-	background-color: palette(mid);
-	selection-background-color: palette(mid);
-}
-
-QToolTip
-{
-	color: palette(tooltiptext);
-	background-color: palette(tooltip);
-}</string>
        </property>
        <property name="frameShape">
         <enum>QFrame::Box</enum>
@@ -797,6 +727,19 @@ QToolTip
        <property name="resizeMode">
         <enum>QListView::Adjust</enum>
        </property>
+       <property name="spacing">
+        <number>2</number>
+       </property>
+       <item>
+        <property name="text">
+         <string>Test</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Test2</string>
+        </property>
+       </item>
       </widget>
      </item>
     </layout>
@@ -804,7 +747,7 @@ QToolTip
   </layout>
  </widget>
  <resources>
-  <include location="../ui.qrc"/>
+  <include location="../../../../metgem/metgem_app/ui/ui.qrc"/>
  </resources>
  <connections/>
 </ui>
