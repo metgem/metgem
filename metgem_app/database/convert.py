@@ -5,6 +5,7 @@ from libmetgem import INTENSITY
 from libmetgem.mgf import read as read_mgf
 from libmetgem.msp import read as read_msp
 from sqlalchemy.exc import OperationalError
+from sqlalchemy.sql import text
 
 from .models import Spectrum, Organism, Submitter, DataCollector, Instrument, Bank, Investigator
 from .session import create_session
@@ -118,7 +119,7 @@ class DataBaseBuilder:
         try:
             isolation_level = self.session.connection().connection.isolation_level
             self.session.connection().connection.isolation_level = None
-            self.session.execute('vacuum')
+            self.session.execute(text('vacuum'))
             self.session.connection().connection.isolation_level = isolation_level
             self.session.close()
         except OperationalError:
