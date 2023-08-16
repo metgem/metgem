@@ -60,10 +60,12 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
 
         current_style = settings.value('NetworkView/style', None)
         current_item = None
+        self._styles = set()
         for css in styles:
             style = style_from_css(css)
             item = QListWidgetItem(style.styleName())
             item.setData(StyleRole, style)
+            self._styles.add(style)  # Keep references to style objects
             item.setData(CssRole, css)
             if css == current_style:
                 current_item = item
