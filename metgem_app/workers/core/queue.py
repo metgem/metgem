@@ -86,7 +86,7 @@ class WorkerQueue(deque):
         worker.error.connect(lambda: self.clear())
         worker.error.connect(cleanup)
         worker.updated.connect(update_progress)
-        # lambda is a workaround to 'unhashable type' PySide bug
+        # TODO: lambda is a workaround to 'unhashable type' PySide bug
         worker.maximumChanged.connect(lambda m: self.update_maximum(m))
 
         if use_thread:

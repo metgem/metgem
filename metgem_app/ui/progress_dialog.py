@@ -60,13 +60,7 @@ class ProgressDialog(QDialog, Ui_Dialog):
         # if HAS_WINEXTRAS:
         #     self._button.progress().setRange(minimum, maximum)
 
-    def reject(self):
-        return super().reject()
-
-    def done(self, r: int):
-        return super().done(r)
-
-    def show(self):
-        super().show()
+    # def show(self):
+    #     super().show()
         # if HAS_WINEXTRAS:
         #     self._button.progress().show()
