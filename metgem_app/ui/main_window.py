@@ -53,9 +53,9 @@ from .widgets.search_ui import Ui_Form as Ui_SearchWidget
 
 from PySide6MolecularNetwork.node import NodePolygon
 if get_python_rendering_flag():
-    from PySide6MolecularNetwork._pure import style_from_css, style_to_cytoscape, disable_opengl
+    from PySide6MolecularNetwork._pure import style_from_css, style_to_cytoscape, disable_opengl, DefaultStyle
 else:
-    from PySide6MolecularNetwork import style_from_css, style_to_cytoscape, disable_opengl
+    from PySide6MolecularNetwork import style_from_css, style_to_cytoscape, disable_opengl, DefaultStyle
 
 COLUMN_MAPPING_PIE_CHARTS = 0
 COLUMN_MAPPING_LABELS = 1
@@ -2054,7 +2054,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         widget = widget_class(id_, self.network, graph, interactions)
         view = widget.view()
         scene = widget.scene()
-        scene.setNetworkStyle(self.style)
+        if not isinstance(self.style, DefaultStyle):
+            scene.setNetworkStyle(self.style)
         scene.selectionChanged.connect(lambda sc=scene: self.on_scene_selection_changed(sc))
         scene.annotationAdded.connect(self.on_annotations_added)
         scene.arrowEdited.connect(self.on_arrow_edited)
