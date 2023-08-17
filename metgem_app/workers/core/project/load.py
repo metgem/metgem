@@ -24,8 +24,9 @@ class LoadProjectWorker(BaseWorker):
         super().__init__()
 
         self.filename = filename
-        self.max = 0
+        self.max = 100
         self.desc = 'Loading project...'
+        self.iterative_update = False
 
     def run(self):
         try:
@@ -34,6 +35,7 @@ class LoadProjectWorker(BaseWorker):
                     version = int(fid['version'])
                 except ValueError:
                     version = 1
+                self.updated.emit(1)
 
                 if version == 1:
                     raise UnsupportedVersionError("This file was saved with a development version of the software.\n"
@@ -48,6 +50,7 @@ class LoadProjectWorker(BaseWorker):
                     # Load scores matrix
                     network.scores = fid['0/scores']
 
+                    self.updated.emit(10)
                     if self.isStopped():
                         self.canceled.emit()
                         return
@@ -58,6 +61,7 @@ class LoadProjectWorker(BaseWorker):
                     except KeyError:
                         network.infos = pd.DataFrame()
 
+                    self.updated.emit(20)
                     if self.isStopped():
                         self.canceled.emit()
                         return
@@ -68,6 +72,7 @@ class LoadProjectWorker(BaseWorker):
                     except KeyError:
                         network.mappings = {}
 
+                    self.updated.emit(30)
                     if self.isStopped():
                         self.canceled.emit()
                         return
@@ -145,6 +150,11 @@ class LoadProjectWorker(BaseWorker):
 
                         network.columns_mappings = columns_mappings
 
+                    self.updated.emit(40)
+                    if self.isStopped():
+                        self.canceled.emit()
+                        return
+
                     # Load table of spectra
                     network.spectra = SpectraList(self.filename)
                     mzs = []
@@ -152,6 +162,7 @@ class LoadProjectWorker(BaseWorker):
                         mzs.append(s['mz_parent'])
                     network.mzs = pd.Series(mzs)
 
+                    self.updated.emit(50)
                     if self.isStopped():
                         self.canceled.emit()
                         return
@@ -192,6 +203,7 @@ class LoadProjectWorker(BaseWorker):
                                 opt.update(network.options[key])
                                 network.options[key] = opt
 
+                    self.updated.emit(60)
                     if self.isStopped():
                         self.canceled.emit()
                         return
@@ -209,6 +221,7 @@ class LoadProjectWorker(BaseWorker):
                     except KeyError:
                         network.db_results = {}
 
+                    self.updated.emit(70)
                     if self.isStopped():
                         self.canceled.emit()
                         return
@@ -224,10 +237,6 @@ class LoadProjectWorker(BaseWorker):
                                                                         'interactions': interactions}
                         except KeyError:
                             pass
-
-                        if self.isStopped():
-                            self.canceled.emit()
-                            return
                     else:
                         names = fid['0/layouts.json']
                         for name in names:
@@ -238,6 +247,11 @@ class LoadProjectWorker(BaseWorker):
                                                 'interactions': interactions}
                             except KeyError:
                                 pass
+
+                    self.updated.emit(80)
+                    if self.isStopped():
+                        self.canceled.emit()
+                        return
 
                     # Load layouts
                     layouts = {}
@@ -254,10 +268,6 @@ class LoadProjectWorker(BaseWorker):
                             'colors': colors,
                             'radii': radii
                         }
-
-                        if self.isStopped():
-                            self.canceled.emit()
-                            return
 
                         layouts[TSNEVisualizationOptions.name] = {
                             'layout': fid['0/tsne_layout'],
@@ -287,6 +297,7 @@ class LoadProjectWorker(BaseWorker):
                         except KeyError:
                             pass
 
+                    self.updated.emit(90)
                     if self.isStopped():
                         self.canceled.emit()
                         return
@@ -301,6 +312,7 @@ class LoadProjectWorker(BaseWorker):
                     except KeyError:
                         pass
 
+                    self.updated.emit(99)
                     if self.isStopped():
                         self.canceled.emit()
                         return
@@ -316,6 +328,11 @@ class LoadProjectWorker(BaseWorker):
                             if name in layouts:
                                 layouts[id_] = layouts[name]
                                 del layouts[name]
+
+                    self.updated.emit(100)
+                    if self.isStopped():
+                        self.canceled.emit()
+                        return
 
                     return network, layouts, graphs, annotations
                 else:
