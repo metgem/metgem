@@ -40,7 +40,8 @@ class TSNEWorker(EmbeddingWorker):
                                early_exaggeration=self.options.early_exaggeration,
                                perplexity=self.options.perplexity, verbose=2, n_iter=n_iter,
                                random_state=random_state, metric='precomputed',
-                               method=method, angle=self.options.angle)
+                               method=method, angle=self.options.angle,
+                               init="random")
 
         self.max = self._estimator.n_iter
         self._io_wrapper = ProgressStringIO(self)
