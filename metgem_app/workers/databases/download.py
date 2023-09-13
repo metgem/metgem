@@ -4,8 +4,8 @@ from urllib.parse import urljoin
 import requests
 from lxml import html
 
-from ..base import BaseWorker
-from ...utils.qt import Signal
+from metgem_app.workers.base import BaseWorker
+from metgem_app.utils.qt import Signal
 
 
 class ListDatabasesWorker(BaseWorker):

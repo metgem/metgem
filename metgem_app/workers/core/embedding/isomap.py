@@ -1,5 +1,5 @@
-from .base import EmbeddingWorker
-from ...options import IsomapVisualizationOptions
+from metgem_app.workers.core.embedding.base import EmbeddingWorker
+from metgem_app.workers.options import IsomapVisualizationOptions
 
 
 class IsomapWorker(EmbeddingWorker):

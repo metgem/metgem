@@ -3,7 +3,7 @@ import sqlite3
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from .models import Base
+from metgem_app.database.models import Base
 
 
 def create_session(filename=None, echo=False, drop_all=False, read_only=False):

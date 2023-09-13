@@ -2,11 +2,11 @@ import operator
 
 from libmetgem.database import query
 
-from ..base import BaseWorker
-from ..options import QueryDatabasesOptions
-from ...config import SQL_PATH, get_debug_flag
-from ...database import SpectraLibrary, Bank
-from ..struct import StandardsResult
+from metgem_app.workers.base import BaseWorker
+from metgem_app.workers.options import QueryDatabasesOptions
+from metgem_app.config import SQL_PATH, get_debug_flag
+from metgem_app.database import SpectraLibrary, Bank
+from metgem_app.workers.struct import StandardsResult
 
 
 class QueryDatabasesWorker(BaseWorker):

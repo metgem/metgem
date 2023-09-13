@@ -1,7 +1,7 @@
 import pandas as pd
 
-from ..base import BaseWorker
-from ..options import NumberizeOptions
+from metgem_app.workers.base import BaseWorker
+from metgem_app.workers.options import NumberizeOptions
 
 
 class NumberizeWorker(BaseWorker):

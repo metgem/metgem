@@ -1,10 +1,10 @@
 from PySide6.QtCore import Qt, QTimer, QModelIndex
 from PySide6.QtGui import QPalette
 
-from ..delegates import StandardsResultsDelegate
-from .freeze_table import FreezeTableMixin
-from .metadata import MetadataTableView
-from .header import HeaderView
+from metgem_app.ui.widgets.delegates import StandardsResultsDelegate
+from metgem_app.ui.widgets.metadata.freeze_table import FreezeTableMixin
+from metgem_app.ui.widgets.metadata.metadata import MetadataTableView
+from metgem_app.ui.widgets.metadata.header import HeaderView
 
 
 class NodeTableView(FreezeTableMixin, MetadataTableView):

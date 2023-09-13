@@ -7,10 +7,10 @@ from libmetgem.msp import read as read_msp
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.sql import text
 
-from .models import Spectrum, Organism, Submitter, DataCollector, Instrument, Bank, Investigator
-from .session import create_session
-from ..utils import grouper
-from ..utils.read_data import guess_file_format
+from metgem_app.database.models import Spectrum, Organism, Submitter, DataCollector, Instrument, Bank, Investigator
+from metgem_app.database.session import create_session
+from metgem_app.utils import grouper
+from metgem_app.utils.read_data import guess_file_format
 
 
 def clean_string(string):

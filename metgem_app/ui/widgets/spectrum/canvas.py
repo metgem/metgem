@@ -7,7 +7,7 @@ from matplotlib.ticker import FuncFormatter, AutoMinorLocator
 
 import numpy as np
 
-from .base import BaseCanvas
+from metgem_app.ui.widgets.spectrum.base import BaseCanvas
 from libmetgem import MZ, INTENSITY
 
 

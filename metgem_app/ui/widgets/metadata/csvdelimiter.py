@@ -1,7 +1,7 @@
 from PySide6.QtCore import Signal, QModelIndex
 from PySide6.QtWidgets import QComboBox, QLineEdit
 
-from ....models.metadata import CsvDelimiterModel
+from metgem_app.models.metadata import CsvDelimiterModel
 
 
 class CsvDelimiterCombo(QComboBox):

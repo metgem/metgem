@@ -1,7 +1,7 @@
 import errno
 import os
 
-from .session import create_session
+from metgem_app.database.session import create_session
 
 
 class SpectraLibrary:

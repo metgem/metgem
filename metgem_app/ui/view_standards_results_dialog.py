@@ -3,10 +3,10 @@ from PySide6.QtCore import Qt, QModelIndex, QItemSelection, QItemSelectionModel
 from PySide6.QtGui import QStandardItemModel, QIcon, QStandardItem
 from PySide6.QtWidgets import QAbstractItemView, QDialog
 
-from .widgets.delegates.quality import LibraryQualityDelegate
-from ..database import Spectrum
-from ..models.standards_results import SpectraModel
-from .view_standards_results_dialog_ui import Ui_Dialog
+from metgem_app.ui.widgets.delegates.quality import LibraryQualityDelegate
+from metgem_app.database import Spectrum
+from metgem_app.models.standards_results import SpectraModel
+from metgem_app.ui.view_standards_results_dialog_ui import Ui_Dialog
 
 
 class ViewStandardsResultsDialog(QDialog, Ui_Dialog):

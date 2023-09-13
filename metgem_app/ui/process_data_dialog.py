@@ -4,16 +4,16 @@ from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QPalette, QColor
 from PySide6.QtWidgets import QFileDialog, QDialog, QMenu, QListWidgetItem, QMessageBox
 
-from ..utils.network import generate_id
-from ..utils.gui import enumerateMenu
-from ..workers.core import WorkerQueue, ImportModulesWorker
-from ..workers.options import ReadMetadataOptions
+from metgem_app.utils.network import generate_id
+from metgem_app.utils.gui import enumerateMenu
+from metgem_app.workers.core import WorkerQueue, ImportModulesWorker
+from metgem_app.workers.options import ReadMetadataOptions
 
-from .widgets import CosineOptionsWidget, AVAILABLE_NETWORK_WIDGETS
-from .widgets.network import short_id
-from .progress_dialog import ProgressDialog
-from .import_metadata_dialog import ImportMetadataDialog
-from .process_data_dialog_ui import Ui_ProcessFileDialog
+from metgem_app.ui.widgets import CosineOptionsWidget, AVAILABLE_NETWORK_WIDGETS
+from metgem_app.ui.widgets.network import short_id
+from metgem_app.ui.progress_dialog import ProgressDialog
+from metgem_app.ui.import_metadata_dialog import ImportMetadataDialog
+from metgem_app.ui.process_data_dialog_ui import Ui_ProcessFileDialog
 
 
 class ProcessDataDialog(QDialog, Ui_ProcessFileDialog):

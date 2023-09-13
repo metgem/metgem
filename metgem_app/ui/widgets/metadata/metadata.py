@@ -1,7 +1,7 @@
 from PySide6.QtCore import Qt, QObject, QEvent
 from PySide6.QtWidgets import QTableView, QAbstractButton
 
-from ..delegates import EnsureStringItemDelegate
+from metgem_app.ui.widgets.delegates import EnsureStringItemDelegate
 
 
 class MetadataTableView(QTableView):

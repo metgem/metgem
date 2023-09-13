@@ -3,9 +3,9 @@ from libmetgem.filter import filter_data_multi
 from libmetgem.mgf import read as read_mgf
 from libmetgem.msp import read as read_msp
 
-from ..base import BaseWorker
-from ..options import CosineComputationOptions
-from ...utils.read_data import guess_file_format
+from metgem_app.workers.base import BaseWorker
+from metgem_app.workers.options import CosineComputationOptions
+from metgem_app.utils.read_data import guess_file_format
 
 
 class NoSpectraError(Exception):

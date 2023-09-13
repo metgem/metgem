@@ -38,7 +38,7 @@ def run():
     if sys.platform.startswith('darwin'):
         os.environ["QT_MAC_WANTS_LAYER"] = '1'
 
-    from ._version import get_versions
+    from metgem_app._version import get_versions
     VERSION = get_versions()['version']
 
     parser = argparse.ArgumentParser(description=f'Launch {APPLICATION}.')
@@ -70,7 +70,7 @@ def run():
     QCoreApplication.setApplicationName(APPLICATION)
     QCoreApplication.setApplicationVersion(VERSION)
 
-    from .splash import SplashScreen
+    from metgem_app.splash import SplashScreen
     splash = SplashScreen()
     splash.setVersion(VERSION)
     splash.show()
@@ -136,7 +136,7 @@ def run():
     importlib.import_module('.workers.gui', 'metgem_app')
     splash.setValue(96)
 
-    from .config import set_python_rendering_flag
+    from metgem_app.config import set_python_rendering_flag
     set_python_rendering_flag(args.python_rendering)
 
     splash.showMessage("Loading User interface...")
@@ -149,16 +149,16 @@ def run():
 
     splash.showMessage("")
 
-    from .config import set_debug_flag, set_jupyter_flag, set_use_opengl_flag
+    from metgem_app.config import set_debug_flag, set_jupyter_flag, set_use_opengl_flag
     set_debug_flag(args.debug)
     set_jupyter_flag(args.jupyter)
     set_use_opengl_flag(not args.disable_opengl)
 
-    from .ui import MainWindow
+    from metgem_app.ui import MainWindow
     window = MainWindow()
 
     if not args.no_exception_handler:
-        from .errors import exceptionHandler
+        from metgem_app.errors import exceptionHandler
         sys.excepthook = exceptionHandler
 
     window.show()
@@ -167,7 +167,7 @@ def run():
     # Support for file association
     if args.fname is not None:
         fname = args.fname
-        from .config import FILE_EXTENSION
+        from metgem_app.config import FILE_EXTENSION
         if os.path.exists(fname) and os.path.splitext(fname)[1] == FILE_EXTENSION:
             window.load_project(fname)
 

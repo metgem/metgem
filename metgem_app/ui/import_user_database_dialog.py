@@ -4,10 +4,10 @@ from PySide6.QtCore import Qt, QDir
 from PySide6.QtGui import QPalette, QColor, QIcon
 from PySide6.QtWidgets import QCompleter, QFileSystemModel, QDialog, QFileDialog, QDialogButtonBox, QMessageBox
 
-from .progress_dialog import ProgressDialog
-from ..workers.databases import ConvertDatabasesWorker
-from ..workers.core import WorkerQueue
-from .import_user_database_dialog_ui import Ui_ImportUserDatabaseDialog
+from metgem_app.ui.progress_dialog import ProgressDialog
+from metgem_app.workers.databases import ConvertDatabasesWorker
+from metgem_app.workers.core import WorkerQueue
+from metgem_app.ui.import_user_database_dialog_ui import Ui_ImportUserDatabaseDialog
 
 
 class ImportUserDatabaseDialog(QDialog, Ui_ImportUserDatabaseDialog):

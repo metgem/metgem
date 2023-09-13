@@ -3,7 +3,7 @@ import os
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget
 
-from .spectra_comparison_ui import Ui_Spectra
+from metgem_app.ui.widgets.spectrum.spectra_comparison_ui import Ui_Spectra
 
 
 class SpectraComparisonWidget(QWidget, Ui_Spectra):

@@ -1,7 +1,7 @@
 import uuid
 
 import pandas as pd
-from .qt import QObject, Signal
+from metgem_app.utils.qt import QObject, Signal
 
 
 def generate_id(type: str):

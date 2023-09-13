@@ -1,4 +1,4 @@
-from ..base import BaseWorker
+from metgem_app.workers.base import BaseWorker
 
 
 class ImportModulesWorker(BaseWorker):

@@ -6,7 +6,7 @@ try:
 except ImportError:
     HAS_THREADS = False
 
-from .generic import GenericWorker
+from metgem_app.workers.core.generic import GenericWorker
 
 
 def isiterable(obj):

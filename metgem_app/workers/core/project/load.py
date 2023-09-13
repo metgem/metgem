@@ -2,19 +2,19 @@ import zipfile
 
 import pandas as pd
 
-from ....utils.qt import QColor, Qt
-from ....mappings import SizeMappingFunc, MODE_LINEAR
-from ....utils.network import Network, generate_id
-from ...struct import StandardsResult
+from metgem_app.utils.qt import QColor, Qt
+from metgem_app.mappings import SizeMappingFunc, MODE_LINEAR
+from metgem_app.utils.network import Network, generate_id
+from metgem_app.workers.struct import StandardsResult
 
-from ...base import BaseWorker
-from ...options import AttrDict, AVAILABLE_NETWORK_OPTIONS, AVAILABLE_OPTIONS, \
+from metgem_app.workers.base import BaseWorker
+from metgem_app.workers.options import AttrDict, AVAILABLE_NETWORK_OPTIONS, AVAILABLE_OPTIONS, \
     NetworkVisualizationOptions, TSNEVisualizationOptions
 
-from .mnz import MnzFile
-from .spectra_list import SpectraList
-from .graphml import GraphMLParser
-from .version import CURRENT_FORMAT_VERSION, UnsupportedVersionError
+from metgem_app.workers.core.project.mnz import MnzFile
+from metgem_app.workers.core.project.spectra_list import SpectraList
+from metgem_app.workers.core.project.graphml import GraphMLParser
+from metgem_app.workers.core.project.version import CURRENT_FORMAT_VERSION, UnsupportedVersionError
 
 
 class LoadProjectWorker(BaseWorker):

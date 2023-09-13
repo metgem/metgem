@@ -6,7 +6,7 @@ from logging.handlers import RotatingFileHandler
 
 import numpy as np
 
-from .config import LOG_PATH, get_debug_flag
+from metgem_app.config import LOG_PATH, get_debug_flag
 
 __all__ = ('logger', 'debug')
 

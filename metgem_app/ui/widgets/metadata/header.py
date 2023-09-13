@@ -2,7 +2,7 @@ from PySide6.QtCore import QRect, Qt
 from PySide6.QtGui import QPainter
 from PySide6.QtWidgets import QHeaderView
 
-from ....models.metadata import ColorMarkRole
+from metgem_app.models.metadata import ColorMarkRole
 
 
 class HeaderView(QHeaderView):

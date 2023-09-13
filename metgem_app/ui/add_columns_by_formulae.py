@@ -7,8 +7,8 @@ from PySide6.QtGui import QValidator
 from PySide6.QtWidgets import (QTableWidgetItem, QFileDialog, QMessageBox, QStyledItemDelegate,
                             QMenu, QTableWidget, QTableView, QDialog, QLineEdit)
 
-from .add_columns_by_formulae_ui import Ui_AddColumnsByFormulaeDialog
-from ..utils.gui import wrap_instance
+from metgem_app.ui.add_columns_by_formulae_ui import Ui_AddColumnsByFormulaeDialog
+from metgem_app.utils.gui import wrap_instance
 
 
 # noinspection PyShadowingBuiltins

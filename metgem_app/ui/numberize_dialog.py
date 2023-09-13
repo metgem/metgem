@@ -1,8 +1,8 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QDialog
 
-from ..workers.options import NumberizeOptions
-from .numberize_dialog_ui import Ui_Dialog
+from metgem_app.workers.options import NumberizeOptions
+from metgem_app.ui.numberize_dialog_ui import Ui_Dialog
 
 
 class NumberizeDialog(QDialog, Ui_Dialog):

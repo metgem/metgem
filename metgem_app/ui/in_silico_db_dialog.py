@@ -9,7 +9,7 @@ from PySide6.QtWebEngineWidgets import QWebEnginePage, QWebEngineProfile
 from PySide6.QtWebEngineWidgets import QWebEngineDownloadItem, QWebEngineScript
 from PySide6.QtWebEngineCore import QWebEngineUrlRequestInterceptor, QWebEngineUrlRequestInfo
 from PySide6.QtWidgets import QDialog
-from .in_silico_db_dialog_ui import Ui_InSilicoDBDialog
+from metgem_app.ui.in_silico_db_dialog_ui import Ui_InSilicoDBDialog
 
 
 class WebEnginePage(QWebEnginePage):

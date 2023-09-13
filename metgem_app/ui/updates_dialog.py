@@ -3,7 +3,7 @@ import webbrowser
 from PySide6.QtCore import QCoreApplication, QSettings, Qt
 from PySide6.QtWidgets import QDialog, QDialogButtonBox
 
-from .updates_dialog_ui import Ui_UpdateDialog
+from metgem_app.ui.updates_dialog_ui import Ui_UpdateDialog
 
 
 class UpdatesDialog(QDialog, Ui_UpdateDialog):

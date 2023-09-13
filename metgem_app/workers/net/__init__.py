@@ -1,3 +1,3 @@
-from .check_updates import CheckUpdatesWorker
-from .check_plugins_updates import CheckPluginsVersionsWorker
-from .download_plugins import DownloadPluginsWorker
+from metgem_app.workers.net.check_updates import CheckUpdatesWorker
+from metgem_app.workers.net.check_plugins_updates import CheckPluginsVersionsWorker
+from metgem_app.workers.net.download_plugins import DownloadPluginsWorker

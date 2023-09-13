@@ -1,7 +1,7 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QDialogButtonBox
 
-from .widgets import (TSNEOptionsWidget, NetworkOptionsWidget, MDSOptionsWidget,
+from metgem_app.ui.widgets import (TSNEOptionsWidget, NetworkOptionsWidget, MDSOptionsWidget,
                       UMAPOptionsWidget, IsomapOptionsWidget, PHATEOptionsWidget)
 
 

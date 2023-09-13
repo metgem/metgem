@@ -1,7 +1,7 @@
 import re
 import requests
 
-from ..base import BaseWorker
+from metgem_app.workers.base import BaseWorker
 
 
 class CheckUpdatesWorker(BaseWorker):

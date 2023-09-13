@@ -1,5 +1,5 @@
-from ..base import BaseWorker
-from ..options import NetworkVisualizationOptions
+from metgem_app.workers.base import BaseWorker
+from metgem_app.workers.options import NetworkVisualizationOptions
 
 
 class MaxConnectedComponentsWorker(BaseWorker):

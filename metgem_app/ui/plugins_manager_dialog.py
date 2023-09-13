@@ -4,13 +4,13 @@ from PySide6.QtCore import Qt, QItemSelection, QSortFilterProxyModel
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QDialog, QLabel, QHeaderView, QMessageBox, QDialogButtonBox
 
-from . import ProgressDialog
-from ..config import PLUGINS_PATH
-from ..models.plugins import PluginsModel, AvailablePluginsModel, InstalledPluginsModel, UpdatesPluginsModel
-from ..plugins import get_loaded_plugins, reload_plugins
-from ..workers.net import CheckPluginsVersionsWorker, DownloadPluginsWorker
-from ..workers.core import WorkerQueue
-from .plugins_manager_dialog_ui import Ui_PluginsManager
+from metgem_app.ui import ProgressDialog
+from metgem_app.config import PLUGINS_PATH
+from metgem_app.models.plugins import PluginsModel, AvailablePluginsModel, InstalledPluginsModel, UpdatesPluginsModel
+from metgem_app.plugins import get_loaded_plugins, reload_plugins
+from metgem_app.workers.net import CheckPluginsVersionsWorker, DownloadPluginsWorker
+from metgem_app.workers.core import WorkerQueue
+from metgem_app.ui.plugins_manager_dialog_ui import Ui_PluginsManager
 
 
 class PluginsManagerDialog(QDialog, Ui_PluginsManager):

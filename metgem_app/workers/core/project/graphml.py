@@ -2,7 +2,7 @@ import igraph as ig
 import numpy as np
 from lxml import etree
 
-from ....utils.qt import QColor
+from metgem_app.utils.qt import QColor
 
 GRAPHML_NAMESPACE_URI = "http://graphml.graphdrawing.org/xmlns"
 

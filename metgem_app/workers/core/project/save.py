@@ -5,15 +5,15 @@ import numpy as np
 import pandas as pd
 import igraph as ig
 
-from ....utils.network import Network
-from ....utils.qt import QColor
+from metgem_app.utils.network import Network
+from metgem_app.utils.qt import QColor
 
-from ...base import BaseWorker
+from metgem_app.workers.base import BaseWorker
 
-from .graphml import GraphMLWriter
-from .mnz import savez
-from .version import CURRENT_FORMAT_VERSION
-from .spectra_list import SpectraList
+from metgem_app.workers.core.project.graphml import GraphMLWriter
+from metgem_app.workers.core.project.mnz import savez
+from metgem_app.workers.core.project.version import CURRENT_FORMAT_VERSION
+from metgem_app.workers.core.project.spectra_list import SpectraList
 
 
 class SaveProjectWorker(BaseWorker):

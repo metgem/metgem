@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QDialog
 # TODO: Qt6 has no equivalent for QWinTaskbarProgress
 
 
-from .progress_dialog_ui import Ui_Dialog
+from metgem_app.ui.progress_dialog_ui import Ui_Dialog
 
 
 class ProgressDialog(QDialog, Ui_Dialog):

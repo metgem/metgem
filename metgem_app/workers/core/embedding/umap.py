@@ -1,7 +1,7 @@
 import io
 
-from .base import EmbeddingWorker, UserRequestedStopError
-from ...options import UMAPVisualizationOptions
+from metgem_app.workers.core.embedding.base import EmbeddingWorker, UserRequestedStopError
+from metgem_app.workers.options import UMAPVisualizationOptions
 
 
 class ProgressStringIO(io.StringIO):

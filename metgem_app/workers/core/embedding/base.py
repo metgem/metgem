@@ -2,8 +2,8 @@ import sys
 
 import numpy as np
 
-from ...base import BaseWorker, UserRequestedStopError
-from ....config import RADIUS
+from metgem_app.workers.base import BaseWorker, UserRequestedStopError
+from metgem_app.config import RADIUS
 
 
 class BoundingBox:

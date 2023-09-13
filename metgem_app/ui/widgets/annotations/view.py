@@ -6,11 +6,11 @@ from PySide6.QtGui import QFont, QMouseEvent, QIcon, QPen, QUndoStack
 from PySide6.QtWidgets import (QGraphicsView, QGraphicsLineItem, QGraphicsSceneMouseEvent,
                                QDialog, QUndoView, QMenu, QWidgetAction, QGraphicsItem, QGraphicsEllipseItem)
 
-from .scene import AnnotationsNetworkScene
-from .commands import EditTextCommand, EditArrowCommand, MoveCommand, ResizeCommand, DeleteCommand, AddCommand
-from .annotations import ArrowItem, RectItem, TextItem, EllipseItem
-from .dialogs import TextItemInputDialog
-from ....config import get_python_rendering_flag
+from metgem_app.ui.widgets.annotations.scene import AnnotationsNetworkScene
+from metgem_app.ui.widgets.annotations.commands import EditTextCommand, EditArrowCommand, MoveCommand, ResizeCommand, DeleteCommand, AddCommand
+from metgem_app.ui.widgets.annotations.annotations import ArrowItem, RectItem, TextItem, EllipseItem
+from metgem_app.ui.widgets.annotations.dialogs import TextItemInputDialog
+from metgem_app.config import get_python_rendering_flag
 
 if get_python_rendering_flag():
     from PySide6MolecularNetwork._pure import NetworkView

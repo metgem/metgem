@@ -32,17 +32,18 @@ except ImportError:
 else:
     HAS_SVG = True
 
-from ..models import metadata
-from .. import config, ui, utils
-from ..workers import core as workers_core
-from ..workers import gui as workers_gui
-from ..workers import net as workers_net
-from ..workers import databases as workers_dbs
-from ..workers import options as workers_opts
-from ..ui import widgets
-from ..logger import logger, debug
-from ..utils.network import Network, generate_id
-from ..utils.emf_export import HAS_EMF_EXPORT
+from metgem_app.models import metadata
+from metgem_app import config, ui, utils
+from metgem_app.workers import core as workers_core
+from metgem_app.workers import gui as workers_gui
+from metgem_app.workers import net as workers_net
+from metgem_app.workers import databases as workers_dbs
+from metgem_app.workers import options as workers_opts
+from metgem_app.ui import widgets
+from metgem_app.logger import logger, debug
+from metgem_app.utils.network import Network, generate_id
+from metgem_app.utils.emf_export import HAS_EMF_EXPORT
+
 if HAS_EMF_EXPORT:
     from ..utils.emf_export import EMFPaintDevice
 from ..utils.gui import enumerateMenu, SignalGrouper, SignalBlocker

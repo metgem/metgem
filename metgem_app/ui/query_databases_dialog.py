@@ -1,8 +1,8 @@
-from .widgets import QueryDatabasesOptionsWidget, AutoToolTipItemDelegate
-from ..workers.options import QueryDatabasesOptions
-from ..database import SpectraLibrary, Bank
-from ..config import SQL_PATH, get_debug_flag
-from .query_databases_dialog_ui import Ui_Dialog
+from metgem_app.ui.widgets import QueryDatabasesOptionsWidget, AutoToolTipItemDelegate
+from metgem_app.workers.options import QueryDatabasesOptions
+from metgem_app.database import SpectraLibrary, Bank
+from metgem_app.config import SQL_PATH, get_debug_flag
+from metgem_app.ui.query_databases_dialog_ui import Ui_Dialog
 
 from PySide6.QtCore import Qt, QSettings
 from PySide6.QtWidgets import QListWidgetItem, QDialog

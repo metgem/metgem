@@ -3,7 +3,7 @@ import os
 from PySide6.QtCore import QAbstractTableModel, Qt, QModelIndex
 from sqlalchemy.orm import joinedload
 
-from ..database import Spectrum, SpectraLibrary, Base
+from metgem_app.database import Spectrum, SpectraLibrary, Base
 
 
 class SpectraModel(QAbstractTableModel):

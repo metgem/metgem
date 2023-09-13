@@ -3,7 +3,7 @@ from typing import Union
 from PySide6.QtCore import QPointF, Qt
 from PySide6.QtGui import QPainterPath, QPixmap, QPainter, QPen, QIcon, QColor
 from PySide6.QtWidgets import QListWidgetItem, QDialog
-from .pen_parameters_dialog_ui import Ui_Dialog
+from metgem_app.ui.pen_parameters_dialog_ui import Ui_Dialog
 
 
 class PenParametersDialog(QDialog, Ui_Dialog):

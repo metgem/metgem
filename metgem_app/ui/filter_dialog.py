@@ -4,8 +4,8 @@ from PySide6.QtCore import Qt, QSettings
 
 import pandas as pd
 
-from .filter_dialog_ui import Ui_FilterDialog
-from ..workers.core.filter import (FRAGMENTS, NEUTRAL_LOSSES, MZ_PARENT,
+from metgem_app.ui.filter_dialog_ui import Ui_FilterDialog
+from metgem_app.workers.core.filter import (FRAGMENTS, NEUTRAL_LOSSES, MZ_PARENT,
                                    ALL_CONDITIONS, AT_LEAST_ONE_CONDITION)
 
 ALL_CONDITIONS_TEXT = "# Match all conditions"

@@ -1,6 +1,6 @@
 from PySide6.QtCore import Qt
 
-from .metadata import MetadataTableView
+from metgem_app.ui.widgets.metadata.metadata import MetadataTableView
 
 
 class EdgeTableView(MetadataTableView):

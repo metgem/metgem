@@ -9,7 +9,7 @@ from PySide6QtAds import CDockWidget
 from libmetgem import MZ, square_root_and_normalize_data
 from libmetgem.cosine import compare_spectra, SpectraMatchState
 
-from .fragments_list_ui import Ui_Form
+from metgem_app.ui.widgets.spectrum.fragments_list_ui import Ui_Form
 
 
 def findParent(type_, widget):

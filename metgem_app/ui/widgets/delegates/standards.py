@@ -3,7 +3,7 @@ from PySide6.QtGui import QStandardItemModel, QStandardItem, QIcon
 from PySide6.QtWidgets import (QStyledItemDelegate, QComboBox, QTreeView,
                              QWidget, QHBoxLayout, QSizePolicy, QToolButton)
 
-from ....models.metadata import StandardsRole, AnalogsRole, DbResultsRole
+from metgem_app.models.metadata import StandardsRole, AnalogsRole, DbResultsRole
 
 ANALOGS = 1
 

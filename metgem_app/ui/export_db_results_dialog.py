@@ -6,9 +6,9 @@ from PySide6.QtCore import Qt, QDir
 from PySide6.QtGui import QPalette, QColor
 from PySide6.QtWidgets import QCompleter, QFileSystemModel, QDialog, QFileDialog, QListWidget
 
-from .progress_dialog import ProgressDialog
-from ..workers.core import WorkerQueue
-from .export_db_results_dialog_ui import Ui_Dialog
+from metgem_app.ui.progress_dialog import ProgressDialog
+from metgem_app.workers.core import WorkerQueue
+from metgem_app.ui.export_db_results_dialog_ui import Ui_Dialog
 
 
 class ExportDBResultsDialog(QDialog, Ui_Dialog):

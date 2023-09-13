@@ -3,7 +3,7 @@ from typing import List, Any
 from PySide6.QtCore import Qt, QModelIndex, QAbstractItemModel, QIdentityProxyModel
 from PySide6.QtWidgets import QTableView, QAbstractItemView, QHeaderView
 
-from ....models.link_item_selection_model import LinkItemSelectionModel
+from metgem_app.models.link_item_selection_model import LinkItemSelectionModel
 
 
 # Python port of KRearrangeColumnsProxyModel from KDAB

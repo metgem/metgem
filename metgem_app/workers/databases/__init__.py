@@ -1,3 +1,3 @@
-from .convert import ConvertDatabasesWorker
-from .download import ListDatabasesWorker, DownloadDatabasesWorker
-from .query import QueryDatabasesWorker, QueryDatabasesOptions, StandardsResult
+from metgem_app.workers.databases.convert import ConvertDatabasesWorker
+from metgem_app.workers.databases.download import ListDatabasesWorker, DownloadDatabasesWorker
+from metgem_app.workers.databases.query import QueryDatabasesWorker, QueryDatabasesOptions, StandardsResult

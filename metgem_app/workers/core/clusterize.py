@@ -1,7 +1,7 @@
 import numpy as np
 
-from ..base import BaseWorker
-from ..options import ClusterizeOptions
+from metgem_app.workers.base import BaseWorker
+from metgem_app.workers.options import ClusterizeOptions
 
 
 class ClusterizeWorker(BaseWorker):

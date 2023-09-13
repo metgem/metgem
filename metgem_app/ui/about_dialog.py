@@ -3,8 +3,8 @@ import base64
 from PySide6.QtCore import QCoreApplication
 from PySide6.QtWidgets import QTextBrowser, QDialog
 
-from ..config import LICENSE_TEXT
-from .about_dialog_ui import Ui_AboutDialog
+from metgem_app.config import LICENSE_TEXT
+from metgem_app.ui.about_dialog_ui import Ui_AboutDialog
 
 
 class AboutDialog(QDialog, Ui_AboutDialog):

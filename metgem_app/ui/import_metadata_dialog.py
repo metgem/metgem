@@ -6,11 +6,11 @@ from PySide6.QtCore import Qt, QDir, QItemSelectionModel, QItemSelection
 from PySide6.QtGui import QPalette, QColor, QIcon
 from PySide6.QtWidgets import QCompleter, QFileSystemModel, QDialog, QFileDialog, QTableWidgetItem, QMessageBox
 
-from .progress_dialog import ProgressDialog
-from ..utils.gui import SignalBlocker
-from ..workers.core import WorkerQueue, ReadMetadataWorker
-from ..workers.options import ReadMetadataOptions
-from .import_metadata_dialog_ui import Ui_ImportMetadataDialog
+from metgem_app.ui.progress_dialog import ProgressDialog
+from metgem_app.utils.gui import SignalBlocker
+from metgem_app.workers.core import WorkerQueue, ReadMetadataWorker
+from metgem_app.workers.options import ReadMetadataOptions
+from metgem_app.ui.import_metadata_dialog_ui import Ui_ImportMetadataDialog
 
 
 class ImportMetadataDialog(QDialog, Ui_ImportMetadataDialog):

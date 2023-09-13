@@ -1,4 +1,4 @@
-from .mnz import MnzFile
+from metgem_app.workers.core.project.mnz import MnzFile
 
 
 class SpectraList(list):

@@ -6,13 +6,13 @@ from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QTreeWidgetItem, QDialogButtonBox, QMessageBox, QDialog
 from requests.exceptions import ConnectionError, RequestException
 
-from .progress_dialog import ProgressDialog
-from .widgets import AutoToolTipItemDelegate
-from ..workers.databases import (ListDatabasesWorker, DownloadDatabasesWorker,
+from metgem_app.ui.progress_dialog import ProgressDialog
+from metgem_app.ui.widgets import AutoToolTipItemDelegate
+from metgem_app.workers.databases import (ListDatabasesWorker, DownloadDatabasesWorker,
                                  ConvertDatabasesWorker)
-from ..workers.core import WorkerQueue
-from ..plugins import get_db_sources
-from .download_databases_dialog_ui import Ui_Dialog
+from metgem_app.workers.core import WorkerQueue
+from metgem_app.plugins import get_db_sources
+from metgem_app.ui.download_databases_dialog_ui import Ui_Dialog
 
 
 class DownloadDatabasesDialog(QDialog, Ui_Dialog):

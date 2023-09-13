@@ -1,10 +1,10 @@
 from typing import Dict, List
 import os
 
-from ..base import BaseWorker
-from ...database import SpectraLibrary, Spectrum
-from ...models.metadata import DbResultsRole
-from .errors import NoDataError
+from metgem_app.workers.base import BaseWorker
+from metgem_app.database import SpectraLibrary, Spectrum
+from metgem_app.models.metadata import DbResultsRole
+from metgem_app.workers.gui.errors import NoDataError
 
 from PySide6.QtCore import Qt
 

@@ -3,11 +3,11 @@ import os
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QAbstractItemView, QDialog
 
-from ..models.databases import BanksModel, SpectraModel
-from ..database import SpectraLibrary, Spectrum
-from .widgets.delegates.autotooltip import AutoToolTipItemDelegate
-from .widgets.delegates.quality import LibraryQualityDelegate
-from .view_databases_dialog_ui import Ui_Dialog
+from metgem_app.models.databases import BanksModel, SpectraModel
+from metgem_app.database import SpectraLibrary, Spectrum
+from metgem_app.ui.widgets.delegates.autotooltip import AutoToolTipItemDelegate
+from metgem_app.ui.widgets.delegates.quality import LibraryQualityDelegate
+from metgem_app.ui.view_databases_dialog_ui import Ui_Dialog
 
 
 class ViewDatabasesDialog(QDialog, Ui_Dialog):

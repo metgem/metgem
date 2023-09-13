@@ -2,8 +2,8 @@ import igraph as ig
 import numpy as np
 from fa2 import ForceAtlas2
 
-from ..base import BaseWorker
-from ...config import RADIUS
+from metgem_app.workers.base import BaseWorker
+from metgem_app.config import RADIUS
 
 
 class NetworkWorker(BaseWorker):

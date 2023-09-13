@@ -1,7 +1,7 @@
 from libmetgem.cosine import compute_similarity_matrix
 
-from ..base import BaseWorker
-from ..options import CosineComputationOptions
+from metgem_app.workers.base import BaseWorker
+from metgem_app.workers.options import CosineComputationOptions
 
 
 class ComputeScoresWorker(BaseWorker):

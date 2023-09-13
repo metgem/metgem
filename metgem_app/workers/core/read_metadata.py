@@ -2,8 +2,8 @@ import os
 
 import pandas as pd
 
-from ..base import BaseWorker
-from ..options import ReadMetadataOptions
+from metgem_app.workers.base import BaseWorker
+from metgem_app.workers.options import ReadMetadataOptions
 
 
 class ReadMetadataWorker(BaseWorker):

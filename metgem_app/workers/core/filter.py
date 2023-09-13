@@ -3,7 +3,7 @@ from typing import List, Tuple
 import numpy as np
 from libmetgem import MZ
 
-from ..base import BaseWorker
+from metgem_app.workers.base import BaseWorker
 
 FRAGMENTS = 0
 NEUTRAL_LOSSES = 1

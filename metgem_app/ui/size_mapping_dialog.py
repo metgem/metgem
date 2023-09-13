@@ -8,8 +8,8 @@ from PySide6.QtWidgets import (QGraphicsScene, QGraphicsEllipseItem, QGraphicsIt
                              QGraphicsPathItem, QGraphicsSceneMouseEvent, QStyleOptionGraphicsItem,
                              QWidget, QStyle, QListWidgetItem, QMessageBox, QDialog)
 
-from ..mappings import MODE_LINEAR, MODE_LOG, SizeMappingFunc
-from .size_mapping_dialog_ui import Ui_Dialog
+from metgem_app.mappings import MODE_LINEAR, MODE_LOG, SizeMappingFunc
+from metgem_app.ui.size_mapping_dialog_ui import Ui_Dialog
 
 ColumnRole = Qt.UserRole + 1
 

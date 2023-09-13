@@ -10,7 +10,7 @@ from matplotlib.backends.backend_qt5agg import FigureManagerQT as FigureManager
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QSizePolicy, QVBoxLayout, QLabel
 
-from .canvas import SpectrumCanvas
+from metgem_app.ui.widgets.spectrum.canvas import SpectrumCanvas
 
 KEYMAP = {k.replace('keymap.', ''): v for k, v in rcParams.items() if k.startswith('keymap.')}
 KEYMAP['pan_left'] = ['shift+left']

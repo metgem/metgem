@@ -7,14 +7,14 @@ from PySide6.QtCore import Signal, Qt, QObject
 from PySide6.QtGui import QPen
 from PySide6.QtWidgets import QFrame, QMenu, QWidgetAction, QWidget, QGraphicsLineItem
 
-from .annotations import AnnotationsNetworkScene
-from ..edit_options_dialog import (EditNetworkOptionsDialog, EditTSNEOptionsDialog,
+from metgem_app.ui.widgets.annotations import AnnotationsNetworkScene
+from metgem_app.ui.edit_options_dialog import (EditNetworkOptionsDialog, EditTSNEOptionsDialog,
                                    EditMDSOptionsDialog, EditIsomapOptionsDialog,
                                    EditUMAPOptionsDialog, EditPHATEOptionsDialog)
-from ... import config
-from ...workers import core as workers_core
-from ...workers import options as workers_opts
-from .network_ui import Ui_NetworkFrame
+from metgem_app import config
+from metgem_app.workers import core as workers_core
+from metgem_app.workers import options as workers_opts
+from metgem_app.ui.widgets.network_ui import Ui_NetworkFrame
 
 
 def short_id(id_):

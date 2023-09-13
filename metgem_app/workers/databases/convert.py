@@ -2,8 +2,8 @@ import os
 
 from sqlalchemy.exc import OperationalError
 
-from ..base import BaseWorker
-from ...database import DataBaseBuilder
+from metgem_app.workers.base import BaseWorker
+from metgem_app.database import DataBaseBuilder
 
 
 class ConvertDatabasesWorker(BaseWorker):

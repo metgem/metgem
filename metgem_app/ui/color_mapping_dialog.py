@@ -14,9 +14,9 @@ from PySide6.QtWidgets import (QDialog, QColorDialog, QListWidgetItem, QFileDial
                              QToolButton)
 
 from PySide6MolecularNetwork.node import NODE_POLYGON_MAP, NodePolygon
-from ..models.metadata import ColorMarkRole, ColumnDataRole
-from ..utils import pairwise
-from .color_mapping_dialog_ui import Ui_ColorMappingDialog
+from metgem_app.models.metadata import ColorMarkRole, ColumnDataRole
+from metgem_app.utils import pairwise
+from metgem_app.ui.color_mapping_dialog_ui import Ui_ColorMappingDialog
 
 ColumnRole = Qt.UserRole + 1
 ValueRole = Qt.UserRole + 2

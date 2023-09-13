@@ -3,7 +3,7 @@ from typing import Union
 from PySide6.QtCore import QLineF, QRectF, QPointF
 from PySide6.QtWidgets import QGraphicsScene, QGraphicsItem
 from PySide6.QtGui import QUndoCommand
-from .annotations import ArrowItem, TextItem
+from metgem_app.ui.widgets.annotations.annotations import ArrowItem, TextItem
 
 
 class AddCommand(QUndoCommand):

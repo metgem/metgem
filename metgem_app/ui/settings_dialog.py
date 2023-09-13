@@ -6,15 +6,15 @@ from PySide6.QtCore import Qt, QSettings, QPointF, QCoreApplication
 from PySide6.QtGui import QShowEvent
 from PySide6.QtWidgets import QDialog, QListWidgetItem
 
-from ..utils.gui import SignalBlocker
-from ..config import STYLES_PATH, APP_PATH, get_python_rendering_flag
+from metgem_app.utils.gui import SignalBlocker
+from metgem_app.config import STYLES_PATH, APP_PATH, get_python_rendering_flag
 
 if get_python_rendering_flag():
     from PySide6MolecularNetwork._pure import style_from_css, NetworkScene
 else:
     from PySide6MolecularNetwork import style_from_css, NetworkScene
 
-from .settings_dialog_ui import Ui_SettingsDialog
+from metgem_app.ui.settings_dialog_ui import Ui_SettingsDialog
 
 POSITIONS = [(14, 47), (34, 37), (15, 21), (40, 14), (58, 33),
              (60, 59), (46, 77), (70, 80), (84, 63), (76, 42)]

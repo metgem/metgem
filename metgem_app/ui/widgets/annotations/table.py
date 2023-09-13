@@ -2,7 +2,7 @@ from typing import Any
 
 from PySide6.QtCore import QModelIndex, Qt, QSortFilterProxyModel, QItemSelection, QAbstractTableModel
 from PySide6.QtWidgets import QWidget, QGraphicsScene
-from .table_ui import Ui_AnnotationsWidget
+from metgem_app.ui.widgets.annotations.table_ui import Ui_AnnotationsWidget
 
 
 class AnnotationsModel(QAbstractTableModel):

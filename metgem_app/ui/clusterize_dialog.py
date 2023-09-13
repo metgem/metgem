@@ -1,8 +1,8 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QDialog
 
-from ..workers.options import ClusterizeOptions
-from .clusterize_dialog_ui import Ui_Dialog
+from metgem_app.workers.options import ClusterizeOptions
+from metgem_app.ui.clusterize_dialog_ui import Ui_Dialog
 
 
 class ClusterizeDialog(QDialog, Ui_Dialog):

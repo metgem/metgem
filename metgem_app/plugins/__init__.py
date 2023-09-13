@@ -6,8 +6,8 @@ from typing import Iterator, List, Tuple
 from lxml import html
 from pluginbase import PluginBase
 
-from ..config import PLUGINS_PATH, APP_PATH
-from ..logger import logger
+from metgem_app.config import PLUGINS_PATH, APP_PATH
+from metgem_app.logger import logger
 
 __all__ = ('get_loaded_plugins', 'reload_plugins', 'get_db_sources')
 

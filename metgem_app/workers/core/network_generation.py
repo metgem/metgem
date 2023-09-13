@@ -2,9 +2,9 @@ import numpy as np
 import pandas as pd
 from libmetgem.network import generate_network
 
-from ..base import BaseWorker
-from ..options import NetworkVisualizationOptions
-from ...config import RADIUS
+from metgem_app.workers.base import BaseWorker
+from metgem_app.workers.options import NetworkVisualizationOptions
+from metgem_app.config import RADIUS
 
 
 class GenerateNetworkWorker(BaseWorker):

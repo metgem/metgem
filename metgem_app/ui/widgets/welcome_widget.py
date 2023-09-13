@@ -5,7 +5,7 @@ from PySide6.QtCore import QSize, QSettings, Qt
 from PySide6.QtGui import QAbstractTextDocumentLayout, QPalette, QTextDocument
 from PySide6.QtWidgets import QWidget, QListWidgetItem, QStyledItemDelegate, QStyleOptionViewItem, QApplication, QStyle
 
-from .welcome_widget_ui import Ui_WelcomeScreen
+from metgem_app.ui.widgets.welcome_widget_ui import Ui_WelcomeScreen
 
 try:
     # noinspection PyUnresolvedReferences

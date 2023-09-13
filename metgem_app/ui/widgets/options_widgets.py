@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QGroupBox
 
-from ...workers.options import (CosineComputationOptions,
+from metgem_app.workers.options import (CosineComputationOptions,
                                 QueryDatabasesOptions,
                                 IsomapVisualizationOptions,
                                 MDSVisualizationOptions,
@@ -9,14 +9,14 @@ from ...workers.options import (CosineComputationOptions,
                                 UMAPVisualizationOptions,
                                 NetworkVisualizationOptions)
 
-from .network_options_widget_ui import Ui_gbNetworkOptions
-from .cosine_options_widget_ui import Ui_gbCosineOptions
-from .tsne_options_widget_ui import Ui_gbTSNEOptions
-from .umap_options_widget_ui import Ui_gbOptions as Ui_gbUMAPOptions
-from .mds_options_widget_ui import Ui_gbOptions as Ui_gbMDSOptions
-from .isomap_options_widget_ui import Ui_gbOptions as Ui_gbIsomapOptions
-from .phate_options_widget_ui import Ui_gbOptions as Ui_gbPHATEOptions
-from .databases_options_widget_ui import Ui_gbDatabaseOptions
+from metgem_app.ui.widgets.network_options_widget_ui import Ui_gbNetworkOptions
+from metgem_app.ui.widgets.cosine_options_widget_ui import Ui_gbCosineOptions
+from metgem_app.ui.widgets.tsne_options_widget_ui import Ui_gbTSNEOptions
+from metgem_app.ui.widgets.umap_options_widget_ui import Ui_gbOptions as Ui_gbUMAPOptions
+from metgem_app.ui.widgets.mds_options_widget_ui import Ui_gbOptions as Ui_gbMDSOptions
+from metgem_app.ui.widgets.isomap_options_widget_ui import Ui_gbOptions as Ui_gbIsomapOptions
+from metgem_app.ui.widgets.phate_options_widget_ui import Ui_gbOptions as Ui_gbPHATEOptions
+from metgem_app.ui.widgets.databases_options_widget_ui import Ui_gbDatabaseOptions
 
 
 class NetworkOptionsWidget(QGroupBox, Ui_gbNetworkOptions):

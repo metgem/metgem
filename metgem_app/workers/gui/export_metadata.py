@@ -1,7 +1,7 @@
 from PySide6.QtCore import Qt
 
-from ..base import BaseWorker
-from .errors import NoDataError
+from metgem_app.workers.base import BaseWorker
+from metgem_app.workers.gui.errors import NoDataError
 
 
 class ExportMetadataWorker(BaseWorker):

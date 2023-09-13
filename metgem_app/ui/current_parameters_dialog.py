@@ -2,7 +2,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QDialog, QGridLayout, QDialogButtonBox, QSpinBox, QAbstractSpinBox, QAbstractButton, \
     QGroupBox
 
-from .widgets import CosineOptionsWidget
+from metgem_app.ui.widgets import CosineOptionsWidget
 
 
 class CurrentParametersDialog(QDialog):

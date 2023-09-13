@@ -1,7 +1,7 @@
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QGraphicsItem
 
-from ....config import get_python_rendering_flag
+from metgem_app.config import get_python_rendering_flag
 
 from PySide6MolecularNetwork.graphicsitem import GraphicsItemLayer
 if get_python_rendering_flag():

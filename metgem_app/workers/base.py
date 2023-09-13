@@ -1,4 +1,4 @@
-from ..utils.qt import QObject, Signal
+from metgem_app.utils.qt import QObject, Signal
 
 
 class UserRequestedStopError(Exception):

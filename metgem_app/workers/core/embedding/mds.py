@@ -1,7 +1,7 @@
 import io
 
-from .base import EmbeddingWorker, UserRequestedStopError
-from ...options import MDSVisualizationOptions
+from metgem_app.workers.core.embedding.base import EmbeddingWorker, UserRequestedStopError
+from metgem_app.workers.options import MDSVisualizationOptions
 
 
 class ProgressStringIO(io.StringIO):

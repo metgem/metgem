@@ -1,5 +1,5 @@
-from ....database import Spectrum
-from .databases_details_ui import Ui_DatabasesDetails
+from metgem_app.database import Spectrum
+from metgem_app.ui.widgets.databases.databases_details_ui import Ui_DatabasesDetails
 
 from PySide6.QtWidgets import QWidget
 from PySide6QtAds import CDockManager, CDockWidget, CenterDockWidgetArea
