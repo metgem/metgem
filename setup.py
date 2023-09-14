@@ -97,7 +97,14 @@ setup(
                  "Programming Language :: Python :: 3.8",
                  "Programming Language :: Python :: 3.9"],
     packages=find_packages(exclude=("metgem_packaging", "tests",)),
-    scripts=['MetGem', 'metgem-cli'],
+    entry_points={
+        'console_scripts': [
+            'metgem-cli=metgem_app.cli:cli'
+        ],
+        'gui_scripts': [
+            'MetGem=metgem_app.gui:run',
+        ],
+    },
     data_files=data_files,
     package_dir={'metgem': 'metgem'},
     package_data=package_data,

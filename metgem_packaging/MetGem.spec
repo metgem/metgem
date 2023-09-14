@@ -1,5 +1,5 @@
 # -*- mode: python ; coding: utf-8 -*-
-
+import importlib.metadata
 import os
 import sys
 import glob
@@ -11,8 +11,10 @@ sys.path.insert(0, os.path.join(SPECPATH, '..'))
 # noinspection PyUnresolvedReferences
 sys.path.insert(0, os.path.join(SPECPATH, 'build', 'lib'))
 
+
 # from PyInstaller.utils.hooks.qt import qt_plugins_binaries
 from PyInstaller.utils.hooks import get_module_file_attribute
+
 
 # noinspection PyUnresolvedReferences
 def clean_datas(a: Analysis):
@@ -27,6 +29,49 @@ def clean_datas(a: Analysis):
 
     return a
 
+
+# https://github.com/pyinstaller/pyinstaller/wiki/Recipe-Setuptools-Entry-Point
+# noinspection PyUnresolvedReferences
+def Entrypoint(dist, group, name, **kwargs):
+    from importlib.metadata import distribution, packages_distributions
+
+    # get toplevel packages of distribution from metadata
+    # noinspection PyDeprecation
+    def get_toplevel(dist):
+        try:
+            distrib = distribution(dist)
+        except importlib.metadata.PackageNotFoundError:
+            return []
+        else:
+            content = distrib.read_text('top_level.txt')
+            return list(content.split()) if content else []
+
+    kwargs.setdefault('hiddenimports', [])
+    packages = []
+    packages_distribs = packages_distributions()
+    for distrib in kwargs['hiddenimports']:
+        for d in packages_distribs.get(distrib, [distrib]):
+            packages += get_toplevel(d)
+
+    kwargs.setdefault('pathex', [])
+    # get the entry point
+    distrib = distribution(dist)
+    ep, = distrib.entry_points.select(group=group, name=name)
+    # insert path of the egg at the verify front of the search path
+    kwargs['pathex'] = [str(ep.dist._path)] + kwargs['pathex']
+    # script name must not be a valid module name to avoid name clashes on import
+    script_path = os.path.join(workpath, name + '-script.py')
+    print("creating script for entry point", group, name)
+    with open(script_path, 'w') as fh:
+        print("import", ep.module, file=fh)
+        print("%s.%s()" % (ep.module, ep.attr), file=fh)
+        for package in packages:
+            print("import", package, file=fh)
+
+    return Analysis(
+        [script_path] + kwargs.get('scripts', []),
+        **kwargs
+    )
 
 # if --debug flag is passed, make a debug release
 DEBUG = '--debug' in sys.argv
@@ -160,16 +205,19 @@ kwargs = dict(pathex=pathex,
               cipher=block_cipher,
               noarchive=False)
 # noinspection PyUnresolvedReferences
-gui_a = Analysis([os.path.join(SPECPATH, 'build', 'scripts', 'MetGem')],
-                 **kwargs,
-                 hookspath=hookspath,
-                 hiddenimports=hiddenimports,
-                 datas=datas,
-                 binaries=binaries)
+gui_a = Entrypoint('metgem', 'gui_scripts', 'MetGem',
+                   **kwargs,
+                   hookspath=hookspath,
+                   hiddenimports=hiddenimports,
+                   datas=datas,
+                   binaries=binaries
+                   )
+
 # noinspection PyUnresolvedReferences
-cli_a = Analysis([os.path.join(SPECPATH, 'build', 'scripts', 'metgem-cli')],
-                 **kwargs,
-                 hookspath=hookspath + [os.path.join(SPECPATH, "hooks", "pre_safe_import_module")])
+cli_a = Entrypoint('metgem', 'console_scripts', 'metgem-cli',
+                   **kwargs,
+                   hookspath=hookspath + [os.path.join(SPECPATH, "hooks", "pre_safe_import_module")]
+                   )
 
 gui_a = clean_datas(gui_a)
 cli_a = clean_datas(cli_a)
