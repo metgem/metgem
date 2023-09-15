@@ -1,4 +1,4 @@
-from metgem_app.workers.core import TSNEWorker, MDSWorker, IsomapWorker, UMAPWorker, PHATEWorker
+from metgem.workers.core import TSNEWorker, MDSWorker, IsomapWorker, UMAPWorker, PHATEWorker
 import pytest
 
 

@@ -53,8 +53,8 @@ def buildpy(ctx):
 # noinspection PyShadowingNames,PyUnusedLocal
 @task
 def rc(ctx, force=False):
-    qrcs = [os.path.join(PACKAGING_DIR, '..', 'metgem_app', 'ui', 'ui.qrc')]
-    rc = os.path.join(PACKAGING_DIR, '..', 'metgem_app', 'ui', 'ui_rc.py')
+    qrcs = [os.path.join(PACKAGING_DIR, '..', 'metgem', 'ui', 'ui.qrc')]
+    rc = os.path.join(PACKAGING_DIR, '..', 'metgem', 'ui', 'ui_rc.py')
     skip = False
     if not force and os.path.exists(rc):
         rc_mtime = os.path.getmtime(rc)
@@ -73,7 +73,7 @@ def uic(ctx, filename=''):
     if not filename:
         filename = '*'
 
-    files = glob.glob(os.path.join(PACKAGING_DIR, '..', 'metgem_app', 'ui', '**', filename + '.ui'),
+    files = glob.glob(os.path.join(PACKAGING_DIR, '..', 'metgem', 'ui', '**', filename + '.ui'),
                       recursive=True)
     for fn in tqdm.tqdm(files):
         fn = os.path.realpath(fn)

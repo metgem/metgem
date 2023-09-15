@@ -1,7 +1,7 @@
 include versioneer.py
-include metgem_app/_version.py
+include metgem/_version.py
 
-graft metgem_app
+graft metgem
 graft docs
 graft packaging
 graft plugins

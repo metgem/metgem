@@ -61,7 +61,7 @@ def Entrypoint(dist, group, name, **kwargs):
     kwargs['pathex'] = [str(ep.dist._path)] + kwargs['pathex']
     # script name must not be a valid module name to avoid name clashes on import
     script_path = os.path.join(workpath, name + '-script.py')
-    print("creating script for entry point", group, name)
+    print("creating script for entry point", dist, group, name)
     with open(script_path, 'w') as fh:
         print("import", ep.module, file=fh)
         print("%s.%s()" % (ep.module, ep.attr), file=fh)
@@ -89,12 +89,12 @@ if DEBUG:
     coll_name += '_debug'
 
 # Add ui_rc module in datas
-datas += [(os.path.join('..', 'metgem_app', 'ui', 'ui_rc.py'), os.path.join('metgem_app', 'ui'))]
+datas += [(os.path.join('..', 'metgem', 'ui', 'ui_rc.py'), os.path.join('metgem', 'ui'))]
 
 # Add plugins in datas
 # noinspection PyUnresolvedReferences
-datas += [(f, os.path.join("metgem_app", "plugins"))
-          for f in glob.glob(os.path.join(SPECPATH, '..', 'metgem_app', 'plugins', '*.py'))
+datas += [(f, os.path.join("metgem", "plugins"))
+          for f in glob.glob(os.path.join(SPECPATH, '..', 'metgem', 'plugins', '*.py'))
           if os.path.basename(f) != '__init__.py']
 
 # Add tests in datas
@@ -106,12 +106,12 @@ datas += [(os.path.join(SPECPATH, '..', 'pytest.ini'), '.')]
 # Get data from setup.py
 # noinspection PyUnresolvedReferences
 distribution = run_setup(os.path.join(SPECPATH, "..", "setup.py"), stop_after="init")
-for f in distribution.package_data['metgem_app']:
+for f in distribution.package_data['metgem']:
     # noinspection PyUnresolvedReferences
-    path = os.path.join(SPECPATH, "build", "lib", "metgem_app", f)
+    path = os.path.join(SPECPATH, "build", "lib", "metgem", f)
     # noinspection PyUnresolvedReferences
-    alt_path = os.path.join(SPECPATH, "..", "metgem_app", f)
-    dest_path = os.path.join("metgem_app", os.path.dirname(f))
+    alt_path = os.path.join(SPECPATH, "..", "metgem", f)
+    dest_path = os.path.join("metgem", os.path.dirname(f))
     if os.path.exists(path):
         datas.append((path, dest_path))
     else:
