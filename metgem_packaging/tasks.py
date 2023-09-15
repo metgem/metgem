@@ -1,11 +1,9 @@
-import glob
 import json
 import os
 import shutil
 import sys
 import tempfile
 import subprocess
-import tqdm
 import requests
 import io
 import zipfile
@@ -48,42 +46,6 @@ def build(ctx, clean=False, validate_appstream=True):
 @task
 def buildpy(ctx):
     ctx.run("cd {0}/.. && python setup.py build -b {0}/build --build-scripts {0}/build/scripts".format(PACKAGING_DIR))
-
-
-# noinspection PyShadowingNames,PyUnusedLocal
-@task
-def rc(ctx, force=False):
-    qrcs = [os.path.join(PACKAGING_DIR, '..', 'metgem', 'ui', 'ui.qrc')]
-    rc = os.path.join(PACKAGING_DIR, '..', 'metgem', 'ui', 'ui_rc.py')
-    skip = False
-    if not force and os.path.exists(rc):
-        rc_mtime = os.path.getmtime(rc)
-        skip = not any([os.path.getmtime(qrc) > rc_mtime for qrc in qrcs])
-
-    if skip:
-        print('[RC] resource file is up-to-date, skipping build.')
-    else:
-        subprocess.run([r'C:\Users\elie\AppData\Local\mambaforge\envs\metgem-pyside6\Library\lib\qt6\rcc', '-g', 'python', '-o', rc, ' '.join(qrcs)],
-                       shell=sys.platform == 'win32')
-        print('[RC] Resource file updated.')
-
-# noinspection PyShadowingNames,PyUnusedLocal
-@task
-def uic(ctx, filename=''):
-    if not filename:
-        filename = '*'
-
-    files = glob.glob(os.path.join(PACKAGING_DIR, '..', 'metgem', 'ui', '**', filename + '.ui'),
-                      recursive=True)
-    for fn in tqdm.tqdm(files):
-        fn = os.path.realpath(fn)
-        out = fn[:-3] + '_ui.py'
-        subprocess.run([r'C:\Users\elie\AppData\Local\mambaforge\envs\metgem-pyside6\Library\lib\qt6\uic', '-g', 'python', fn, '-o', out],
-                       shell=sys.platform == 'win32',
-                       stdout=subprocess.DEVNULL,
-                       stderr=subprocess.STDOUT)
-    print(f'[UIC] {len(files)} UI file(s) updated.')
-
 
 # noinspection PyShadowingNames,PyUnusedLocal
 @task
