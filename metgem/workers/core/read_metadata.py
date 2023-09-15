@@ -47,9 +47,11 @@ class ReadMetadataWorker(BaseWorker):
             elif ext in (".csv", ".txt", ".tsv"):
                 type_ = "text"
                 prefix = None if self.options.header is None or self.options.header == 'infer' else 'Column '
-                kwargs = dict(**self.options, prefix=prefix, engine='c', float_precision='high')
+                kwargs = dict(**self.options, engine='c', float_precision='high')
                 with open(self.filename, encoding='utf-8', errors='ignore') as f:
                     data = pd.read_csv(f, **kwargs)   # Workaround for Pandas's bug #15086
+                if prefix is not None:
+                    data = data.add_prefix(prefix)
 
             if data is not None:
                 if type_ == "spreadsheet":
