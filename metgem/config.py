@@ -19,6 +19,13 @@ try:
 except (FileNotFoundError, IOError):
     LICENSE_TEXT = ""
 
+try:
+    path = os.path.join(APP_PATH, '_build_version.txt') if getattr(sys, 'frozen', False) else '_build_version.txt'
+    with open(path, 'r', encoding='UTF-8') as f:
+        BUILD_VERSION = "".join(f.readlines()).strip('\n')
+except (FileNotFoundError, IOError):
+    BUILD_VERSION = ""
+
 DEBUG = False
 EMBED_JUPYTER = False
 USE_OPENGL = True

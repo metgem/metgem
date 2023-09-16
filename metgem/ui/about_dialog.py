@@ -1,10 +1,30 @@
 import base64
+import platform
 
-from PySide6.QtCore import QCoreApplication
-from PySide6.QtWidgets import QTextBrowser, QDialog
+from PySide6.QtCore import QCoreApplication, qVersion, QTimer, QPropertyAnimation, QEasingCurve
+from PySide6.QtWidgets import QTextBrowser, QDialog, QApplication, QWidget, QGraphicsOpacityEffect
+from PySide6 import __version__ as PYSIDE_VERSION
 
-from metgem.config import LICENSE_TEXT
+from metgem.config import LICENSE_TEXT, BUILD_VERSION
 from metgem.ui.about_dialog_ui import Ui_AboutDialog
+
+
+def copy_version_info(debug=False):
+    info = f"{QCoreApplication.applicationName()} {QCoreApplication.applicationVersion()}"
+    if BUILD_VERSION:
+        info += f" (build {BUILD_VERSION})"
+
+    if debug:
+        info += "\n\n"
+        info += f"\tPython version:\t{platform.python_version()} ({platform.python_implementation()})\n"
+        info += f"\tQt version:\t{qVersion()}\n"
+        info += f"\tPySide version:\t{PYSIDE_VERSION}\n"
+        info += "\n"
+        info += f"\tOS Version:\t{platform.platform()}\n"
+
+    cb = QApplication.clipboard()
+    cb.clear()
+    cb.setText(info)
 
 
 class AboutDialog(QDialog, Ui_AboutDialog):
@@ -13,12 +33,20 @@ class AboutDialog(QDialog, Ui_AboutDialog):
         super().__init__(*args, **kwargs)
 
         self.setupUi(self)
+
+        self.effect = None
+        self.animation = None
+
+        self.btCopyVersion.clicked.connect(self.copyVersionToClipboard)
+        self.btCopyDebugInfo.clicked.connect(self.copyDebugInfoToClipboard)
+
         self.tabWidget.setCurrentIndex(0)
 
         appname = QCoreApplication.applicationName()
         self.setWindowTitle(f"About {appname}")
         self.setTitle(appname)
         self.setVersion(f"Version {QCoreApplication.applicationVersion()}")
+        self.setBuildVersion(BUILD_VERSION if BUILD_VERSION else None)
         self.setAbout("<p>(C) 2018-2023, CNRS/ICSN</p>"
                       f"<p><a href='https://metgem.github.io/'>{appname}</a></p>"
                       "<p><a href='https://github.com/metgem'>Source Code</a></p>")
@@ -27,10 +55,10 @@ class AboutDialog(QDialog, Ui_AboutDialog):
         mail = base64.b64decode(b'bmljb2xhcy5lbGllQGNucnMuZnI=').decode()
         authors += f"""<p>Nicolas Elie <a href=\"mailto:{mail}\">{mail}</a><br />
                        <i>Main Developer and Original Author</i></p>"""
+        authors += f"<p><b>Former Development Team</b></p>"
         mail = base64.b64decode(b'ZGF2aWQudG91Ym91bEBjbnJzLmZy=').decode()
         authors += f"""<p>David Touboul <a href=\"mailto:{mail}\">{mail}</a><br />
-                      <i>Project Manager and Tester</i></p>"""
-        authors += f"<p><b>Former Development Team</b></p>"
+                              <i>Project Manager and Tester</i></p>"""
         mail = base64.b64decode(b'ZmxvcmVudC5vbGl2b25AY25ycy5mcg==').decode()
         authors += f"""<p>Florent Olivon <a href=\"mailto:{mail}\">{mail}</a><br />
                               <i>Original Author and Tester</i></p>"""
@@ -115,6 +143,9 @@ class AboutDialog(QDialog, Ui_AboutDialog):
     def setVersion(self, text: str):
         self.lblVersion.setText(text)
 
+    def setBuildVersion(self, text: str):
+        self.lblBuildVersion.setText(f"<i>Build {text}</i>" if text is not None else "")
+
     def setTitle(self, text: str):
         self.lblTitle.setText(text)
 
@@ -132,3 +163,37 @@ class AboutDialog(QDialog, Ui_AboutDialog):
 
     def setLibraries(self, text: str):
         self._set_browser_text(self.txtLibraries, text)
+
+    def copyVersionToClipboard(self):
+        copy_version_info()
+        self.show_info("Version copied to clipboard!")
+
+    def copyDebugInfoToClipboard(self):
+        copy_version_info(debug=True)
+        self.show_info("Debug info copied to clipboard!")
+
+    def show_info(self, text: str):
+        self.lblCopy.setText(text)
+
+        self.effect = QGraphicsOpacityEffect(self.lblCopy)
+        self.lblCopy.setGraphicsEffect(self.effect)
+        self.animation = QPropertyAnimation(self.effect, b"opacity")
+        self.effect.setOpacity(.0)
+        self.animation.setDuration(1000)
+        self.animation.setStartValue(.0)
+        self.animation.setEndValue(.7)
+        self.animation.setEasingCurve(QEasingCurve.InQuad)
+        self.animation.finished.connect(lambda: QTimer.singleShot(1000, fadeout))
+        self.animation.start()
+
+        def fadeout():
+            self.effect = QGraphicsOpacityEffect(self.lblCopy)
+            self.lblCopy.setGraphicsEffect(self.effect)
+            self.animation = QPropertyAnimation(self.effect, b"opacity")
+            self.effect.setOpacity(.7)
+            self.animation.setDuration(1000)
+            self.animation.setStartValue(.7)
+            self.animation.setEndValue(.0)
+            self.animation.setEasingCurve(QEasingCurve.OutQuad)
+            self.animation.finished.connect(lambda: self.lblCopy.setText(""))
+            self.animation.start()
