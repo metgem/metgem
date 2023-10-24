@@ -169,13 +169,6 @@ bin/
 *_ui.py
 /metgem/ui/images/main.ico
 /log/
-metgem_packaging/share/
-metgem_packaging/sip/
-metgem_packaging/*.AppImage
-metgem_packaging/*.exe
-metgem_packaging/*.dmg
-metgem_packaging/file_version_info.txt
-metgem_packaging/AppDir/
 examples/*.ods
 examples/*.xls
 examples/*.txt
