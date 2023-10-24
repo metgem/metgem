@@ -165,9 +165,9 @@ bin/
 /networkedges_*
 /test_*.py
 /test.*
-/metgem_app/ui/ui_rc.py
+/metgem/ui/ui_rc.py
 *_ui.py
-/metgem_app/ui/images/main.ico
+/metgem/ui/images/main.ico
 /log/
 metgem_packaging/share/
 metgem_packaging/sip/

@@ -10,12 +10,12 @@ from distutils import cmd
 import versioneer
 
 # Gather data files
-package_data = {'metgem_app': ['splash.png',
-                               'styles/*.css',
-                               'ui/widgets/images/*',
-                               'ui/widgets/spectrum/images/*',
-                               'models/*.csv',
-                               ]}
+package_data = {'metgem': ['splash.png',
+                            'styles/*.css',
+                            'ui/widgets/images/*',
+                            'ui/widgets/spectrum/images/*',
+                            'models/*.csv',
+                           ]}
 
 data_files = [("", ["LICENSE"])]
 if not sys.platform.startswith('darwin'):
@@ -36,15 +36,15 @@ class ProcessResourceCommand(cmd.Command):
         return
 
     def run(self):
-        qrcs = [os.path.join('metgem_app', 'ui', 'ui.qrc')]
-        rc = os.path.join('metgem_app', 'ui', 'ui_rc.py')
+        qrcs = [os.path.join('metgem', 'ui', 'ui.qrc')]
+        rc = os.path.join('metgem', 'ui', 'ui_rc.py')
         skip = False
         if os.path.exists(rc):
             rc_mtime = os.path.getmtime(rc)
             skip = not any([os.path.getmtime(qrc) > rc_mtime for qrc in qrcs])
 
         if not skip:
-            subprocess.run(['pyside2-rcc', '-o', rc, ' '.join(qrcs)], shell=sys.platform == 'win32')
+            subprocess.run(['pyside6-rcc', '-o', rc, ' '.join(qrcs)], shell=sys.platform == 'win32')
 
 
 class ProcessUICommand(cmd.Command):
@@ -59,10 +59,10 @@ class ProcessUICommand(cmd.Command):
         return
 
     def run(self):
-        for fn in glob.glob(os.path.join('metgem_app', 'ui', '**', '*.ui'), recursive=True):
+        for fn in glob.glob(os.path.join('metgem', 'ui', '**', '*.ui'), recursive=True):
             fn = os.path.realpath(fn)
             out = fn[:-3] + '_ui.py'
-            subprocess.run(['pyside2-uic', fn, '-o', out], shell=sys.platform == 'win32')
+            subprocess.run(['pyside6-uic', fn, '-o', out], shell=sys.platform == 'win32')
 
 
 class BuildPyCommand(build_py):
@@ -96,8 +96,15 @@ setup(
                  "Programming Language :: Python :: 3.7",
                  "Programming Language :: Python :: 3.8",
                  "Programming Language :: Python :: 3.9"],
-    packages=find_packages(exclude=("metgem_packaging", "tests",)),
-    scripts=['MetGem', 'metgem-cli'],
+    packages=find_packages(exclude=("tests",)),
+    entry_points={
+        'console_scripts': [
+            'metgem-cli=metgem.cli:cli'
+        ],
+        'gui_scripts': [
+            'MetGem=metgem.gui:run',
+        ],
+    },
     data_files=data_files,
     package_dir={'metgem': 'metgem'},
     package_data=package_data,

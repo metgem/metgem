@@ -1,1 +1,0 @@
-hiddenimports = ['igraph.vendor.texttable']

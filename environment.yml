@@ -1,15 +1,14 @@
 name: metgem
 channels:
     - conda-forge
-    - metgem
     - bioconda
 dependencies:
-    - setuptools<60.0
+    - setuptools
     - pandas>=0.22
     - lxml>=4.0
     - numpy>=1.14
-    - pyside2>=5.15
-    - qt>=5.15
+    - pyside6
+    - qt6-main>=6.4.3
     - python-igraph>=0.7.1
     - scikit-learn>=0.19
     - scipy>=1.0.0
@@ -28,11 +27,11 @@ dependencies:
     - feedparser
     - mplcursors
     - py2cytoscape>=0.7.0
-    - libmetgem>=0.6.3
-    - pyside2mn>=0.6.0
+    - libmetgem>=0.6.4
+    - pyside6mn>=0.7.1
     - fa2>=0.3.5
-    - pyemf>=2.1.2alpha
-    - pyside2ads>=3.7.2
+    - pyemf3>=3.3
+    - pyside6qtads>=4.0
     - numba>=0.46.0
     - umap-learn>=0.5.0
     - pynndescent>=0.5.0
