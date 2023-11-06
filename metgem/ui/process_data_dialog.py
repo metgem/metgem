@@ -203,7 +203,7 @@ class ProcessDataDialog(QDialog, Ui_ProcessFileDialog):
         dialog = ImportMetadataDialog(self, filename=filename)
 
         def set_options(result):
-            if result == QDialog.DialoCode.Accepted:
+            if result == QDialog.DialogCode.Accepted:
                 filename, options = dialog.getValues()
                 self.editMetadataFile.setText(filename)
                 self.editMetadataFile.setPalette(self.style().standardPalette())
