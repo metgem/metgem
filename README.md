@@ -4,6 +4,16 @@
 
 You can download the latest stable version from [here](https://github.com/metgem/metgem/releases/latest) or latest development version from [here](https://github.com/metgem/metgem/releases/nightly).
 
+# Notes on installation on macOS
+
+Latest versions of MetGem are only compatible with macOS 10.15 Catalina and later.
+Currently, MetGem lacks a signature for macOS. As a workaround, user can allow MetGem in the macOS Gatekeeper protection by running the following command in the terminal from the Applications folder.
+    - Download MetGem and click the .dmg installer - Drag and drop MetGem into the Applications folder.
+    - Open a Terminal and type the following command to tell macOS to trust the installed version of MetGem: `sudo xattr -cr /Applications/MetGem/MetGem.app`
+    - Approve command with user password.
+    - Start MetGem.
+    - If this fails, try `sudo xattr -d com.apple.quarantine /Applications/MetGem/MetGem.app`. The app will appear in the security preferences and you will be able to choose the "Open anyway" option
+
 # Build instructions
 
 1. Install [Miniconda](https://docs.conda.io/en/latest/miniconda.html).
