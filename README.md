@@ -1,4 +1,4 @@
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/60b6a6283223418fbc3f082b97d86d74)](https://app.codacy.com/manual/n-elie/metgem?utm_source=github.com&utm_medium=referral&utm_content=metgem/metgem&utm_campaign=Badge_Grade_Dashboard)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/6bb522a78e5a47688d166a4b8684c3cf)](https://app.codacy.com/gh/metgem/metgem/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 
 # Download pre-built packages
 
