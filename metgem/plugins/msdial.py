@@ -1,10 +1,10 @@
 """MetGem plugin to download databases from MS-DIAL website"""
 
-__version__ = '1.3'
+__version__ = '1.4'
 __description__ = "MetGem plugin to download databases from MS-DIAL website"
 __author__ = "Nicolas Elie"
 __email__ = "nicolas.elie@cnrs.fr"
-__copyright__ = "Copyright 2019-2022, CNRS/ICSN"
+__copyright__ = "Copyright 2019-2023, CNRS/ICSN"
 __license__ = "GPLv3"
 
 
@@ -49,7 +49,11 @@ class MSDial(DbSource):
 
             desc = ""
             if "(" in title:
-                title, desc = title.split('(')
+                try:
+                    title, desc = title.rsplit('(', 1)
+                except ValueError:
+                    desc = ""
+
                 if title in items:
                     desc = ""
                 else:
