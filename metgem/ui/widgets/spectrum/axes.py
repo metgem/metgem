@@ -43,7 +43,7 @@ class SpectrumAxes(Axes):
                 left, right = left
             if left < 0 or right > self._xmax or right - left < 10:
                 return
-        super().set_xlim(left, right, emit, auto, **kw)
+        super().set_xlim(left, right, emit=emit, auto=auto, **kw)
 
 
 register_projection(SpectrumAxes)
