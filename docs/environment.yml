@@ -1,0 +1,9 @@
+name: metgem-docs
+channels:
+    - conda-forge
+dependencies:
+    - sphinx>=3.0
+    - pip>=20.1  # pip is needed as dependency
+    - python=3.12
+    - pip:
+      - sphinxcontrib-svg2pdfconverter
