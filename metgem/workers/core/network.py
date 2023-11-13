@@ -8,10 +8,11 @@ from metgem.config import RADIUS
 
 class NetworkWorker(BaseWorker):
     
-    def __init__(self, graph, radii):
+    def __init__(self, graph, radii, options):
         super().__init__()
         self.graph = graph
         self.radii = radii
+        self.options = options
         self.max = self.graph.vcount()
         self.desc = 'Computing layout: {value:d} vertices of {max:d}.'
         self.iterative_update = False

@@ -2610,7 +2610,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             # noinspection PyShadowingNames
             def save(worker: workers_core.MaxConnectedComponentsWorker):
                 widget.graph = worker.result()
-                self._network[widget.id].options = options
+                self._network.options[widget.id] = options
                 widget.interactions = results['interactions']
 
             return [worker, create_max_connected_components_worker, save]
@@ -2620,7 +2620,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 interactions, graph = worker.result()
                 widget.interactions = interactions
                 widget.graph = graph
-                self._network[widget.id].options = options
+                self._network.options[widget.id] = options
 
             return [worker, save]
 

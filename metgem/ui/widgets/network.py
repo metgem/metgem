@@ -164,7 +164,7 @@ class BaseFrame(QFrame, Ui_NetworkFrame):
     def set_annotations_data(self, buffer: bytes) -> None:
         self.view().loadAnnotations(buffer)
 
-    def create_worker(self):
+    def create_worker(self, options=None):
         raise NotImplementedError
 
     def set_style(self, style):
@@ -226,8 +226,9 @@ class NetworkFrame(BaseFrame):
                 del g.es[attr]
         return g
 
-    def create_worker(self):
-        return self.worker_class(self._graph, self.scene().nodesRadii())
+    def create_worker(self, options=None):
+        options = self._network.options[self.id] if options is None else options
+        return self.worker_class(self._graph, self.scene().nodesRadii(), options)
 
 
 class TSNEFrame(NetworkFrame):
