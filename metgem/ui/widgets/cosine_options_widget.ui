@@ -34,6 +34,9 @@
      <property name="singleStep">
       <double>0.010000000000000</double>
      </property>
+     <property name="stepType">
+      <enum>QAbstractSpinBox::AdaptiveDecimalStepType</enum>
+     </property>
      <property name="value">
       <double>0.020000000000000</double>
      </property>
