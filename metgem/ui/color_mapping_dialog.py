@@ -659,7 +659,7 @@ class ColorMappingDialog(BaseColorMappingDialog):
         data = self._data
 
         if data is not None:
-            if data.dtype == np.bool:
+            if data.dtype == bool:
                 self.lblUsedColumns.setText('Groups')
                 for val in (True, False):
                     item = BoolListWidgetItem(val)
@@ -670,7 +670,7 @@ class ColorMappingDialog(BaseColorMappingDialog):
                             color = mapping.get(str(val).lower(), None)  # True -> 'true', False -> 'false'
                         if color is not None:
                             item.setBackground(QColor(color))
-            elif data.dtype == np.object:
+            elif data.dtype == object:
                 self.lblUsedColumns.setText('Groups')
                 if mapping is not None:
                     for group, color in mapping:
