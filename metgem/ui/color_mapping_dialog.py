@@ -178,7 +178,7 @@ class ColorDialog(QColorDialog):
             if p == initial_brushstyle:
                 button.setChecked(True)
             brushstyle_group.addButton(button)
-            brushstyle_group.setId(button, p)
+            brushstyle_group.setId(button, p.value)
             brushstyle_layout.addWidget(button)
         dlg.layout().insertLayout(dlg.layout().count()-1, brushstyle_layout)
 
