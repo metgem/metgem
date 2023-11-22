@@ -6,7 +6,7 @@ import pandas as pd
 import igraph as ig
 
 from metgem.utils.network import Network
-from metgem.utils.qt import QColor
+from metgem.utils.qt import QColor, Qt
 
 from metgem.workers.base import BaseWorker
 
@@ -95,18 +95,23 @@ class SaveProjectWorker(BaseWorker):
                 pass
             else:
                 if mapping is not None:
+                    def convert_color(color):
+                        return color.name() if isinstance(color, QColor) else color
+
+                    def convert_style(style):
+                        return style.value if isinstance(style, Qt.BrushStyle) else style
+
                     if isinstance(mapping, (tuple, list)):
                         try:
                             bins, colors, polygons, styles = mapping
                         except TypeError:
                             pass
                         else:
-                            colors = [color.name() if isinstance(color, QColor) else color for color in colors]
+                            colors = [convert_color(color) for color in colors]
                             columns_mappings['colors'] = (key, (bins, colors, polygons, styles))
                     elif isinstance(mapping, dict):
                         columns_mappings['colors'] = (key,
-                                                      {k: (color.name(), polygon, style)
-                                                       if isinstance(color, QColor) else (color, polygon, style)
+                                                      {k: (convert_color(color), polygon, convert_style(style))
                                                        for k, (color, polygon, style) in mapping.items()})
 
             try:

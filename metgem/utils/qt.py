@@ -27,6 +27,10 @@ except (ImportError, RuntimeError):
     class Qt(object):
         Horizontal = 1
 
+        class BrushStyle:
+            def __init__(self, value):
+                self.value = value
+
     class QColor(object):
         def __call__(self, *args, **kwargs):
             return self
