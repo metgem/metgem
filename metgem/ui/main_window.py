@@ -2655,7 +2655,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                         ret = msg.exec_()
 
                     if ret == QMessageBox.Yes:
-                        df.update(df2[update_columns])
+                        df.update(df2[list(update_columns)])
                         self.check_columns_mappings_after_data_changed(update_columns)
                     elif ret == QMessageBox.Cancel:
                         do_join = False
