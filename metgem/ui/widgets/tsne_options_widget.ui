@@ -6,28 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>331</width>
-    <height>189</height>
+    <width>341</width>
+    <height>206</height>
    </rect>
   </property>
   <property name="title">
    <string>t-SNE Visualization</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_3">
-   <item row="3" column="0">
-    <widget class="QLabel" name="label_6">
-     <property name="text">
-      <string>Number of iterations</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="2">
-    <widget class="QLabel" name="label_4">
-     <property name="text">
-      <string>Perplexity</string>
-     </property>
-    </widget>
-   </item>
    <item row="3" column="3">
     <widget class="QSpinBox" name="spinTSNEPerplexity">
      <property name="enabled">
@@ -37,17 +23,17 @@
       <number>5</number>
      </property>
      <property name="maximum">
-      <number>50</number>
+      <number>999</number>
      </property>
      <property name="value">
       <number>6</number>
      </property>
     </widget>
    </item>
-   <item row="5" column="0" colspan="5">
-    <widget class="QCheckBox" name="chkRandomState">
+   <item row="4" column="2">
+    <widget class="QLabel" name="label">
      <property name="text">
-      <string>Random Initial State</string>
+      <string>Early exaggeration</string>
      </property>
     </widget>
    </item>
@@ -58,6 +44,29 @@
      </property>
      <property name="value">
       <number>12</number>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1">
+    <widget class="QSpinBox" name="spinNumIterations">
+     <property name="minimum">
+      <number>250</number>
+     </property>
+     <property name="maximum">
+      <number>10000</number>
+     </property>
+     <property name="singleStep">
+      <number>250</number>
+     </property>
+     <property name="value">
+      <number>1000</number>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="label_6">
+     <property name="text">
+      <string>Number of iterations</string>
      </property>
     </widget>
    </item>
@@ -211,6 +220,16 @@
       </spacer>
      </item>
     </layout>
+   </item>
+   <item row="8" column="0" colspan="5">
+    <widget class="QLabel" name="label_5">
+     <property name="text">
+      <string>&lt;a href=&quot;https://scikit-learn.org/stable/modules/generated/sklearn.manifold.TSNE.html&quot;&gt;Help&lt;/a&gt;</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>
