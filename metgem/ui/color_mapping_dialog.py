@@ -665,17 +665,25 @@ class ColorMappingDialog(BaseColorMappingDialog):
                     item = BoolListWidgetItem(val)
                     self.lstUsedColumns.addItem(item)
                     if mapping is not None:
-                        color = mapping.get(val, None)
+                        color, polygon_id, brush_style = mapping.get(val, (None, None, None))
                         if color is None:
-                            color = mapping.get(str(val).lower(), None)  # True -> 'true', False -> 'false'
+                            color, polygon_id, brush_style = mapping.get(str(val).lower(), (None, None, None))  # True -> 'true', False -> 'false'
                         if color is not None:
                             item.setBackground(QColor(color))
+                        if polygon_id is not None:
+                            item.setData(BaseColorMappingDialog.PolygonRole, polygon_id)
+                        if brush_style is not None:
+                            item.setData(BaseColorMappingDialog.BrushStyleRole, Qt.BrushStyle(brush_style))
             elif data.dtype == object:
                 self.lblUsedColumns.setText('Groups')
                 if mapping is not None:
-                    for group, color in mapping:
+                    for group, (color, polygon_id, brush_style) in mapping.items():
                         item = GroupListWidgetItem(str(group))
                         item.setBackground(QColor(color))
+                        if polygon_id is not None:
+                            item.setData(BaseColorMappingDialog.PolygonRole, polygon_id)
+                        if brush_style is not None:
+                            item.setData(BaseColorMappingDialog.BrushStyleRole, Qt.BrushStyle(brush_style))
                         self.lstUsedColumns.addItem(item)
                 else:
                     groups = data.dropna().unique()
@@ -685,11 +693,15 @@ class ColorMappingDialog(BaseColorMappingDialog):
             else:
                 self.lblUsedColumns.setText('Bins')
                 if mapping is not None:
-                    values, colors = mapping
+                    values, colors, polygon_ids, brushstyles = mapping
                     try:
-                        for low, high, color in zip(values[:-1], values[1:], colors):
+                        for low, high, color, polygon_id, brush_style in zip(values[:-1], values[1:], colors, polygon_ids, brushstyles):
                             item = RangeListWidgetItem(low, high)
                             item.setBackground(QColor(color))
+                            if polygon_id is not None:
+                                item.setData(BaseColorMappingDialog.PolygonRole, polygon_id)
+                            if brush_style is not None:
+                                item.setData(BaseColorMappingDialog.BrushStyleRole, Qt.BrushStyle(brush_style))
                             self.lstUsedColumns.addItem(item)
                     except ValueError:
                         self.generate_new_bins(8)
