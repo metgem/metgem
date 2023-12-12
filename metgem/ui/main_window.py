@@ -2660,10 +2660,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     elif ret == QMessageBox.Cancel:
                         do_join = False
 
-                if do_join and any(new_columns):
-                    df = df.join(df2[new_columns])
-
-                self._network.infos = df
+                if do_join:
+                    if any(new_columns):
+                        df = df.join(df2[list(new_columns)])
+                    self._network.infos = df
             else:
                 self._network.infos = worker.result()
             self.has_unsaved_changes = True
