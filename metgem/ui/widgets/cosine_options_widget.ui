@@ -44,8 +44,11 @@
    </item>
    <item row="0" column="0">
     <widget class="QCheckBox" name="chkMS1Data">
+     <property name="toolTip">
+      <string>The spectra will be loaded without taking into account the mass of the precursor, which means that only the fragments will be compared, not the neutral losses</string>
+     </property>
      <property name="text">
-      <string>Treat as &amp;MS1 Data</string>
+      <string>Load spectra as &amp;MS1 Data</string>
      </property>
     </widget>
    </item>
