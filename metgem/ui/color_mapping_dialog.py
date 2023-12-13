@@ -466,6 +466,8 @@ class BaseColorMappingDialog(QDialog, Ui_ColorMappingDialog):
                 QMessageBox.warning(self, None, "Selected file does not exists.")
             except IOError:
                 QMessageBox.warning(self, None, "Load failed (I/O Error).")
+            except pd.errors.EmptyDataError:
+                QMessageBox.warning(self, None, "File is empty.")
 
     def export_color_item(self, item: QListWidgetItem) -> List[str]:
         color = item.data(Qt.BackgroundRole).color()
@@ -798,7 +800,20 @@ class ColorMappingDialog(BaseColorMappingDialog):
             polygon_id = NodePolygon[row[1][1]] if len(row[1]) > 1 else NodePolygon.Circle
         except KeyError:
             polygon_id = NodePolygon.Circle
-        brushstyle = Qt.BrushStyle(row[1][2]) if len(row[1]) > 2 else Qt.NoBrush
+
+        brushstyle = Qt.NoBrush
+        if len(row[1]) > 2:
+            brushstyle = row[1][2]
+            if isinstance(brushstyle, int):
+                try:
+                    brushstyle = Qt.BrushStyle(brushstyle)
+                except ValueError:
+                    brushstyle = Qt.NoBrush
+            else:
+                try:
+                    brushstyle = Qt.BrushStyle[brushstyle]
+                except KeyError:
+                    brushstyle = Qt.NoBrush
 
         if color.isValid():
             return color, polygon_id, brushstyle
@@ -811,7 +826,7 @@ class ColorMappingDialog(BaseColorMappingDialog):
         brushstyle = brushstyle if brushstyle is not None else Qt.NoBrush
 
         if color is not None and color.isValid():
-            return color.name(), polygon_id.name, brushstyle
+            return color.name(), polygon_id.name, brushstyle.name
 
     def done(self, r):
         if r == QDialog.DialogCode.Accepted:
