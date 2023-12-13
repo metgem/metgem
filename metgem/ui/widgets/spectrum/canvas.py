@@ -41,6 +41,13 @@ class SpectrumCanvas(BaseCanvas):
 
         self.prepare_axes()
 
+    def showEvent(self, event):
+        try:
+            super().showEvent(event)
+        except RuntimeError:
+            # workaround for "RuntimeError: Internal C++ object (PySide6.QtGui.QWindow) already deleted."
+            pass
+
     def has_data(self):
         return self._spectrum1_data is not None
 
