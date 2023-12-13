@@ -4,7 +4,7 @@ from matplotlib import rcParams
 rcParams["toolbar"] = "toolmanager"
 
 from matplotlib.backend_tools import ToolBase
-from matplotlib.backends.backend_qt5agg import FigureManagerQT as FigureManager
+from matplotlib.backends.backend_qtagg import FigureManagerQT as FigureManager
 
 # noinspection PyUnresolvedReferences
 from PySide6.QtCore import Qt
