@@ -9,7 +9,7 @@ from numpy.compat import is_pathlib_path
 from numpy.lib import format
 # noinspection PyProtectedMember
 from numpy.lib.npyio import NpzFile
-
+from scipy.sparse import csr_matrix
 
 # Copy of numpy's _savez function to allow different file extension
 # https://github.com/numpy/numpy/blob/master/numpy/lib/npyio.py#L669
@@ -104,11 +104,18 @@ def savez(file, version, *args, compress=True, **kwargs):
                         force_zip64 = val.values.nbytes >= 2 ** 30
                         with zipf.open(fname, 'w', force_zip64=force_zip64) as fid:
                             pq.write_table(pa.Table.from_pandas(val), fid)
+                    elif isinstance(val, csr_matrix):
+                        for prop in ('indices', 'indptr', 'data', 'shape'):
+                            save_array(zipf, f'{key}_{prop}', getattr(val, prop))
                     else:
-                        fname = key + '.npy'
-                        val = np.asanyarray(val)
-                        force_zip64 = val.nbytes >= 2**30
-                        with zipf.open(fname, 'w', force_zip64=force_zip64) as fid:
-                            format.write_array(fid, val, allow_pickle=False)
+                        save_array(zipf, key, val)
                 else:
                     zipf.writestr(key, s)
+
+
+def save_array(zipf, key, val):
+    fname = key + '.npy'
+    val = np.asanyarray(val)
+    force_zip64 = val.nbytes >= 2 ** 30
+    with zipf.open(fname, 'w', force_zip64=force_zip64) as fid:
+        format.write_array(fid, val, allow_pickle=False)

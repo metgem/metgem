@@ -74,6 +74,7 @@ class CosineComputationOptions(Options):
         min_matched_peaks_search (int): Window rank filter's parameters: for each peak in the spectrum,
             it is kept only if it is in top `min_matched_peaks_search` in the +/-`matched_peaks_window` window.
         matched_peaks_window (int): in Da.
+        dense_output (bool): Whether compute a dense or sparse similarity matrix. Default=true
 
     """
 
@@ -93,6 +94,7 @@ class CosineComputationOptions(Options):
                          use_window_rank_filter=True,
                          use_min_mz_filter=True,
                          min_mz=50,
+                         dense_output=True,
                          **kwargs)
 
 

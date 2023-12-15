@@ -38,6 +38,9 @@ class PHATEWorker(EmbeddingWorker):
         self.desc = 'PHATE: Step {value:d} of {max:d}'
         self._io_wrapper = ProgressStringIO(self)
 
+    def get_n_neighbors(self, n: int):
+        return self.options.knn
+
     # noinspection PyGlobalUndefined, PyUnresolvedReferences
     @staticmethod
     def import_modules():

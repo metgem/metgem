@@ -12,6 +12,7 @@ class BaseWorker(QObject):
     updated = Signal(int)
     error = Signal(Exception)
     maximumChanged = Signal(int)
+    handle_sparse = False  # Whether the worker can handle sparse distance/similarity matrix
 
     _enabled = True
 

@@ -322,6 +322,16 @@
      </property>
     </widget>
    </item>
+   <item row="0" column="2">
+    <widget class="QCheckBox" name="chkSparse">
+     <property name="toolTip">
+      <string>Create a sparse similarity matrix to store scores. Uses less memory but is not compatible with all visualizations.</string>
+     </property>
+     <property name="text">
+      <string>Use &amp;sparse similarity matrix</string>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
  <tabstops>

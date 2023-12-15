@@ -1,6 +1,7 @@
 import zipfile
 
 import pandas as pd
+from scipy.sparse import csr_matrix
 
 from metgem.utils.qt import QColor, Qt
 from metgem.mappings import SizeMappingFunc, MODE_LINEAR
@@ -42,13 +43,21 @@ class LoadProjectWorker(BaseWorker):
                                                   + "This file format is not supported anymore.\n"
                                                   + "Please generate networks from raw data again")
 
-                elif version in (2, 3, 4, CURRENT_FORMAT_VERSION):
+                elif version in (2, 3, 4, 5, CURRENT_FORMAT_VERSION):
                     # Create network object
                     network = Network()
                     network.lazyloaded = True
 
                     # Load scores matrix
-                    network.scores = fid['0/scores']
+                    # Prior to version, scores must be a dense numpy array
+                    # Starting from version 6, scores can be a CSR sparse matrix or a dense numpy array
+                    try:
+                        network.scores = fid['0/scores']
+                    except:
+                        network.scores = csr_matrix((fid['0/scores_data'],
+                                                    fid['0/scores_indices'],
+                                                    fid['0/scores_indptr']),
+                                                    shape=fid['0/scores_shape'])
 
                     self.updated.emit(10)
                     if self.isStopped():
@@ -173,7 +182,7 @@ class LoadProjectWorker(BaseWorker):
                         network.options = AttrDict(fid['0/options.json'])
                     except KeyError:
                         network.options = AttrDict({})
-                    # Prior to version 5, network views options was unique for each views
+                    # Prior to version 5, network views options was unique for each view
                     # Generate an id for those views
                     if version < 5:
                         for key in AVAILABLE_NETWORK_OPTIONS.keys():

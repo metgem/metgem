@@ -23,6 +23,7 @@ from PySide6QtAds import (CDockManager, CDockWidget,
                           BottomDockWidgetArea, CenterDockWidgetArea,
                           TopDockWidgetArea, LeftDockWidgetArea)
 from libmetgem import human_readable_data
+from scipy.sparse import csr_matrix
 
 try:
     # noinspection PyUnresolvedReferences
@@ -1725,7 +1726,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return
 
         self._dialog = ui.ProcessDataDialog(self._create_network_button.menu(), self,
-                                            options=self.network.options)
+                                            options=self.network.options.copy())
 
         def do_process(result):
             if result == QDialog.Accepted:
@@ -1742,7 +1743,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 def store_scores(worker: workers_core.ComputeScoresWorker):
                     self.tvEdges.model().setSelection([])
                     scores = worker.result()
-                    if not isinstance(scores, np.ndarray):
+                    if not isinstance(scores, (np.ndarray, csr_matrix)):
                         return
 
                     self._network.scores = scores
@@ -1826,6 +1827,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             action = self.sender()
             widget_class = action.data()
             if widget_class is not None:
+                # If sparse scores matrix is used and the requested worker can't handle it, exit
+                if not self._network.options.cosine.dense_output and not widget_class.worker_class.handle_sparse:
+                    QMessageBox.warning(self, None,
+                                        f"{widget_class.title} view can't be added because this view cannot handle sparse scores matrix.")
+                    return
+
                 options = self._network.options.get(widget_class.name, {})
                 self._dialog = widget_class.dialog_class(self, options=options)
 

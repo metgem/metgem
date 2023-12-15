@@ -1,6 +1,8 @@
 import sys
 
 import numpy as np
+from libmetgem.neighbors import kneighbors_graph_from_similarity_matrix
+from scipy.sparse import issparse
 
 from metgem.workers.base import BaseWorker, UserRequestedStopError
 from metgem.config import RADIUS
@@ -33,12 +35,18 @@ class EmbeddingWorker(BaseWorker):
     def init(self):
         raise NotImplementedError
 
+    def get_n_neighbors(self, n: int):
+        raise NotImplementedError
+
     def run(self):
         if self._io_wrapper is not None:
             sys.stdout = self._io_wrapper
 
         # Compute layout
         mask = (self._scores >= self.options.min_score).sum(axis=0) > self.options.min_scores_above_threshold
+        if issparse(self._scores):
+            mask = np.squeeze(np.asarray(mask))
+
         isolated_nodes = []
 
         if np.any(mask):
@@ -46,8 +54,17 @@ class EmbeddingWorker(BaseWorker):
 
             try:
                 matrix = self._scores[mask][:, mask]
-                matrix = 1 - matrix if self.use_distance_matrix else matrix
-                layout[mask] = self._estimator.fit_transform(matrix)
+                if issparse(self._scores):
+                    n_neighbors = self.get_n_neighbors(matrix.shape[0])
+
+                    # Compute graph from matrix (Restrict number of neighbors for each spectrum)
+                    graph = kneighbors_graph_from_similarity_matrix(matrix, n_neighbors)
+
+                    layout[mask] = self._estimator.fit_transform(graph)
+                    del graph
+                else:
+                    matrix = 1 - matrix if self.use_distance_matrix else matrix
+                    layout[mask] = self._estimator.fit_transform(matrix)
                 del matrix
             except UserRequestedStopError:
                 if self._io_wrapper is not None:

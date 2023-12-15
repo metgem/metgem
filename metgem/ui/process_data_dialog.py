@@ -7,7 +7,7 @@ from PySide6.QtWidgets import QFileDialog, QDialog, QMenu, QListWidgetItem, QMes
 from metgem.utils.network import generate_id
 from metgem.utils.gui import enumerateMenu
 from metgem.workers.core import WorkerQueue, ImportModulesWorker
-from metgem.workers.options import ReadMetadataOptions
+from metgem.workers.options import ReadMetadataOptions, AttrDict
 
 from metgem.ui.widgets import CosineOptionsWidget, AVAILABLE_NETWORK_WIDGETS
 from metgem.ui.widgets.network import short_id
@@ -37,7 +37,7 @@ class ProcessDataDialog(QDialog, Ui_ProcessFileDialog):
         super().__init__(*args, **kwargs)
 
         self._metadata_options = ReadMetadataOptions()
-        self._options = options
+        self._options = options if options is not None else AttrDict()
         self._dialog = None
         self._workers = WorkerQueue(self, ProgressDialog(self))
         self._create_network_menu = create_network_menu
@@ -69,7 +69,7 @@ class ProcessDataDialog(QDialog, Ui_ProcessFileDialog):
         self.cosine_widget = CosineOptionsWidget()
         self.layout().addWidget(self.cosine_widget, self.layout().count()-2, 0)
 
-        if options:
+        if options and options.get('cosine', None) is not None:
             self.cosine_widget.setValues(options.cosine)
 
         # Build menu to add views
@@ -104,6 +104,26 @@ class ProcessDataDialog(QDialog, Ui_ProcessFileDialog):
         self.btSelectAll.clicked.connect(lambda: self.select('all'))
         self.btSelectNone.clicked.connect(lambda: self.select('none'))
         self.btSelectInvert.clicked.connect(lambda: self.select('invert'))
+        self.cosine_widget.chkSparse.clicked.connect(self.on_sparse_clicked)
+
+    def on_sparse_clicked(self, checked: bool):
+        if not checked:
+            return
+
+        for row in range(self.lstViews.count()):
+            item = self.lstViews.item(row)
+            name = item.data(ProcessDataDialog.NameRole)
+            try:
+                widget_class = AVAILABLE_NETWORK_WIDGETS[name]
+            except KeyError:
+                continue
+
+            if not widget_class.worker_class.handle_sparse:
+                QMessageBox.warning(self, None,
+                                    "One or more added views cannot handle sparse matrix."
+                                    " Please remove them before activating sparse matrix.")
+                self.cosine_widget.chkSparse.setChecked(False)
+                return
 
     def select(self, type_):
         for row in range(self.lstViews.count()):
@@ -119,6 +139,12 @@ class ProcessDataDialog(QDialog, Ui_ProcessFileDialog):
         action = self.sender()
         widget_class = action.data()
         if widget_class is not None:
+            # If sparse scores matrix is used and the requested worker can't handle it, exit
+            if self.cosine_widget.chkSparse.isChecked() and not widget_class.worker_class.handle_sparse:
+                QMessageBox.warning(self, None,
+                                    f"{widget_class.title} view can't be added because this view cannot handle sparse scores matrix.")
+                return
+
             self._dialog = widget_class.dialog_class(self, options=None)
 
             # noinspection PyShadowingNames
@@ -162,6 +188,9 @@ class ProcessDataDialog(QDialog, Ui_ProcessFileDialog):
 
     def on_remove_views(self):
         for item in self.lstViews.selectedItems():
+            id_ = item.data(ProcessDataDialog.IdRole)
+            if id_ in self._options:
+                del self._options[id_]
             self.lstViews.takeItem(self.lstViews.row(item))
 
     def on_edit_view(self, item: QListWidgetItem = None):
@@ -194,6 +223,7 @@ class ProcessDataDialog(QDialog, Ui_ProcessFileDialog):
     def on_clear_view(self):
         if QMessageBox.question(self, None, "Clear the list?") == QMessageBox.Yes:
             self.lstViews.clear()
+            self._options = AttrDict()
 
     def on_show_options_dialog(self, filename=None):
         if filename is None:

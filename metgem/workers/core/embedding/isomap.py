@@ -16,6 +16,9 @@ class IsomapWorker(EmbeddingWorker):
         self.iterative_update = False
         self.desc = 'MDS: Iteration {value:d} of {max:d}'
 
+    def get_n_neighbors(self, n: int):
+        return self.options.n_neighbors
+
     # noinspection PyGlobalUndefined, PyUnresolvedReferences
     @staticmethod
     def import_modules():

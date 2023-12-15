@@ -7,6 +7,8 @@ from metgem.config import RADIUS
 
 
 class NetworkWorker(BaseWorker):
+
+    handle_sparse = True
     
     def __init__(self, graph, radii, options):
         super().__init__()

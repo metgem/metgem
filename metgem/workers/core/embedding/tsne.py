@@ -3,7 +3,9 @@ import io
 from metgem.workers.core.embedding.base import EmbeddingWorker, UserRequestedStopError
 from metgem.workers.options import TSNEVisualizationOptions
 
-    
+from libmetgem.neighbors import n_neighbors_from_perplexity
+
+
 class ProgressStringIO(io.StringIO):
 
     def __init__(self, parent, *args, **kwargs):
@@ -27,6 +29,8 @@ class ProgressStringIO(io.StringIO):
     
 class TSNEWorker(EmbeddingWorker):
 
+    handle_sparse = True
+
     def __init__(self, scores, options: TSNEVisualizationOptions):
         super().__init__(scores, options)
 
@@ -47,6 +51,10 @@ class TSNEWorker(EmbeddingWorker):
         self._io_wrapper = ProgressStringIO(self)
         self.iterative_update = False
         self.desc = 't-SNE: Iteration {value:d} of {max:d}'
+
+    def get_n_neighbors(self, n):
+        # Calculate number of neighbors
+        return n_neighbors_from_perplexity(n, self.options.perplexity)
 
     # noinspection PyGlobalUndefined, PyUnresolvedReferences
     @staticmethod
