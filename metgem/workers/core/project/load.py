@@ -53,7 +53,7 @@ class LoadProjectWorker(BaseWorker):
                     # Starting from version 6, scores can be a CSR sparse matrix or a dense numpy array
                     try:
                         network.scores = fid['0/scores']
-                    except:
+                    except KeyError:
                         network.scores = csr_matrix((fid['0/scores_data'],
                                                     fid['0/scores_indices'],
                                                     fid['0/scores_indptr']),
