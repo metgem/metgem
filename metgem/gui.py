@@ -65,10 +65,6 @@ def run():
     if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
         QApplication.addLibraryPath(os.path.join(sys._MEIPASS, "PySide6", "plugins"))
 
-    # Disable System menu bar as no menu is shown in macOS
-    if sys.platform.startswith('darwin'):
-        QCoreApplication.setAttribute(Qt.AA_DontUseNativeMenuBar)
-
     QCoreApplication.setOrganizationDomain(DOMAIN)
     QCoreApplication.setOrganizationName(ORGANIZATION)
     QCoreApplication.setApplicationName(APPLICATION)
