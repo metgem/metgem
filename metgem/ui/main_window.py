@@ -1441,18 +1441,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.tvNodes.sourceModel().beginResetModel()
                 # noinspection PyShadowingNames
                 errors = {}
+                exceptions = pd.errors.UndefinedVariableError, AttributeError, SyntaxError, ZeroDivisionError
                 for name, mapping in mappings.items():
+                    args = ['{} = {}'.format(name, mapping)]
+                    kwargs = dict(resolvers=[df_resolver, safe_dict], inplace=True)
                     try:
-                        df.eval('{} = {}'.format(name, mapping), resolvers=[df_resolver, safe_dict], inplace=True,
-                                engine='numexpr')
+                        df.eval(*args, **kwargs, engine='numexpr')
                     except (TypeError, NotImplementedError):
                         try:
                             # Fallback to Python engine
-                            df.eval('{} = {}'.format(name, mapping), resolvers=[df_resolver, safe_dict], inplace=True,
-                                    engine='python')
-                        except (pd.core.computation.ops.UndefinedVariableError, AttributeError, SyntaxError) as e:
+                            df.eval(*args, **kwargs, engine='python')
+                        except exceptions as e:
                             errors[name] = e
-                    except (pd.core.computation.ops.UndefinedVariableError, AttributeError, SyntaxError) as e:
+                    except exceptions as e:
                         errors[name] = e
 
                 self.check_columns_mappings_after_data_changed(set(mappings.keys()))
