@@ -67,6 +67,16 @@ COLUMN_MAPPING_NODES_COLORS = 3
 COLUMN_MAPPING_NODES_PIXMAPS = 4
 
 
+def get_table_selection(table):
+    """Returns row numbers of the rows where at least one cell is selected in a table view"""
+    selected_rows = table.selectionModel().selectedRows()
+    if selected_rows:
+        return selected_rows
+
+    selected_indexes = {index.row(): index for index in table.selectionModel().selectedIndexes()}
+    return {table.model().mapToSource(index).row() for index in selected_indexes.values()}
+
+
 class SearchWidget(QWidget, Ui_SearchWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -541,15 +551,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     @debug
     def nodes_selection(self):
-        selected_indexes = self.tvNodes.model().mapSelectionToSource(
-            self.tvNodes.selectionModel().selection()).indexes()
-        return {index.row() for index in selected_indexes}
+        return get_table_selection(self.tvNodes)
 
     @debug
     def edges_selection(self):
-        selected_indexes = self.tvEdges.model().mapSelectionToSource(
-            self.tvEdges.selectionModel().selection()).indexes()
-        return {index.row() for index in selected_indexes}
+        return get_table_selection(self.tvEdges)
 
     @debug
     def load_project(self, filename):
