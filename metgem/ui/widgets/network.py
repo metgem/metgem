@@ -74,13 +74,6 @@ class BaseFrame(QFrame, Ui_NetworkFrame):
         self._graph = graph if isinstance(graph, ig.Graph) else ig.Graph()
         self._interactions = interactions if isinstance(interactions, pd.DataFrame) else pd.DataFrame()
 
-        # Send Scale sliders to a toolbutton menu
-        self._menu = menu = QMenu()
-        action = QWidgetAction(self)
-        action.setDefaultWidget(self.sliderScale)
-        menu.addAction(action)
-        self.btRuler.setMenu(menu)
-
         self.view().setScene(AnnotationsNetworkScene())
 
         if self.unlockable:
@@ -88,6 +81,7 @@ class BaseFrame(QFrame, Ui_NetworkFrame):
         else:
             self.btLock.hide()
         self.btOptions.clicked.connect(lambda: self.editOptionsTriggered.emit(self))
+        self.btRuler.toggled.connect(lambda checked: self.sliderScale.setEnabled(checked))
         self.sliderScale.valueChanged.connect(self.on_scale_changed)
 
     def view(self):
