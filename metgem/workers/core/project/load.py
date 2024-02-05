@@ -189,11 +189,11 @@ class LoadProjectWorker(BaseWorker):
                         for key in AVAILABLE_NETWORK_OPTIONS.keys():
                             if key in network.options:
                                 # Prior to version 7, Force Directed layout was just named 'network'
-                                id_ = generate_id(ForceDirectedVisualizationOptions.name) \
-                                    if key == 'network' else generate_id(key)
+                                new_key = ForceDirectedVisualizationOptions.name if key == 'network' else key
+                                id_ = generate_id(new_key)
                                 network.options[id_] = network.options[key]
                                 del network.options[key]
-                                names_to_ids[key] = id_
+                                names_to_ids[new_key] = names_to_ids[key] = id_
 
                     # Make sure that network view options does not miss some values
                     # If values are missing, fill with default
@@ -247,7 +247,7 @@ class LoadProjectWorker(BaseWorker):
                             gxl = fid['0/graph.graphml']
                             interactions = pd.DataFrame(fid['0/interactions'])
                             graphs[ForceDirectedVisualizationOptions.name] = {'graph': parser.fromstring(gxl),
-                                                                        'interactions': interactions}
+                                                                              'interactions': interactions}
                         except KeyError:
                             pass
                     else:
