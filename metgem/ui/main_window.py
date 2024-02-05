@@ -581,7 +581,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             for id_, value in layouts.items():
                 try:
                     name = id_.split('_')[0]
-                    widget_class = widgets.AVAILABLE_NETWORK_WIDGETS[name]
+                    widget_class = widgets.AVAILABLE_NETWORK_WIDGETS[
+                        ui.widgets.ForceDirectedFrame.name if name == 'network' else name]
                 except (KeyError, IndexError):
                     pass
                 else:
