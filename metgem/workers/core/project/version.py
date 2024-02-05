@@ -1,4 +1,4 @@
-CURRENT_FORMAT_VERSION = 6
+CURRENT_FORMAT_VERSION = 7
 
 
 class UnsupportedVersionError(OSError):

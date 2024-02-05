@@ -1518,7 +1518,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return
         self._dialog = ui.NumberizeDialog(self, views={k: f"{v.widget().title} ({v.widget().short_id})"
                                                        for k, v in docks if
-                                                       v.widget().name == widgets.NetworkFrame.name})
+                                                       v.widget().name == widgets.ForceDirectedFrame.name})
 
         def do_numbering(result):
             if result == QDialog.Accepted:
@@ -1781,7 +1781,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                         if widget_class is not None:
                             widget = self.add_network_widget(widget_class, id_=id_)
                             if widget is not None:
-                                if widget.name == widgets.NetworkFrame.name:
+                                if widget.name == widgets.ForceDirectedFrame.name:
                                     self._workers.append(lambda _, w=widget: self.prepare_generate_network_worker(w))
                                 self._workers.append(lambda _, w=widget: w.create_draw_worker())
                                 self._workers.append(lambda _: self.update_status_widgets())
@@ -1852,7 +1852,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                         self.has_unsaved_changes = True
 
                         if widget is not None:
-                            if widget.name == widgets.NetworkFrame.name:
+                            if widget.name == widgets.ForceDirectedFrame.name:
                                 self._workers.append(lambda _: self.prepare_generate_network_worker(widget))
                             self._workers.append(lambda _: widget.create_draw_worker())
                             self._workers.append(lambda _: self.update_status_widgets())
@@ -1895,7 +1895,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                         self.has_unsaved_changes = True
 
                         widget.reset_layout()
-                        if widget.name == widgets.NetworkFrame.name:
+                        if widget.name == widgets.ForceDirectedFrame.name:
                             widget.interactions = pd.DataFrame()
                             self._workers.append(lambda _: self.prepare_generate_network_worker(widget,
                                                                                                 new_options,
@@ -2609,14 +2609,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if mzs is None:
             mzs = np.zeros(self._network.scores.shape[:1], dtype=int)
 
-        worker = workers_core.GenerateNetworkWorker(self._network.scores, mzs, widget.graph,
-                                                    options, keep_vertices=keep_vertices)
+        worker = workers_core.ForceDirectedGraphWorker(self._network.scores, mzs, widget.graph,
+                                                       options, keep_vertices=keep_vertices)
 
         if options.max_connected_nodes > 0:
             results = {}
 
             # noinspection PyShadowingNames
-            def create_max_connected_components_worker(worker: workers_core.GenerateNetworkWorker):
+            def create_max_connected_components_worker(worker: workers_core.ForceDirectedGraphWorker):
                 interactions, graph = worker.result()
                 results['interactions'] = interactions
                 return workers_core.MaxConnectedComponentsWorker(graph, options)
@@ -2630,7 +2630,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return [worker, create_max_connected_components_worker, save]
         else:
             # noinspection PyShadowingNames
-            def save(worker: workers_core.GenerateNetworkWorker):
+            def save(worker: workers_core.ForceDirectedGraphWorker):
                 interactions, graph = worker.result()
                 widget.interactions = interactions
                 widget.graph = graph

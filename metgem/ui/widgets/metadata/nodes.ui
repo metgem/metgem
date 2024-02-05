@@ -284,10 +284,10 @@
      <item>
       <widget class="QToolButton" name="btNumberizeClusters">
        <property name="toolTip">
-        <string>Numberize clusters from classical network view</string>
+        <string>Numberize clusters from Force Directed view</string>
        </property>
        <property name="statusTip">
-        <string>Numberize clusters from classical network view</string>
+        <string>Numberize clusters from Force Directed view</string>
        </property>
        <property name="text">
         <string/>
@@ -871,10 +871,10 @@
     <string>Numberize</string>
    </property>
    <property name="toolTip">
-    <string>Numberize clusters from classical network view</string>
+    <string>Numberize clusters from Force Directed view</string>
    </property>
    <property name="statusTip">
-    <string>Numberize clusters from classical network view</string>
+    <string>Numberize clusters from Force Directed view</string>
    </property>
   </action>
   <action name="actionFilterByMZ">

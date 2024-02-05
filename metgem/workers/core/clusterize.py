@@ -6,7 +6,7 @@ from metgem.workers.options import ClusterizeOptions
 
 class ClusterizeWorker(BaseWorker):
 
-    def __init__(self, widget: 'NetworkFrame', options: ClusterizeOptions):
+    def __init__(self, widget: 'BaseFrame', options: ClusterizeOptions):
         super().__init__()
         self._widget = widget
         self.options = options

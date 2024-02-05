@@ -6,7 +6,7 @@ from metgem.workers.base import BaseWorker
 from metgem.config import RADIUS
 
 
-class NetworkWorker(BaseWorker):
+class ForceDirectedWorker(BaseWorker):
 
     handle_sparse = True
     

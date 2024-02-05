@@ -1,10 +1,10 @@
 from metgem.workers.base import BaseWorker
-from metgem.workers.options import NetworkVisualizationOptions
+from metgem.workers.options import ForceDirectedVisualizationOptions
 
 
 class MaxConnectedComponentsWorker(BaseWorker):
 
-    def __init__(self, graph, options: NetworkVisualizationOptions,
+    def __init__(self, graph, options: ForceDirectedVisualizationOptions,
                  keep_vertices=False):
         super().__init__()
         self._graph = graph

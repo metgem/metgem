@@ -3,13 +3,13 @@ import pandas as pd
 from libmetgem.network import generate_network
 
 from metgem.workers.base import BaseWorker
-from metgem.workers.options import NetworkVisualizationOptions
+from metgem.workers.options import ForceDirectedVisualizationOptions
 from metgem.config import RADIUS
 
 
-class GenerateNetworkWorker(BaseWorker):
+class ForceDirectedGraphWorker(BaseWorker):
 
-    def __init__(self, scores, mzs, graph, options: NetworkVisualizationOptions,
+    def __init__(self, scores, mzs, graph, options: ForceDirectedVisualizationOptions,
                  keep_vertices=False):
         super().__init__()
         self._scores = scores

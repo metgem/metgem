@@ -3,7 +3,7 @@ from metgem.ui.widgets.metadata import (CsvDelimiterCombo,
                                         NodesWidget, EdgesWidget,
                                         NodeTableView, EdgeTableView)
 from metgem.ui.widgets.annotations.table import AnnotationsWidget, AnnotationsModel
-from metgem.ui.widgets.options_widgets import (TSNEOptionsWidget, NetworkOptionsWidget, MDSOptionsWidget,
+from metgem.ui.widgets.options_widgets import (TSNEOptionsWidget, ForceDirectedOptionsWidget, MDSOptionsWidget,
                                                UMAPOptionsWidget, IsomapOptionsWidget, PHATEOptionsWidget,
                                                CosineOptionsWidget, QueryDatabasesOptionsWidget)
 
@@ -13,7 +13,7 @@ from metgem.ui.widgets.delegates import AutoToolTipItemDelegate, LibraryQualityD
 from metgem.ui.widgets.loading_views import (LoadingListView, LoadingListWidget,
                                              LoadingTableView, LoadingTableWidget,
                                              LoadingTreeView, LoadingTreeWidget)
-from metgem.ui.widgets.network import NetworkFrame, TSNEFrame, AVAILABLE_NETWORK_WIDGETS
+from metgem.ui.widgets.network import ForceDirectedFrame, TSNEFrame, AVAILABLE_NETWORK_WIDGETS
 from metgem.ui.widgets.slider import Slider
 from metgem.ui.widgets.spectrum import (SpectrumCanvas, SpectrumWidget, SpectraComparisonWidget)
 from metgem.ui.widgets.structure import StructureSvgWidget

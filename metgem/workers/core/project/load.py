@@ -10,7 +10,7 @@ from metgem.workers.struct import StandardsResult
 
 from metgem.workers.base import BaseWorker
 from metgem.workers.options import AttrDict, AVAILABLE_NETWORK_OPTIONS, AVAILABLE_OPTIONS, \
-    NetworkVisualizationOptions, TSNEVisualizationOptions
+    ForceDirectedVisualizationOptions, TSNEVisualizationOptions
 
 from metgem.workers.core.project.mnz import MnzFile
 from metgem.workers.core.project.spectra_list import SpectraList
@@ -31,7 +31,7 @@ class LoadProjectWorker(BaseWorker):
 
     def run(self):
         try:
-            with MnzFile(self.filename) as fid:
+            with (MnzFile(self.filename) as fid):
                 try:
                     version = int(fid['version'])
                 except ValueError:
@@ -43,7 +43,7 @@ class LoadProjectWorker(BaseWorker):
                                                   + "This file format is not supported anymore.\n"
                                                   + "Please generate networks from raw data again")
 
-                elif version in (2, 3, 4, 5, CURRENT_FORMAT_VERSION):
+                elif version in (2, 3, 4, 5, 6, CURRENT_FORMAT_VERSION):
                     # Create network object
                     network = Network()
                     network.lazyloaded = True
@@ -182,18 +182,22 @@ class LoadProjectWorker(BaseWorker):
                         network.options = AttrDict(fid['0/options.json'])
                     except KeyError:
                         network.options = AttrDict({})
+
                     # Prior to version 5, network views options was unique for each view
                     # Generate an id for those views
                     if version < 5:
                         for key in AVAILABLE_NETWORK_OPTIONS.keys():
                             if key in network.options:
-                                id_ = generate_id(key)
+                                # Prior to version 7, Force Directed layout was just named 'network'
+                                id_ = generate_id(ForceDirectedVisualizationOptions.name) \
+                                    if key == 'network' else generate_id(key)
                                 network.options[id_] = network.options[key]
                                 del network.options[key]
                                 names_to_ids[key] = id_
+
                     # Make sure that network view options does not miss some values
                     # If values are missing, fill with default
-                    for key, val in network.options.items():
+                    for key in network.options:
                         if '_' in key:  # Network views options
                             name = key.split('_')[0]
                             options_class = AVAILABLE_NETWORK_OPTIONS.get(name, None)
@@ -203,7 +207,7 @@ class LoadProjectWorker(BaseWorker):
                                 network.options[key] = opt
                             # Prior to version 3, max_connected_nodes value was set 1000 but ignored
                             # Set it to 0 to keep the same behavior
-                            if version < 3 and name == NetworkVisualizationOptions.name:
+                            if version < 3 and name == ForceDirectedVisualizationOptions.name:
                                 network.options[key].max_connected_nodes = 0
                         elif key in AVAILABLE_OPTIONS:
                             options_class = AVAILABLE_OPTIONS.get(key, None)
@@ -242,7 +246,7 @@ class LoadProjectWorker(BaseWorker):
                         try:
                             gxl = fid['0/graph.graphml']
                             interactions = pd.DataFrame(fid['0/interactions'])
-                            graphs[NetworkVisualizationOptions.name] = {'graph': parser.fromstring(gxl),
+                            graphs[ForceDirectedVisualizationOptions.name] = {'graph': parser.fromstring(gxl),
                                                                         'interactions': interactions}
                         except KeyError:
                             pass
@@ -265,13 +269,13 @@ class LoadProjectWorker(BaseWorker):
                     # Load layouts
                     layouts = {}
                     if version <= 3:
-                        graph = graphs[NetworkVisualizationOptions.name]
+                        graph = graphs[ForceDirectedVisualizationOptions.name]
                         colors = graph.vs['__color'] if '__color' in graph.vs.attributes() else {}
                         if isinstance(colors, list):
                             colors = {str(i): c for i, c in enumerate(colors) if c is not None}
                         radii = graph.vs['__size'] if '__size' in graph.vs.attributes() else {}
 
-                        layouts[NetworkVisualizationOptions.name] = {
+                        layouts[ForceDirectedVisualizationOptions.name] = {
                             'layout': fid['0/network_layout'],
                             # Prior to version 4, colors of nodes were stored as graph attributes
                             'colors': colors,

@@ -1,6 +1,6 @@
 from metgem.ui.main_window import MainWindow
 from metgem.ui.process_data_dialog import ProcessDataDialog
-from metgem.ui.edit_options_dialog import (EditTSNEOptionsDialog, EditNetworkOptionsDialog, EditMDSOptionsDialog,
+from metgem.ui.edit_options_dialog import (EditTSNEOptionsDialog, EditForceDirectedOptionsDialog, EditMDSOptionsDialog,
                                            EditIsomapOptionsDialog, EditUMAPOptionsDialog, EditPHATEOptionsDialog)
 from metgem.ui.current_parameters_dialog import CurrentParametersDialog
 from metgem.ui.download_databases_dialog import DownloadDatabasesDialog

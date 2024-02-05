@@ -8,7 +8,7 @@ from PySide6.QtGui import QPen
 from PySide6.QtWidgets import QFrame, QMenu, QWidgetAction, QWidget, QGraphicsLineItem
 
 from metgem.ui.widgets.annotations import AnnotationsNetworkScene
-from metgem.ui.edit_options_dialog import (EditNetworkOptionsDialog, EditTSNEOptionsDialog,
+from metgem.ui.edit_options_dialog import (EditForceDirectedOptionsDialog, EditTSNEOptionsDialog,
                                            EditMDSOptionsDialog, EditIsomapOptionsDialog,
                                            EditUMAPOptionsDialog, EditPHATEOptionsDialog)
 from metgem import config
@@ -210,13 +210,13 @@ class BaseFrame(QFrame, Ui_NetworkFrame):
                                               self._hide_isolated_nodes)
 
 
-class NetworkFrame(BaseFrame):
-    title = 'Network'
+class ForceDirectedFrame(BaseFrame):
+    title = 'Force Directed'
     extra = False
     unlockable = True
-    dialog_class = EditNetworkOptionsDialog
-    worker_class = workers_core.NetworkWorker
-    options_class = workers_opts.NetworkVisualizationOptions
+    dialog_class = EditForceDirectedOptionsDialog
+    worker_class = workers_core.ForceDirectedWorker
+    options_class = workers_opts.ForceDirectedVisualizationOptions
     use_edges = True
 
     def process_graph_before_export(self, g):
@@ -231,7 +231,7 @@ class NetworkFrame(BaseFrame):
         return self.worker_class(self._graph, self.scene().nodesRadii(), options)
 
 
-class TSNEFrame(NetworkFrame):
+class TSNEFrame(ForceDirectedFrame):
     title = 't-SNE'
     extra = False
     unlockable = False

@@ -1,7 +1,7 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QDialogButtonBox
 
-from metgem.ui.widgets import (TSNEOptionsWidget, NetworkOptionsWidget, MDSOptionsWidget,
+from metgem.ui.widgets import (TSNEOptionsWidget, ForceDirectedOptionsWidget, MDSOptionsWidget,
                                UMAPOptionsWidget, IsomapOptionsWidget, PHATEOptionsWidget)
 
 
@@ -36,10 +36,10 @@ class EditOptionsDialogBase(QDialog):
         return self.options_widget.getValues()
 
 
-class EditNetworkOptionsDialog(EditOptionsDialogBase):
-    """Dialog to modify the Network options"""
+class EditForceDirectedOptionsDialog(EditOptionsDialogBase):
+    """Dialog to modify the Force Directed options"""
     
-    options_class = NetworkOptionsWidget
+    options_class = ForceDirectedOptionsWidget
 
 
 class EditTSNEOptionsDialog(EditOptionsDialogBase):

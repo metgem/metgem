@@ -139,16 +139,16 @@ class VisualizationOptions(Options):
     pass
 
 
-class NetworkVisualizationOptions(VisualizationOptions):
-    """Class containing Network visualization options.
+class ForceDirectedVisualizationOptions(VisualizationOptions):
+    """Class containing Force Directed visualization options.
 
     Attributes:
-        top_k (int): Maximum numbers of edges for each nodes in the network. Default value = 10
+        top_k (int): Maximum numbers of edges for each node in the network. Default value = 10
         pairs_min_cosine (float): Minimum cosine score for network generation. Default value = 0.65
-        max_connected_nodes (int): Maximum size of a Network cluster. Default value = 1000
+        max_connected_nodes (int): Maximum size of a Force Directed cluster. Default value = 1000
 
     """
-    name = 'network'
+    name = 'fd'
 
     def __init__(self):
         super().__init__(top_k=10,
@@ -227,3 +227,5 @@ class UMAPVisualizationOptions(VisualizationOptions):
 
 AVAILABLE_OPTIONS = {obj.name: obj for obj in Options.get_subclasses()}
 AVAILABLE_NETWORK_OPTIONS = {obj.name: obj for obj in VisualizationOptions.get_subclasses()}
+# Keep old name for Force Directed layout
+AVAILABLE_NETWORK_OPTIONS['network'] = ForceDirectedVisualizationOptions

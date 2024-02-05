@@ -6,7 +6,7 @@ from metgem.workers.options import NumberizeOptions
 
 class NumberizeWorker(BaseWorker):
 
-    def __init__(self, widget: 'NetworkFrame', options: NumberizeOptions):
+    def __init__(self, widget: 'BaseFrame', options: NumberizeOptions):
         super().__init__()
         self._widget = widget
         self.options = options

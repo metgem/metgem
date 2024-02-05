@@ -22,7 +22,7 @@ class ProcessDataDialog(QDialog, Ui_ProcessFileDialog):
     Creates a dialog containing 4 widgets:
         -file opening widget: to select a .mgf file to process and a .txt meta data file
         -CosineComputationOptions containing widget: to modify the cosine computation parameters
-        -NetworkVisualizationOptions containing widget: to modify the Network visualization parameters
+        -ForceDirectedVisualizationOptions containing widget: to modify the Network visualization parameters
         -TSNEVisualizationOptions containing widget: to modify the TSNE visualization parameters
 
     If validated:   - the entered parameters are selected as default values for the next actions.

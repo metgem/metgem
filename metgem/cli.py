@@ -11,9 +11,9 @@ import pandas as pd
 from metgem.config import RADIUS
 from metgem.utils.network import Network, generate_id
 from metgem.workers.core import (ReadDataWorker, ComputeScoresWorker,
-                                 GenerateNetworkWorker, NetworkWorker, MaxConnectedComponentsWorker,
+                                 ForceDirectedGraphWorker, ForceDirectedWorker, MaxConnectedComponentsWorker,
                                  TSNEWorker, SaveProjectWorker)
-from metgem.workers.options import (CosineComputationOptions, NetworkVisualizationOptions,
+from metgem.workers.options import (CosineComputationOptions, ForceDirectedVisualizationOptions,
                                     TSNEVisualizationOptions)
 
 
@@ -109,11 +109,11 @@ def save_project(project, *args, **kwargs):
 @click.option('--pairs-min-cosine', type=float, default=0.7,
               help='Minimum cosine score for network generation.')
 @click.option('--max-connected-nodes', type=int, default=1000,
-              help='Maximum size of a Network cluster.')
+              help='Maximum size of a Force Directed cluster.')
 @click.pass_obj
 def add_network(project, **opts):
     add_network.counter += 1
-    id_ = generate_id(NetworkVisualizationOptions.name)
+    id_ = generate_id(ForceDirectedVisualizationOptions.name)
 
     graph = ig.Graph()
     nodes_idx = np.arange(project.network.scores.shape[0])
@@ -121,26 +121,26 @@ def add_network(project, **opts):
 
     radii = np.asarray([RADIUS for _ in nodes_idx])
 
-    project.network.options[id_] = NetworkVisualizationOptions()
+    project.network.options[id_] = ForceDirectedVisualizationOptions()
     project.network.options[id_].update(opts)
 
-    gen_worker = GenerateNetworkWorker(project.network.scores, project.network.mzs, graph,
-                                       project.network.options[id_])
+    graph_worker = ForceDirectedGraphWorker(project.network.scores, project.network.mzs, graph,
+                                            project.network.options[id_])
     max_cc_worker = MaxConnectedComponentsWorker(graph, project.network.options[id_])\
         if opts['max_connected_nodes'] > 0 else None
 
-    net_worker = NetworkWorker(graph, radii)
+    fd_worker = ForceDirectedWorker(graph, radii)
 
-    with click.progressbar(length=gen_worker.max + net_worker.max,
+    with click.progressbar(length=graph_worker.max + fd_worker.max,
                            label=f'Generating Network {add_network.counter}') as pbar:
-        gen_worker.updated.connect(pbar.update)
-        interactions, graph = gen_worker.run()
+        graph_worker.updated.connect(pbar.update)
+        interactions, graph = graph_worker.run()
 
         if max_cc_worker is not None:
             graph = max_cc_worker.run()
 
-        net_worker.updated.connect(lambda v: pbar.update(gen_worker.max + v - pbar.pos))
-        layout, isolated_nodes = net_worker.run()
+        fd_worker.updated.connect(lambda v: pbar.update(graph_worker.max + v - pbar.pos))
+        layout, isolated_nodes = fd_worker.run()
 
     project.graphs[id_] = {'graph': graph,
                            'interactions': interactions}

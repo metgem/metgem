@@ -7,9 +7,9 @@ from metgem.workers.options import (CosineComputationOptions,
                                     PHATEVisualizationOptions,
                                     TSNEVisualizationOptions,
                                     UMAPVisualizationOptions,
-                                    NetworkVisualizationOptions)
+                                    ForceDirectedVisualizationOptions)
 
-from metgem.ui.widgets.network_options_widget_ui import Ui_gbNetworkOptions
+from metgem.ui.widgets.force_directed_options_widget_ui import Ui_gbForceDirectedOptions
 from metgem.ui.widgets.cosine_options_widget_ui import Ui_gbCosineOptions
 from metgem.ui.widgets.tsne_options_widget_ui import Ui_gbTSNEOptions
 from metgem.ui.widgets.umap_options_widget_ui import Ui_gbOptions as Ui_gbUMAPOptions
@@ -19,31 +19,31 @@ from metgem.ui.widgets.phate_options_widget_ui import Ui_gbOptions as Ui_gbPHATE
 from metgem.ui.widgets.databases_options_widget_ui import Ui_gbDatabaseOptions
 
 
-class NetworkOptionsWidget(QGroupBox, Ui_gbNetworkOptions):
-    """Create a widget containing Network visualization options"""
+class ForceDirectedOptionsWidget(QGroupBox, Ui_gbForceDirectedOptions):
+    """Create a widget containing Force Directed visualization options"""
     
     def __init__(self):
         super().__init__()
         self.setupUi(self)
 
     def getValues(self):
-        options = NetworkVisualizationOptions()
-        options.top_k = self.spinNetworkMaxNeighbor.value()
-        options.pairs_min_cosine = self.spinNetworkMinScore.value()
-        options.max_connected_nodes = self.spinNetworkMaxConnectedComponentSize.value()
+        options = ForceDirectedVisualizationOptions()
+        options.top_k = self.spinForceDirectedMaxNeighbor.value()
+        options.pairs_min_cosine = self.spinForceDirectedMinScore.value()
+        options.max_connected_nodes = self.spinForceDirectedMaxConnectedComponentSize.value()
         return options
 
     def setValues(self, options):
-        """Modify Network visualization options
+        """Modify Force Directed visualization options
 
         Args: 
-            options (NetworkVisualizationOptions): Modifies the Widget's
-            spinBoxes to match the Network visualization options.  
+            options (ForceDirectedVisualizationOptions): Modifies the Widget's
+            spinBoxes to match the Force Directed visualization options.
         """
         
-        self.spinNetworkMaxNeighbor.setValue(options.top_k)
-        self.spinNetworkMinScore.setValue(options.pairs_min_cosine)
-        self.spinNetworkMaxConnectedComponentSize.setValue(options.max_connected_nodes)
+        self.spinForceDirectedMaxNeighbor.setValue(options.top_k)
+        self.spinForceDirectedMinScore.setValue(options.pairs_min_cosine)
+        self.spinForceDirectedMaxConnectedComponentSize.setValue(options.max_connected_nodes)
 
 
 class CosineOptionsWidget(QGroupBox, Ui_gbCosineOptions):
