@@ -5,7 +5,7 @@ import igraph as ig
 import pandas as pd
 from PySide6.QtCore import Signal, Qt, QObject
 from PySide6.QtGui import QPen
-from PySide6.QtWidgets import QFrame, QMenu, QWidgetAction, QWidget, QGraphicsLineItem
+from PySide6.QtWidgets import QFrame, QWidget, QGraphicsLineItem
 
 from metgem.ui.widgets.annotations import AnnotationsNetworkScene
 from metgem.ui.edit_options_dialog import (EditForceDirectedOptionsDialog, EditTSNEOptionsDialog,
@@ -81,7 +81,7 @@ class BaseFrame(QFrame, Ui_NetworkFrame):
         else:
             self.btLock.hide()
         self.btOptions.clicked.connect(lambda: self.editOptionsTriggered.emit(self))
-        self.btRuler.toggled.connect(lambda checked: self.sliderScale.setEnabled(checked))
+        self.btRuler.toggled.connect(self.sliderScale.setEnabled)
         self.sliderScale.valueChanged.connect(self.on_scale_changed)
 
     def view(self):
