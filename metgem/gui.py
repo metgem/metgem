@@ -23,6 +23,12 @@ def run():
             from IPython import embed
 
             sys.exit(embed())
+        elif sys.argv[1] == "-sS" and sys.argv[2] == "-c":
+            # Workaround for mac version detection in 'packaging'
+            # https://github.com/pypa/packaging/blob/4d8534061364e3cbfee582192ab81a095ec2db51/src/packaging/tags.py#L413
+            import platform
+            print(platform.mac_ver()[0])
+            sys.exit()
 
     import argparse
     import importlib
