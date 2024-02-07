@@ -1,33 +1,61 @@
-from PySide6.QtWidgets import QGroupBox
+from PySide6.QtWidgets import QGroupBox, QWidget
 
-from metgem.workers.options import (CosineComputationOptions,
-                                    QueryDatabasesOptions,
-                                    IsomapVisualizationOptions,
-                                    MDSVisualizationOptions,
-                                    PHATEVisualizationOptions,
+from metgem.workers.options import (ForceDirectedVisualizationOptions,
                                     TSNEVisualizationOptions,
                                     UMAPVisualizationOptions,
-                                    ForceDirectedVisualizationOptions)
+                                    MDSVisualizationOptions,
+                                    IsomapVisualizationOptions,
+                                    PHATEVisualizationOptions,
+                                    CosineComputationOptions,
+                                    QueryDatabasesOptions,
+                                    )
 
-from metgem.ui.widgets.force_directed_options_widget_ui import Ui_gbForceDirectedOptions
+from metgem.ui.widgets.force_directed_options_widget_ui import Ui_ForceDirectedOptionsWidget
+from metgem.ui.widgets.tsne_options_widget_ui import Ui_TSNEOptionsWidget
+from metgem.ui.widgets.umap_options_widget_ui import Ui_UMAPOptionsWidget
+from metgem.ui.widgets.mds_options_widget_ui import Ui_MDSOptionsWidget
+from metgem.ui.widgets.isomap_options_widget_ui import Ui_IsomapOptionsWidget
+from metgem.ui.widgets.phate_options_widget_ui import Ui_PHATEOptionsWidget
 from metgem.ui.widgets.cosine_options_widget_ui import Ui_gbCosineOptions
-from metgem.ui.widgets.tsne_options_widget_ui import Ui_gbTSNEOptions
-from metgem.ui.widgets.umap_options_widget_ui import Ui_gbOptions as Ui_gbUMAPOptions
-from metgem.ui.widgets.mds_options_widget_ui import Ui_gbOptions as Ui_gbMDSOptions
-from metgem.ui.widgets.isomap_options_widget_ui import Ui_gbOptions as Ui_gbIsomapOptions
-from metgem.ui.widgets.phate_options_widget_ui import Ui_gbOptions as Ui_gbPHATEOptions
 from metgem.ui.widgets.databases_options_widget_ui import Ui_gbDatabaseOptions
 
 
-class ForceDirectedOptionsWidget(QGroupBox, Ui_gbForceDirectedOptions):
-    """Create a widget containing Force Directed visualization options"""
-    
+class OptionsWidgetMixin:
+    options_class = None
+
     def __init__(self):
         super().__init__()
         self.setupUi(self)
 
     def getValues(self):
-        options = ForceDirectedVisualizationOptions()
+        return self.options_class()
+
+    def setValues(self, options):
+        pass
+
+
+class VisualizationOptionsWidget(OptionsWidgetMixin, QWidget):
+    def getValues(self):
+        options = super().getValues()
+        options.title = self.editTitle.text() if self.editTitle.text() else None
+        return options
+
+    def setValues(self, options):
+        super().setValues(options)
+        self.editTitle.setText(options.title)
+
+
+class OptionsGroupBox(OptionsWidgetMixin, QGroupBox):
+    pass
+
+
+class ForceDirectedOptionsWidget(VisualizationOptionsWidget, Ui_ForceDirectedOptionsWidget):
+    """Create a widget containing Force Directed visualization options"""
+
+    options_class = ForceDirectedVisualizationOptions
+
+    def getValues(self):
+        options = super().getValues()
         options.top_k = self.spinForceDirectedMaxNeighbor.value()
         options.pairs_min_cosine = self.spinForceDirectedMinScore.value()
         options.max_connected_nodes = self.spinForceDirectedMaxConnectedComponentSize.value()
@@ -40,72 +68,22 @@ class ForceDirectedOptionsWidget(QGroupBox, Ui_gbForceDirectedOptions):
             options (ForceDirectedVisualizationOptions): Modifies the Widget's
             spinBoxes to match the Force Directed visualization options.
         """
-        
+
+        super().setValues(options)
         self.spinForceDirectedMaxNeighbor.setValue(options.top_k)
         self.spinForceDirectedMinScore.setValue(options.pairs_min_cosine)
         self.spinForceDirectedMaxConnectedComponentSize.setValue(options.max_connected_nodes)
 
 
-class CosineOptionsWidget(QGroupBox, Ui_gbCosineOptions):
-    """Create a widget containing Cosine computations options"""
-
-    def __init__(self):
-        super().__init__()
-        self.setupUi(self)
-
-        self.chkUseMinMZ.stateChanged.connect(self.spinMinMZ.setEnabled)
-        self.chkUseParentFiltering.stateChanged.connect(self.spinParentFilterTolerance.setEnabled)
-        self.chkUseMinIntensityFiltering.stateChanged.connect(self.spinMinIntensity.setEnabled)
-        self.chkUseWindowRankFiltering.stateChanged.connect(self.spinMinMatchedPeaksSearch.setEnabled)
-        self.chkUseWindowRankFiltering.stateChanged.connect(self.spinMatchedPeaksWindow.setEnabled)
-
-    def getValues(self):
-        options = CosineComputationOptions()
-        options.mz_tolerance = self.spinMZTolerance.value()
-        options.min_matched_peaks = self.spinMinMatchedPeaks.value()
-        options.min_mz = self.spinMinMZ.value()
-        options.parent_filter_tolerance = self.spinParentFilterTolerance.value()
-        options.min_intensity = self.spinMinIntensity.value()
-        options.min_matched_peaks_search = self.spinMinMatchedPeaksSearch.value()
-        options.matched_peaks_window = self.spinMatchedPeaksWindow.value()
-        options.is_ms1_data = self.chkMS1Data.isChecked()
-        options.dense_output = not self.chkSparse.isChecked()
-        options.use_filtering = self.gbFiltering.isChecked()
-        options.use_min_mz_filter = self.chkUseMinMZ.isChecked()
-        options.use_min_intensity_filter = self.chkUseMinIntensityFiltering.isChecked()
-        options.use_parent_filter = self.chkUseParentFiltering.isChecked()
-        options.use_window_rank_filter = self.chkUseWindowRankFiltering.isChecked()
-        
-        return options
-
-    def setValues(self, options):
-        self.spinMZTolerance.setValue(options.mz_tolerance)
-        self.spinMinMatchedPeaks.setValue(options.min_matched_peaks)
-        self.spinMinMZ.setValue(options.min_mz)
-        self.spinParentFilterTolerance.setValue(options.parent_filter_tolerance)
-        self.spinMinIntensity.setValue(options.min_intensity)
-        self.spinMinMatchedPeaksSearch.setValue(options.min_matched_peaks_search)
-        self.spinMatchedPeaksWindow.setValue(options.matched_peaks_window)
-        self.chkMS1Data.setChecked(options.is_ms1_data)
-        self.chkSparse.setChecked(not options.dense_output)
-        self.gbFiltering.setChecked(options.use_filtering)
-        self.chkUseMinMZ.setChecked(options.use_min_mz_filter)
-        self.chkUseMinIntensityFiltering.setChecked(options.use_min_intensity_filter)
-        self.chkUseParentFiltering.setChecked(options.use_parent_filter)
-        self.chkUseWindowRankFiltering.setChecked(options.use_window_rank_filter)
-
-
-class TSNEOptionsWidget(QGroupBox, Ui_gbTSNEOptions):
+class TSNEOptionsWidget(VisualizationOptionsWidget, Ui_TSNEOptionsWidget):
     """Create a widget containing t-SNE visualization options"""
 
-    def __init__(self):
-        super().__init__()
-        self.setupUi(self)
+    options_class = TSNEVisualizationOptions
 
     def getValues(self):
         """Return t-SNE options"""
 
-        options = TSNEVisualizationOptions()
+        options = super().getValues()
         options.min_score = self.spinMinScore.value()
         options.min_scores_above_threshold = self.spinMinScoresAboveThreshold.value()
         options.n_iter = self.spinNumIterations.value()
@@ -126,6 +104,7 @@ class TSNEOptionsWidget(QGroupBox, Ui_gbTSNEOptions):
             to match the t-SNE visualization options.
         """
 
+        super().setValues(options)
         self.spinMinScore.setValue(options.min_score)
         self.spinMinScoresAboveThreshold.setValue(options.min_scores_above_threshold)
         self.spinNumIterations.setValue(options.n_iter)
@@ -137,18 +116,19 @@ class TSNEOptionsWidget(QGroupBox, Ui_gbTSNEOptions):
         self.chkRandomState.setChecked(options.random)
 
 
-class UMAPOptionsWidget(QGroupBox, Ui_gbUMAPOptions):
+class UMAPOptionsWidget(VisualizationOptionsWidget, Ui_UMAPOptionsWidget):
     """Create a widget containing UMAP visualization options"""
+
+    options_class = UMAPVisualizationOptions
 
     def __init__(self):
         super().__init__()
-        self.setupUi(self)
         self.cbNumIterations.stateChanged.connect(self.spinNumIterations.setEnabled)
 
     def getValues(self):
         """Return UMAP options"""
 
-        options = UMAPVisualizationOptions()
+        options = super().getValues()
         options.min_score = self.spinMinScore.value()
         options.min_scores_above_threshold = self.spinMinScoresAboveThreshold.value()
         options.n_epochs = self.spinNumIterations.value() if self.cbNumIterations.isChecked() else None
@@ -158,6 +138,7 @@ class UMAPOptionsWidget(QGroupBox, Ui_gbUMAPOptions):
         return options
 
     def setValues(self, options):
+        super().setValues(options)
         self.spinMinScore.setValue(options.min_score)
         self.spinMinScoresAboveThreshold.setValue(options.min_scores_above_threshold)
         if options.n_epochs is not None:
@@ -171,15 +152,13 @@ class UMAPOptionsWidget(QGroupBox, Ui_gbUMAPOptions):
         self.chkRandomState.setChecked(options.random)
 
 
-class MDSOptionsWidget(QGroupBox, Ui_gbMDSOptions):
+class MDSOptionsWidget(VisualizationOptionsWidget, Ui_MDSOptionsWidget):
     """Create a widget containing MDS visualization options"""
 
-    def __init__(self):
-        super().__init__()
-        self.setupUi(self)
+    options_class = MDSVisualizationOptions
 
     def getValues(self):
-        options = MDSVisualizationOptions()
+        options = super().getValues()
         options.min_score = self.spinMinScore.value()
         options.min_scores_above_threshold = self.spinMinScoresAboveThreshold.value()
         options.max_iter = self.spinNumIterations.value()
@@ -188,21 +167,20 @@ class MDSOptionsWidget(QGroupBox, Ui_gbMDSOptions):
         return options
 
     def setValues(self, options):
+        super().setValues(options)
         self.spinMinScore.setValue(options.min_score)
         self.spinMinScoresAboveThreshold.setValue(options.min_scores_above_threshold)
         self.spinNumIterations.setValue(options.max_iter)
         self.chkRandomState.setChecked(options.random)
 
 
-class IsomapOptionsWidget(QGroupBox, Ui_gbIsomapOptions):
+class IsomapOptionsWidget(VisualizationOptionsWidget, Ui_IsomapOptionsWidget):
     """Create a widget containing Isomap visualization options"""
 
-    def __init__(self):
-        super().__init__()
-        self.setupUi(self)
+    options_class = IsomapVisualizationOptions
 
     def getValues(self):
-        options = IsomapVisualizationOptions()
+        options = super().getValues()
         options.min_score = self.spinMinScore.value()
         options.min_scores_above_threshold = self.spinMinScoresAboveThreshold.value()
         options.max_iter = self.spinNumIterations.value()
@@ -211,23 +189,22 @@ class IsomapOptionsWidget(QGroupBox, Ui_gbIsomapOptions):
         return options
 
     def setValues(self, options):
+        super().setValues(options)
         self.spinMinScore.setValue(options.min_score)
         self.spinMinScoresAboveThreshold.setValue(options.min_scores_above_threshold)
         self.spinNumIterations.setValue(options.max_iter)
         self.spinNumNeighbors.setValue(options.n_neighbors)
 
 
-class PHATEOptionsWidget(QGroupBox, Ui_gbPHATEOptions):
+class PHATEOptionsWidget(VisualizationOptionsWidget, Ui_PHATEOptionsWidget):
     """Create a widget containing PHATE visualization options"""
 
-    def __init__(self):
-        super().__init__()
-        self.setupUi(self)
+    options_class = PHATEVisualizationOptions
 
     def getValues(self):
         """Return PHATE options"""
 
-        options = PHATEVisualizationOptions()
+        options = super().getValues()
         options.min_score = self.spinMinScore.value()
         options.min_scores_above_threshold = self.spinMinScoresAboveThreshold.value()
         options.knn = self.spinKnn.value()
@@ -238,6 +215,7 @@ class PHATEOptionsWidget(QGroupBox, Ui_gbPHATEOptions):
         return options
 
     def setValues(self, options):
+        super().setValues(options)
         self.spinMinScore.setValue(options.min_score)
         self.spinMinScoresAboveThreshold.setValue(options.min_scores_above_threshold)
         self.spinKnn.setValue(options.knn)
@@ -246,19 +224,71 @@ class PHATEOptionsWidget(QGroupBox, Ui_gbPHATEOptions):
         self.chkRandomState.setChecked(options.random)
 
 
-class QueryDatabasesOptionsWidget(QGroupBox, Ui_gbDatabaseOptions):
-    """Create a widget containing Database query options"""
+class CosineOptionsWidget(OptionsGroupBox, Ui_gbCosineOptions):
+    """Create a widget containing Cosine computations options"""
+
+    options_class = CosineComputationOptions
 
     def __init__(self):
         super().__init__()
-        self.setupUi(self)
+
+        self.chkUseMinMZ.stateChanged.connect(self.spinMinMZ.setEnabled)
+        self.chkUseParentFiltering.stateChanged.connect(self.spinParentFilterTolerance.setEnabled)
+        self.chkUseMinIntensityFiltering.stateChanged.connect(self.spinMinIntensity.setEnabled)
+        self.chkUseWindowRankFiltering.stateChanged.connect(self.spinMinMatchedPeaksSearch.setEnabled)
+        self.chkUseWindowRankFiltering.stateChanged.connect(self.spinMatchedPeaksWindow.setEnabled)
+
+    def getValues(self):
+        options = super().getValues()
+        options.mz_tolerance = self.spinMZTolerance.value()
+        options.min_matched_peaks = self.spinMinMatchedPeaks.value()
+        options.min_mz = self.spinMinMZ.value()
+        options.parent_filter_tolerance = self.spinParentFilterTolerance.value()
+        options.min_intensity = self.spinMinIntensity.value()
+        options.min_matched_peaks_search = self.spinMinMatchedPeaksSearch.value()
+        options.matched_peaks_window = self.spinMatchedPeaksWindow.value()
+        options.is_ms1_data = self.chkMS1Data.isChecked()
+        options.dense_output = not self.chkSparse.isChecked()
+        options.use_filtering = self.gbFiltering.isChecked()
+        options.use_min_mz_filter = self.chkUseMinMZ.isChecked()
+        options.use_min_intensity_filter = self.chkUseMinIntensityFiltering.isChecked()
+        options.use_parent_filter = self.chkUseParentFiltering.isChecked()
+        options.use_window_rank_filter = self.chkUseWindowRankFiltering.isChecked()
+
+        return options
+
+    def setValues(self, options):
+        super().setValues(options)
+        self.spinMZTolerance.setValue(options.mz_tolerance)
+        self.spinMinMatchedPeaks.setValue(options.min_matched_peaks)
+        self.spinMinMZ.setValue(options.min_mz)
+        self.spinParentFilterTolerance.setValue(options.parent_filter_tolerance)
+        self.spinMinIntensity.setValue(options.min_intensity)
+        self.spinMinMatchedPeaksSearch.setValue(options.min_matched_peaks_search)
+        self.spinMatchedPeaksWindow.setValue(options.matched_peaks_window)
+        self.chkMS1Data.setChecked(options.is_ms1_data)
+        self.chkSparse.setChecked(not options.dense_output)
+        self.gbFiltering.setChecked(options.use_filtering)
+        self.chkUseMinMZ.setChecked(options.use_min_mz_filter)
+        self.chkUseMinIntensityFiltering.setChecked(options.use_min_intensity_filter)
+        self.chkUseParentFiltering.setChecked(options.use_parent_filter)
+        self.chkUseWindowRankFiltering.setChecked(options.use_window_rank_filter)
+
+
+class QueryDatabasesOptionsWidget(OptionsGroupBox, Ui_gbDatabaseOptions):
+    """Create a widget containing Database query options"""
+
+    options_class = QueryDatabasesOptions
+
+    def __init__(self):
+        super().__init__()
 
         # Populate polarity combobox
         self.cbPolarity.addItems(['Positive', 'Negative'])
         self.cbPolarity.setCurrentIndex(0)
 
     def getValues(self):
-        options = QueryDatabasesOptions()
+        options = super().getValues()
         options.mz_tolerance = self.spinMZTolerance.value()
         options.min_intensity = self.spinMinIntensity.value()
         options.parent_filter_tolerance = self.spinParentFilterTolerance.value()
@@ -271,6 +301,7 @@ class QueryDatabasesOptionsWidget(QGroupBox, Ui_gbDatabaseOptions):
         return options
 
     def setValues(self, options):
+        super().setValues(options)
         self.spinMZTolerance.setValue(options.mz_tolerance)
         self.spinMinIntensity.setValue(options.min_intensity)
         self.spinParentFilterTolerance.setValue(options.parent_filter_tolerance)

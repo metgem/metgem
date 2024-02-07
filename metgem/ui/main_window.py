@@ -1485,8 +1485,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if not docks:
             QMessageBox.warning(self, None, 'Please add a view first.')
             return
-        self._dialog = ui.ClusterizeDialog(self, views={k: f"{v.widget().title} ({v.widget().short_id})"
-                                                        for k, v in docks})
+        self._dialog = ui.ClusterizeDialog(self, views={k: v.widget().display_title for k, v in docks})
 
         def do_clustering(result):
             if result == QDialog.Accepted:
@@ -1517,7 +1516,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if not docks:
             QMessageBox.warning(self, None, 'Please add a view first.')
             return
-        self._dialog = ui.NumberizeDialog(self, views={k: f"{v.widget().title} ({v.widget().short_id})"
+        self._dialog = ui.NumberizeDialog(self, views={k: v.widget().display_title
                                                        for k, v in docks if
                                                        v.widget().name == widgets.ForceDirectedFrame.name})
 
@@ -1895,6 +1894,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     if new_options != options:
                         self.has_unsaved_changes = True
 
+                    # Update title
+                    options.title = new_options.title
+                    self.network_docks[widget.id].setWindowTitle(widget.display_title)
+
+                    # If something other than title changed
+                    if new_options != options:
                         widget.reset_layout()
                         if widget.name == widgets.ForceDirectedFrame.name:
                             widget.interactions = pd.DataFrame()
@@ -2089,7 +2094,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             lambda visibility: self.actionSetPieChartsVisibility.setChecked(visibility))
         widget.btOptions.clicked.connect(lambda: self.on_edit_options_triggered(widget))
 
-        dock = CDockWidget(f"{widget.title} ({widget.short_id})")
+        dock = CDockWidget(widget.display_title)
         dock.setFeature(CDockWidget.CustomCloseHandling, True)
         dock.setFeature(CDockWidget.DockWidgetDeleteOnClose, True)
         dock.setFeature(CDockWidget.DockWidgetForceCloseWithArea, True)

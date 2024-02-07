@@ -91,6 +91,14 @@ class BaseFrame(QFrame, Ui_NetworkFrame):
         return self.gvNetwork.scene()
 
     @property
+    def display_title(self):
+        opt = self._network.options.get(self.id)
+        if opt is None or (opt_title := opt.get('title')) is None:
+            return f"{self.title} ({self.short_id})"
+        else:
+            return f"{self.title} ({opt_title})"
+
+    @property
     def short_id(self):
         return short_id(self.id)
 

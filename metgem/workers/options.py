@@ -136,7 +136,9 @@ class QueryDatabasesOptions(CosineComputationOptions):
 
 
 class VisualizationOptions(Options):
-    pass
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs, title=None)
 
 
 class ForceDirectedVisualizationOptions(VisualizationOptions):
