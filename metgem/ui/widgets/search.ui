@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
+    <width>347</width>
     <height>40</height>
    </rect>
   </property>
@@ -42,6 +42,9 @@
      </property>
      <property name="placeholderText">
       <string>Search</string>
+     </property>
+     <property name="clearButtonEnabled">
+      <bool>true</bool>
      </property>
     </widget>
    </item>
