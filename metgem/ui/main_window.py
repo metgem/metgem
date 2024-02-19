@@ -20,8 +20,12 @@ from PySide6.QtWidgets import (QDialog, QFileDialog, QMessageBox, QWidget, QMenu
                                QApplication, QGraphicsView, QLineEdit, QListWidget, QLabel, QToolButton, QProgressBar)
 
 from PySide6QtAds import (CDockManager, CDockWidget,
-                          BottomDockWidgetArea, CenterDockWidgetArea,
-                          TopDockWidgetArea, LeftDockWidgetArea)
+                          CenterDockWidgetArea,
+                          LeftDockWidgetArea)
+# TODO: import directly form Pysde6QtAds when available
+from PySide6QtAds import _ads
+SideBarBottom = _ads.SideBarBottom
+del _ads
 from libmetgem import human_readable_data
 from scipy.sparse import csr_matrix
 
@@ -125,9 +129,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Add Dockable Windows
         self.add_docks()
 
-        # add welcome screen
-        self._welcome_screen = widgets.WelcomeWidget(self.dock_manager)
-
         # Add model to table views
         model = metadata.NodesModel(self)
         proxy = metadata.NodesSortFilterProxyModel()
@@ -205,8 +206,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.tbNetwork.removeAction(self.actionSetNodesSize)
 
         # Connect events
-        self._welcome_screen.importDataClicked.connect(self.on_process_file_triggered)
-        self._welcome_screen.openProjectClicked.connect(self.on_open_project_triggered)
+        self.welcome_widget.importDataClicked.connect(self.on_process_file_triggered)
+        self.welcome_widget.openProjectClicked.connect(self.on_open_project_triggered)
 
         self._docks_closed_signals_grouper = SignalGrouper()  # Group signals emitted when dock widgets are closed
         self._docks_closed_signals_grouper.groupped.connect(self.on_network_widget_closed)
@@ -371,13 +372,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             action.setVisible(False)
             action.triggered.connect(self.on_open_recent_project_triggered)
             menu.addAction(action)
-            self._welcome_screen.addRecentProject("")
-        self._welcome_screen.recentProjectsItemClicked.connect(self.on_open_recent_project_triggered)
+            self.welcome_widget.addRecentProject("")
+        self.welcome_widget.recentProjectsItemClicked.connect(self.on_open_recent_project_triggered)
 
         menu.addSeparator()
         action = QAction("&Clear menu", self)
         action.triggered.connect(lambda: self.update_recent_projects(clear=True))
-        self._welcome_screen.clearRecentProjectsClicked.connect(action.trigger)
+        self.welcome_widget.clearRecentProjectsClicked.connect(action.trigger)
         menu.addAction(action)
 
         # Build research bar
@@ -390,29 +391,40 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     # noinspection PyAttributeOutsideInit
     @debug
     def add_docks(self):
+        # TODO: Replace by CDockManager.setAutoHideConfigFlags(CDockManager.DefaultAutoHideConfig) when available
+        CDockManager.setAutoHideConfigFlag(CDockManager.AutoHideFeatureEnabled, True)
+        CDockManager.setAutoHideConfigFlag(CDockManager.DockAreaHasAutoHideButton, True)
+        CDockManager.setAutoHideConfigFlag(CDockManager.eAutoHideFlag(0x100), True)   # AutoHideHasMinimizeButton
         self.dock_manager = CDockManager(self)
         self.dock_manager.setViewMenuInsertionOrder(CDockManager.MenuSortedByInsertion)
-        self.dock_manager.viewMenu().setTitle("Data")
-        self.setDockOptions(QMainWindow.AllowTabbedDocks)
+        self.dock_manager.viewMenu().setTitle("Docks")
 
-        self.dock_placeholder = CDockWidget("Placeholder")
-        self.dock_placeholder.setObjectName("placeholder")
-        self.dock_manager.addDockWidget(TopDockWidgetArea, self.dock_placeholder)
-        self.dock_placeholder.toggleView(False)
-
+        # add jupyter jupyter
         if config.EMBED_JUPYTER:
             try:
                 self.jupyter_widget = widgets.JupyterWidget()
             except (AttributeError, ImportError):
                 pass
             else:
-                dock = CDockWidget("Jupyter Console")
-                dock.setObjectName("jupyter")
-                dock.setIcon(QIcon(":/icons/images/python.svg"))
-                dock.setWidget(self.jupyter_widget)
+                self.dock_jupyter = CDockWidget("Jupyter Console")
+                self.dock_jupyter.setObjectName("0jupyter")
+                self.dock_jupyter.setIcon(QIcon(":/icons/images/python.svg"))
+                self.dock_jupyter.setWidget(self.jupyter_widget)
+                self.dock_jupyter.setMinimumSizeHintMode(CDockWidget.MinimumSizeHintFromDockWidget)
+                self.dock_jupyter.setMinimumSize(200, 150)
                 self.jupyter_widget.push(app=QCoreApplication.instance(), win=self)
-                self.dock_manager.addDockWidget(TopDockWidgetArea, dock)
-                self.dock_manager.addToggleViewActionToMenu(dock.toggleViewAction())
+                autohidecontainer = self.dock_manager.addAutoHideDockWidget(SideBarBottom, self.dock_jupyter)
+                autohidecontainer.setSize(480)
+                self.dock_manager.addToggleViewActionToMenu(self.dock_jupyter.toggleViewAction())
+
+        # add welcome screen
+        self.dock_welcome = CDockWidget("Welcome")
+        self.dock_welcome.setObjectName("00welcome")
+        self.dock_welcome.setIcon(QIcon(":/icons/images/home.svg"))
+        self.welcome_widget = widgets.WelcomeWidget()
+        self.dock_welcome.setWidget(self.welcome_widget)
+        dock_area = self.dock_manager.addDockWidget(LeftDockWidgetArea, self.dock_welcome)
+        self.dock_manager.addToggleViewActionToMenu(self.dock_welcome.toggleViewAction())
 
         self.dock_nodes = CDockWidget("Nodes")
         self.dock_nodes.setObjectName("0nodes")
@@ -420,7 +432,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.nodes_widget = widgets.NodesWidget()
         self.tvNodes = self.nodes_widget.tvNodes
         self.dock_nodes.setWidget(self.nodes_widget)
-        dock_area = self.dock_manager.addDockWidget(BottomDockWidgetArea, self.dock_nodes)
+        self.dock_manager.addDockWidget(CenterDockWidgetArea, self.dock_nodes, dock_area)
         self.dock_manager.addToggleViewActionToMenu(self.dock_nodes.toggleViewAction())
         self.dock_nodes.toggleView(False)
 
@@ -455,6 +467,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.dock_manager.viewMenu().addSeparator()
         self.menuView.addMenu(self.dock_manager.viewMenu())
         dock_area.setCurrentIndex(0)
+
+        for dock in (self.dock_welcome, self.dock_nodes, self.dock_edges, self.dock_spectra, self.dock_annotations):
+            dock.setFeature(CDockWidget.CustomCloseHandling, True)
+            dock.closeRequested.connect(self.on_dock_close)
 
     @debug
     def init_project(self):
@@ -706,7 +722,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if act.isSeparator():
                 break
 
-            item = self._welcome_screen.recentProjectItem(i)
+            item = self.welcome_widget.recentProjectItem(i)
 
             try:
                 fname = self.recent_projects[i]
@@ -811,19 +827,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if not hasattr(self, '_first_show'):
             self.load_settings()
             # noinspection PyAttributeOutsideInit
-            self._default_state = self.dock_manager.saveState()
-            # noinspection PyAttributeOutsideInit
             self._first_show = False
-
-        self._welcome_screen.move(self.rect().center() - self._welcome_screen.rect().center())
-        self._welcome_screen.lower()
-        self.dock_placeholder.toggleView(True)  # TODO: Work around for welcome screen not being clickable at start-up
-        self._welcome_screen.show()
-        self.dock_placeholder.toggleView(False)
-
-    def resizeEvent(self, event):
-        super().resizeEvent(event)
-        self._welcome_screen.move(self.rect().center() - self._welcome_screen.rect().center())
 
     def closeEvent(self, event):
         if not config.get_debug_flag():
@@ -2099,18 +2103,29 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         dock.setFeature(CDockWidget.DockWidgetDeleteOnClose, True)
         dock.setFeature(CDockWidget.DockWidgetForceCloseWithArea, True)
         dock.setWidget(widget)
-        self.dock_manager.addDockWidget(LeftDockWidgetArea, dock, self.dock_placeholder.dockAreaWidget())
+        self.dock_manager.addDockWidget(CenterDockWidgetArea, dock, self.dock_welcome.dockAreaWidget())
         dock.toggleView(False)
-        self.dock_placeholder.toggleView(False)
         dock.closeRequested.connect(self._docks_closed_signals_grouper.accumulate)
         dock.toggleView(True)
         self.dock_manager.addToggleViewActionToMenu(dock.toggleViewAction())
         self.network_docks[widget.id] = dock
-        # noinspection PyAttributeOutsideInit
-        self._default_state = self.dock_manager.saveState()
         self.btUndoAnnotations.setMenu(widget.view().undoMenu())
 
         return widget
+
+    def on_dock_close(self):
+        """Close the dock making sure that at least one dock is always visible
+        If all docks are closed, open the Welcome widget."""
+
+        dock = self.sender()
+        if dock == self.dock_welcome:
+            if len(self.dock_manager.openedDockWidgets()) > 1:
+                dock.toggleView(False)
+        else:
+            if len(self.dock_manager.openedDockWidgets()) == 1:
+                self.dock_welcome.setAutoHide(False)
+                self.dock_welcome.toggleView(True)
+            dock.toggleView(False)
 
     @debug
     def on_network_widget_closed(self, docks):
@@ -2131,6 +2146,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                              self)
         msgbox.addButton(f"No, just hide {'it' if num_docks == 1 else 'them'}", QMessageBox.NoRole)
         result = msgbox.exec_()
+        if result != QMessageBox.No:
+            if len(self.dock_manager.openedDockWidgets()) == len(docks):
+                self.dock_welcome.toggleView(True)
+
         if result == QMessageBox.Yes:
             for dock in docks:
                 self.dock_manager.viewMenu().removeAction(dock.toggleViewAction())
@@ -2456,24 +2475,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     @debug
     def reset_layout(self, *args):
         # Move all docks to default areas
-        dock_area = None
-        for dock in self.dock_manager.dockWidgetsMap().values():
-            if dock.objectName() == 'placeholder':
-                pass
-            elif dock.objectName() == 'jupyter':
-                self.dock_manager.addDockWidget(TopDockWidgetArea, dock)
-            elif hasattr(dock.widget(), 'view'):
-                self.dock_manager.addDockWidget(LeftDockWidgetArea, dock, self.dock_placeholder.dockAreaWidget())
-            else:
-                if dock_area is None:
-                    dock_area = self.dock_manager.addDockWidget(BottomDockWidgetArea, dock)
-                else:
-                    self.dock_manager.addDockWidget(CenterDockWidgetArea, dock, dock_area)
+        dock_area = self.dock_manager.addDockWidget(LeftDockWidgetArea, self.dock_welcome)
+        if config.EMBED_JUPYTER:
+            self.dock_manager.addAutoHideDockWidget(SideBarBottom, self.dock_jupyter)
+        self.dock_manager.addDockWidget(CenterDockWidgetArea, self.dock_nodes, dock_area)
+        self.dock_manager.addDockWidget(CenterDockWidgetArea, self.dock_edges, dock_area)
+        self.dock_manager.addDockWidget(CenterDockWidgetArea, self.dock_spectra, dock_area)
+        self.dock_manager.addDockWidget(CenterDockWidgetArea, self.dock_annotations, dock_area)
 
-                if dock.objectName() == '2spectra':
-                    dock.toggleView(True)
-                    dock.toggleView(False)
+        for dock in self.network_docks.values():
+            self.dock_manager.addDockWidget(CenterDockWidgetArea, dock, self.dock_welcome.dockAreaWidget())
 
+        self.dock_spectra.toggleView(False)
+        self.dock_annotations.toggleView(False)
         if dock_area is not None:
             dock_area.setCurrentIndex(0)
 
