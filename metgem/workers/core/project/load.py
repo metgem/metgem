@@ -269,7 +269,7 @@ class LoadProjectWorker(BaseWorker):
                     # Load layouts
                     layouts = {}
                     if version <= 3:
-                        graph = graphs[ForceDirectedVisualizationOptions.name]
+                        graph = graphs[ForceDirectedVisualizationOptions.name]['graph']
                         colors = graph.vs['__color'] if '__color' in graph.vs.attributes() else {}
                         if isinstance(colors, list):
                             colors = {str(i): c for i, c in enumerate(colors) if c is not None}
