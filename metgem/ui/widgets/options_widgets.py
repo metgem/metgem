@@ -59,6 +59,8 @@ class ForceDirectedOptionsWidget(VisualizationOptionsWidget, Ui_ForceDirectedOpt
         options.top_k = self.spinForceDirectedMaxNeighbor.value()
         options.pairs_min_cosine = self.spinForceDirectedMinScore.value()
         options.max_connected_nodes = self.spinForceDirectedMaxConnectedComponentSize.value()
+        options.scale = self.spinForceDirectedScale.value()
+        options.gravity = self.spinForceDirectedGravity.value()
         return options
 
     def setValues(self, options):
@@ -73,6 +75,8 @@ class ForceDirectedOptionsWidget(VisualizationOptionsWidget, Ui_ForceDirectedOpt
         self.spinForceDirectedMaxNeighbor.setValue(options.top_k)
         self.spinForceDirectedMinScore.setValue(options.pairs_min_cosine)
         self.spinForceDirectedMaxConnectedComponentSize.setValue(options.max_connected_nodes)
+        self.spinForceDirectedScale.setValue(options.scale)
+        self.spinForceDirectedGravity.setValue(options.gravity)
 
 
 class TSNEOptionsWidget(VisualizationOptionsWidget, Ui_TSNEOptionsWidget):

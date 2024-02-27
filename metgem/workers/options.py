@@ -148,14 +148,17 @@ class ForceDirectedVisualizationOptions(VisualizationOptions):
         top_k (int): Maximum numbers of edges for each node in the network. Default value = 10
         pairs_min_cosine (float): Minimum cosine score for network generation. Default value = 0.65
         max_connected_nodes (int): Maximum size of a Force Directed cluster. Default value = 1000
-
+        scale (float): Control repulsion between nodes. More makes a more sparse graph. Default value = 30.0
+        gravity (float):  ==Attracts nodes to the center. Prevents islands from drifting away. Default value = 1.0
     """
     name = 'fd'
 
     def __init__(self):
         super().__init__(top_k=10,
                          pairs_min_cosine=0.7,
-                         max_connected_nodes=1000)
+                         max_connected_nodes=1000,
+                         scale=30.0,
+                         gravity=1.0)
 
 
 class IsomapVisualizationOptions(VisualizationOptions):

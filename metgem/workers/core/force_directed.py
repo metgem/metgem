@@ -10,7 +10,7 @@ class ForceDirectedWorker(BaseWorker):
 
     handle_sparse = True
     
-    def __init__(self, graph, radii, options):
+    def __init__(self, graph, radii, options: 'ForceDirectedVisualizationOptions'):
         super().__init__()
         self.graph = graph
         self.radii = radii
@@ -23,7 +23,8 @@ class ForceDirectedWorker(BaseWorker):
         layout = np.empty((self.max, 2))
 
         forceatlas2 = ForceAtlas2(adjustSizes=False,
-                                  scalingRatio=RADIUS,
+                                  scalingRatio=self.options.scale,
+                                  gravity=self.options.gravity,
                                   verbose=False)
 
         clusters = sorted(self.graph.clusters(), key=len, reverse=True)
