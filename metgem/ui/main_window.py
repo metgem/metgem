@@ -388,10 +388,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     # noinspection PyAttributeOutsideInit
     @debug
     def add_docks(self):
-        # TODO: Replace by CDockManager.setAutoHideConfigFlags(CDockManager.DefaultAutoHideConfig) when available
-        CDockManager.setAutoHideConfigFlag(CDockManager.AutoHideFeatureEnabled, True)
-        CDockManager.setAutoHideConfigFlag(CDockManager.DockAreaHasAutoHideButton, True)
-        CDockManager.setAutoHideConfigFlag(CDockManager.eAutoHideFlag(0x100), True)   # AutoHideHasMinimizeButton
+        CDockManager.setAutoHideConfigFlags(CDockManager.DefaultAutoHideConfig)
         self.dock_manager = CDockManager(self)
         self.dock_manager.setViewMenuInsertionOrder(CDockManager.MenuSortedByInsertion)
         self.dock_manager.viewMenu().setTitle("Docks")
