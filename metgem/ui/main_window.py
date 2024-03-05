@@ -1032,7 +1032,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             logger.debug('Creating exportable copy of the graph object')
             g = widget.graph.copy()
             if g.vcount() == 0:
-                g.add_vertices(n.index() for n in view.scene().nodes())
+                g.add_vertices(int(n.index()) for n in view.scene().nodes())
             else:
                 try:
                     g.es['cosine'] = g.es['__weight']
