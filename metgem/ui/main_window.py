@@ -22,7 +22,6 @@ from PySide6.QtWidgets import (QDialog, QFileDialog, QMessageBox, QWidget, QMenu
 from PySide6QtAds import (CDockManager, CDockWidget,
                           CenterDockWidgetArea,
                           LeftDockWidgetArea)
-# TODO: import directly form Pysde6QtAds when available
 from PySide6QtAds import SideBarBottom
 from libmetgem import human_readable_data
 from scipy.sparse import csr_matrix
