@@ -407,7 +407,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 pass
             else:
                 self.dock_jupyter = CDockWidget("Jupyter Console")
-                self.dock_jupyter.setObjectName("0jupyter")
+                self.dock_jupyter.setObjectName("jupyter")
                 self.dock_jupyter.setIcon(QIcon(":/icons/images/python.svg"))
                 self.dock_jupyter.setWidget(self.jupyter_widget)
                 self.dock_jupyter.setMinimumSizeHintMode(CDockWidget.MinimumSizeHintFromDockWidget)
@@ -419,7 +419,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # add welcome screen
         self.dock_welcome = CDockWidget("Welcome")
-        self.dock_welcome.setObjectName("00welcome")
+        self.dock_welcome.setObjectName("welcome")
         self.dock_welcome.setIcon(QIcon(":/icons/images/home.svg"))
         self.welcome_widget = widgets.WelcomeWidget()
         self.dock_welcome.setWidget(self.welcome_widget)
@@ -427,7 +427,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.dock_manager.addToggleViewActionToMenu(self.dock_welcome.toggleViewAction())
 
         self.dock_nodes = CDockWidget("Nodes")
-        self.dock_nodes.setObjectName("0nodes")
+        self.dock_nodes.setObjectName("nodes")
         self.dock_nodes.setIcon(QIcon(":/icons/images/node.svg"))
         self.nodes_widget = widgets.NodesWidget()
         self.tvNodes = self.nodes_widget.tvNodes
@@ -437,7 +437,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.dock_nodes.toggleView(False)
 
         self.dock_edges = CDockWidget("Edges")
-        self.dock_edges.setObjectName("1edges")
+        self.dock_edges.setObjectName("edges")
         self.dock_edges.setIcon(QIcon(":/icons/images/edge.svg"))
         self.edges_widget = widgets.EdgesWidget()
         self.tvEdges = self.edges_widget.tvEdges
@@ -447,7 +447,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.dock_edges.toggleView(False)
 
         self.dock_spectra = CDockWidget("Spectra")
-        self.dock_spectra.setObjectName("2spectra")
+        self.dock_spectra.setObjectName("spectra")
         self.dock_spectra.setIcon(QIcon(":/icons/images/spectrum.svg"))
         self.spectra_widget = widgets.SpectraComparisonWidget(self)
         self.dock_spectra.setWidget(self.spectra_widget)
@@ -456,7 +456,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.dock_spectra.toggleView(False)
 
         self.dock_annotations = CDockWidget("Annotations")
-        self.dock_annotations.setObjectName("3annotations")
+        self.dock_annotations.setObjectName("annotations")
         self.dock_annotations.setIcon(QIcon(":/icons/images/add-text.svg"))
         self.annotations_widget = widgets.AnnotationsWidget()
         self.dock_annotations.setWidget(self.annotations_widget)
