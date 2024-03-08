@@ -1290,6 +1290,9 @@
    <property name="text">
     <string>MetFrag...</string>
    </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
   </action>
   <action name="actionCFMID">
    <property name="icon">
@@ -1301,6 +1304,9 @@
    </property>
    <property name="toolTip">
     <string>CFM-ID</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </action>
  </widget>
