@@ -180,10 +180,16 @@ class BaseFrame(QFrame, Ui_NetworkFrame):
         # Add nodes
         nodes = scene.nodes()
         if not nodes:
+            indexes = None
             if self._graph.vs:  # Network views
-                nodes = scene.createNodes(self._graph.vs['name'], colors=colors, radii=radii)
+                indexes = self._graph.vs['name']
             elif self._network.scores.size > 0:  # Embedding views
-                nodes = scene.createNodes(np.arange(self._network.scores.shape[0]), colors=colors, radii=radii)
+                indexes = np.arange(self._network.scores.shape[0])
+            if indexes is not None:
+                nodes = scene.createNodes(indexes,
+                                          labels=self._network.mzs.index.map(str).to_list(),
+                                          colors=colors,
+                                          radii=radii)
 
         if self.use_edges:
             # Add edges

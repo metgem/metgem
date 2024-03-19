@@ -138,8 +138,8 @@ class SaveProjectWorker(BaseWorker):
             # Convert lists of parent mass and spectrum data to something that be can be saved
             mzs = getattr(self.network, 'mzs', pd.Series(dtype='float64'))
             spectra = getattr(self.network, 'spectra', pd.DataFrame())
-            d['0/spectra/index.json'] = [{'id': i, 'mz_parent': mz_parent} for i, mz_parent in enumerate(mzs)]
-            d.update({'0/spectra/{}'.format(i): data for i, data in enumerate(spectra)})
+            d['0/spectra/index.json'] = [{'id': i, 'mz_parent': mz_parent} for i, mz_parent in mzs.items()]
+            d.update({'0/spectra/{}'.format(mzs.index[i]): data for i, data in enumerate(spectra)})
 
         try:
             savez(self.tmp_filename, version=CURRENT_FORMAT_VERSION, **d)

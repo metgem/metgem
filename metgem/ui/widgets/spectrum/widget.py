@@ -220,23 +220,27 @@ class SpectrumWidget(QWidget):
     def spectrum1_parent(self, mz):
         self.canvas.spectrum1_parent = mz
 
-    def set_spectrum1(self, data, idx=None, parent=None):
+    def set_spectrum1(self, data, idx=None, label=None, parent=None):
         if data is not None:
             self.canvas.spectrum1_index = idx
+            self.canvas.spectrum1_label = label
             self.canvas.spectrum1_parent = parent
             self.canvas.spectrum1 = data
         else:
             self.canvas.spectrum1_index = None
+            self.canvas.spectrum1_label = None
             self.canvas.spectrum1_parent = None
             self.canvas.spectrum1 = None
 
-    def set_spectrum2(self, data, idx=None, parent=None):
+    def set_spectrum2(self, data, idx=None, label=None, parent=None):
         if data is not None:
             self.canvas.spectrum2_index = idx
+            self.canvas.spectrum2_label = label
             self.canvas.spectrum2_parent = parent
             self.canvas.spectrum2 = data
         else:
             self.canvas.spectrum2_index = None
+            self.canvas.spectrum2_label = None
             self.canvas.spectrum2_parent = None
             self.canvas.spectrum2 = None
 

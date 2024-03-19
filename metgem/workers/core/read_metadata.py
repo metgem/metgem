@@ -66,12 +66,6 @@ class ReadMetadataWorker(BaseWorker):
                     # Drop columns full of na values, csb reader already removed empty rows
                     data = data.dropna(how='all', axis=1)
 
-                # Make sure that index is 0-based
-                if self.options.index_col is not None:
-                    data.index -= 1
-                else:
-                    data = data.reset_index(drop=True)
-
             if data is not None and data.size > 0:
                 return data
         except(FileNotFoundError, IOError, pd.errors.ParserError,

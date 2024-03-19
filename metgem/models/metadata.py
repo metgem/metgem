@@ -260,7 +260,7 @@ class NodesModel(QAbstractTableModel):
         else:
             self.mappings = {}
 
-        self.mzs = getattr(network, 'mzs', [])
+        self.mzs = getattr(network, 'mzs', pd.Series(dtype='float64'))
         self.db_results = getattr(network, 'db_results', None)
 
         super().endResetModel()
@@ -365,7 +365,7 @@ class NodesModel(QAbstractTableModel):
                         text += " [" + "+".join(self.headers[x] for x in self.mappings[section]) + "]"
                     return text
             elif orientation == Qt.Vertical:
-                return str(self.mzs.index[section]+1)
+                return str(self.mzs.index[section])
         elif role == KeyRole:
             return self.headers[section]
         elif role == ColumnDataRole:
@@ -428,6 +428,7 @@ class EdgesModel(QAbstractTableModel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.interactions = pd.DataFrame()
+        self.mzs = pd.Series(dtype='float64')
 
         self.settings = QSettings()
 
@@ -443,6 +444,10 @@ class EdgesModel(QAbstractTableModel):
     def endResetModel(self):
         widget = self.parent().current_network_widget
         self.interactions = getattr(widget, 'interactions', pd.DataFrame())
+
+        network = self.parent().network
+        self.mzs = getattr(network, 'mzs', pd.Series(dtype='float64'))
+
         super().endResetModel()
 
     def data(self, index, role=Qt.DisplayRole):
@@ -469,7 +474,7 @@ class EdgesModel(QAbstractTableModel):
             else:
                 data = self.interactions.iloc[row, column]
                 if column <= 1:  # First two columns (source and target)
-                    data += 1
+                    data = self.mzs.index[data]
                 if role in (Qt.DisplayRole, LabelRole):
                     return str(data)
                 else:

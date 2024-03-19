@@ -27,6 +27,8 @@ class SpectrumCanvas(BaseCanvas):
         self._spectrum2_parent = None
         self._spectrum1_idx = None
         self._spectrum2_idx = None
+        self._spectrum1_label = None
+        self._spectrum2_label = None
         self._spectrum1_plot = None
         self._spectrum2_plot = None
 
@@ -61,15 +63,15 @@ class SpectrumCanvas(BaseCanvas):
         self.axes.xaxis.set_minor_locator(AutoMinorLocator())
 
     def format_label(self, spectrum_pos: SpectrumPosition = SpectrumPosition.first):
-        idx = self._spectrum1_idx if spectrum_pos == SpectrumPosition.first else self._spectrum2_idx
+        label = self._spectrum1_label if spectrum_pos == SpectrumPosition.first else self._spectrum2_label
         parent = self._spectrum1_parent if spectrum_pos == SpectrumPosition.first else self._spectrum2_parent
 
-        if idx is not None:
+        if label is not None:
             if parent is not None:
                 float_precision = QSettings().value('Metadata/float_precision', 4, type=int)
-                return f"{idx+1} ($m/z$ {parent:.{float_precision}f})"
+                return f"{label} ($m/z$ {parent:.{float_precision}f})"
             else:
-                return f"{idx+1}"
+                return f"{label}"
         else:
             return self.first_spectrum_label if spectrum_pos == SpectrumPosition.first else self.second_spectrum_label
 
@@ -156,6 +158,14 @@ class SpectrumCanvas(BaseCanvas):
     @spectrum1_index.setter
     def spectrum1_index(self, idx):
         self._spectrum1_idx = idx
+
+    @property
+    def spectrum1_label(self):
+        return self._spectrum1_label
+
+    @spectrum1_label.setter
+    def spectrum1_label(self, label):
+        self._spectrum1_label = label
         if self._spectrum1_plot is not None:
             self._spectrum1_plot.set_label(self.format_label(SpectrumPosition.first))
 
@@ -184,8 +194,17 @@ class SpectrumCanvas(BaseCanvas):
     @spectrum2_index.setter
     def spectrum2_index(self, idx):
         self._spectrum2_idx = idx
+
+    @property
+    def spectrum2_label(self):
+        return self._spectrum1_label
+
+    @spectrum1_label.setter
+    def spectrum2_label(self, label):
+        self._spectrum1_label = label
         if self._spectrum2_plot is not None:
             self._spectrum2_plot.set_label(self.format_label(SpectrumPosition.second))
+
 
     @property
     def spectrum1_plot(self):
@@ -240,14 +259,14 @@ class SpectrumCanvas(BaseCanvas):
     def get_default_filename(self):
         if self.spectrum1 is not None and self.spectrum2 is not None:
             if self.spectrum1_index is not None and self.spectrum2_index is not None:
-                return f"spectra{self.spectrum1_index+1}_{self.spectrum2_index+1}.mgf"
+                return f"spectra{self.spectrum1_index}_{self.spectrum2_index}.mgf"
             else:
                 return "spectra.mgf"
 
         if self.spectrum1 is not None or self.spectrum2 is not None:
             idx = self.spectrum1_index if self.spectrum1_index is not None else self.spectrum2_index
             if idx is not None:
-                return f"spectrum{idx+1}.mgf"
+                return f"spectrum{idx}.mgf"
 
         return "spectrum.mgf"
 

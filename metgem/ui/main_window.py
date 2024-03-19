@@ -70,12 +70,14 @@ COLUMN_MAPPING_NODES_PIXMAPS = 4
 
 def get_table_selection(table):
     """Returns row numbers of the rows where at least one cell is selected in a table view"""
-    selected_rows = table.selectionModel().selectedRows()
-    if selected_rows:
-        return selected_rows
+    model = table.model()
 
-    selected_indexes = {index.row(): index for index in table.selectionModel().selectedIndexes()}
-    return {table.model().mapToSource(index).row() for index in selected_indexes.values()}
+    selected_indexes = table.selectionModel().selectedRows()
+    if selected_indexes:
+        selected_indexes = {index.row(): index for index in selected_indexes}
+    else:
+        selected_indexes = {index.row(): index for index in table.selectionModel().selectedIndexes()}
+    return {model.sourceModel().mapToSource(model.mapToSource(index)).row() for index in selected_indexes.values()}
 
 
 class SearchWidget(QWidget, Ui_SearchWidget):
@@ -1197,8 +1199,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     @debug
     def on_show_spectrum_from_table_triggered(self, type_):
         model = self.tvNodes.model()
-        selected_indexes = model.mapSelectionToSource(
-            self.tvNodes.selectionModel().selection()).indexes()
+        selected_indexes = model.mapSelectionToSource(self.tvNodes.selectionModel().selection()).indexes()
 
         if not selected_indexes:
             return
@@ -1223,7 +1224,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                         node = view.scene().selectedNodes()[0]
                     node_idx = node.index()
 
-                data = self.network.spectra[self.network.mzs.index[node_idx]]
+                data = self.network.spectra[node_idx]
                 if data.size == 0:
                     QMessageBox.warning(self, None, 'Selected spectrum is empty.')
                     return
@@ -1232,8 +1233,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
                 if self.network.mzs is not None:
                     mz_parent = self.network.mzs.iloc[node_idx]
+                    label = self.network.mzs.index[node_idx]
                 else:
                     mz_parent = None
+                    label = None
             except IndexError:
                 pass
             except KeyError:
@@ -1251,7 +1254,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 if score is not None:
                     float_precision = QSettings().value('Metadata/float_precision', 4, type=int)
                     self.spectra_widget.set_title(f'Score: {score:.{float_precision}f}')
-                set_spectrum(data, node_idx, mz_parent)
+                set_spectrum(data, node_idx, label, mz_parent)
 
                 # Show spectrum tab
                 self.dock_spectra.dockAreaWidget().setCurrentDockWidget(self.dock_spectra)
@@ -2062,10 +2065,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         model = self.tvEdges.sourceModel()
         sel = []
         for row in selected:
-            source = model.index(row, 0).data(metadata.ColumnDataRole) - 1
-            dest = model.index(row, 1).data(metadata.ColumnDataRole) - 1
-            sel.append(source)
-            sel.append(dest)
+            for col in (0, 1):  # 0=Source column, 1=Destination column
+                idx = model.index(row, col).data(metadata.ColumnDataRole)
+                sel.append(self.network.mzs.index.get_loc(idx))
 
         for dock in self.network_docks.values():
             scene = dock.widget().scene()
@@ -2183,7 +2185,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                                                        role=metadata.KeyRole)
         else:
             for dock in self.network_docks.values():
-                dock.widget().scene().resetLabels()
+                dock.widget().scene().setLabels(labels=self._network.mzs.index.map(str).to_list())
 
             try:
                 del self._network.columns_mappings['label']

@@ -29,6 +29,7 @@ class ReadDataWorker(BaseWorker):
     def run(self):
         mzs = []
         spectra = []
+        ids = []
 
         use_filtering = self.options.use_filtering
         use_min_mz_filter = self.options.use_min_mz_filter if use_filtering else False
@@ -46,18 +47,21 @@ class ReadDataWorker(BaseWorker):
         if fmt == 'mgf':
             read = read_mgf
             mz_keys = ['pepmass']
+            id_key = 'feature_id'
         elif fmt == 'msp':
             read = read_msp
             mz_keys = ['precursormz', 'exactmass', 'mw']
+            id_key = None
         else:
             self.error.emit(NotImplementedError())
             return
 
-        for params, data in read(self.filename, ignore_unknown=True):
+        for i, (params, data) in enumerate(read(self.filename, ignore_unknown=True)):
             if self.isStopped():
                 self.canceled.emit()
                 return
 
+            id_ = params.get(id_key, i) if id_key is not None else i
             if not is_ms1_data:
                 mz_parent = 0
                 for key in mz_keys:
@@ -77,6 +81,7 @@ class ReadDataWorker(BaseWorker):
                 pass
 
             spectra.append(data)
+            ids.append(id_)
 
         if not spectra:
             self.error.emit(FileEmptyError())
@@ -92,4 +97,6 @@ class ReadDataWorker(BaseWorker):
             self.error.emit(NoSpectraError())
             return
 
-        return pd.Series(mzs), spectra
+        mzs = pd.Series(mzs, index=ids)
+
+        return mzs, spectra

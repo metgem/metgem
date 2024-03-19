@@ -9,8 +9,8 @@ from metgem.utils.network import Network, generate_id
 from metgem.workers.struct import StandardsResult
 
 from metgem.workers.base import BaseWorker
-from metgem.workers.options import AttrDict, AVAILABLE_NETWORK_OPTIONS, AVAILABLE_OPTIONS, \
-    ForceDirectedVisualizationOptions, TSNEVisualizationOptions
+from metgem.workers.options import (AttrDict, AVAILABLE_NETWORK_OPTIONS, AVAILABLE_OPTIONS,
+                                    ForceDirectedVisualizationOptions, TSNEVisualizationOptions)
 
 from metgem.workers.core.project.mnz import MnzFile
 from metgem.workers.core.project.spectra_list import SpectraList
@@ -43,7 +43,7 @@ class LoadProjectWorker(BaseWorker):
                                                   + "This file format is not supported anymore.\n"
                                                   + "Please generate networks from raw data again")
 
-                elif version in (2, 3, 4, 5, 6, CURRENT_FORMAT_VERSION):
+                elif version in (2, 3, 4, 5, 6, 7, CURRENT_FORMAT_VERSION):
                     # Create network object
                     network = Network()
                     network.lazyloaded = True
@@ -167,9 +167,15 @@ class LoadProjectWorker(BaseWorker):
                     # Load table of spectra
                     network.spectra = SpectraList(self.filename)
                     mzs = []
+                    ids = []
                     for s in fid['0/spectra/index.json']:
                         mzs.append(s['mz_parent'])
-                    network.mzs = pd.Series(mzs)
+                        ids.append(s['id'])
+                    # Prior to version 7, all ids were consecutive and not read from file
+                    # index started at 0 and was shown to user starting from 1 for readability
+                    if version <= 7:
+                        ids = pd.RangeIndex(start=1, stop=len(mzs)+1, step=1)
+                    network.mzs = pd.Series(mzs, index=ids)
 
                     self.updated.emit(50)
                     if self.isStopped():

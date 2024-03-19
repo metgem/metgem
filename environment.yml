@@ -28,7 +28,7 @@ dependencies:
     - mplcursors
     - py2cytoscape>=0.7.0
     - libmetgem>=0.7.0
-    - pyside6mn>=0.7.3
+    - pyside6mn>=0.7.4
     - fa2>=0.3.5
     - pyemf3>=3.3
     - pyside6qtads>=4.1.0
