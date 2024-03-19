@@ -199,7 +199,7 @@ class SpectrumCanvas(BaseCanvas):
     def spectrum2_label(self):
         return self._spectrum1_label
 
-    @spectrum1_label.setter
+    @spectrum2_label.setter
     def spectrum2_label(self, label):
         self._spectrum1_label = label
         if self._spectrum2_plot is not None:
