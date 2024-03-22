@@ -2185,7 +2185,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                                                        role=metadata.KeyRole)
         else:
             for dock in self.network_docks.values():
-                dock.widget().scene().setLabels(labels=self._network.mzs.index.map(str).to_list())
+                dock.widget().scene().setLabels(self._network.mzs.index.map(str).to_list())
 
             try:
                 del self._network.columns_mappings['label']
@@ -2791,7 +2791,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             mzs = [self.network.mzs.iloc[index] for index in indices]
         else:
             mzs = [0] * len(indices)
-        spectra = [self._network.spectra[self._network.mzs.index[index]] for index in indices]
+        spectra = [self._network.spectra[index] for index in indices]
         worker = workers_dbs.QueryDatabasesWorker(indices, mzs, spectra, options)
 
         def query_finished():
