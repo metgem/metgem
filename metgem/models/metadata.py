@@ -311,12 +311,12 @@ class NodesModel(QAbstractTableModel):
                     return 'N/A'
             else:
                 try:
-                    data = self.infos.iloc[row, column - 2]
+                    data = self.infos.loc[self.mzs.index[row]].iloc[column - 2]
                 except IndexError:
                     try:
                         mappped_columns = self.mappings[column]
-                        data = sum(self.infos.iloc[row, c-2] for c in mappped_columns)
-                    except KeyError:
+                        data = sum(self.infos.loc[self.mzs.index[row]].iloc[c-2] for c in mappped_columns)
+                    except (IndexError, KeyError):
                         return None
                 except KeyError:
                     return None
