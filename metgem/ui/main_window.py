@@ -2695,7 +2695,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                         df = df.join(df2[list(new_columns)])
                     self._network.infos = df
             else:
-                self._network.infos = worker.result()
+                df = worker.result()
+                self._network.infos = df.reindex(self._network.mzs.index)
             self.has_unsaved_changes = True
             model.endResetModel()
 

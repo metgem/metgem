@@ -75,7 +75,8 @@ class NodesSortProxyModel(QSortFilterProxyModel):
         if column == -1:  # Reset sorting
             self._index = pd.Index([])
         elif column == NodesModel.MZCol:
-            df = source.mzs
+            df = source.mzs.copy()
+            df.index = pd.RangeIndex(0, df.shape[0])
             df = df.sort_values(ascending=(order == Qt.AscendingOrder))
             self._index = df.index
         elif column == NodesModel.DBResultsCol:
@@ -96,7 +97,8 @@ class NodesSortProxyModel(QSortFilterProxyModel):
         else:
             if source.infos is not None:
                 col = source.infos.columns[column-2]
-                df = source.infos[col]
+                df = source.infos[col].copy()
+                df.index = pd.RangeIndex(0, df.shape[0])
                 df = df.sort_values(ascending=(order == Qt.AscendingOrder))
                 self._index = df.index
 

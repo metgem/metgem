@@ -177,6 +177,13 @@ class LoadProjectWorker(BaseWorker):
                         ids = pd.RangeIndex(start=1, stop=len(mzs)+1, step=1)
                     network.mzs = pd.Series(mzs, index=ids)
 
+                    # Make sure that `infos` dataframe's index match `mzs` series' index
+                    # meaning each id from `mzs` has a corresponding row in `infos` dataframe
+                    # and that `infos` dataframe has no additional rows
+                    # This should have been done while importing metadata but older versions (<7)
+                    # did not take this care
+                    network.infos = network.infos.reindex(index=network.mzs.index)
+
                     self.updated.emit(50)
                     if self.isStopped():
                         self.canceled.emit()

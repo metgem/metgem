@@ -28,7 +28,7 @@ class ReadMetadataWorker(BaseWorker):
                 if self.options.index_col not in self.options.usecols:
                     self.options.usecols.append(self.options.index_col)
 
-                # The index column is used after filtering columns so we need to find the index of this column
+                # The index column is used after filtering columns, so we need to find the index of this column
                 # inside the list of used columns
                 self.options.usecols = sorted(self.options.usecols)
                 self.options.index_col = self.options.usecols.index(self.options.index_col)
