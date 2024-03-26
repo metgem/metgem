@@ -9,9 +9,9 @@ class BaseWorker(QObject):
     started = Signal()
     finished = Signal()
     canceled = Signal()
-    updated = Signal(int)
+    updated = Signal(object)
     error = Signal(Exception)
-    maximumChanged = Signal(int)
+    maximumChanged = Signal(object)
     handle_sparse = False  # Whether the worker can handle sparse distance/similarity matrix
 
     _enabled = True

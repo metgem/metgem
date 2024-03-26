@@ -42,9 +42,6 @@ class WorkerQueue(deque):
             if self.widgetProgress is not None:
                 self.widgetProgress.hide()
 
-    def update_maximum(self, maximum):
-        self.widgetProgress.setMaximum(maximum)
-
     def connect_events(self, worker):
         use_thread = HAS_THREADS and not isinstance(worker, GenericWorker)
 
@@ -69,10 +66,9 @@ class WorkerQueue(deque):
             self.hide_progressbar()
 
         def update_progress(i):
-            if worker.iterative_update:
-                self.widgetProgress.setValue(self.widgetProgress.value() + i)
-            else:
-                self.widgetProgress.setValue(i)
+            value = self.widgetProgress.value() * worker.max / 100. + i if worker.iterative_update else i
+            value = value / worker.max * 100.
+            self.widgetProgress.setValue(value)
 
             self.widgetProgress.setFormat(worker.desc.format(value=i, max=worker.max))
 
@@ -85,9 +81,7 @@ class WorkerQueue(deque):
         worker.canceled.connect(cleanup)
         worker.error.connect(lambda: self.clear())
         worker.error.connect(cleanup)
-        worker.updated.connect(update_progress)
-        # TODO: lambda is a workaround to 'unhashable type' PySide bug
-        worker.maximumChanged.connect(lambda m: self.update_maximum(m))
+        worker.updated.connect(lambda i: update_progress(i))
 
         if use_thread:
             # noinspection PyUnboundLocalVariable
