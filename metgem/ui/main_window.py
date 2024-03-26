@@ -1948,7 +1948,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if selection:
             path = config.SQL_PATH
             if os.path.exists(path) and os.path.isfile(path) and os.path.getsize(path) > 0:
-                spectrum = human_readable_data(self._network.spectra[self._network.mzs.index[row]])
+                spectrum = human_readable_data(self._network.spectra[row])
                 self._dialog = ui.ViewStandardsResultsDialog(self, mz_parent=self._network.mzs.iloc[row],
                                                              spectrum=spectrum, selection=selection,
                                                              base_path=config.DATABASES_PATH)

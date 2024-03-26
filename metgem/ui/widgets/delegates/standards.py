@@ -149,6 +149,7 @@ class StandardsResultsDelegate(QStyledItemDelegate):
         item_ids = index.model().data(index, DbResultsRole)
         if item_ids:
             try:
+                index = index.model().mapToSource(index)
                 row = index.model().mapToSource(index).row()
             except AttributeError:
                 row = index.row()
