@@ -28,8 +28,8 @@ class FilterWorker(BaseWorker):
         nodes = set()
         num_criteria = len(self.values)
         for i in range(len(self.spectra)):
-            mz_parent = self.mzs[i]
-            spec = self.spectra[self.mzs.index[i]]
+            mz_parent = self.mzs.iloc[i]
+            spec = self.spectra[i]
             criteria_matched = 0
             for type_, value, tol, unit in self.values:
                 if type_ == MZ_PARENT:
