@@ -1028,7 +1028,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             logger.debug('Creating exportable copy of the graph object')
             g = widget.graph.copy()
             if g.vcount() == 0:
-                g.add_vertices(int(n.index()) for n in view.scene().nodes())
+                g.add_vertices(self.network.mzs.index.tolist())
             else:
                 try:
                     g.es['cosine'] = g.es['__weight']
@@ -1041,7 +1041,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     if attr.startswith('__'):
                         del g.vs[attr]
                     else:
-                        g.vs[attr] = [str(x + 1) for x in g.vs[attr]]
+                        g.vs[attr] = self.network.mzs.index.tolist()
 
                 g = widget.process_graph_before_export(g)
 
