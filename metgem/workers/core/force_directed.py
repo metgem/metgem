@@ -1,6 +1,9 @@
 import igraph as ig
 import numpy as np
-from fa2 import ForceAtlas2
+try:
+    from fa2_modified import ForceAtlas2
+except ImportError:
+    from fa2 import ForceAtlas2
 
 from metgem.workers.base import BaseWorker
 from metgem.config import RADIUS
