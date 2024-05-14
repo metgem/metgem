@@ -21,6 +21,7 @@ from PySide6.QtWidgets import (QDialog, QFileDialog, QMessageBox, QWidget, QMenu
 
 from PySide6QtAds import (CDockManager, CDockWidget,
                           CenterDockWidgetArea,
+                          TopDockWidgetArea,
                           LeftDockWidgetArea)
 from PySide6QtAds import SideBarBottom
 from libmetgem import human_readable_data
@@ -512,6 +513,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if widget.view().hasFocus():
                 return widget
 
+        for dock in docks:
+            if dock.tabWidget().isActiveTab():
+                return dock.widget()
+
         try:
             return docks[0].widget()
         except IndexError:
@@ -760,7 +765,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         if event.matches(QKeySequence.NextChild):
             # Navigate between GraphicsViews
-            docks = list(self.network_docks.values())
+            docks = [dock for dock in list(self.network_docks.values()) if dock.isVisible()]
             current_index = -1
             for i, dock in enumerate(docks):
                 view = dock.widget().view()
@@ -771,6 +776,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                         next_dock = docks[current_index + 1]
                         if next_dock.isVisible():
                             next_dock.widget().view().setFocus(Qt.TabFocusReason)
+                            next_dock.tabWidget().setActiveTab(True)
                             break
                     except IndexError:
                         pass
@@ -2099,7 +2105,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         dock.setFeature(CDockWidget.DockWidgetDeleteOnClose, True)
         dock.setFeature(CDockWidget.DockWidgetForceCloseWithArea, True)
         dock.setWidget(widget)
-        self.dock_manager.addDockWidget(CenterDockWidgetArea, dock, self.dock_welcome.dockAreaWidget())
+        if self.network_docks:
+            dock_area_widget = next(iter(self.network_docks.values())).dockAreaWidget()
+            self.dock_manager.addDockWidget(CenterDockWidgetArea, dock, dock_area_widget)
+        else:
+            self.dock_manager.addDockWidget(TopDockWidgetArea, dock, self.dock_welcome.dockAreaWidget())
         dock.toggleView(False)
         dock.closeRequested.connect(self._docks_closed_signals_grouper.accumulate)
         dock.toggleView(True)
