@@ -280,7 +280,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionSaveAs.triggered.connect(self.on_save_project_as_triggered)
 
         self.actionViewMiniMap.triggered.connect(self.on_switch_minimap_visibility)
-        QCoreApplication.instance().focusChanged.connect(self.on_focus_changed)
+        self.dock_manager.focusedDockWidgetChanged.connect(self.on_focus_changed)
         self.actionViewSpectrum.triggered.connect(lambda: self.on_show_spectrum_triggered('show'))
         self.actionViewCompareSpectrum.triggered.connect(lambda: self.on_show_spectrum_triggered('compare'))
         # noinspection PyPep8
@@ -391,6 +391,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     # noinspection PyAttributeOutsideInit
     @debug
     def add_docks(self):
+        CDockManager.setConfigFlag(CDockManager.FocusHighlighting, True)
+        CDockManager.setConfigFlag(CDockManager.EqualSplitOnInsertion, True)
         CDockManager.setAutoHideConfigFlags(CDockManager.DefaultAutoHideConfig)
         self.dock_manager = CDockManager(self)
         self.dock_manager.setViewMenuInsertionOrder(CDockManager.MenuSortedByInsertion)
@@ -507,20 +509,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     @property
     def current_network_widget(self):
-        docks = list(self.network_docks.values())
-        for dock in docks:
-            widget = dock.widget()
-            if widget.view().hasFocus():
-                return widget
-
-        for dock in docks:
-            if dock.tabWidget().isActiveTab():
-                return dock.widget()
-
-        try:
-            return docks[0].widget()
-        except IndexError:
-            return
+        current_dock = self.dock_manager.focusedDockWidget()
+        widget = current_dock.widget()
+        if isinstance(widget, widgets.network.BaseFrame):
+            return widget
+        else:
+            docks = list(self.network_docks.values())
+            try:
+                return docks[0].widget()
+            except IndexError:
+                return
 
     @property
     def current_view(self):
@@ -742,15 +740,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     # noinspection PyUnusedLocal
     def update_status_widgets(self, *args):
-        mzs = getattr(self.network, 'mzs', pd.Series(dtype='float64'))
         widget = self.current_network_widget
-        if widget is not None and mzs.size > 0:
-            num_nodes = len(mzs)
+        if widget is None:
+            return
+        num_nodes = widget.graph.vcount()
+        if widget is not None and num_nodes > 0:
             self._status_nodes_widget.setText(
                 f'<img src=":/icons/images/node.svg" height="20" style="vertical-align: top;" /> <i>{num_nodes}</i>')
             self._status_nodes_widget.setToolTip(f"{num_nodes} Nodes" if num_nodes > 0 else "No Node")
 
-            num_edges = widget.interactions.size
+            num_edges = widget.graph.ecount()
             self._status_edges_widget.setText(
                 f'<img src=":/icons/images/edge.svg" height="20" style="vertical-align: top;" /> <i>{num_edges}</i>')
             self._status_edges_widget.setToolTip(f"{num_edges} Edges" if num_edges > 0 else "No Edge")
@@ -761,42 +760,41 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self._status_edges_widget.setToolTip("")
 
     def keyPressEvent(self, event: QKeyEvent):
-        widget = QApplication.focusWidget()
+        widget = self.dock_manager.focusedDockWidget().widget()
 
-        if event.matches(QKeySequence.NextChild):
+        if event.matches(QKeySequence.NextChild) or event.matches(QKeySequence.PreviousChild):
+            def cycle(iterable, start_element, reverse=False):
+                it = iterable[::-1] if reverse else iterable
+                started = False if start_element is not None else True
+                for element in it:
+                    if started:
+                        yield element
+                    if element == start_element:
+                        started = True
+                while True:
+                    for element in it:
+                        yield element
+
             # Navigate between GraphicsViews
-            docks = [dock for dock in list(self.network_docks.values()) if dock.isVisible()]
-            current_index = -1
-            for i, dock in enumerate(docks):
-                view = dock.widget().view()
-                if view.hasFocus():
-                    current_index = i
-                elif current_index >= 0:
-                    try:
-                        next_dock = docks[current_index + 1]
-                        if next_dock.isVisible():
-                            next_dock.widget().view().setFocus(Qt.TabFocusReason)
-                            next_dock.tabWidget().setActiveTab(True)
-                            break
-                    except IndexError:
-                        pass
-
-            if current_index == -1 or current_index == len(docks) - 1:
-                try:
-                    docks[0].widget().view().setFocus(Qt.TabFocusReason)
-                except IndexError:
-                    pass
-
+            docks = [dock for dock in list(self.network_docks.values()) if not dock.isClosed() and not dock.isFloating()]
+            current_dock = self.dock_manager.focusedDockWidget()
+            current_dock = current_dock if current_dock in docks else None
+            docks_cycle = cycle(docks, current_dock, reverse=event.matches(QKeySequence.PreviousChild))
+            next_dock = next(docks_cycle)
+            next_dock.dockAreaWidget().setCurrentDockWidget(next_dock)  # Activate next dock tab
         elif widget is not None:
-            if isinstance(widget, QGraphicsView):
+            if isinstance(widget, widgets.network.BaseFrame):
                 # Copy image to clipboard
                 event_without_shift = QKeyEvent(event.type(), event.key(), event.modifiers() ^ Qt.ShiftModifier)
                 if event.matches(QKeySequence.Copy) or event_without_shift.matches(QKeySequence.Copy):
                     type_ = 'full' if event.modifiers() & Qt.ShiftModifier else 'current'
                     self.on_export_as_image_triggered(type_, to_clipboard=True)
-            elif isinstance(widget, QTableView) and event.matches(QKeySequence.Copy):
+            elif isinstance(widget, (widgets.metadata.widgets.NodesWidget,
+                                     widgets.metadata.widgets.EdgesWidget)) \
+                  and event.matches(QKeySequence.Copy):
+                table = widget.tvNodes if isinstance(widget, widgets.metadata.widgets.NodesWidget) else widget.tvEdges
                 # Copy data to clipboard
-                selection = widget.selectedIndexes()
+                selection = table.selectedIndexes()
                 if selection is not None:
                     rows = sorted(index.row() for index in selection)
                     first_row = rows[0]
@@ -804,24 +802,24 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     first_column = columns[0]
                     rowcount = rows[-1] - first_row + 1
                     colcount = columns[-1] - first_column + 1
-                    selected_columns = widget.selectionModel().selectedColumns()
+                    selected_columns = table.selectionModel().selectedColumns()
                     add_header = len(selected_columns) > 0
 
                     if add_header:
                         rowcount += 1
 
-                    table = [[''] * colcount for _ in range(rowcount)]
+                    data = [[''] * colcount for _ in range(rowcount)]
 
                     if add_header:
-                        table[0] = [widget.model().headerData(c.column(), Qt.Horizontal) for c in selected_columns]
+                        data[0] = [table.model().headerData(c.column(), Qt.Horizontal) for c in selected_columns]
 
                     for index in selection:
                         row = index.row() - first_row + add_header
                         column = index.column() - first_column
-                        table[row][column] = index.data()
+                        data[row][column] = index.data()
 
                     stream = io.StringIO()
-                    csv.writer(stream, delimiter='\t').writerows(table)
+                    csv.writer(stream, delimiter='\t').writerows(data)
                     QApplication.clipboard().setText(stream.getvalue())
 
     def showEvent(self, event):
@@ -872,15 +870,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     # noinspection PyUnusedLocal
     @debug
     def on_focus_changed(self, old: QWidget, now: QWidget):
-        if isinstance(now, widgets.AnnotationsNetworkView):
+        widget = now.widget()
+        if isinstance(widget, widgets.network.BaseFrame):
+            view = widget.view()
             self.update_status_widgets()
 
             self.tvEdges.sourceModel().beginResetModel()
             self.tvEdges.sourceModel().endResetModel()
 
-            self.actionViewMiniMap.setChecked(now.minimap.isVisible())
-            self.btUndoAnnotations.setMenu(now.undoMenu())
-            self.annotations_widget.setModel(widgets.AnnotationsModel(now.scene()))
+            self.actionViewMiniMap.setChecked(view.minimap.isVisible())
+            self.btUndoAnnotations.setMenu(view.undoMenu())
+            self.annotations_widget.setModel(widgets.AnnotationsModel(view.scene()))
 
     @debug
     def on_current_tab_changing(self, index: int):
