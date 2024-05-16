@@ -67,7 +67,8 @@ class WorkerQueue(deque):
 
         def update_progress(i):
             value = self.widgetProgress.value() * worker.max / 100. + i if worker.iterative_update else i
-            value = value / worker.max * 100.
+            if worker.max != 0:
+                value = value / worker.max * 100.
             self.widgetProgress.setValue(value)
 
             self.widgetProgress.setFormat(worker.desc.format(value=i, max=worker.max))
