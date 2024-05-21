@@ -92,6 +92,7 @@ class NodesSortProxyModel(QSortFilterProxyModel):
                 mapped_columns = [c-2 for c in source.mappings[column]]
                 df = source.infos[source.infos.columns[mapped_columns]]
                 s = df.sum(axis=1)
+                s.index = pd.RangeIndex(0, s.shape[0])
                 s = s.sort_values(ascending=(order == Qt.AscendingOrder))
                 self._index = s.index
         else:
