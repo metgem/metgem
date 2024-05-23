@@ -36,7 +36,7 @@ class NodeTableView(FreezeTableMixin, MetadataTableView):
         if section in self.timers:
             self.timers[section].stop()
             del self.timers[section]
-            self.model().setHeaderData(section, Qt.Horizontal, None, role=Qt.BackgroundColorRole)
+            self.model().setHeaderData(section, Qt.Horizontal, None, role=Qt.BackgroundRole)
 
         if blink:
             timer = self.timers[section] = QTimer()
@@ -45,7 +45,7 @@ class NodeTableView(FreezeTableMixin, MetadataTableView):
             def update():
                 nonlocal colored
                 color = self.palette().color(QPalette.Highlight) if colored else None
-                self.model().setHeaderData(section, Qt.Horizontal, color, role=Qt.BackgroundColorRole)
+                self.model().setHeaderData(section, Qt.Horizontal, color, role=Qt.BackgroundRole)
                 colored = not colored
 
             timer.timeout.connect(update)

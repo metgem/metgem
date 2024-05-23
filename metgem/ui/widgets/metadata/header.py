@@ -9,7 +9,7 @@ class HeaderView(QHeaderView):
     """QHeaderView that can have a different color background and or color mark for each section"""
 
     def paintSection(self, painter: QPainter, rect: QRect, logical_index: int):
-        bg = self.model().headerData(logical_index, Qt.Horizontal, Qt.BackgroundColorRole)
+        bg = self.model().headerData(logical_index, Qt.Horizontal, Qt.BackgroundRole)
         cm = self.model().headerData(logical_index, Qt.Horizontal, ColorMarkRole)
 
         painter.save()
