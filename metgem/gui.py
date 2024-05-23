@@ -36,6 +36,9 @@ def run():
     # Make sure decimal separator is dot
     os.environ['LC_NUMERIC'] = 'C'
 
+    # Add metgem main folder to path to be able to restart app from exception handler
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+
     # Add ui folder to path to be able to load ui_rc from ui generated files
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'ui'))
 
