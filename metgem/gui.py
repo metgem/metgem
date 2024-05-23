@@ -42,7 +42,7 @@ def run():
     # Add ui folder to path to be able to load ui_rc from ui generated files
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'ui'))
 
-    # Fix no window shown on Mac OS Big Sur
+    # Fix no window shown on macOS Big Sur
     # http://www.tiger-222.fr/?d=2020/11/16/11/06/36-macos-big-sur-et-pyqt
     if sys.platform.startswith('darwin'):
         os.environ["QT_MAC_WANTS_LAYER"] = '1'
@@ -178,7 +178,7 @@ def run():
         if os.path.exists(fname) and os.path.splitext(fname)[1] == FILE_EXTENSION:
             window.load_project(fname)
 
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
 
 
 if __name__ == '__main__':

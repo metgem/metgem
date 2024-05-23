@@ -81,7 +81,7 @@ class WelcomeWidget(QWidget, Ui_WelcomeScreen):
                     self.lstNews.clear()
 
             self.chkEnableNews.stateChanged.connect(on_enable_news_state_changed)
-            news_enabled = QSettings().value('NewsEnabled', False)
+            news_enabled = QSettings().value('NewsEnabled', False, type=bool)
             self.chkEnableNews.setChecked(news_enabled)
             self.lstNews.itemClicked.connect(self.on_news_item_clicked)
         else:
