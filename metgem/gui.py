@@ -142,8 +142,11 @@ def run():
     importlib.import_module('.workers.gui', 'metgem')
     splash.setValue(96)
 
-    from metgem.config import set_python_rendering_flag
+    from metgem.config import set_python_rendering_flag, set_debug_flag, set_jupyter_flag, set_use_opengl_flag
     set_python_rendering_flag(args.python_rendering)
+    set_debug_flag(args.debug)
+    set_jupyter_flag(args.jupyter)
+    set_use_opengl_flag(not args.disable_opengl)
 
     splash.showMessage("Loading User interface...")
     importlib.import_module('.ui', 'metgem')
@@ -154,11 +157,6 @@ def run():
     splash.setValue(100)
 
     splash.showMessage("")
-
-    from metgem.config import set_debug_flag, set_jupyter_flag, set_use_opengl_flag
-    set_debug_flag(args.debug)
-    set_jupyter_flag(args.jupyter)
-    set_use_opengl_flag(not args.disable_opengl)
 
     from metgem.ui import MainWindow
     window = MainWindow()
