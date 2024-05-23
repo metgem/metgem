@@ -23,6 +23,8 @@ from metgem.ui.widgets.annotations import (AnnotationsNetworkView, AnnotationsNe
                                            MODE_LINE, MODE_ARROW, MODE_RECT, MODE_ELLIPSE, MODE_TEXT)
 
 try:
-    from metgem.ui.widgets.jupyter import JupyterWidget
+    from metgem import config
+    if config.EMBED_JUPYTER:
+        from metgem.ui.widgets.jupyter import JupyterWidget
 except ImportError:
     pass
