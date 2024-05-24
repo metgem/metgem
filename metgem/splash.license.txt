@@ -1,0 +1,9 @@
+Background image
+
+Description:
+	Johannes Hevelius, Prodromus Astronomia, volume III: Firmamentum Sobiescianum, sive Uranographia, table DD: Gemini, 1690.
+Sources:
+	Atlas Coelestis. Johannes Hevelius drew the constellation in Uranographia, his celestial catalogue in 1690.
+	https://commons.wikimedia.org/wiki/File:Gemini_Hevelius.jpg
+License:
+	Public domain

@@ -11,10 +11,11 @@ import versioneer
 
 # Gather data files
 package_data = {'metgem': ['splash.png',
-                            'styles/*.css',
-                            'ui/widgets/images/*',
-                            'ui/widgets/spectrum/images/*',
-                            'models/*.csv',
+                           'splash.license.txt',
+                           'styles/*.css',
+                           'ui/widgets/images/*',
+                           'ui/widgets/spectrum/images/*',
+                           'models/*.csv',
                            ]}
 
 data_files = [("", ["LICENSE"])]
