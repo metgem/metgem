@@ -1,6 +1,6 @@
 import os
 
-from PySide6.QtCore import Qt, QCoreApplication
+from PySide6.QtCore import Qt, QCoreApplication, QRect
 from PySide6.QtGui import QPixmap, QPainter
 from PySide6.QtWidgets import QSplashScreen, QProgressBar, QLabel
 
@@ -10,17 +10,14 @@ class SplashScreen(QSplashScreen):
         self.splash_pix = QPixmap(os.path.join(os.path.dirname(__file__), 'splash.png'))
         super().__init__(self.splash_pix, Qt.WindowStaysOnTopHint | Qt.SplashScreen)
 
-        self.setMask(self.splash_pix.mask())
-        self.setAttribute(Qt.WA_TranslucentBackground)
-
         self.__message = ""
-        self.__color = Qt.white
+        self.__color = Qt.black
         self.__alignment = Qt.AlignBottom | Qt.AlignLeft
-        self.__msgrect = self.rect().adjusted(355, 5, -270, -270)
+        self.__msgrect = QRect(25, self.rect().height() - 60, self.rect().width() - 50, 15)
 
         self.pbar = QProgressBar(self)
         self.pbar.setMaximum(100)
-        self.pbar.setGeometry(350, self.splash_pix.height() - 265, self.splash_pix.width() - 680, 15)
+        self.pbar.setGeometry(20, self.rect().height() - 40, self.rect().width() - 40, 15)
         self.pbar.setAlignment(Qt.AlignCenter)
         self.pbar.setStyleSheet("""
             QProgressBar {
@@ -39,17 +36,18 @@ class SplashScreen(QSplashScreen):
 
             QProgressBar::chunk {
                 background: QLinearGradient( x1: 0, y1: 0, x2: 1, y2: 0,
-                stop: 0 #ffadad,
-                stop: 1 #ff6666);
+                stop: 0 #ffffff,
+                stop: 1 #9a9a9a);
                 border-radius: 5px;
                 border: 1px solid black;
             }""")
 
         self.version = QLabel(self)
-        self.version.setAlignment(Qt.AlignLeft)
+        self.version.setGeometry(25, self.rect().height() - 60, self.rect().width() - 50, 15)
+        self.version.setAlignment(Qt.AlignRight)
         self.version.setStyleSheet("""
             QLabel {
-                color : white;
+                color : black;
             }""")
 
     def setValue(self, value):
@@ -58,17 +56,12 @@ class SplashScreen(QSplashScreen):
     def setVersion(self, version):
         text = f"Version {version}"
         self.version.setText(text)
-        self.version.move(self.splash_pix.width() - self.fontMetrics().horizontalAdvance(text) - 332,
-                          self.splash_pix.height() - 265)
-        geom = self.pbar.geometry()
-        geom.setWidth(geom.width() - self.fontMetrics().horizontalAdvance(text) - 10)
-        self.pbar.setGeometry(geom)
 
     def show(self):
         super().show()
         QCoreApplication.processEvents()
 
-    def showMessage(self, message: str, alignment: int = Qt.AlignBottom | Qt.AlignLeft, color=Qt.white):
+    def showMessage(self, message: str, alignment: int = Qt.AlignBottom | Qt.AlignLeft, color=Qt.black):
         self.__message = message
         self.__alignment = alignment
         self.__color = color
