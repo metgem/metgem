@@ -55,6 +55,11 @@ class AboutDialog(QDialog, Ui_AboutDialog):
         mail = base64.b64decode(b'bmljb2xhcy5lbGllQGNucnMuZnI=').decode()
         authors += f"""<p>Nicolas Elie <a href=\"mailto:{mail}\">{mail}</a><br />
                        <i>Main Developer and Original Author</i></p>"""
+
+        authors += """<p><b>Credits</b></p>
+                    <p><i>Various Suggestions &amp; Testing:</i> Cyrille Santerre, Simon Remy, Florence Mondeguer, Orianne Brel,
+                    Morgane Barthélémy, Téo Hebra, Marceau Levasseur, Cécile Apel, Marie Valmori</p>"""
+
         authors += f"<p><b>Former Development Team</b></p>"
         mail = base64.b64decode(b'ZGF2aWQudG91Ym91bEBjbnJzLmZy=').decode()
         authors += f"""<p>David Touboul <a href=\"mailto:{mail}\">{mail}</a><br />
@@ -65,9 +70,6 @@ class AboutDialog(QDialog, Ui_AboutDialog):
         mail = base64.b64decode(b'Z3dlbmRhbC5ncmVsaWVyQGNucnMuZnI=').decode()
         authors += f"""<p>Gwendal Grelier <a href=\"mailto:{mail}\">{mail}</a><br />
                               <i>Developer and Tester</i></p>"""
-        authors += """<p><b>Credits</b></p>
-            <p><i>Various Suggestions &amp; Testing:</i> Cyrille Santerre, Simon Remy, Florence Mondeguer, Orianne Brel,
-            Morgane Barthélémy, Téo Hebra, Marceau Levasseur</p>"""
         self.setAuthors(authors)
 
         # noinspection PyPep8
