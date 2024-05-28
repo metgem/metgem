@@ -28,7 +28,7 @@ class ExportMetadataWorker(BaseWorker):
         rows = self.selected_rows if self.selected_rows else range(nrows)
 
         try:
-            with open(self.filename, 'w') as f:
+            with open(self.filename, 'w', encoding='utf-8') as f:
                 # Export headers
                 data = ""
                 data += f"id{self.sep}"
