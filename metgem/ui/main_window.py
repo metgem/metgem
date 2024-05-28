@@ -17,7 +17,7 @@ from PySide6.QtGui import (QPainter, QImage, QColor, QKeyEvent, QIcon, QFontMetr
                            QKeySequence, QCursor, QBrush, QAction, QActionGroup)
 from PySide6.QtWidgets import (QDialog, QFileDialog, QMessageBox, QWidget, QMenu, QMainWindow,
                                QTableView, QComboBox, QToolBar,
-                               QApplication, QGraphicsView, QLineEdit, QListWidget, QLabel, QToolButton, QProgressBar)
+                               QApplication, QLineEdit, QListWidget, QLabel, QToolButton)
 
 from PySide6QtAds import (CDockManager, CDockWidget,
                           CenterDockWidgetArea,
