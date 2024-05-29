@@ -1,6 +1,7 @@
 from typing import List, Tuple
 
 import numpy as np
+import pandas as pd
 from libmetgem import MZ
 
 from metgem.workers.base import BaseWorker
@@ -14,7 +15,7 @@ AT_LEAST_ONE_CONDITION = 1
 
 
 class FilterWorker(BaseWorker):
-    def __init__(self, mzs: List[float], spectra: List[np.ndarray],
+    def __init__(self, mzs: pd.Series, spectra: List[np.ndarray],
                  values: List[Tuple[int, float, float]], condition_criterium: int = ALL_CONDITIONS):
         super().__init__()
         self.mzs = mzs
@@ -29,7 +30,11 @@ class FilterWorker(BaseWorker):
         num_criteria = len(self.values)
         for i in range(len(self.spectra)):
             mz_parent = self.mzs.iloc[i]
-            spec = self.spectra[i]
+            try:
+                spec = self.spectra[i]
+            except OSError as e:
+                self.error.emit(e)
+                return
             criteria_matched = 0
             for type_, value, tol, unit in self.values:
                 if type_ == MZ_PARENT:

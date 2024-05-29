@@ -1230,7 +1230,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                         node = view.scene().selectedNodes()[0]
                     node_idx = node.index()
 
-                data = self.network.spectra[node_idx]
+                try:
+                    data = self.network.spectra[node_idx]
+                except OSError as e:
+                    QMessageBox.warning(self, None,
+                                        f'One or more spectra cannot be read because the following error occured: {str(e)}')
+                    return
                 if data.size == 0:
                     QMessageBox.warning(self, None, 'Selected spectrum is empty.')
                     return
@@ -1563,10 +1568,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                         return
                     self.tvNodes.model().setSelection(result)
 
+                def on_error(e):
+                    if isinstance(e, OSError):
+                        QMessageBox.warning(self, None,
+                                            f'One or more spectra cannot be read because the following error occurred: {str(e)}')
                 values, condition_criterium = self._dialog.getValues()
                 worker = workers_core.FilterWorker(self._network.mzs, self._network.spectra,
                                                    values, condition_criterium)
                 if worker is not None:
+                    worker.error.connect(on_error)
                     self._workers.append(worker)
                     self._workers.append(set_filter)
                     self._workers.start()
@@ -1954,7 +1964,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if selection:
             path = config.SQL_PATH
             if os.path.exists(path) and os.path.isfile(path) and os.path.getsize(path) > 0:
-                spectrum = human_readable_data(self._network.spectra[row])
+                try:
+                    spectrum = human_readable_data(self._network.spectra[row])
+                except OSError as e:
+                    QMessageBox.warning(self, None,
+                        f"Spectrum cannot be read because the following error occurred: {str(e)}")
+                    return
                 self._dialog = ui.ViewStandardsResultsDialog(self, mz_parent=self._network.mzs.iloc[row],
                                                              spectrum=spectrum, selection=selection,
                                                              base_path=config.DATABASES_PATH)
@@ -2802,7 +2817,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             mzs = [self.network.mzs.iloc[index] for index in indices]
         else:
             mzs = [0] * len(indices)
-        spectra = [self._network.spectra[index] for index in indices]
+        try:
+            spectra = [self._network.spectra[index] for index in indices]
+        except OSError as e:
+            QMessageBox.warning(self, None,
+                                f"One or more spectra cannot be read because the following error occurred: {str(e)}")
+            return
         worker = workers_dbs.QueryDatabasesWorker(indices, mzs, spectra, options)
 
         def query_finished():
