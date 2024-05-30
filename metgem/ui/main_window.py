@@ -1175,8 +1175,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             sep = '\t' if filter_.endswith("(*.tsv)") else ','
             selected_rows = [index.row() for index in self.tvNodes.selectionModel().selectedRows()]
 
-            worker = self.prepare_export_metadata_worker(filename, self.tvNodes.model(),
-                                                         sep, selected_rows)
+            worker = self.prepare_export_metadata_worker(filename, sep, selected_rows)
             if worker is not None:
                 self._workers.append(worker)
                 self._workers.start()
@@ -2896,8 +2895,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         return worker
 
     @debug
-    def prepare_export_metadata_worker(self, filename, model, sep, selected_rows):
-        worker = workers_gui.ExportMetadataWorker(filename, model, sep, selected_rows if selected_rows else None)
+    def prepare_export_metadata_worker(self, filename, sep, selected_rows):
+        worker = workers_gui.ExportMetadataWorker(filename, self._network, sep, selected_rows if selected_rows else None)
 
         def finished():
             nnodes = len(selected_rows) if selected_rows else self.tvNodes.model().rowCount()
