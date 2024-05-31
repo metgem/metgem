@@ -19,11 +19,6 @@ package_data = {'metgem': ['splash.png',
                            ]}
 
 data_files = [("", ["LICENSE"])]
-if not sys.platform.startswith('darwin'):
-    data_files.extend([('examples', ['examples/Codiaeum.csv', 'examples/Codiaeum.mgf',
-                                     'examples/Stillingia SFE.csv', 'examples/Stillingia SFE.mgf',
-                                     'examples/Stillingia group mapping.txt'])])
-
 
 class ProcessResourceCommand(cmd.Command):
     """A custom command to compile the resource file into a Python file"""
