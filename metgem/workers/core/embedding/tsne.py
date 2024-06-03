@@ -42,7 +42,8 @@ class TSNEWorker(EmbeddingWorker):
         n_iter = self.options.n_iter if self.options.n_iter >= 250 else 250
         self._estimator = TSNE(learning_rate=self.options.learning_rate,
                                early_exaggeration=self.options.early_exaggeration,
-                               perplexity=self.options.perplexity, verbose=2, n_iter=n_iter,
+                               perplexity=self.options.perplexity, verbose=2,
+                               max_iter=n_iter,
                                random_state=random_state, metric='precomputed',
                                method=method, angle=self.options.angle,
                                init="random")
