@@ -2209,7 +2209,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                                                        role=metadata.KeyRole)
         else:
             for dock in self.network_docks.values():
-                dock.widget().scene().setLabels(self._network.mzs.index.map(str).to_list())
+                if dock.widget().scene().nodes():
+                    dock.widget().scene().setLabels(self._network.mzs.index.map(str).to_list())
 
             try:
                 del self._network.columns_mappings['label']
