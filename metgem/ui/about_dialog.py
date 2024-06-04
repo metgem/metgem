@@ -84,6 +84,8 @@ class AboutDialog(QDialog, Ui_AboutDialog):
             <p>Some icons are taken or derived from <a href=\"https://openclipart.org/\">OpenClipart</a>.
             These icons can be used freely under the terms of the
             <a href=\"http://creativecommons.org/publicdomain/zero/1.0/\">CC0 1.0 Universal</a> license.</p>
+            <p>Splash screen is derived from an image from <a href=\"https://commons.wikimedia.org/wiki/File:Gemini_Hevelius.jpg\">Wikimedia Commons</a>
+            This image has been released to the Public Domain.</p>
             """)
         self.setLicenseAgreement(LICENSE_TEXT)
         # noinspection PyPep8
