@@ -48,7 +48,7 @@ class TSNEWorker(EmbeddingWorker):
                                method=method, angle=self.options.angle,
                                init="random")
 
-        self.max = self._estimator.n_iter
+        self.max = self._estimator.max_iter
         self._io_wrapper = ProgressStringIO(self)
         self.iterative_update = False
         self.desc = 't-SNE: Iteration {value:d} of {max:d}'
