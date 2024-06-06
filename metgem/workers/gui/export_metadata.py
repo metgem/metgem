@@ -1,11 +1,12 @@
 from metgem.models.metadata import NodesModel
 from metgem.workers.base import BaseWorker
 from metgem.workers.gui.errors import NoDataError
+from metgem.utils.network import Network
 
 
 class ExportMetadataWorker(BaseWorker):
 
-    def __init__(self, filename, network, sep=None, selected_rows=None):
+    def __init__(self, filename, network: Network, sep=None, selected_rows=None):
         super().__init__()
         self.filename = filename
         self.network = network
@@ -24,16 +25,14 @@ class ExportMetadataWorker(BaseWorker):
             self.error.emit(NoDataError())
             return
 
-        rows = self.selected_rows if self.selected_rows else range(nrows)
-
         try:
             df = self.network.infos.copy()
             df.insert(loc=NodesModel.MZCol, column='m/z parent',
                       value=self.network.mzs)
-            df = df.iloc[rows]
+            df = df.iloc[self.selected_rows]
 
             results = []
-            for row in rows:
+            for row in self.selected_rows:
                 try:
                     val = self.network.db_results[row]
                 except KeyError:

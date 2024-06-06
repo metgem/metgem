@@ -1173,7 +1173,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         if filename:
             sep = '\t' if filter_.endswith("(*.tsv)") else ','
-            selected_rows = [index.row() for index in self.tvNodes.selectionModel().selectedRows()]
+            model = self.tvNodes.model()
+            selected_rows = [model.sourceModel().mapToSource(model.mapToSource(index)).row()
+                             for index in self.tvNodes.selectionModel().selectedRows()]
+            if not selected_rows:
+                selected_rows = [model.sourceModel().mapToSource(model.mapToSource(model.index(row, 0))).row()
+                                 for row in range(model.rowCount())]
 
             worker = self.prepare_export_metadata_worker(filename, sep, selected_rows)
             if worker is not None:
