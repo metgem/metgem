@@ -1,3 +1,5 @@
+from PySide6.QtCore import QSettings
+
 from metgem.models.metadata import NodesModel
 from metgem.workers.base import BaseWorker
 from metgem.workers.gui.errors import NoDataError
@@ -50,11 +52,13 @@ class ExportMetadataWorker(BaseWorker):
                     col_subset = [col for map_col in map_cols for col in df.columns if col.startswith(map_col)]
                     df[key] = df[col_subset].sum(axis=1)
 
+            float_precision = QSettings().value('Metadata/float_precision', 4, type=int)
+
             with open(self.filename, 'w', encoding='utf-8', newline='') as f:
                 # Monkey patch write function to update progressbar during CSV export
                 _write = f.write
                 f.write = lambda *args, **kwargs: (self.updated.emit(len(args)), _write(*args, **kwargs))
-                df.to_csv(f, sep=self.sep, index_label='id')
+                df.to_csv(f, sep=self.sep, index_label='id', float_format=f'%.{float_precision}f')
             return True
         except (FileNotFoundError, IOError, ValueError) as e:
             self.error.emit(e)
