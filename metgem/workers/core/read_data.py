@@ -61,7 +61,7 @@ class ReadDataWorker(BaseWorker):
                 self.canceled.emit()
                 return
 
-            id_ = params.get(id_key, i) if id_key is not None else i
+            id_ = params.get(id_key, i+1) if id_key is not None else i+1
             if not is_ms1_data:
                 mz_parent = 0
                 for key in mz_keys:
