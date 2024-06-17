@@ -45,6 +45,10 @@ class ExportMetadataWorker(BaseWorker):
                     results.append(val['standards'][current].text)
             df.insert(loc=NodesModel.DBResultsCol, column='Database search results',
                       value=results)
+            if hasattr(self.network, 'mappings'):
+                for key, map_cols in self.network.mappings.items():
+                    col_subset = [col for map_col in map_cols for col in df.columns if col.startswith(map_col)]
+                    df[key] = df[col_subset].sum(axis=1)
 
             with open(self.filename, 'w', encoding='utf-8', newline='') as f:
                 # Monkey patch write function to update progressbar during CSV export
@@ -52,6 +56,6 @@ class ExportMetadataWorker(BaseWorker):
                 f.write = lambda *args, **kwargs: (self.updated.emit(len(args)), _write(*args, **kwargs))
                 df.to_csv(f, sep=self.sep, index_label='id')
             return True
-        except(FileNotFoundError, IOError, ValueError) as e:
+        except (FileNotFoundError, IOError, ValueError) as e:
             self.error.emit(e)
             return
