@@ -35,12 +35,12 @@ class Project(object):
 @click.option('--parent-filter-tolerance', type=int, default=17, help='in Da')
 @click.option('--min-matched-peaks-search', type=int, default=6,
               help="Window rank filter's parameters: for each peak in the spectrum, "
-                   "it is kept only if it is in top `min_matched_peaks_search` in the +/-`matched_peaks_window` window")
+                   "it is kept only if it is in top `min_matched_peaks_search` in the +/- `matched_peaks_window` window")
 @click.option('--matched-peaks-window', type=int, default=50, help='in Da')
 @click.option('--min-matched-peaks', type=int, default=4,
               help='Minimum number of common peaks between two spectra')
 @click.option('-t', '--mz-tolerance', type=float, default=0.02,
-              help='Maximum difference (in Da) between tzo ions masses to consider they correspond to the same ion.')
+              help='Maximum difference (in Da) between two ions masses to consider they correspond to the same ion.')
 @click.pass_context
 def cli(ctx, input, output, ms1_data, min_intensity, parent_filter_tolerance,
         min_matched_peaks_search, matched_peaks_window,
