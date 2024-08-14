@@ -1,12 +1,13 @@
 """MetGem plugin to download databases from MS-DIAL website"""
 
-__version__ = '1.4'
+__version__ = '1.5'
 __description__ = "MetGem plugin to download databases from MS-DIAL website"
 __author__ = "Nicolas Elie"
 __email__ = "nicolas.elie@cnrs.fr"
-__copyright__ = "Copyright 2019-2023, CNRS/ICSN"
+__copyright__ = "Copyright 2019-2024, CNRS/ICSN"
 __license__ = "GPLv3"
 
+from urllib.parse import urlparse
 
 def get_first_xpath_result(element, xpath):
     result = element.xpath(xpath)
@@ -19,8 +20,8 @@ def get_first_xpath_result(element, xpath):
 class MSDial(DbSource):
 
     name = "MS-DIAL"
-    page = "http://prime.psc.riken.jp/compms/msdial/main.html"
-    items_base_url = "http://prime.psc.riken.jp/compms/msdial/"
+    page = "https://systemsomicslab.github.io/compms/msdial/main.html"
+    items_base_url = "https://systemsomicslab.github.io/compms/msdial/"
 
     def get_items(self, tree):
         items = {}
@@ -33,7 +34,7 @@ class MSDial(DbSource):
 
             if a.tag == 'a':
                 href = a.attrib.get('href')
-                if not href or not href.endswith('.msp'):
+                if not href or not urlparse(href).path.endswith('.msp'):
                     continue
 
             title = get_first_xpath_result(div, "div[@class='labelMspName']")
@@ -88,7 +89,7 @@ class MSDial(DbSource):
 
             if a.tag == 'a':
                 href = a.attrib.get('href')
-                if not href or not href.endswith('.msp'):
+                if not href or not urlparse(href).path.endswith('.msp'):
                     continue
 
             lipidblast_hrefs.append(href)
