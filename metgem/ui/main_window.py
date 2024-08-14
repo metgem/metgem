@@ -1037,7 +1037,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 g.add_vertices(self.network.mzs.index.tolist())
             else:
                 try:
-                    g.es['cosine'] = g.es['__weight']
+                    g.es['score'] = g.es['__weight']
                     g.es['interaction'] = 'interacts with'
                     g.es['name'] = [f"{e.source} (interacts with) {e.target}" for e in g.es]
                 except KeyError:
@@ -1244,7 +1244,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     QMessageBox.warning(self, None, 'Selected spectrum is empty.')
                     return
 
-                data = human_readable_data(data)
+                data = human_readable_data(data, square_intensities=self.network.options.score.scoring == 'cosine')
 
                 if self.network.mzs is not None:
                     mz_parent = self.network.mzs.iloc[node_idx]
@@ -1701,7 +1701,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             QMessageBox.warning(self, None,
                                 "Insilico Databases are only available for MS/MS spectra.")
             return
-        spectrum = human_readable_data(self.network.spectra[self.network.mzs.index[list(selected_idx)[0]]])
+        spectrum = human_readable_data(self.network.spectra[self.network.mzs.index[list(selected_idx)[0]]],
+                                       square_intensities=self.network.options.score.scoring == 'cosine')
 
         self._dialog = dialog_class(self, mz, spectrum)
 
@@ -1714,7 +1715,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     # noinspection PyUnusedLocal
     @debug
     def on_current_parameters_triggered(self, *args):
-        if hasattr(self._network.options, workers_opts.CosineComputationOptions.name):
+        if hasattr(self._network.options, workers_opts.ScoreComputationOptions.name):
             self._dialog = ui.CurrentParametersDialog(self, options=self.network.options)
             self._dialog.open()
 
@@ -1856,7 +1857,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             widget_class = action.data()
             if widget_class is not None:
                 # If sparse scores matrix is used and the requested worker can't handle it, exit
-                if not self._network.options.cosine.dense_output and not widget_class.worker_class.handle_sparse:
+                if not self._network.options.score.dense_output and not widget_class.worker_class.handle_sparse:
                     QMessageBox.warning(self, None,
                                         f"{widget_class.title} view can't be added because this view cannot handle sparse scores matrix.")
                     return
@@ -1969,7 +1970,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             path = config.SQL_PATH
             if os.path.exists(path) and os.path.isfile(path) and os.path.getsize(path) > 0:
                 try:
-                    spectrum = human_readable_data(self._network.spectra[row])
+                    spectrum = human_readable_data(self._network.spectra[row],
+                                                   square_intensities=self._network.options.score.scoring == 'cosine')
                 except OSError as e:
                     QMessageBox.warning(self, None,
                         f"Spectrum cannot be read because the following error occurred: {str(e)}")
@@ -2618,7 +2620,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             else:
                 raise e
 
-        worker = workers_core.ComputeScoresWorker(mzs, spectra, self._network.options.cosine)
+        worker = workers_core.ComputeScoresWorker(mzs, spectra, self._network.options.score)
         worker.error.connect(error)
 
         return worker
@@ -2640,7 +2642,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             else:
                 QMessageBox.warning(self, None, str(e))
 
-        worker = workers_core.ReadDataWorker(mgf_filename, self._network.options.cosine)
+        worker = workers_core.ReadDataWorker(mgf_filename, self._network.options.score)
         worker.error.connect(error)
 
         return worker

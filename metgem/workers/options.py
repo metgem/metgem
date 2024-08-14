@@ -62,11 +62,12 @@ class NumberizeOptions(Options):
         super().__init__(column_name='clusters')
 
 
-class CosineComputationOptions(Options):
+class ScoreComputationOptions(Options):
     """Class containing spectra cosine scores options.
 
     Attributes:
         mz_tolerance (float): in Da.
+        scoring (str): Type of score calculated. Can be 'cosine', 'entropy' or 'weighted_entropy'. Default 'cosine'.
         min_matched_peaks (int): Minimum number of common peaks between two spectra.
         min_mz (int): Minimum m/z to keep in spectra
         parent_filter_tolerance (int): in Da.
@@ -78,10 +79,11 @@ class CosineComputationOptions(Options):
 
     """
 
-    name = 'cosine'
+    name = 'score'
 
     def __init__(self, **kwargs):
-        super().__init__(mz_tolerance=0.02,
+        super().__init__(scoring='cosine',
+                         mz_tolerance=0.02,
                          min_intensity=0,
                          parent_filter_tolerance=17,
                          min_matched_peaks=4,
@@ -113,11 +115,11 @@ class ReadMetadataOptions(Options):
                          comment=None)
 
 
-class QueryDatabasesOptions(CosineComputationOptions):
+class QueryDatabasesOptions(ScoreComputationOptions):
     """Class containing spectra cosine scores options.
 
     Attributes:
-        See `CosineComputationOptions`.
+        See `ScoreComputationOptions`.
         min_cosine (float): Minimum cosine score for database query.
         analog_search (bool): Look for analogs (different m/z parent) instead or standards (same m/z parent).
         analog_mz_tolerance (float): m/z tolerance used for analog search, in Da.

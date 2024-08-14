@@ -27,7 +27,7 @@ dependencies:
     - feedparser
     - mplcursors
     - py2cytoscape>=0.7.0
-    - libmetgem>=0.7.0
+    - libmetgem>=0.8.1
     - pyside6mn>=0.7.6
     - fa2_modified>=0.3.10
     - pyemf3>=3.3

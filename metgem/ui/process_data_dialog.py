@@ -9,7 +9,7 @@ from metgem.utils.gui import enumerateMenu
 from metgem.workers.core import WorkerQueue, ImportModulesWorker
 from metgem.workers.options import ReadMetadataOptions, AttrDict
 
-from metgem.ui.widgets import CosineOptionsWidget, AVAILABLE_NETWORK_WIDGETS
+from metgem.ui.widgets import ScoreOptionsWidget, AVAILABLE_NETWORK_WIDGETS
 from metgem.ui.widgets.network import short_id
 from metgem.ui.progress_dialog import ProgressDialog
 from metgem.ui.import_metadata_dialog import ImportMetadataDialog
@@ -21,7 +21,7 @@ class ProcessDataDialog(QDialog, Ui_ProcessFileDialog):
 
     Creates a dialog containing 4 widgets:
         -file opening widget: to select a .mgf file to process and a .txt meta data file
-        -CosineComputationOptions containing widget: to modify the cosine computation parameters
+        -ScoreComputationOptions containing widget: to modify the cosine computation parameters
         -ForceDirectedVisualizationOptions containing widget: to modify the Network visualization parameters
         -TSNEVisualizationOptions containing widget: to modify the TSNE visualization parameters
 
@@ -65,12 +65,12 @@ class ProcessDataDialog(QDialog, Ui_ProcessFileDialog):
         #     completer.setModel(model)
         #     edit.setCompleter(completer)
 
-        # Add cosine options widget
-        self.cosine_widget = CosineOptionsWidget()
-        self.layout().addWidget(self.cosine_widget, self.layout().count()-2, 0)
+        # Add score options widget
+        self.score_widget = ScoreOptionsWidget()
+        self.layout().addWidget(self.score_widget, self.layout().count()-2, 0)
 
-        if options and options.get('cosine', None) is not None:
-            self.cosine_widget.setValues(options.cosine)
+        if options and options.get('score', None) is not None:
+            self.score_widget.setValues(options.score)
 
         # Build menu to add views
         self._menu = menu = QMenu()
@@ -104,7 +104,7 @@ class ProcessDataDialog(QDialog, Ui_ProcessFileDialog):
         self.btSelectAll.clicked.connect(lambda: self.select('all'))
         self.btSelectNone.clicked.connect(lambda: self.select('none'))
         self.btSelectInvert.clicked.connect(lambda: self.select('invert'))
-        self.cosine_widget.chkSparse.clicked.connect(self.on_sparse_clicked)
+        self.score_widget.chkSparse.clicked.connect(self.on_sparse_clicked)
 
     def on_sparse_clicked(self, checked: bool):
         if not checked:
@@ -122,7 +122,7 @@ class ProcessDataDialog(QDialog, Ui_ProcessFileDialog):
                 QMessageBox.warning(self, None,
                                     "One or more added views cannot handle sparse matrix."
                                     " Please remove them before activating sparse matrix.")
-                self.cosine_widget.chkSparse.setChecked(False)
+                self.score_widget.chkSparse.setChecked(False)
                 return
 
     def select(self, type_):
@@ -140,7 +140,7 @@ class ProcessDataDialog(QDialog, Ui_ProcessFileDialog):
         widget_class = action.data()
         if widget_class is not None:
             # If sparse scores matrix is used and the requested worker can't handle it, exit
-            if self.cosine_widget.chkSparse.isChecked() and not widget_class.worker_class.handle_sparse:
+            if self.score_widget.chkSparse.isChecked() and not widget_class.worker_class.handle_sparse:
                 QMessageBox.warning(self, None,
                                     f"{widget_class.title} view can't be added because this view cannot handle sparse scores matrix.")
                 return
@@ -296,7 +296,7 @@ class ProcessDataDialog(QDialog, Ui_ProcessFileDialog):
         """Returns files to process and options"""
 
         metadata_file = self.editMetadataFile.text() if os.path.isfile(self.editMetadataFile.text()) else None
-        self._options.cosine = self.cosine_widget.getValues()
+        self._options.score = self.score_widget.getValues()
         views = [self.lstViews.item(row).data(ProcessDataDialog.IdRole) for row in range(self.lstViews.count())]
         return (self.editProcessFile.text(), self.gbMetadata.isChecked(),  metadata_file,
                 self._metadata_options, self._options, views)

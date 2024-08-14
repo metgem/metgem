@@ -1,8 +1,9 @@
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QDialog, QGridLayout, QDialogButtonBox, QSpinBox, QAbstractSpinBox, QAbstractButton, \
-    QGroupBox
+from PySide6.QtWidgets import (QDialog, QGridLayout, QDialogButtonBox,
+                               QSpinBox, QAbstractSpinBox, QAbstractButton,
+                               QGroupBox, QComboBox)
 
-from metgem.ui.widgets import CosineOptionsWidget
+from metgem.ui.widgets import ScoreOptionsWidget
 
 
 class CurrentParametersDialog(QDialog):
@@ -14,8 +15,8 @@ class CurrentParametersDialog(QDialog):
         
         layout = QGridLayout()
 
-        w = CosineOptionsWidget()
-        opt = options.cosine
+        w = ScoreOptionsWidget()
+        opt = options.score
 
         # Set spin boxes readonly
         for child in w.findChildren(QAbstractSpinBox):
@@ -26,6 +27,10 @@ class CurrentParametersDialog(QDialog):
         for child in w.findChildren(QAbstractButton) + w.findChildren(QGroupBox):
             child.setAttribute(Qt.WA_TransparentForMouseEvents)
             child.setFocusPolicy(Qt.NoFocus)
+
+        # Set combo boxes readonly
+        for child in w.findChildren(QComboBox):
+            child.setEnabled(False)
 
         layout.addWidget(w)
         w.setValues(opt)
