@@ -1,14 +1,14 @@
-from libmetgem.cosine import compute_similarity_matrix
+from libmetgem.score import compute_similarity_matrix
 
 from metgem.workers.base import BaseWorker
-from metgem.workers.options import CosineComputationOptions
+from metgem.workers.options import ScoreComputationOptions
 
 
 class ComputeScoresWorker(BaseWorker):
     """Generate a network from a MGF file.
     """
 
-    def __init__(self, mzs, spectra, options: CosineComputationOptions):
+    def __init__(self, mzs, spectra, options: ScoreComputationOptions):
         super().__init__()
         self._mzs = mzs
         self._spectra = spectra
@@ -30,6 +30,7 @@ class ComputeScoresWorker(BaseWorker):
         try:
             scores_matrix = compute_similarity_matrix(self._mzs, self._spectra,
                                                       self.options.mz_tolerance, self.options.min_matched_peaks,
+                                                      self.options.scoring,
                                                       dense_output=self.options.dense_output,
                                                       callback=callback)
         except MemoryError as e:

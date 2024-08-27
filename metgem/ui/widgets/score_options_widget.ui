@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>gbCosineOptions</class>
- <widget class="QGroupBox" name="gbCosineOptions">
+ <class>gbScoreOptions</class>
+ <widget class="QGroupBox" name="gbScoreOptions">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>410</width>
+    <width>421</width>
     <height>302</height>
    </rect>
   </property>
   <property name="title">
-   <string>Cosine Score Computing</string>
+   <string>Score Computing</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="1" column="1">
+   <item row="2" column="1">
     <widget class="QDoubleSpinBox" name="spinMZTolerance">
      <property name="enabled">
       <bool>true</bool>
@@ -42,24 +42,7 @@
      </property>
     </widget>
    </item>
-   <item row="0" column="0">
-    <widget class="QCheckBox" name="chkMS1Data">
-     <property name="toolTip">
-      <string>The spectra will be loaded without taking into account the mass of the precursor, which means that only the fragments will be compared, not the neutral losses</string>
-     </property>
-     <property name="text">
-      <string>Load spectra as &amp;MS1 Data</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="label_6">
-     <property name="text">
-      <string>Minimum Matched Peaks</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="1">
+   <item row="3" column="1">
     <widget class="QSpinBox" name="spinMinMatchedPeaks">
      <property name="enabled">
       <bool>true</bool>
@@ -72,7 +55,7 @@
      </property>
     </widget>
    </item>
-   <item row="5" column="0" colspan="3">
+   <item row="6" column="0" colspan="3">
     <widget class="QGroupBox" name="gbFiltering">
      <property name="title">
       <string>Filtering</string>
@@ -297,7 +280,34 @@
      </layout>
     </widget>
    </item>
-   <item row="1" column="2" rowspan="2">
+   <item row="1" column="0">
+    <widget class="QCheckBox" name="chkMS1Data">
+     <property name="toolTip">
+      <string>The spectra will be loaded without taking into account the mass of the precursor, which means that only the fragments will be compared, not the neutral losses</string>
+     </property>
+     <property name="text">
+      <string>Load spectra as &amp;MS1 Data</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="2">
+    <widget class="QCheckBox" name="chkSparse">
+     <property name="toolTip">
+      <string>Create a sparse similarity matrix to store scores. Uses less memory but is not compatible with all visualizations.</string>
+     </property>
+     <property name="text">
+      <string>Use &amp;sparse similarity matrix</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="label_6">
+     <property name="text">
+      <string>Minimum Matched Peaks</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="2" rowspan="2">
     <spacer name="horizontalSpacer">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -310,7 +320,7 @@
      </property>
     </spacer>
    </item>
-   <item row="1" column="0">
+   <item row="2" column="0">
     <widget class="QLabel" name="label_3">
      <property name="font">
       <font>
@@ -322,15 +332,15 @@
      </property>
     </widget>
    </item>
-   <item row="0" column="2">
-    <widget class="QCheckBox" name="chkSparse">
-     <property name="toolTip">
-      <string>Create a sparse similarity matrix to store scores. Uses less memory but is not compatible with all visualizations.</string>
-     </property>
+   <item row="0" column="0">
+    <widget class="QLabel" name="lblScore">
      <property name="text">
-      <string>Use &amp;sparse similarity matrix</string>
+      <string>Score algorithm</string>
      </property>
     </widget>
+   </item>
+   <item row="0" column="1" colspan="2">
+    <widget class="QComboBox" name="cbScore"/>
    </item>
   </layout>
  </widget>

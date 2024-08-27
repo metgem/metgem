@@ -6,8 +6,8 @@ from PySide6.QtCore import Qt, QSettings
 from PySide6.QtWidgets import QWidget, QTableWidgetItem
 from PySide6QtAds import CDockWidget
 
-from libmetgem import MZ, square_root_and_normalize_data
-from libmetgem.cosine import compare_spectra, SpectraMatchState
+from libmetgem import MZ, square_root_data, normalize_data
+from libmetgem.score import compare_spectra, SpectraMatchState
 
 from metgem.ui.widgets.spectrum.fragments_list_ui import Ui_Form
 
@@ -73,9 +73,16 @@ class FragmentsListWidget(QWidget, Ui_Form):
                 main_window = findParent(QMainWindow, main_window)
 
         if main_window is not None and mz1 is not None and data1 is not None and mz2 is not None and data2 is not None:
-            data1 = square_root_and_normalize_data(data1)
-            data2 = square_root_and_normalize_data(data2)
-            matches = compare_spectra(mz1, data1, mz2, data2, main_window.network.options.cosine.mz_tolerance)
+            options = main_window.network.options
+            if options.score.scoring == 'cosine':
+                data1 = normalize_data(square_root_data(data1), norm='dot')
+                data2 = normalize_data(square_root_data(data2), norm='dot')
+            else:
+                data1 = normalize_data(data1, norm='sum')
+                data2 = normalize_data(data2, norm='sum')
+            matches = compare_spectra(mz1, data1, mz2, data2,
+                                      options.score.mz_tolerance,
+                                      options.score.scoring)
             if matches.size == 0:
                 return
 

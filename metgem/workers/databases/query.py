@@ -42,6 +42,9 @@ class QueryDatabasesWorker(BaseWorker):
         parent_filter_tolerance = self.options.parent_filter_tolerance if use_parent_filter else 0
         matched_peaks_window = self.options.matched_peaks_window if use_window_rank_filter else 0
         min_matched_peaks_search = self.options.min_matched_peaks_search if use_window_rank_filter else 0
+        scoring = self.options.scoring
+        square_root = scoring == 'cosine'
+        norm = 'dot' if scoring == 'cosine' else 'sum'
 
         # Query database
         analog_mz_tolerance = self.options.analog_mz_tolerance if self.options.analog_search else 0
@@ -49,7 +52,9 @@ class QueryDatabasesWorker(BaseWorker):
                    self.options.mz_tolerance, self.options.min_matched_peaks, min_intensity,
                    parent_filter_tolerance, matched_peaks_window,
                    min_matched_peaks_search, self.options.min_cosine, analog_mz_tolerance,
-                   bool(self.options.positive_polarity), mz_min=min_mz, callback=callback)
+                   bool(self.options.positive_polarity), mz_min=min_mz,
+                   score_algorithm=scoring, square_root=square_root, norm=norm,
+                   callback=callback)
 
         if qr is None:  # User canceled the process
             self.canceled.emit()

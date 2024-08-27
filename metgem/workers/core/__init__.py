@@ -1,6 +1,6 @@
 from metgem.workers.core.clusterize import ClusterizeWorker
 from metgem.workers.core.numberize import NumberizeWorker
-from metgem.workers.core.cosine import ComputeScoresWorker
+from metgem.workers.core.score import ComputeScoresWorker
 from metgem.workers.core.import_modules import ImportModulesWorker
 from metgem.workers.core.max_connected_components import MaxConnectedComponentsWorker
 from metgem.workers.core.force_directed import ForceDirectedWorker

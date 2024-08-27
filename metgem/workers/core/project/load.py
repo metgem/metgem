@@ -196,6 +196,10 @@ class LoadProjectWorker(BaseWorker):
                     except KeyError:
                         network.options = AttrDict({})
 
+                    if 'cosine' in network.options:
+                        network.options['score'] = network.options['cosine']
+                        del network.options['cosine']
+
                     # Prior to version 5, network views options was unique for each view
                     # Generate an id for those views
                     if version < 5:

@@ -13,7 +13,7 @@ from metgem.utils.network import Network, generate_id
 from metgem.workers.core import (ReadDataWorker, ComputeScoresWorker,
                                  ForceDirectedGraphWorker, ForceDirectedWorker, MaxConnectedComponentsWorker,
                                  TSNEWorker, SaveProjectWorker)
-from metgem.workers.options import (CosineComputationOptions, ForceDirectedVisualizationOptions,
+from metgem.workers.options import (ScoreComputationOptions, ForceDirectedVisualizationOptions,
                                     TSNEVisualizationOptions)
 
 
@@ -57,8 +57,8 @@ def cli(ctx, input, output, ms1_data, min_intensity, parent_filter_tolerance,
     use_window_rank_filter = min_matched_peaks_search != 0 and min_matched_peaks_search != 0
     use_filtering = use_min_intensity_filter or use_parent_filter or use_window_rank_filter
 
-    options['cosine'] = CosineComputationOptions()
-    options['cosine'].update({
+    options['score'] = ScoreComputationOptions()
+    options['score'].update({
         'mz_tolerance': mz_tolerance,
         'min_intensity': min_intensity,
         'parent_filter_tolerance': parent_filter_tolerance,
@@ -70,7 +70,7 @@ def cli(ctx, input, output, ms1_data, min_intensity, parent_filter_tolerance,
         'use_min_intensity_filter': use_min_intensity_filter,
         'use_parent_filter': use_parent_filter,
         'use_window_rank_filter': use_window_rank_filter})
-    worker = ReadDataWorker(input, options['cosine'])
+    worker = ReadDataWorker(input, options['score'])
     try:
         mzs, spectra = worker.run()
     except NotImplementedError:
@@ -80,7 +80,7 @@ def cli(ctx, input, output, ms1_data, min_intensity, parent_filter_tolerance,
     # +---------------------------+
     # | Compute Similarity Matrix |
     # +---------------------------+
-    worker = ComputeScoresWorker(mzs, spectra, options['cosine'])
+    worker = ComputeScoresWorker(mzs, spectra, options['score'])
     with click.progressbar(length=worker.max, label='Computing scores') as pbar:
         worker.updated.connect(lambda v: pbar.update(pbar.pos + v))
         scores = worker.run()

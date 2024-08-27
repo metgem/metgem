@@ -5,7 +5,7 @@ from metgem.ui.widgets.metadata import (CsvDelimiterCombo,
 from metgem.ui.widgets.annotations.table import AnnotationsWidget, AnnotationsModel
 from metgem.ui.widgets.options_widgets import (TSNEOptionsWidget, ForceDirectedOptionsWidget, MDSOptionsWidget,
                                                UMAPOptionsWidget, IsomapOptionsWidget, PHATEOptionsWidget,
-                                               CosineOptionsWidget, QueryDatabasesOptionsWidget)
+                                               ScoreOptionsWidget, QueryDatabasesOptionsWidget)
 
 from metgem.ui.widgets.color_picker import ColorPicker
 from metgem.ui.widgets.databases import SpectrumDetailsWidget, PubMedLabel, SpectrumIdLabel, SubmitUserLabel, QualityLabel
