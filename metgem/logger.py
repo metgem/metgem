@@ -35,7 +35,7 @@ else:
 
 
 def debug(func):
-    np.set_string_function(lambda arr: '<array>')
+    np.set_printoptions(precision=4)
 
     @wraps(func)
     def new_func(*args, **kwargs):
