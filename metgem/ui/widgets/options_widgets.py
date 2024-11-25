@@ -6,7 +6,7 @@ from metgem.workers.options import (ForceDirectedVisualizationOptions,
                                     MDSVisualizationOptions,
                                     IsomapVisualizationOptions,
                                     PHATEVisualizationOptions,
-                                    CosineComputationOptions,
+                                    ScoreComputationOptions,
                                     QueryDatabasesOptions,
                                     )
 
@@ -16,7 +16,7 @@ from metgem.ui.widgets.umap_options_widget_ui import Ui_UMAPOptionsWidget
 from metgem.ui.widgets.mds_options_widget_ui import Ui_MDSOptionsWidget
 from metgem.ui.widgets.isomap_options_widget_ui import Ui_IsomapOptionsWidget
 from metgem.ui.widgets.phate_options_widget_ui import Ui_PHATEOptionsWidget
-from metgem.ui.widgets.cosine_options_widget_ui import Ui_gbCosineOptions
+from metgem.ui.widgets.score_options_widget_ui import Ui_gbScoreOptions
 from metgem.ui.widgets.databases_options_widget_ui import Ui_gbDatabaseOptions
 
 
@@ -228,13 +228,17 @@ class PHATEOptionsWidget(VisualizationOptionsWidget, Ui_PHATEOptionsWidget):
         self.chkRandomState.setChecked(options.random)
 
 
-class CosineOptionsWidget(OptionsGroupBox, Ui_gbCosineOptions):
-    """Create a widget containing Cosine computations options"""
+class ScoreOptionsWidget(OptionsGroupBox, Ui_gbScoreOptions):
+    """Create a widget containing Score computations options"""
 
-    options_class = CosineComputationOptions
+    options_class = ScoreComputationOptions
 
     def __init__(self):
         super().__init__()
+
+        self.cbScore.addItem("Cosine", "cosine")
+        self.cbScore.addItem("Entropy", "entropy")
+        self.cbScore.addItem("Weighted Entropy", "weighted_entropy")
 
         self.chkUseMinMZ.stateChanged.connect(self.spinMinMZ.setEnabled)
         self.chkUseParentFiltering.stateChanged.connect(self.spinParentFilterTolerance.setEnabled)
@@ -244,6 +248,8 @@ class CosineOptionsWidget(OptionsGroupBox, Ui_gbCosineOptions):
 
     def getValues(self):
         options = super().getValues()
+
+        options.scoring = self.cbScore.currentData()
         options.mz_tolerance = self.spinMZTolerance.value()
         options.min_matched_peaks = self.spinMinMatchedPeaks.value()
         options.min_mz = self.spinMinMZ.value()
@@ -263,6 +269,12 @@ class CosineOptionsWidget(OptionsGroupBox, Ui_gbCosineOptions):
 
     def setValues(self, options):
         super().setValues(options)
+
+        for i in range(self.cbScore.count()):
+            if self.cbScore.itemData(i) == options.scoring:
+                self.cbScore.setCurrentIndex(i)
+                break
+
         self.spinMZTolerance.setValue(options.mz_tolerance)
         self.spinMinMatchedPeaks.setValue(options.min_matched_peaks)
         self.spinMinMZ.setValue(options.min_mz)
