@@ -52,7 +52,12 @@ conda install invoke
 invoke rc
 ```
 
-7. Launch MetGem
+7. Build the User Interface files:
+```
+invoke uic
+```
+
+8. Launch MetGem
 ```
 python -m metgem.gui
 ```
