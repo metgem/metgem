@@ -54,7 +54,7 @@ invoke rc
 
 7. Launch MetGem
 ```
-python MetGem
+python -m metgem.gui
 ```
 
 For later use, you just need to activate the environment before launching MetGem
