@@ -37,10 +37,10 @@ def uic(ctx, filename=''):
 # noinspection PyShadowingNames,PyUnusedLocal
 @task
 def rc(ctx, force=False):
-    if shutil.which('pyside6-rc'):
-        rc_cmd = [r'pyside6-rc']
+    if shutil.which('pyside6-rcc'):
+        rcc_cmd = [r'pyside6-rcc']
     elif shutil.which('rc'):
-        rc_cmd = [r'rc', '-g', 'python']
+        rcc_cmd = [r'rcc', '-g', 'python']
     else:
         raise RuntimeError("UIC executable not found, make sure Qt6 is installed in the current environment")
     
@@ -54,6 +54,6 @@ def rc(ctx, force=False):
     if skip:
         print('[RC] resource file is up-to-date, skipping build.')
     else:
-        subprocess.run([*rc_cmd, '-o', rc, ' '.join(qrcs)],
+        subprocess.run([*rcc_cmd, '-o', rc, ' '.join(qrcs)],
                        shell=sys.platform == 'win32')
         print('[RC] Resource file updated.')
